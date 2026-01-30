@@ -22,13 +22,18 @@ jobs:
       - name: Install PlatformIO
         run: pip install platformio
 
+      - name: Install platforms
+        run: |
+          pio platform install teensy
+          pio platform install espressif32
+
       - name: Build Teensy firmware
         working-directory: firmware
         run: pio run -e teensy41
 
       - name: Build ESP32 firmware
         working-directory: firmware
-        run: pio run -e esp32
+        run: PLATFORMIO_SRC_DIR=esp32 pio run -e esp32
 
       - name: Package web app
         run: cd web && zip -r ../oh-my-ondas-web.zip . -x '*.gitkeep'

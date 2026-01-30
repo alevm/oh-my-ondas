@@ -28,9 +28,23 @@ jobs:
       - name: Install PlatformIO
         run: pip install platformio
 
+      - name: Install platform
+        run: |
+          if [ "${{ matrix.environment }}" = "teensy41" ]; then
+            pio platform install teensy
+          else
+            pio platform install espressif32
+          fi
+
       - name: Build firmware
         working-directory: firmware
-        run: pio run -e ${{ matrix.environment }}
+        run: |
+          if [ "${{ matrix.environment }}" = "esp32" ]; then
+            # ESP32 uses a different source directory
+            PLATFORMIO_SRC_DIR=esp32 pio run -e esp32
+          else
+            pio run -e ${{ matrix.environment }}
+          fi
 
       - name: Upload firmware artifact
         if: matrix.environment == 'teensy41'
