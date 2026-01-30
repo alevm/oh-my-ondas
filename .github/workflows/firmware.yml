@@ -31,9 +31,9 @@ jobs:
       - name: Install platform
         run: |
           if [ "${{ matrix.environment }}" = "teensy41" ]; then
-            pio platform install teensy
+            pio pkg install -g -p "platformio/teensy"
           else
-            pio platform install espressif32
+            pio pkg install -g -p "platformio/espressif32"
           fi
 
       - name: Build firmware

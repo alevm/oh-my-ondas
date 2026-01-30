@@ -24,8 +24,8 @@ jobs:
 
       - name: Install platforms
         run: |
-          pio platform install teensy
-          pio platform install espressif32
+          pio pkg install -g -p "platformio/teensy"
+          pio pkg install -g -p "platformio/espressif32"
 
       - name: Build Teensy firmware
         working-directory: firmware
