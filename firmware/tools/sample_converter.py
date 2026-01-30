@@ -4,8 +4,6 @@ Oh My Ondas - Sample Converter
 Convert and prepare audio samples for the device
 """
 
-import os
-import sys
 import argparse
 from pathlib import Path
 
@@ -13,15 +11,15 @@ import numpy as np
 import soundfile as sf
 
 
-def convert_sample(input_path: str, output_path: str, 
-                   sample_rate: int = 44100, 
+def convert_sample(input_path: str, output_path: str,
+                   sample_rate: int = 44100,
                    bit_depth: int = 16,
                    mono: bool = False,
                    normalize: bool = True,
                    max_length_sec: float = 30.0) -> dict:
     """
     Convert audio sample to device-compatible format.
-    
+
     Args:
         input_path: Input audio file
         output_path: Output WAV file
@@ -30,13 +28,13 @@ def convert_sample(input_path: str, output_path: str,
         mono: Convert to mono
         normalize: Normalize audio level
         max_length_sec: Maximum sample length in seconds
-    
+
     Returns:
         Dictionary with conversion info
     """
     # Read input file
     data, sr = sf.read(input_path, dtype='float32')
-    
+
     info = {
         'input': input_path,
         'output': output_path,
@@ -44,18 +42,18 @@ def convert_sample(input_path: str, output_path: str,
         'original_channels': data.ndim,
         'original_length': len(data) / sr
     }
-    
+
     # Convert to mono if requested
     if mono and data.ndim > 1:
         data = np.mean(data, axis=1)
         info['converted_to_mono'] = True
-    
+
     # Resample if needed
     if sr != sample_rate:
         # Simple resampling (for production, use librosa or scipy)
         ratio = sample_rate / sr
         new_length = int(len(data) * ratio)
-        
+
         if data.ndim == 1:
             data = np.interp(
                 np.linspace(0, len(data) - 1, new_length),
@@ -71,17 +69,17 @@ def convert_sample(input_path: str, output_path: str,
                     data[:, ch]
                 )
             data = resampled
-        
+
         info['resampled'] = True
         info['new_rate'] = sample_rate
-    
+
     # Trim to max length
     max_samples = int(max_length_sec * sample_rate)
     if len(data) > max_samples:
         data = data[:max_samples]
         info['trimmed'] = True
         info['trimmed_to'] = max_length_sec
-    
+
     # Normalize
     if normalize:
         peak = np.max(np.abs(data))
@@ -89,20 +87,20 @@ def convert_sample(input_path: str, output_path: str,
             data = data / peak * 0.95  # Leave headroom
             info['normalized'] = True
             info['original_peak'] = float(peak)
-    
+
     # Determine subtype for bit depth
     if bit_depth == 24:
         subtype = 'PCM_24'
     else:
         subtype = 'PCM_16'
-    
+
     # Write output
     sf.write(output_path, data, sample_rate, subtype=subtype)
-    
+
     info['final_length'] = len(data) / sample_rate
     info['final_channels'] = 1 if data.ndim == 1 else data.shape[1]
     info['bit_depth'] = bit_depth
-    
+
     return info
 
 
@@ -111,12 +109,12 @@ def batch_convert(input_dir: str, output_dir: str, **kwargs) -> list:
     input_path = Path(input_dir)
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
-    
+
     results = []
-    
+
     # Supported formats
     extensions = {'.wav', '.mp3', '.flac', '.aiff', '.ogg', '.m4a'}
-    
+
     for file in input_path.iterdir():
         if file.suffix.lower() in extensions:
             output_file = output_path / (file.stem + '.wav')
@@ -130,7 +128,7 @@ def batch_convert(input_dir: str, output_dir: str, **kwargs) -> list:
                     'error': str(e)
                 }
             results.append(info)
-    
+
     return results
 
 
@@ -142,13 +140,13 @@ def prepare_bank(input_dir: str, output_dir: str, bank_number: int) -> dict:
     input_path = Path(input_dir)
     output_path = Path(output_dir) / f'bank{bank_number:02d}'
     output_path.mkdir(parents=True, exist_ok=True)
-    
+
     bank_info = {
         'bank_number': bank_number,
         'output_dir': str(output_path),
         'samples': []
     }
-    
+
     for i in range(1, 9):
         # Look for sample files
         found = False
@@ -161,21 +159,21 @@ def prepare_bank(input_dir: str, output_dir: str, bank_number: int) -> dict:
                 bank_info['samples'].append(info)
                 found = True
                 break
-        
+
         if not found:
             bank_info['samples'].append({
                 'slot': i,
                 'status': 'empty'
             })
-    
+
     return bank_info
 
 
 def main():
     parser = argparse.ArgumentParser(description='Oh My Ondas Sample Converter')
-    
+
     subparsers = parser.add_subparsers(dest='command')
-    
+
     # Single file conversion
     single = subparsers.add_parser('convert', help='Convert single file')
     single.add_argument('input', help='Input audio file')
@@ -185,7 +183,7 @@ def main():
     single.add_argument('--mono', action='store_true', help='Convert to mono')
     single.add_argument('--no-normalize', action='store_true')
     single.add_argument('--max-length', type=float, default=30.0)
-    
+
     # Batch conversion
     batch = subparsers.add_parser('batch', help='Convert directory')
     batch.add_argument('input_dir', help='Input directory')
@@ -193,15 +191,15 @@ def main():
     batch.add_argument('--rate', type=int, default=44100)
     batch.add_argument('--bits', type=int, default=16, choices=[16, 24])
     batch.add_argument('--mono', action='store_true')
-    
+
     # Bank preparation
     bank = subparsers.add_parser('bank', help='Prepare sample bank')
     bank.add_argument('input_dir', help='Input directory')
     bank.add_argument('output_dir', help='Output directory (e.g., /sdcard/samples)')
     bank.add_argument('bank_number', type=int, help='Bank number (0-63)')
-    
+
     args = parser.parse_args()
-    
+
     if args.command == 'convert':
         info = convert_sample(
             args.input, args.output,
@@ -214,7 +212,7 @@ def main():
         print(f"Converted: {info['input']} -> {info['output']}")
         print(f"  Length: {info['final_length']:.2f}s")
         print(f"  Rate: {args.rate}Hz, {args.bits}-bit")
-        
+
     elif args.command == 'batch':
         results = batch_convert(
             args.input_dir, args.output_dir,
@@ -224,13 +222,13 @@ def main():
         )
         success = sum(1 for r in results if r.get('status') == 'success')
         print(f"Converted {success}/{len(results)} files")
-        
+
     elif args.command == 'bank':
         info = prepare_bank(args.input_dir, args.output_dir, args.bank_number)
         loaded = sum(1 for s in info['samples'] if s.get('status') != 'empty')
         print(f"Bank {args.bank_number}: {loaded}/8 samples loaded")
         print(f"Output: {info['output_dir']}")
-        
+
     else:
         parser.print_help()
 

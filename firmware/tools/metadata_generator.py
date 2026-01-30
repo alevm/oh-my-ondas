@@ -9,7 +9,6 @@ import hashlib
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
-import struct
 
 
 def generate_recording_id(timestamp: datetime, lat: float, lon: float) -> str:
@@ -35,7 +34,7 @@ def create_metadata(
 ) -> dict:
     """
     Create complete metadata for a recording.
-    
+
     Args:
         recording_path: Path to the audio file
         latitude: GPS latitude
@@ -48,19 +47,19 @@ def create_metadata(
         sources: List of audio sources used
         fx_chain: List of effects applied
         notes: User notes
-    
+
     Returns:
         Complete metadata dictionary
     """
     if timestamp is None:
         timestamp = datetime.now()
-    
+
     recording_id = generate_recording_id(timestamp, latitude, longitude)
-    
+
     # Get audio file info
     audio_path = Path(recording_path)
     file_size = audio_path.stat().st_size if audio_path.exists() else 0
-    
+
     metadata = {
         "recording_id": recording_id,
         "version": "1.0",
@@ -128,7 +127,7 @@ def create_metadata(
             "signature": None  # Optional blockchain signature
         }
     }
-    
+
     return metadata
 
 
@@ -148,10 +147,10 @@ def get_time_of_day(timestamp: datetime) -> str:
 def get_season(timestamp: datetime, latitude: float) -> str:
     """Get season based on date and hemisphere."""
     month = timestamp.month
-    
+
     # Southern hemisphere has opposite seasons
     southern = latitude < 0
-    
+
     if month in [3, 4, 5]:
         return "autumn" if southern else "spring"
     elif month in [6, 7, 8]:
@@ -195,7 +194,7 @@ def embed_metadata_in_wav(wav_path: str, metadata: dict):
 
 def main():
     import argparse
-    
+
     parser = argparse.ArgumentParser(description='Oh My Ondas Metadata Generator')
     parser.add_argument('audio_file', help='Audio file path')
     parser.add_argument('--lat', type=float, required=True, help='Latitude')
@@ -205,9 +204,9 @@ def main():
     parser.add_argument('--key', help='Musical key')
     parser.add_argument('--notes', help='User notes')
     parser.add_argument('-o', '--output', help='Output JSON path')
-    
+
     args = parser.parse_args()
-    
+
     # Create metadata
     metadata = create_metadata(
         recording_path=args.audio_file,
@@ -218,20 +217,20 @@ def main():
         key=args.key,
         notes=args.notes
     )
-    
+
     # Calculate audio hash if file exists
     if Path(args.audio_file).exists():
         metadata['cryptographic']['audio_hash'] = calculate_audio_hash(args.audio_file)
-    
+
     # Determine output path
     if args.output:
         output_path = args.output
     else:
         output_path = Path(args.audio_file).with_suffix('.json')
-    
+
     # Save
     save_metadata(metadata, str(output_path))
-    
+
     print(f"Metadata saved: {output_path}")
     print(f"Recording ID: {metadata['recording_id']}")
     print(f"Location: {args.lat:.6f}, {args.lon:.6f}")
