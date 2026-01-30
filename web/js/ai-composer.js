@@ -116,6 +116,152 @@ class AIComposer {
         }
     }
 
+    // Scale definitions for melodic P-Locks (semitone intervals)
+    getScale(vibe) {
+        const scales = {
+            calm: [0, 3, 5, 7, 10, 12],       // minor pentatonic
+            urban: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], // chromatic
+            nature: [0, 2, 4, 7, 9, 12],       // major pentatonic
+            chaos: [0, 2, 4, 6, 8, 10]         // whole tone
+        };
+        return scales[vibe] || scales.calm;
+    }
+
+    // Add pitch P-Locks to active steps on specified tracks
+    addPitchPLocks(trackIndices, vibe, complexity) {
+        if (!window.sequencer) return;
+        const scale = this.getScale(vibe);
+        const seq = window.sequencer;
+        const steps = seq.steps;
+        const pitchChance = Math.min(0.9, (complexity / 100) * 0.8 + 0.1);
+
+        for (const t of trackIndices) {
+            for (let s = 0; s < steps; s++) {
+                const step = seq.pattern[t][s];
+                if (step.active && Math.random() < pitchChance) {
+                    const pitch = scale[Math.floor(Math.random() * scale.length)];
+                    seq.setPLock(t, s, 'pitch', pitch);
+                }
+            }
+        }
+    }
+
+    // Auto-capture from radio if playing (returns padIndex or null)
+    async autoCaptureRadio(durationMs = 2000) {
+        if (!window.radioPlayer?.isPlaying()) return null;
+        const padIdx = window.sampler?.getNextEmptyPad();
+        if (padIdx === null) return null;
+
+        const buffer = await window.radioPlayer.captureToBuffer(durationMs);
+        if (!buffer) return null;
+
+        const station = window.radioPlayer.getCurrentStation();
+        window.sampler.loadBuffer(padIdx, buffer, {
+            name: station?.name?.substring(0, 12) || 'Radio',
+            source: 'radio',
+            gps: window.gpsTracker?.getPosition(),
+            timestamp: Date.now()
+        });
+        console.log(`AI auto-captured radio to pad ${padIdx}`);
+        return padIdx;
+    }
+
+    // Auto-capture from mic if active (returns padIndex or null)
+    async autoCaptureMic(durationMs = 2000) {
+        if (!window.micInput?.isActive()) return null;
+        const padIdx = window.sampler?.getNextEmptyPad();
+        if (padIdx === null) return null;
+
+        const buffer = await window.micInput.captureToBuffer(durationMs);
+        if (!buffer) return null;
+
+        window.sampler.loadBuffer(padIdx, buffer, {
+            name: 'Ambient',
+            source: 'mic',
+            gps: window.gpsTracker?.getPosition(),
+            timestamp: Date.now()
+        });
+        console.log(`AI auto-captured mic to pad ${padIdx}`);
+        return padIdx;
+    }
+
+    // Full AI generate: auto-capture, auto-assign sources, add pitch P-Locks
+    async generateFull(vibe, density = 70, complexity = 50) {
+        if (!window.sequencer) return null;
+
+        // 1. Auto-capture from active sources if no captured pads yet
+        const capturedPads = [];
+        for (let i = 0; i < 8; i++) {
+            if (window.sampler?.hasCapturedSample(i)) capturedPads.push(i);
+        }
+
+        if (capturedPads.length === 0) {
+            // Try to auto-capture from radio, then mic
+            const radioPad = await this.autoCaptureRadio(2000);
+            if (radioPad !== null) capturedPads.push(radioPad);
+            const micPad = await this.autoCaptureMic(2000);
+            if (micPad !== null) capturedPads.push(micPad);
+        }
+
+        // 2. Generate base rhythm pattern
+        window.sequencer.generateVibePattern(vibe, density, complexity);
+
+        // 3. Auto-assign track sources
+        // Tracks 0-3: keep as sampler (drums)
+        // Tracks 4-5: assign to captured pads if available (melodic)
+        // Track 6: synth
+        // Track 7: radio gate or mic gate if active
+        const melodicTracks = [];
+        if (capturedPads.length > 0) {
+            // Assign captured pads to tracks 4+
+            for (let i = 0; i < Math.min(capturedPads.length, 2); i++) {
+                const trackIdx = 4 + i;
+                window.sequencer.setTrackSource(trackIdx, 'sampler');
+                // Remap: this track triggers the captured pad
+                // We swap pattern data so track index matches pad index
+                // Copy active pattern from trackIdx to capturedPads[i] track
+                this.remapTrackToPad(trackIdx, capturedPads[i]);
+                melodicTracks.push(trackIdx);
+            }
+        }
+
+        // Assign synth to track 6 if not already melodic
+        if (!melodicTracks.includes(6)) {
+            window.sequencer.setTrackSource(6, 'synth');
+            melodicTracks.push(6);
+        }
+
+        // Assign radio/mic gate to track 7 if active
+        if (window.radioPlayer?.isPlaying()) {
+            window.sequencer.setTrackSource(7, 'radio');
+        } else if (window.micInput?.isActive()) {
+            window.sequencer.setTrackSource(7, 'mic');
+        }
+
+        // 4. Add pitch P-Locks to melodic tracks
+        this.addPitchPLocks(melodicTracks, vibe, complexity);
+
+        // 5. Generate suggestions
+        return this.generateSuggestions(vibe, density, complexity);
+    }
+
+    // Remap a sequencer track to trigger a specific pad index
+    remapTrackToPad(trackIdx, padIdx) {
+        // The sequencer triggers pad = trackIdx by default.
+        // To make track N trigger pad M, we swap the track data positions.
+        // Simpler approach: just ensure the track pattern exists and note
+        // that trigger will use trackIdx. We copy the pad's buffer to the
+        // trackIdx position so the sampler plays the right buffer.
+        if (trackIdx === padIdx) return; // Already mapped
+
+        const buf = window.sampler.samples.get(padIdx);
+        const meta = window.sampler.padMeta.get(padIdx);
+        if (buf) {
+            window.sampler.samples.set(trackIdx, buf);
+            if (meta) window.sampler.padMeta.set(trackIdx, { ...meta });
+        }
+    }
+
     // Generate rhythm based on parameters
     generateRhythm(vibe, density, complexity) {
         if (window.sequencer) {

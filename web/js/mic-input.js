@@ -53,6 +53,43 @@ class MicInput {
         }
     }
 
+    async captureToBuffer(durationMs = 3000) {
+        if (!this.active || !this.micGain) return null;
+
+        const ctx = window.audioEngine.getContext();
+        if (!ctx) return null;
+
+        try {
+            const dest = ctx.createMediaStreamDestination();
+            this.micGain.connect(dest);
+
+            const recorder = new MediaRecorder(dest.stream, {
+                mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : ''
+            });
+            const chunks = [];
+            recorder.ondataavailable = e => chunks.push(e.data);
+
+            return new Promise((resolve) => {
+                recorder.onstop = async () => {
+                    try {
+                        this.micGain.disconnect(dest);
+                    } catch (e) {}
+                    // Re-connect mic to its channel (disconnect may have severed it)
+                    window.audioEngine.connectToChannel(this.micGain, 'mic');
+                    const blob = new Blob(chunks, { type: recorder.mimeType });
+                    const arrayBuffer = await blob.arrayBuffer();
+                    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+                    resolve(audioBuffer);
+                };
+                recorder.start();
+                setTimeout(() => recorder.stop(), durationMs);
+            });
+        } catch (err) {
+            console.error('Mic capture failed:', err);
+            return null;
+        }
+    }
+
     isActive() {
         return this.active;
     }

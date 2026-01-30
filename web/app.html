@@ -431,6 +431,15 @@
                             <button class="kit-btn" data-kit="kit2" title="Drum Kit 2">2</button>
                             <button class="kit-btn" data-kit="kit3" title="Drum Kit 3">3</button>
                         </div>
+                        <div class="pad-capture-group">
+                            <button id="micCapture" class="pad-capture-btn" title="Record mic audio to next empty pad">MIC REC</button>
+                            <select id="micCaptureDur" class="capture-dur" title="Capture duration">
+                                <option value="1000">1s</option>
+                                <option value="2000" selected>2s</option>
+                                <option value="4000">4s</option>
+                            </select>
+                            <span id="micCaptureStatus" class="capture-status"></span>
+                        </div>
                     </div>
                     <div class="pads-grid">
                         <button class="pad" data-pad="0" title="Pad 1 - Kick (Key: 1)">1</button>
@@ -511,6 +520,15 @@
                         <button id="radioScan" class="radio-btn" title="Scan for local radio stations based on GPS">SCAN</button>
                         <button id="radioGo" class="radio-btn" title="Search/Play selected station">&#9654;</button>
                         <button id="radioStop" class="radio-btn" disabled title="Stop radio playback">&#9632;</button>
+                    </div>
+                    <div class="radio-capture">
+                        <button id="radioSample" class="radio-btn capture-btn" disabled title="Capture radio audio to a sampler pad">SAMPLE</button>
+                        <select id="radioCaptureDur" class="capture-dur" title="Capture duration">
+                            <option value="1000">1s</option>
+                            <option value="2000" selected>2s</option>
+                            <option value="4000">4s</option>
+                        </select>
+                        <span id="radioCaptureStatus" class="capture-status"></span>
                     </div>
                     <div class="station-list" id="stationList" title="Click a station to play"></div>
                 </div>

@@ -96,6 +96,7 @@ class App {
         this.setupFX();
         this.setupAI();
         this.setupRadio();
+        this.setupMicCapture();
         this.setupRecordings();
         this.setupAdminModal();
         this.setupKeyboardShortcuts();
@@ -2382,10 +2383,20 @@ class App {
         const generateBtn = document.getElementById('aiGenerate');
 
         if (generateBtn) {
-            generateBtn.addEventListener('click', () => {
+            generateBtn.addEventListener('click', async () => {
                 // Use auto-detected vibe from AI composer
                 const vibe = window.aiComposer?.context?.vibe || 'calm';
+
+                // Use the full AI generate path (auto-capture + auto-assign + pitch P-Locks)
+                const statusEl = document.getElementById('aiStatus');
+                if (statusEl) statusEl.textContent = 'Generating...';
+
+                await window.aiComposer?.generateFull(vibe, 70, 50);
                 this.generateFullComposition(vibe);
+
+                // Update pad display for any auto-captured samples
+                this.updatePadDisplay();
+                if (statusEl) statusEl.textContent = `Generated ${vibe} composition with captured audio`;
             });
         }
     }
@@ -2518,6 +2529,9 @@ class App {
         const goBtn = document.getElementById('radioGo');
         const stopBtn = document.getElementById('radioStop');
         const stationList = document.getElementById('stationList');
+        const radioSampleBtn = document.getElementById('radioSample');
+        const radioCaptureDur = document.getElementById('radioCaptureDur');
+        const radioCaptureStatus = document.getElementById('radioCaptureStatus');
 
         const doSearch = async () => {
             const query = searchInput?.value?.trim();
@@ -2548,6 +2562,7 @@ class App {
                         stationList.querySelectorAll('.station-item').forEach(i => i.classList.remove('playing'));
                         item.classList.add('playing');
                         stopBtn.disabled = false;
+                        if (radioSampleBtn) radioSampleBtn.disabled = false;
                     }
                 });
             });
@@ -2582,6 +2597,7 @@ class App {
                         stationList.querySelectorAll('.station-item').forEach(i => i.classList.remove('playing'));
                         item.classList.add('playing');
                         stopBtn.disabled = false;
+                        if (radioSampleBtn) radioSampleBtn.disabled = false;
                     }
                 });
             });
@@ -2590,7 +2606,115 @@ class App {
         stopBtn.addEventListener('click', () => {
             window.radioPlayer.stop();
             stopBtn.disabled = true;
+            radioSampleBtn.disabled = true;
             stationList.querySelectorAll('.station-item').forEach(i => i.classList.remove('playing'));
+        });
+
+        // SAMPLE button — capture radio audio to a pad
+        if (radioSampleBtn) {
+            radioSampleBtn.addEventListener('click', async () => {
+                if (!window.radioPlayer?.isPlaying()) return;
+                const dur = parseInt(radioCaptureDur?.value || 2000);
+
+                radioSampleBtn.disabled = true;
+                radioSampleBtn.classList.add('capturing');
+                if (radioCaptureStatus) radioCaptureStatus.textContent = 'Sampling...';
+
+                const buffer = await window.radioPlayer.captureToBuffer(dur);
+                radioSampleBtn.classList.remove('capturing');
+
+                if (buffer) {
+                    const padIdx = window.sampler.getNextEmptyPad();
+                    if (padIdx !== null) {
+                        const station = window.radioPlayer.getCurrentStation();
+                        window.sampler.loadBuffer(padIdx, buffer, {
+                            name: station?.name?.substring(0, 12) || 'Radio',
+                            source: 'radio',
+                            gps: window.gpsTracker?.getPosition(),
+                            timestamp: Date.now()
+                        });
+                        if (radioCaptureStatus) radioCaptureStatus.textContent = `\u2192 Pad ${padIdx + 1}`;
+                        this.updatePadDisplay();
+                    } else {
+                        if (radioCaptureStatus) radioCaptureStatus.textContent = 'Pads full';
+                    }
+                } else {
+                    if (radioCaptureStatus) radioCaptureStatus.textContent = 'Failed';
+                }
+
+                radioSampleBtn.disabled = !window.radioPlayer?.isPlaying();
+            });
+        }
+
+    }
+
+    // Mic capture to pads
+    setupMicCapture() {
+        const micCaptureBtn = document.getElementById('micCapture');
+        const micCaptureDur = document.getElementById('micCaptureDur');
+        const micCaptureStatus = document.getElementById('micCaptureStatus');
+
+        if (micCaptureBtn) {
+            micCaptureBtn.addEventListener('click', async () => {
+                if (!window.micInput?.isActive()) {
+                    if (micCaptureStatus) micCaptureStatus.textContent = 'No mic';
+                    return;
+                }
+                const dur = parseInt(micCaptureDur?.value || 2000);
+
+                micCaptureBtn.disabled = true;
+                micCaptureBtn.classList.add('capturing');
+                if (micCaptureStatus) micCaptureStatus.textContent = 'Recording...';
+
+                const buffer = await window.micInput.captureToBuffer(dur);
+                micCaptureBtn.classList.remove('capturing');
+
+                if (buffer) {
+                    const padIdx = window.sampler.getNextEmptyPad();
+                    if (padIdx !== null) {
+                        window.sampler.loadBuffer(padIdx, buffer, {
+                            name: 'Mic',
+                            source: 'mic',
+                            gps: window.gpsTracker?.getPosition(),
+                            timestamp: Date.now()
+                        });
+                        if (micCaptureStatus) micCaptureStatus.textContent = `\u2192 Pad ${padIdx + 1}`;
+                        this.updatePadDisplay();
+                    } else {
+                        if (micCaptureStatus) micCaptureStatus.textContent = 'Pads full';
+                    }
+                } else {
+                    if (micCaptureStatus) micCaptureStatus.textContent = 'Failed';
+                }
+
+                micCaptureBtn.disabled = false;
+            });
+        }
+    }
+
+    // Update pad button visuals to show captured state
+    updatePadDisplay() {
+        document.querySelectorAll('.pads-panel:not(.pads2) .pad').forEach(pad => {
+            const index = parseInt(pad.dataset.pad);
+            const meta = window.sampler?.getPadMeta(index);
+
+            // Remove old capture classes and label
+            pad.classList.remove('captured-radio', 'captured-mic');
+            const oldLabel = pad.querySelector('.pad-label');
+            if (oldLabel) oldLabel.remove();
+
+            if (meta) {
+                if (meta.source === 'radio') {
+                    pad.classList.add('captured-radio');
+                } else if (meta.source === 'mic') {
+                    pad.classList.add('captured-mic');
+                }
+                // Add label
+                const label = document.createElement('span');
+                label.className = 'pad-label';
+                label.textContent = meta.name;
+                pad.appendChild(label);
+            }
         });
     }
 

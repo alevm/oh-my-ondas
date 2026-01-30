@@ -852,6 +852,92 @@ body.embedded-mode .device > .ai-panel.panel-visible .ai-btn {
 .station-item:hover { background: #f0f0f0; }
 .station-item.playing { background: var(--green); color: #fff; }
 
+/* Radio/Mic capture controls */
+.radio-capture {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+.capture-btn {
+    background: var(--accent) !important;
+    color: #fff !important;
+    border-color: var(--accent-dark) !important;
+    font-weight: 700;
+}
+.capture-btn:disabled {
+    opacity: 0.3 !important;
+}
+.capture-btn.capturing {
+    animation: pulse-capture 0.5s ease infinite;
+}
+@keyframes pulse-capture {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+.capture-dur {
+    background: #f5f5f5;
+    color: #666;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 10px;
+    padding: 2px 4px;
+    height: 26px;
+}
+.capture-status {
+    font-size: 9px;
+    color: var(--green);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Pad capture group in pads header */
+.pad-capture-group {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+.pad-capture-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    border: 2px solid var(--blue);
+    border-radius: 4px;
+    background: var(--blue);
+    color: #fff;
+    cursor: pointer;
+}
+.pad-capture-btn:hover {
+    opacity: 0.85;
+}
+.pad-capture-btn.capturing {
+    animation: pulse-capture 0.5s ease infinite;
+}
+
+/* Captured pad indicators */
+.pad {
+    position: relative;
+}
+.pad.captured-radio {
+    box-shadow: inset 0 0 0 2px #c0392b;
+}
+.pad.captured-mic {
+    box-shadow: inset 0 0 0 2px #2874a6;
+}
+.pad-label {
+    font-size: 7px;
+    color: rgba(255, 255, 255, 0.8);
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    right: 2px;
+    text-align: center;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
 /* REC */
 .rec-panel { }
 .rec-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }

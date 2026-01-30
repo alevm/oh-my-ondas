@@ -4,6 +4,8 @@ class Sampler {
     constructor() {
         this.samples = new Map(); // pad index -> AudioBuffer
         this.activeSources = new Map(); // pad index -> currently playing source
+        this.padMeta = new Map(); // pad index -> { name, source, gps, timestamp }
+        this.defaultSamples = new Map(); // pad index -> original procedural buffer
         this.banks = {
             kit1: [
                 { name: 'kick', url: 'samples/kick.wav' },
@@ -67,6 +69,7 @@ class Sampler {
         for (let i = 0; i < 8; i++) {
             const buffer = generators[i](ctx);
             this.samples.set(i, buffer);
+            this.defaultSamples.set(i, buffer);
         }
     }
 
@@ -188,7 +191,7 @@ class Sampler {
         return buffer;
     }
 
-    trigger(padIndex) {
+    trigger(padIndex, options = {}) {
         const ctx = window.audioEngine.getContext();
         if (!ctx || !this.initialized) {
             console.warn('Sampler not ready:', { ctx: !!ctx, init: this.initialized });
@@ -208,12 +211,30 @@ class Sampler {
         const source = ctx.createBufferSource();
         source.buffer = buffer;
 
-        // Connect to samples channel
-        window.audioEngine.connectToChannel(source, 'samples');
+        // Pitch shifting via playbackRate
+        if (options.pitch != null && options.pitch !== 0) {
+            source.playbackRate.value = Math.pow(2, options.pitch / 12);
+        }
 
-        source.start();
+        // Velocity via gain node
+        const velGain = ctx.createGain();
+        velGain.gain.value = options.velocity ?? 1.0;
+        source.connect(velGain);
+
+        // Connect to samples channel
+        window.audioEngine.connectToChannel(velGain, 'samples');
+
+        // Slice: play a segment of the buffer
+        const sliceCount = 16;
+        if (options.slice != null && options.slice > 0) {
+            const sliceDuration = buffer.duration / sliceCount;
+            const offset = options.slice * sliceDuration;
+            source.start(0, offset, sliceDuration);
+        } else {
+            source.start();
+        }
+
         this.activeSources.set(padIndex, source);
-        console.log('Triggered pad:', padIndex, 'buffer duration:', buffer.duration);
 
         // Clean up when done
         source.onended = () => {
@@ -240,6 +261,43 @@ class Sampler {
             } catch (e) {}
         }
         this.activeSources.clear();
+    }
+
+    loadBuffer(padIndex, audioBuffer, meta = {}) {
+        if (padIndex < 0 || padIndex > 7) return false;
+        this.samples.set(padIndex, audioBuffer);
+        this.padMeta.set(padIndex, {
+            name: meta.name || 'Sample',
+            source: meta.source || 'unknown',
+            gps: meta.gps || null,
+            timestamp: meta.timestamp || Date.now()
+        });
+        console.log(`Loaded buffer to pad ${padIndex}:`, this.padMeta.get(padIndex));
+        return true;
+    }
+
+    hasCapturedSample(padIndex) {
+        return this.padMeta.has(padIndex);
+    }
+
+    getPadMeta(padIndex) {
+        return this.padMeta.get(padIndex) || null;
+    }
+
+    clearPad(padIndex) {
+        const defaultBuf = this.defaultSamples.get(padIndex);
+        if (defaultBuf) {
+            this.samples.set(padIndex, defaultBuf);
+        }
+        this.padMeta.delete(padIndex);
+        console.log(`Cleared pad ${padIndex}, restored default`);
+    }
+
+    getNextEmptyPad() {
+        for (let i = 0; i < 8; i++) {
+            if (!this.padMeta.has(i)) return i;
+        }
+        return null;
     }
 
     setBank(bankName) {

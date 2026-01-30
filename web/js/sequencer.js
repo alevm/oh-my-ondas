@@ -334,14 +334,14 @@ class Sequencer {
                 }
                 break;
             case 'radio':
-                // Trigger radio with gate effect (brief burst of audio)
-                if (window.radioPlayer && window.radioPlayer.isPlaying) {
-                    // Radio is continuous, just ensure it's audible
-                    // Could add gate/chop effect here
+                if (window.radioPlayer?.isPlaying()) {
+                    window.audioEngine.pulseChannel('radio', 0.1);
                 }
                 break;
             case 'mic':
-                // Mic is continuous input, could add gate here
+                if (window.micInput?.isActive()) {
+                    window.audioEngine.pulseChannel('mic', 0.1);
+                }
                 break;
             case 'synth':
                 // Trigger synth note based on track (different frequencies)

@@ -217,6 +217,23 @@ class AudioEngine {
         }
     }
 
+    // Pulse a channel gain briefly (for rhythmic gating of continuous sources)
+    pulseChannel(channelName, duration = 0.1) {
+        const channel = this.channels[channelName];
+        if (!channel || !channel.gain || !this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const gain = channel.gain.gain;
+
+        // Store current level, briefly set to full, then restore
+        const savedLevel = channel.muted ? 0 : channel.level;
+        gain.cancelScheduledValues(now);
+        gain.setValueAtTime(channel.level, now);
+        gain.setValueAtTime(0, now + duration);
+        // Restore after pulse
+        gain.setValueAtTime(savedLevel, now + duration + 0.005);
+    }
+
     // Get current EQ values for a channel
     getEQ(target) {
         let eq;

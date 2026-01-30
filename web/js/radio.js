@@ -185,6 +185,41 @@ class RadioPlayer {
         return [];
     }
 
+    async captureToBuffer(durationMs = 3000) {
+        if (!this.playing || !this.radioGain) return null;
+
+        const ctx = window.audioEngine.getContext();
+        if (!ctx) return null;
+
+        try {
+            const dest = ctx.createMediaStreamDestination();
+            this.radioGain.connect(dest);
+
+            const recorder = new MediaRecorder(dest.stream, {
+                mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : ''
+            });
+            const chunks = [];
+            recorder.ondataavailable = e => chunks.push(e.data);
+
+            return new Promise((resolve) => {
+                recorder.onstop = async () => {
+                    try {
+                        this.radioGain.disconnect(dest);
+                    } catch (e) {}
+                    const blob = new Blob(chunks, { type: recorder.mimeType });
+                    const arrayBuffer = await blob.arrayBuffer();
+                    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+                    resolve(audioBuffer);
+                };
+                recorder.start();
+                setTimeout(() => recorder.stop(), durationMs);
+            });
+        } catch (err) {
+            console.error('Radio capture failed:', err);
+            return null;
+        }
+    }
+
     // Auto-tune to a random local station
     async autoTuneLocal() {
         const stations = await this.searchLocalStations();
