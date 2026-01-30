@@ -98,7 +98,7 @@ class App {
         this.setupVUMeters();
         this.setupTapTempo();
         this.setupHelpModal();
-        this.setupDemoModal();
+        this.setupPostMessageBridge();
 
         // GPS display and map background
         window.gpsTracker.addListener(() => this.updateGPS());
@@ -214,7 +214,7 @@ class App {
             }
         };
 
-        // Primary transport (header)
+        // Primary transport (sidebar)
         btnPlay?.addEventListener('click', playHandler);
         btnStop?.addEventListener('click', stopHandler);
         btnRecord?.addEventListener('click', recordHandler);
@@ -223,6 +223,14 @@ class App {
         btnPlay2?.addEventListener('click', playHandler);
         btnStop2?.addEventListener('click', stopHandler);
         btnRecord2?.addEventListener('click', recordHandler);
+
+        // Embedded transport (inline bar, shown in embedded/iframe mode)
+        const btnPlayE = document.getElementById('btnPlayE');
+        const btnStopE = document.getElementById('btnStopE');
+        const btnRecordE = document.getElementById('btnRecordE');
+        btnPlayE?.addEventListener('click', playHandler);
+        btnStopE?.addEventListener('click', stopHandler);
+        btnRecordE?.addEventListener('click', recordHandler);
     }
 
     updateTempoDisplay() {
@@ -251,11 +259,31 @@ class App {
         const slider = document.getElementById('tempoSlider');
         const display = document.getElementById('tempoVal');
 
-        slider.addEventListener('input', () => {
-            const tempo = parseInt(slider.value);
-            window.sequencer.setTempo(tempo);
-            display.textContent = tempo;
-        });
+        if (slider) {
+            slider.addEventListener('input', () => {
+                const tempo = parseInt(slider.value);
+                window.sequencer.setTempo(tempo);
+                if (display) display.textContent = tempo;
+                // Sync embedded slider
+                const sliderE = document.getElementById('tempoSliderE');
+                const displayE = document.getElementById('tempoValE');
+                if (sliderE) sliderE.value = tempo;
+                if (displayE) displayE.textContent = tempo;
+            });
+        }
+
+        // Embedded tempo slider
+        const sliderE = document.getElementById('tempoSliderE');
+        const displayE = document.getElementById('tempoValE');
+        if (sliderE) {
+            sliderE.addEventListener('input', () => {
+                const tempo = parseInt(sliderE.value);
+                window.sequencer.setTempo(tempo);
+                if (displayE) displayE.textContent = tempo;
+                if (slider) slider.value = tempo;
+                if (display) display.textContent = tempo;
+            });
+        }
     }
 
     // Mixer
@@ -1110,6 +1138,7 @@ class App {
     setupTapTempo() {
         const tapBtn = document.getElementById('btnTap');
         const tapBtn2 = document.getElementById('btnTap2');
+        const tapBtnE = document.getElementById('btnTapE');
 
         const handleTap = (btn) => {
             const now = performance.now();
@@ -1123,7 +1152,7 @@ class App {
             this.lastTapTime = now;
 
             // Visual feedback for all tap buttons
-            [tapBtn, tapBtn2].forEach(b => {
+            [tapBtn, tapBtn2, tapBtnE].forEach(b => {
                 if (b) {
                     b.classList.add('tap-active');
                     setTimeout(() => b.classList.remove('tap-active'), 100);
@@ -1147,9 +1176,13 @@ class App {
                 const tempoSlider = document.getElementById('tempoSlider');
                 const tempoVal = document.getElementById('tempoVal');
                 const tempoDisplay2 = document.getElementById('tempoDisplay2');
+                const tempoSliderE = document.getElementById('tempoSliderE');
+                const tempoValE = document.getElementById('tempoValE');
                 if (tempoSlider) tempoSlider.value = clampedBpm;
                 if (tempoVal) tempoVal.textContent = clampedBpm;
                 if (tempoDisplay2) tempoDisplay2.textContent = clampedBpm;
+                if (tempoSliderE) tempoSliderE.value = clampedBpm;
+                if (tempoValE) tempoValE.textContent = clampedBpm;
             }
 
             // Keep only last 5 taps
@@ -1166,19 +1199,22 @@ class App {
             tapBtn2.addEventListener('click', () => handleTap(tapBtn2));
             tapBtn2.addEventListener('touchstart', (e) => { e.preventDefault(); handleTap(tapBtn2); });
         }
+        if (tapBtnE) {
+            tapBtnE.addEventListener('click', () => handleTap(tapBtnE));
+            tapBtnE.addEventListener('touchstart', (e) => { e.preventDefault(); handleTap(tapBtnE); });
+        }
     }
 
     // Help Modal
     setupHelpModal() {
         const helpBtn = document.getElementById('btnHelp');
+        const helpBtnE = document.getElementById('btnHelpE');
         const modal = document.getElementById('helpModal');
         const closeBtn = document.getElementById('closeHelp');
 
-        if (helpBtn && modal) {
-            helpBtn.addEventListener('click', () => {
-                modal.classList.remove('hidden');
-            });
-        }
+        const showHelp = () => { if (modal) modal.classList.remove('hidden'); };
+        if (helpBtn) helpBtn.addEventListener('click', showHelp);
+        if (helpBtnE) helpBtnE.addEventListener('click', showHelp);
 
         if (closeBtn && modal) {
             closeBtn.addEventListener('click', () => {
@@ -1196,56 +1232,170 @@ class App {
         }
     }
 
-    // Demo Video Modal
-    setupDemoModal() {
-        const demoBtn = document.getElementById('btnDemo');
-        const modal = document.getElementById('demoModal');
-        const closeBtn = document.getElementById('closeDemo');
-        const closeDemoStart = document.getElementById('closeDemoStart');
-        const videoIframe = document.getElementById('demoVideo');
+    // Embedded mode detection
+    isEmbedded() {
+        return new URLSearchParams(window.location.search).get('embedded') === '1';
+    }
 
-        const openDemo = () => {
-            if (modal) {
-                modal.classList.remove('hidden');
-                // Load video when modal opens (lazy load)
-                if (videoIframe && videoIframe.dataset.src) {
-                    videoIframe.src = videoIframe.dataset.src;
-                }
+    // PostMessage bridge for embedded mode communication with parent mockup
+    setupPostMessageBridge() {
+        if (!this.isEmbedded()) return;
+
+        // Listen for commands from parent mockup page
+        window.addEventListener('message', (event) => {
+            const msg = event.data;
+            if (!msg || msg.type !== 'mockup-control') return;
+
+            switch (msg.action) {
+                case 'transport':
+                    if (msg.data.action === 'play') {
+                        const btn = document.getElementById('btnPlayE') || document.getElementById('btnPlay');
+                        if (btn) btn.click();
+                    }
+                    if (msg.data.action === 'stop') {
+                        const btn = document.getElementById('btnStopE') || document.getElementById('btnStop');
+                        if (btn) btn.click();
+                    }
+                    if (msg.data.action === 'record') {
+                        const btn = document.getElementById('btnRecordE') || document.getElementById('btnRecord');
+                        if (btn) btn.click();
+                    }
+                    break;
+                case 'pad':
+                    if (typeof msg.data.index === 'number') {
+                        const pad = document.querySelector(`.pad[data-pad="${msg.data.index}"]`);
+                        if (pad) {
+                            pad.dispatchEvent(new MouseEvent('mousedown'));
+                            setTimeout(() => pad.dispatchEvent(new MouseEvent('mouseup')), 100);
+                        }
+                    }
+                    break;
+                case 'encoder':
+                    if (msg.data.param && typeof msg.data.value === 'number') {
+                        this.handleMockupEncoder(msg.data.param, msg.data.value);
+                    }
+                    break;
+                case 'mode':
+                    if (msg.data.mode) {
+                        this.handleMockupMode(msg.data.mode);
+                    }
+                    break;
+                case 'scene':
+                    if (typeof msg.data.index === 'number') {
+                        const btn = document.querySelector(`.scene-btn[data-scene="${msg.data.index}"]`);
+                        if (btn) btn.click();
+                    }
+                    break;
+                case 'source':
+                    if (msg.data.source) {
+                        const btn = document.querySelector(`.src-btn[data-src="${msg.data.source}"]`);
+                        if (btn) btn.click();
+                    }
+                    break;
+                case 'pattern':
+                    if (typeof msg.data.index === 'number') {
+                        const btn = document.querySelector(`.pattern-btn[data-pattern="${msg.data.index}"]`);
+                        if (btn) btn.click();
+                    }
+                    break;
             }
+        });
+
+        // Send state updates to parent at 10fps
+        this._stateInterval = setInterval(() => {
+            if (!window.parent || window.parent === window) return;
+            const gps = window.gpsTracker?.getPosition();
+            window.parent.postMessage({
+                type: 'app-state',
+                data: {
+                    isPlaying: window.sequencer?.isPlaying() || false,
+                    isRecording: window.sessionRecorder?.isRecording() || false,
+                    bpm: window.sequencer?.getTempo() || 120,
+                    currentStep: window.sequencer?.getCurrentStep() || 0,
+                    currentPattern: window.sequencer?.currentPattern || 0,
+                    mode: this._currentMode || 'interact',
+                    gps: gps ? `${gps.latitude.toFixed(4)}, ${gps.longitude.toFixed(4)}` : null
+                }
+            }, '*');
+        }, 100);
+    }
+
+    // Handle mode switch from mockup (PICTURE / SOUNDSCAPE / INTERACT)
+    handleMockupMode(mode) {
+        this._currentMode = mode;
+
+        switch (mode) {
+            case 'picture':
+                // 90-sec capture mode: start recording + play sequencer
+                if (!window.sessionRecorder?.isRecording()) {
+                    window.sessionRecorder?.start();
+                    const recBtn = document.getElementById('btnRecordE') || document.getElementById('btnRecord');
+                    recBtn?.classList.add('active');
+                }
+                if (!window.sequencer?.isPlaying()) {
+                    window.sequencer?.play();
+                    const playBtn = document.getElementById('btnPlayE') || document.getElementById('btnPlay');
+                    playBtn?.classList.add('active');
+                }
+                break;
+
+            case 'soundscape':
+                // AI ambient mode: generate composition + start playing
+                {
+                    const vibes = ['calm', 'nature', 'urban'];
+                    const vibe = vibes[Math.floor(Math.random() * vibes.length)];
+                    this.generateFullComposition(vibe);
+                    if (!window.sequencer?.isPlaying()) {
+                        window.sequencer?.play();
+                        const playBtn = document.getElementById('btnPlayE') || document.getElementById('btnPlay');
+                        playBtn?.classList.add('active');
+                    }
+                }
+                break;
+
+            case 'interact':
+                // Live performance mode: stop auto-generation, user takes control
+                // Just ensure the app is in a ready state for manual pad/encoder use
+                break;
+        }
+    }
+
+    // Handle encoder changes from mockup
+    handleMockupEncoder(param, value) {
+        const paramMap = {
+            volume: { knobId: 'knobVol', engineParam: 'vol', min: 0, max: 100 },
+            pan: { knobId: 'knobPan', engineParam: 'pan', min: -100, max: 100 },
+            filter: { knobId: 'knobFilter', engineParam: 'filter', min: 20, max: 8000 },
+            fx: { knobId: 'knobDelay', engineParam: 'delay', min: 0, max: 100 }
         };
 
-        const closeDemo = () => {
-            if (modal) {
-                modal.classList.add('hidden');
-                // Stop video when modal closes
-                if (videoIframe) {
-                    videoIframe.src = '';
-                }
-            }
-        };
+        const mapping = paramMap[param];
+        if (!mapping) return;
 
-        if (demoBtn) {
-            demoBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                openDemo();
-            });
+        // Scale value (0-100) to param range
+        const scaled = mapping.min + (value / 100) * (mapping.max - mapping.min);
+
+        // Update the app knob
+        const knob = document.getElementById(mapping.knobId);
+        if (knob) {
+            knob.dataset.value = Math.round(scaled);
+            this.updateKnobRotation(knob, scaled, mapping.min, mapping.max);
         }
 
-        if (closeBtn) {
-            closeBtn.addEventListener('click', closeDemo);
-        }
-
-        if (closeDemoStart) {
-            closeDemoStart.addEventListener('click', closeDemo);
-        }
-
-        // Close on backdrop click
-        if (modal) {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    closeDemo();
-                }
-            });
+        // Apply to audio engine
+        switch (mapping.engineParam) {
+            case 'vol':
+                window.audioEngine?.setMasterLevel(value / 100);
+                break;
+            case 'pan':
+                // Pan mapped to master or sampler
+                break;
+            case 'filter':
+                window.synth?.setFilterCutoff(scaled);
+                break;
+            case 'delay':
+                window.mangleEngine?.setDelayMix(value);
+                break;
         }
     }
 
@@ -2454,17 +2604,24 @@ class App {
     // Admin Modal
     setupAdminModal() {
         const adminBtn = document.getElementById('btnAdmin');
+        const adminBtnE = document.getElementById('btnAdminE');
         const modal = document.getElementById('adminModal');
         const closeBtn = document.getElementById('closeAdmin');
 
-        adminBtn.addEventListener('click', () => {
-            modal.classList.remove('hidden');
-            this.populateAdminModal();
-        });
+        const showAdmin = () => {
+            if (modal) {
+                modal.classList.remove('hidden');
+                this.populateAdminModal();
+            }
+        };
+        if (adminBtn) adminBtn.addEventListener('click', showAdmin);
+        if (adminBtnE) adminBtnE.addEventListener('click', showAdmin);
 
-        closeBtn.addEventListener('click', () => {
-            modal.classList.add('hidden');
-        });
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+        }
 
         // Close on backdrop click
         modal.addEventListener('click', (e) => {
@@ -2636,16 +2793,36 @@ class App {
     }
 }
 
-// Initialize on first interaction
+// Initialize on first interaction (or immediately in embedded mode)
 document.addEventListener('DOMContentLoaded', () => {
     window.app = new App();
 
-    const autoInit = () => {
-        window.app.init();
-        document.removeEventListener('click', autoInit);
-        document.removeEventListener('touchstart', autoInit);
-    };
+    const isEmbedded = new URLSearchParams(window.location.search).get('embedded') === '1';
 
-    document.addEventListener('click', autoInit);
-    document.addEventListener('touchstart', autoInit);
+    if (isEmbedded) {
+        // In embedded mode, listen for first postMessage as init trigger
+        const initOnMessage = (event) => {
+            if (event.data && event.data.type === 'mockup-control') {
+                if (!window.app.initialized) window.app.init();
+                window.removeEventListener('message', initOnMessage);
+            }
+        };
+        window.addEventListener('message', initOnMessage);
+        // Also init on direct click (user clicks inside the iframe)
+        const autoInit = () => {
+            if (!window.app.initialized) window.app.init();
+            document.removeEventListener('click', autoInit);
+            document.removeEventListener('touchstart', autoInit);
+        };
+        document.addEventListener('click', autoInit);
+        document.addEventListener('touchstart', autoInit);
+    } else {
+        const autoInit = () => {
+            window.app.init();
+            document.removeEventListener('click', autoInit);
+            document.removeEventListener('touchstart', autoInit);
+        };
+        document.addEventListener('click', autoInit);
+        document.addEventListener('touchstart', autoInit);
+    }
 });

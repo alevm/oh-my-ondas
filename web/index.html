@@ -2,637 +2,934 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="screen-orientation" content="landscape">
-    <title>Oh My Ondas</title>
-    <link rel="stylesheet" href="css/style.css?v=247">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oh My Ondas - Interactive Hardware</title>
+    <link rel="stylesheet" href="css/style.css?v=248">
+    <style>
+        :root {
+            --bg: #f5f5f5;
+            --accent: #ff6b2b;
+            --green: #1aa167;
+            --blue: #1270b8;
+            --yellow: #ffc003;
+            --pastel-gray: #ffffff;
+            --gray-text: #555;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Main */
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(180deg, #f0f0f0 0%, #e8e8e8 100%);
+        }
+
+        /* Device - larger dimensions */
+        .device-container { position: relative; width: 1100px; height: 700px; overflow: visible; }
+
+        .enclosure {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 1080px;
+            height: 670px;
+            background: linear-gradient(165deg, #e8e8e8 0%, #d5d5d5 40%, #c8c8c8 100%);
+            border-radius: 14px;
+            border: 2px solid #bbb;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
+        }
+
+        .enclosure::before {
+            content: '';
+            position: absolute;
+            top: 5px; left: 5px; right: 5px; bottom: 5px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            pointer-events: none;
+        }
+
+        /* Artwork */
+        .artwork {
+            position: absolute;
+            top: 390px; left: 10px; right: 10px; bottom: 10px;
+            opacity: 0.08;
+            background-image: url('https://media.rhizome.org/blog/8979/Chombart-de-Lauwe.jpg');
+            background-size: cover;
+            border-radius: 8px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* (panel backgrounds removed — simplified layout) */
+
+        /* 5" Display (now iframe) */
+        .display {
+            position: absolute;
+            top: 10px; left: 10px; right: 10px;
+            height: 380px;
+            background: #0a0a0a;
+            border-radius: 6px;
+            border: 2px solid #333;
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        /* Section labels */
+        .section-label {
+            position: absolute;
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            z-index: 3;
+        }
+        .label-pads { top: 450px; left: 25px; color: var(--gray-text); }
+        .label-ctrl { top: 450px; right: 25px; color: var(--gray-text); width: 200px; text-align: center; }
+
+        /* 8 Touch Pads */
+        .pads-container {
+            position: absolute;
+            top: 460px; left: 25px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 8px;
+            width: 480px;
+            height: 110px;
+            z-index: 2;
+        }
+
+        .pad {
+            background: linear-gradient(145deg, #f5f5f5 0%, #e0e0e0 100%);
+            border-radius: 8px;
+            border: 2px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+        .pad:nth-child(1) { border-color: #ff6b2b; }
+        .pad:nth-child(2) { border-color: #1270b8; }
+        .pad:nth-child(3) { border-color: #1aa167; }
+        .pad:nth-child(4) { border-color: #ffc003; }
+        .pad:nth-child(5) { border-color: #ce2021; }
+        .pad:nth-child(6) { border-color: #9b59b6; }
+        .pad:nth-child(7) { border-color: #1270b8; }
+        .pad:nth-child(8) { border-color: #ff6b2b; }
+
+        .pad:hover { background: linear-gradient(145deg, #fff 0%, #eee 100%); }
+        .pad:active, .pad.active {
+            background: linear-gradient(145deg, #1aa167 0%, #148f57 100%);
+            border-color: #1aa167;
+            color: #fff;
+        }
+
+        .pad::before {
+            content: '';
+            position: absolute;
+            top: 4px; right: 4px;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+        .pad.active::before { background: #fff; box-shadow: 0 0 6px #fff; }
+
+        /* 4 Encoders */
+        .encoders-container {
+            position: absolute;
+            top: 460px; right: 25px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 10px;
+            width: 200px;
+            height: 110px;
+            z-index: 2;
+        }
+
+        .encoder { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+
+        .encoder-knob {
+            width: 36px; height: 36px;
+            background: linear-gradient(145deg, #f5f5f5 0%, #ddd 100%);
+            border-radius: 50%;
+            border: 2px solid #bbb;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+
+        .encoder-knob::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 14px; height: 14px;
+            background: linear-gradient(145deg, #eee 0%, #ccc 100%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .encoder-knob::after {
+            content: '';
+            position: absolute;
+            top: 4px; left: 50%;
+            width: 3px; height: 8px;
+            background: var(--accent);
+            border-radius: 2px;
+            transform: translateX(-50%);
+        }
+
+        .encoder-indicator {
+            position: absolute;
+            top: 4px; left: 50%;
+            width: 3px; height: 8px;
+            background: var(--accent);
+            border-radius: 2px;
+            transform-origin: center 14px;
+        }
+
+        .encoder-label { font-size: 9px; color: var(--gray-text); font-weight: 600; }
+        .encoder-value { font-size: 8px; color: #666; font-family: monospace; }
+
+        /* (LEDs removed — simplified layout) */
+
+        /* Transport */
+        .transport-container {
+            position: absolute;
+            bottom: 18px; left: 25px;
+            display: flex;
+            gap: 10px;
+            z-index: 2;
+        }
+
+        .transport-btn {
+            width: 38px; height: 38px;
+            background: linear-gradient(145deg, #f5f5f5 0%, #ddd 100%);
+            border-radius: 50%;
+            border: 2px solid #bbb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .transport-btn:hover { background: linear-gradient(145deg, #fff 0%, #eee 100%); }
+        .transport-btn.play.active { background: #1aa167; color: #fff; border-color: #1aa167; }
+        .transport-btn.rec.active, .transport-btn.rec.rec-active { background: #ce2021; color: #fff; border-color: #ce2021; }
+
+        /* (Scenes removed — lives on touchscreen) */
+
+        /* I/O */
+        .io-ports {
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .io-port {
+            width: 16px; height: 16px;
+            background: #999;
+            border-radius: 50%;
+            border: 2px solid #777;
+        }
+
+        /* Info bar */
+        .info-bar {
+            background: #fff;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            color: #888;
+            font-size: 11px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .info-bar span { color: #1aa167; font-weight: 600; }
+
+        /* Menu overlay */
+        .menu-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .menu-overlay.open { display: flex; }
+
+        .menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+        .menu-title { color: #1aa167; font-size: 18px; font-weight: 700; }
+        .menu-close {
+            width: 40px; height: 40px;
+            background: #ff6b2b;
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            padding: 20px 0;
+            flex: 1;
+            align-content: start;
+        }
+
+        .menu-item {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .menu-item:hover { border-color: #1aa167; transform: scale(1.02); }
+
+        .menu-icon { font-size: 32px; margin-bottom: 8px; }
+        .menu-label { color: #fff; font-size: 14px; font-weight: 600; }
+        .menu-sublabel { color: #666; font-size: 10px; margin-top: 4px; }
+
+        /* (Source panel, mode panel, focus indicator, AI orchestration, mic meter removed — simplified layout) */
+
+        /* 3 Mode Buttons Bar */
+        .modes-bar {
+            position: absolute;
+            top: 400px; left: 25px; right: 25px;
+            height: 46px;
+            display: flex;
+            gap: 10px;
+            z-index: 2;
+        }
+        .mode-btn {
+            flex: 1;
+            height: 40px;
+            border-radius: 6px;
+            border: 2px solid;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.15s;
+        }
+        .mode-btn[data-mode="picture"] {
+            border-color: #ff6b2b;
+            background: transparent;
+            color: #ff6b2b;
+        }
+        .mode-btn[data-mode="picture"].active {
+            background: #ff6b2b;
+            color: #fff;
+        }
+        .mode-btn[data-mode="soundscape"] {
+            border-color: #1aa167;
+            background: transparent;
+            color: #1aa167;
+        }
+        .mode-btn[data-mode="soundscape"].active {
+            background: #1aa167;
+            color: #fff;
+        }
+        .mode-btn[data-mode="interact"] {
+            border-color: #1270b8;
+            background: transparent;
+            color: #1270b8;
+        }
+        .mode-btn[data-mode="interact"].active {
+            background: #1270b8;
+            color: #fff;
+        }
+        .mode-btn:hover { opacity: 0.85; }
+
+        /* GPS Strip (compact, bottom-right) */
+        .gps-strip {
+            position: absolute;
+            bottom: 18px; right: 25px;
+            width: 200px; height: 45px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 8px;
+        }
+        .gps-strip .gps-icon {
+            font-size: 16px;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+        .gps-strip .gps-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            overflow: hidden;
+        }
+        .gps-strip .gps-label {
+            font-size: 8px;
+            font-weight: 700;
+            color: var(--gray-text);
+            letter-spacing: 1px;
+        }
+        .gps-strip .gps-coords {
+            font-size: 9px;
+            color: #888;
+            font-family: monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Menu button on display */
+        .menu-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 3px;
+            z-index: 5;
+        }
+        .menu-btn span {
+            width: 12px;
+            height: 2px;
+            background: #888;
+            border-radius: 1px;
+        }
+        .menu-btn:hover { background: #444; }
+        .menu-btn:hover span { background: #1aa167; }
+
+        /* (Radio indicator, map-display removed — simplified layout) */
+
+        /* External Sensor Diagrams — Electric Blueprint Style */
+        .sensor {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 0;
+        }
+        .sensor-icon {
+            width: 32px; height: 32px;
+            border: 2px solid #1270b8;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            background: #1a1a1a;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .sensor-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+        .sensor-name {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #1270b8;
+        }
+        .sensor-desc {
+            font-size: 8px;
+            color: #666;
+        }
+
+        /* Wire lines — solid colored */
+        .sensor-line {
+            position: absolute;
+            border-top: 2px solid #1270b8;
+        }
+        .sensor-line-v {
+            position: absolute;
+            border-left: 2px solid #1270b8;
+        }
+
+        /* Junction dots — where wires meet the device */
+        .sensor-line::after,
+        .sensor-line-v::after {
+            content: '';
+            position: absolute;
+            width: 8px; height: 8px;
+            background: currentColor;
+            border-radius: 50%;
+        }
+        .sensor-line::after {
+            right: -4px; top: -5px;
+        }
+        .sensor-line-v::after {
+            bottom: -4px; left: -5px;
+        }
+
+        /* Per-sensor wire colors */
+        .sensor-piezo .sensor-icon { border-color: #ff6b2b; }
+        .sensor-piezo .sensor-name { color: #ff6b2b; }
+        .sensor-piezo .sensor-line { border-color: #ff6b2b; color: #ff6b2b; }
+
+        .sensor-mic .sensor-icon { border-color: #1aa167; }
+        .sensor-mic .sensor-name { color: #1aa167; }
+        .sensor-mic .sensor-line { border-color: #1aa167; color: #1aa167; }
+
+        .sensor-wifi .sensor-icon { border-color: #ffc003; }
+        .sensor-wifi .sensor-name { color: #ffc003; }
+        .sensor-wifi .sensor-line-v { border-color: #ffc003; color: #ffc003; }
+
+        .sensor-radio .sensor-icon { border-color: #1270b8; }
+        .sensor-radio .sensor-name { color: #1270b8; }
+        .sensor-radio .sensor-line-v { border-color: #1270b8; color: #1270b8; }
+
+        /* Sensor positions */
+        .sensor-piezo { top: 200px; left: -190px; }
+        .sensor-piezo .sensor-line { top: 16px; left: 145px; width: 35px; }
+
+        .sensor-mic { top: 320px; left: -190px; }
+        .sensor-mic .sensor-line { top: 16px; left: 145px; width: 35px; }
+
+        .sensor-wifi { top: -55px; left: 200px; flex-direction: column; }
+        .sensor-wifi .sensor-line-v { top: 42px; left: 15px; height: 23px; }
+
+        .sensor-radio { top: -55px; right: 200px; left: auto; flex-direction: column; }
+        .sensor-radio .sensor-line-v { top: 42px; left: 15px; height: 23px; }
+
+        /* Corner bend pieces — L-shaped wire segments */
+        .sensor-piezo .sensor-line::before,
+        .sensor-mic .sensor-line::before {
+            content: '';
+            position: absolute;
+            right: -2px; top: -12px;
+            width: 0; height: 12px;
+            border-left: 2px solid;
+        }
+        .sensor-piezo .sensor-line::before { border-color: #ff6b2b; }
+        .sensor-mic .sensor-line::before { border-color: #1aa167; }
+
+        /* I/O port labels — electric blueprint style */
+        .io-label {
+            position: absolute;
+            right: -160px;
+            font-size: 9px;
+            font-weight: 800;
+            color: #ce2021;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .io-label-line {
+            position: absolute;
+            right: -25px;
+            width: 25px;
+            border-top: 2px solid #ce2021;
+        }
+        /* Terminal markers on I/O lines */
+        .io-label-line::after {
+            content: '';
+            position: absolute;
+            right: -1px; top: -4px;
+            width: 6px; height: 6px;
+            background: #ce2021;
+        }
+        .io-port {
+            border-color: #ce2021;
+        }
+    </style>
 </head>
 <body>
-    <!-- Full-page map background -->
-    <div id="mapBackground" class="map-bg"></div>
+    <header class="page-header">
+        <a href="index.html" class="logo">OH MY ONDAS</a>
+        <nav class="nav-links">
+            <a href="index.html" class="nav-link active">Home</a>
+            <a href="app.html" class="nav-link">App</a>
+            <a href="design.html" class="nav-link">Design</a>
+            <a href="about.html" class="nav-link">About</a>
+            <a href="ise.html" class="nav-link">ISE 2026</a>
+        </nav>
+    </header>
 
-    <div id="app">
-        <!-- Top Bar: Transport + Info -->
-        <header class="top-bar">
-            <div class="logo">OH MY ONDAS</div>
-            <nav class="nav-links">
-                <a href="#" id="btnDemo" class="nav-link demo-link">Demo</a>
-                <a href="hardware-mockup.html" class="nav-link">Design</a>
-                <a href="scope.html" class="nav-link">Scope</a>
-            </nav>
-            <div class="transport">
-                <button id="btnPlay" class="tr-btn play" title="Play/Pause sequencer (Space)">▶</button>
-                <button id="btnStop" class="tr-btn stop" title="Stop sequencer">■</button>
-                <button id="btnRecord" class="tr-btn rec" title="Record audio to file">●</button>
-            </div>
-            <div class="tempo-box">
-                <input type="range" id="tempoSlider" min="60" max="200" value="120" title="Adjust tempo (BPM)">
-                <span id="tempoVal" title="Current BPM">120</span>
-                <button id="btnTap" class="tap-btn" title="Tap to set tempo">TAP</button>
-            </div>
-            <button id="btnHelp" class="help-btn" title="Show keyboard shortcuts">?</button>
-            <div class="gps-box" id="gpsBox" title="Current GPS location">
-                <div class="mini-map" id="headerMiniMap" title="Your location on map"><div class="mini-map-img" id="headerMapImg"></div></div>
-                <span id="gpsText">--</span>
-            </div>
-            <div class="time-box" id="timeDisplay" title="Current time">00:00</div>
-            <button id="btnAdmin" class="admin-btn" title="Open settings panel">⚙</button>
-            <div class="version">v2.4.6 <span class="build-time">2026-01-10 23:31</span></div>
-        </header>
-
-        <!-- Main Device Area - 12 Equal Tiles (4x3) -->
-        <main class="device">
-            <!-- Row 1: SEQ | MIXER | SYNTH | SCENES -->
-            <div class="panel seq-panel">
-                <div class="seq-header">
-                    <span class="panel-title">SEQ</span>
-                    <div class="seq-controls">
-                        <div class="src-btns">
-                            <button class="src-btn active" data-src="sampler" title="Sampler - trigger drum samples">SMP</button>
-                            <button class="src-btn" data-src="synth" title="Synth - trigger synthesizer notes">SYN</button>
-                            <button class="src-btn" data-src="radio" title="Radio - trigger radio samples">RAD</button>
-                            <button class="src-btn" data-src="mic" title="Mic - trigger mic recording">MIC</button>
-                        </div>
-                        <button id="seqRandom" class="seq-btn mini" title="Randomize selected track pattern">RND</button>
-                        <button id="seqClear" class="seq-btn mini" title="Clear selected track">CLR</button>
-                        <button id="eucGen" class="seq-btn mini" title="Generate euclidean rhythm">EUC</button>
-                        <button id="dubToggle" class="seq-btn mini dub-btn" title="Overdub mode - record live to pattern">DUB</button>
-                        <button id="fillBtn" class="seq-btn mini fill-btn" title="Fill mode - hold for fill pattern (F)">FILL</button>
-                    </div>
-                </div>
-                <div class="seq-row2">
-                    <div class="pattern-btns">
-                        <button class="pattern-btn active" data-pattern="0" title="Pattern A">A</button>
-                        <button class="pattern-btn" data-pattern="1" title="Pattern B">B</button>
-                        <button class="pattern-btn" data-pattern="2" title="Pattern C">C</button>
-                        <button class="pattern-btn" data-pattern="3" title="Pattern D">D</button>
-                        <button class="pattern-btn" data-pattern="4" title="Pattern E">E</button>
-                        <button class="pattern-btn" data-pattern="5" title="Pattern F">F</button>
-                        <button class="pattern-btn" data-pattern="6" title="Pattern G">G</button>
-                        <button class="pattern-btn" data-pattern="7" title="Pattern H">H</button>
-                    </div>
-                    <div class="seq-tools">
-                        <button id="seqCopy" class="seq-btn mini" title="Copy selected track (Ctrl+C)">CPY</button>
-                        <button id="seqPaste" class="seq-btn mini" title="Paste to selected track (Ctrl+V)">PST</button>
-                        <button id="seqUndo" class="seq-btn mini" title="Undo last change (Ctrl+Z)">UND</button>
-                        <button id="seqRedo" class="seq-btn mini" title="Redo (Ctrl+Y)">RED</button>
-                    </div>
-                    <div class="length-ctrl">
-                        <span title="Pattern length in steps">LEN</span>
-                        <select id="patternLength" title="Set pattern length (1-64 steps)">
-                            <option value="4">4</option>
-                            <option value="8">8</option>
-                            <option value="12">12</option>
-                            <option value="16" selected>16</option>
-                            <option value="24">24</option>
-                            <option value="32">32</option>
-                            <option value="48">48</option>
-                            <option value="64">64</option>
-                        </select>
-                    </div>
-                    <div class="swing-ctrl">
-                        <span title="Swing amount">SWG</span>
-                        <input type="range" id="swingAmount" min="0" max="100" value="0" title="Swing timing (0-100%)">
-                        <span id="swingVal">0</span>
-                    </div>
-                </div>
-                <div class="oct-tracks" id="octTracks"></div>
-                <div id="plockEditor" class="plock-editor hidden">
-                    <div class="plock-header"><span class="plock-title">STEP <span id="plockStepNum">1</span></span><button id="plockClose" class="plock-close">×</button></div>
-                    <div class="plock-params">
-                        <div class="plock-row"><span title="Pitch shift in semitones">PITCH</span><input type="range" id="plockPitch" min="-24" max="24" value="0" title="Pitch shift (-24 to +24 semitones)"><span id="plockPitchVal">0</span></div>
-                        <div class="plock-row"><span title="Sample slice selection">SLICE</span><input type="range" id="plockSlice" min="0" max="15" value="0" title="Select sample slice (0-15)"><span id="plockSliceVal">0</span></div>
-                        <div class="plock-row"><span title="Filter cutoff">FILT</span><input type="range" id="plockFilter" min="0" max="100" value="50" title="Filter cutoff frequency"><span id="plockFilterVal">50</span></div>
-                        <div class="plock-row"><span title="Sound decay time">DECAY</span><input type="range" id="plockDecay" min="0" max="100" value="50" title="Decay/release time"><span id="plockDecayVal">50</span></div>
-                    </div>
-                    <div class="trig-cond">
-                        <span title="Trigger condition - when step plays">TRIG</span>
-                        <div class="trig-btns" id="trigCondBtns">
-                            <button class="trig-btn active" data-cond="always" title="Always trigger">ALL</button>
-                            <button class="trig-btn" data-cond="probability" title="Probability - random chance to trigger">PROB</button>
-                            <button class="trig-btn" data-cond="fill" title="Only trigger during fill">FILL</button>
-                            <button class="trig-btn" data-cond="notFill" title="Only trigger when NOT fill">!FILL</button>
-                            <button class="trig-btn" data-cond="nth" title="Trigger every Nth bar">NTH</button>
-                            <button class="trig-btn" data-cond="neighbor" title="Trigger if neighbor step triggered">NEIGH</button>
-                        </div>
-                        <input type="number" id="trigCondValue" min="1" max="100" value="100" title="Condition value (probability % or Nth count)">
-                    </div>
-                </div>
-            </div>
-            <div class="panel mixer-panel">
-                <div class="panel-title">MIXER</div>
-                <div class="mixer-channels">
-                    <div class="ch" data-ch="mic">
-                        <span class="ch-name">MIC</span>
-                        <input type="range" class="gain-knob" id="gainMic" min="0" max="200" value="100" title="Input gain (0-200%)">
-                        <div class="vu-meter" title="Microphone level"><div class="vu-fill" id="vuMic"></div><div class="vu-peak" id="peakMic"></div></div>
-                        <input type="range" class="v-fader" id="faderMic" min="0" max="100" value="80" orient="vertical" title="Microphone volume">
-                        <input type="range" class="pan-knob" id="panMic" min="-100" max="100" value="0" title="Pan L/R">
-                        <div class="ch-btns">
-                            <button class="mute" id="muteMic" title="Mute microphone">M</button>
-                            <button class="solo" id="soloMic" title="Solo microphone">S</button>
-                        </div>
-                    </div>
-                    <div class="ch" data-ch="samples">
-                        <span class="ch-name">SMP</span>
-                        <input type="range" class="gain-knob" id="gainSamples" min="0" max="200" value="100" title="Input gain (0-200%)">
-                        <div class="vu-meter" title="Sampler level"><div class="vu-fill" id="vuSamples"></div><div class="vu-peak" id="peakSamples"></div></div>
-                        <input type="range" class="v-fader" id="faderSamples" min="0" max="100" value="80" orient="vertical" title="Sampler volume">
-                        <input type="range" class="pan-knob" id="panSamples" min="-100" max="100" value="0" title="Pan L/R">
-                        <div class="ch-btns">
-                            <button class="mute" id="muteSamples" title="Mute sampler">M</button>
-                            <button class="solo" id="soloSamples" title="Solo sampler">S</button>
-                        </div>
-                    </div>
-                    <div class="ch" data-ch="synth">
-                        <span class="ch-name">SYN</span>
-                        <input type="range" class="gain-knob" id="gainSynth" min="0" max="200" value="100" title="Input gain (0-200%)">
-                        <div class="vu-meter" title="Synth level"><div class="vu-fill" id="vuSynth"></div><div class="vu-peak" id="peakSynth"></div></div>
-                        <input type="range" class="v-fader" id="faderSynth" min="0" max="100" value="80" orient="vertical" title="Synth volume">
-                        <input type="range" class="pan-knob" id="panSynth" min="-100" max="100" value="0" title="Pan L/R">
-                        <div class="ch-btns">
-                            <button class="mute" id="muteSynth" title="Mute synth">M</button>
-                            <button class="solo" id="soloSynth" title="Solo synth">S</button>
-                        </div>
-                    </div>
-                    <div class="ch" data-ch="radio">
-                        <span class="ch-name">RAD</span>
-                        <input type="range" class="gain-knob" id="gainRadio" min="0" max="200" value="100" title="Input gain (0-200%)">
-                        <div class="vu-meter" title="Radio level"><div class="vu-fill" id="vuRadio"></div><div class="vu-peak" id="peakRadio"></div></div>
-                        <input type="range" class="v-fader" id="faderRadio" min="0" max="100" value="80" orient="vertical" title="Radio volume">
-                        <input type="range" class="pan-knob" id="panRadio" min="-100" max="100" value="0" title="Pan L/R">
-                        <div class="ch-btns">
-                            <button class="mute" id="muteRadio" title="Mute radio">M</button>
-                            <button class="solo" id="soloRadio" title="Solo radio">S</button>
-                        </div>
-                    </div>
-                    <div class="ch master" data-ch="master">
-                        <span class="ch-name">OUT</span>
-                        <div class="limiter-indicator" id="limiterIndicator" title="Limiter active when red"></div>
-                        <div class="vu-meter" title="Master output level"><div class="vu-fill" id="vuMaster"></div><div class="vu-peak" id="peakMaster"></div></div>
-                        <input type="range" class="v-fader" id="faderMaster" min="0" max="100" value="90" orient="vertical" title="Master volume">
-                        <div class="meter-mode">
-                            <button class="meter-btn active" data-mode="peak" title="Peak metering">PK</button>
-                            <button class="meter-btn" data-mode="rms" title="RMS metering">RM</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="panel synth-panel">
-                <div class="synth-header">
-                    <span class="panel-title">SYNTH</span>
-                    <div class="synth-header-ctrls">
-                        <button id="synthToggle" class="power-btn" title="Turn synth on/off">OFF</button>
-                        <button id="synthPresetSave" class="preset-btn" title="Save current synth preset">SAV</button>
-                        <button id="synthPresetLoad" class="preset-btn" title="Load synth preset">LOD</button>
-                    </div>
-                </div>
-                <div class="synth-scope" id="synthScope" title="Oscilloscope - visual waveform display">
-                    <canvas id="scopeCanvas" width="120" height="40"></canvas>
-                </div>
-                <div class="synth-section">
-                    <div class="synth-row">
-                        <div class="osc-group">
-                            <span class="osc-label">OSC1</span>
-                            <div class="wave-btns" data-osc="1">
-                                <button class="wave-btn active" data-wave="sine" title="Sine wave">SIN</button>
-                                <button class="wave-btn" data-wave="triangle" title="Triangle wave">TRI</button>
-                                <button class="wave-btn" data-wave="sawtooth" title="Sawtooth wave">SAW</button>
-                                <button class="wave-btn" data-wave="square" title="Square wave">SQR</button>
-                            </div>
-                        </div>
-                        <div class="osc-group">
-                            <span class="osc-label">OSC2</span>
-                            <div class="wave-btns" data-osc="2">
-                                <button class="wave-btn" data-wave="sine" title="Sine wave">SIN</button>
-                                <button class="wave-btn active" data-wave="triangle" title="Triangle wave">TRI</button>
-                                <button class="wave-btn" data-wave="sawtooth" title="Sawtooth wave">SAW</button>
-                                <button class="wave-btn" data-wave="square" title="Square wave">SQR</button>
-                            </div>
-                            <div class="osc2-params">
-                                <span title="Detune OSC2">DET</span>
-                                <input type="range" id="osc2Detune" min="-100" max="100" value="7" title="Detune OSC2 in cents (-100 to +100)">
-                                <span id="osc2DetuneVal">7</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="synth-row">
-                        <div class="pitch-group">
-                            <div class="pitch-param"><span title="Octave shift">OCT</span><input type="range" id="synthOctave" min="-2" max="2" value="0" title="Octave shift (-2 to +2)"><span id="synthOctVal">0</span></div>
-                            <div class="pitch-param"><span title="Fine tune">FINE</span><input type="range" id="synthFine" min="-50" max="50" value="0" title="Fine tune in cents"><span id="synthFineVal">0</span></div>
-                            <div class="pitch-param"><span title="Portamento/Glide">GLIDE</span><input type="range" id="synthGlide" min="0" max="500" value="0" title="Glide time (ms)"><span id="synthGlideVal">0</span></div>
-                        </div>
-                    </div>
-                    <div class="synth-row">
-                        <div class="filter-group">
-                            <span class="filter-label">FILTER</span>
-                            <div class="filter-type-btns">
-                                <button class="flt-btn active" data-flt="lowpass" title="Lowpass filter">LP</button>
-                                <button class="flt-btn" data-flt="highpass" title="Highpass filter">HP</button>
-                                <button class="flt-btn" data-flt="bandpass" title="Bandpass filter">BP</button>
-                            </div>
-                            <div class="filter-params">
-                                <div class="flt-param"><span>CUT</span><input type="range" id="filterCutoff" min="20" max="20000" value="2000" title="Filter cutoff frequency"><span id="filterCutVal">2k</span></div>
-                                <div class="flt-param"><span>RES</span><input type="range" id="filterRes" min="0" max="30" value="1" title="Filter resonance"><span id="filterResVal">1</span></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="synth-row">
-                        <div class="lfo-group">
-                            <span class="lfo-label">LFO</span>
-                            <div class="lfo-params">
-                                <div class="lfo-param"><span>RATE</span><input type="range" id="lfoRate" min="0" max="20" value="0" step="0.1" title="LFO rate (Hz)"><span id="lfoRateVal">0</span></div>
-                                <div class="lfo-param"><span>DEP</span><input type="range" id="lfoDepth" min="0" max="100" value="0" title="LFO depth"><span id="lfoDepthVal">0</span></div>
-                            </div>
-                            <div class="lfo-target-btns">
-                                <button class="lfo-btn active" data-target="pitch" title="Modulate pitch (vibrato)">PIT</button>
-                                <button class="lfo-btn" data-target="filter" title="Modulate filter (wah)">FLT</button>
-                                <button class="lfo-btn" data-target="amp" title="Modulate amplitude (tremolo)">AMP</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="synth-row">
-                        <div class="unison-group">
-                            <span class="unison-label">UNISON</span>
-                            <div class="unison-params">
-                                <div class="uni-param"><span>VOICES</span><input type="range" id="unisonVoices" min="1" max="8" value="1" title="Number of unison voices"><span id="unisonVoicesVal">1</span></div>
-                                <div class="uni-param"><span>SPREAD</span><input type="range" id="unisonSpread" min="0" max="50" value="10" title="Unison detune spread"><span id="unisonSpreadVal">10</span></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="adsr-row">
-                    <div class="adsr-param"><span title="Attack time">A</span><input type="range" id="adsrAttack" min="0" max="1000" value="10" title="Attack - time to reach full volume (ms)"><span id="adsrAVal">10</span></div>
-                    <div class="adsr-param"><span title="Decay time">D</span><input type="range" id="adsrDecay" min="0" max="1000" value="100" title="Decay - time to fall to sustain level (ms)"><span id="adsrDVal">100</span></div>
-                    <div class="adsr-param"><span title="Sustain level">S</span><input type="range" id="adsrSustain" min="0" max="100" value="70" title="Sustain - held volume level (%)"><span id="adsrSVal">70</span></div>
-                    <div class="adsr-param"><span title="Release time">R</span><input type="range" id="adsrRelease" min="0" max="2000" value="200" title="Release - fade out time after key release (ms)"><span id="adsrRVal">200</span></div>
-                </div>
-            </div>
-            <div class="panel scenes-panel">
-                <div class="scene-header">
-                    <span class="panel-title">SCENES</span>
-                    <div class="scene-tools">
-                        <button id="sceneCopy" class="scene-tool-btn" title="Copy selected scene">CPY</button>
-                        <button id="scenePaste" class="scene-tool-btn" title="Paste to selected scene">PST</button>
-                        <button id="sceneLock" class="scene-tool-btn" title="Lock scene (prevent changes)">🔓</button>
-                    </div>
-                </div>
-                <div class="scene-row">
-                    <div class="scene-slot" data-scene="0">
-                        <button class="scene-btn active" data-scene="0" title="Scene A">A</button>
-                        <div class="scene-preview" id="scenePreviewA"></div>
-                        <span class="scene-name" id="sceneNameA" title="Double-click to rename">---</span>
-                    </div>
-                    <div class="scene-slot" data-scene="1">
-                        <button class="scene-btn" data-scene="1" title="Scene B">B</button>
-                        <div class="scene-preview" id="scenePreviewB"></div>
-                        <span class="scene-name" id="sceneNameB" title="Double-click to rename">---</span>
-                    </div>
-                    <div class="scene-slot" data-scene="2">
-                        <button class="scene-btn" data-scene="2" title="Scene C">C</button>
-                        <div class="scene-preview" id="scenePreviewC"></div>
-                        <span class="scene-name" id="sceneNameC" title="Double-click to rename">---</span>
-                    </div>
-                    <div class="scene-slot" data-scene="3">
-                        <button class="scene-btn" data-scene="3" title="Scene D">D</button>
-                        <div class="scene-preview" id="scenePreviewD"></div>
-                        <span class="scene-name" id="sceneNameD" title="Double-click to rename">---</span>
-                    </div>
-                </div>
-                <div class="xfade-section">
-                    <div class="xfade-row">
-                        <span id="xfadeLeft" class="xfade-label">A</span>
-                        <input type="range" id="sceneCrossfader" class="xfader" min="0" max="100" value="0" title="Crossfade between two scenes">
-                        <span id="xfadeRight" class="xfade-label">B</span>
-                    </div>
-                    <div class="xfade-assign">
-                        <select id="xfadeLeftScene" title="Left scene for crossfader">
-                            <option value="0">A</option>
-                            <option value="1">B</option>
-                            <option value="2">C</option>
-                            <option value="3">D</option>
-                        </select>
-                        <span>↔</span>
-                        <select id="xfadeRightScene" title="Right scene for crossfader">
-                            <option value="0">A</option>
-                            <option value="1" selected>B</option>
-                            <option value="2">C</option>
-                            <option value="3">D</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="auto-scene">
-                    <span class="auto-label">AUTO</span>
-                    <input type="range" id="autoSceneTime" min="0" max="32" value="0" title="Auto-switch time (bars, 0=off)">
-                    <span id="autoSceneTimeVal">OFF</span>
-                    <button id="autoSceneToggle" class="auto-btn" title="Enable auto scene switching">▶</button>
-                </div>
-                <div class="scene-actions">
-                    <button id="saveScene" title="Save current settings to selected scene">SAVE</button>
-                    <button id="loadScene" title="Load settings from selected scene">LOAD</button>
-                </div>
-            </div>
-            <div class="panel ai-panel">
-                <div class="panel-title">AI GEN</div>
-                <div class="vibe-btns">
-                    <button class="vibe-btn active" data-vibe="calm" title="Calm vibe - relaxed, ambient patterns">C</button>
-                    <button class="vibe-btn" data-vibe="urban" title="Urban vibe - hip-hop, trap beats">U</button>
-                    <button class="vibe-btn" data-vibe="nature" title="Nature vibe - organic, flowing patterns">N</button>
-                    <button class="vibe-btn" data-vibe="chaos" title="Chaos vibe - experimental, random patterns">X</button>
-                </div>
-                <div class="ai-btn-row">
-                    <button id="aiGenerate" class="ai-btn" title="Generate a new pattern based on selected vibe">GENERATE</button>
-                    <button id="landmarkBtn" class="landmark-btn" title="Capture sonic snapshot of this location using GPS">LANDMARK</button>
-                </div>
-            </div>
-
-            <!-- Row 2: PADS | PADS2 | CTRL | FX -->
-            <div class="panel pads-panel">
-                <div class="pads-header">
-                    <span class="panel-title">PADS A</span>
-                    <div class="kit-btns">
-                        <button class="kit-btn active" data-kit="kit1" title="Drum Kit 1">1</button>
-                        <button class="kit-btn" data-kit="kit2" title="Drum Kit 2">2</button>
-                        <button class="kit-btn" data-kit="kit3" title="Drum Kit 3">3</button>
-                    </div>
-                </div>
-                <div class="pads-grid">
-                    <button class="pad" data-pad="0" title="Pad 1 - Kick (Key: 1)">1</button>
-                    <button class="pad" data-pad="1" title="Pad 2 - Snare (Key: 2)">2</button>
-                    <button class="pad" data-pad="2" title="Pad 3 - Hi-hat (Key: 3)">3</button>
-                    <button class="pad" data-pad="3" title="Pad 4 - Clap (Key: 4)">4</button>
-                    <button class="pad" data-pad="4" title="Pad 5 - Tom (Key: 5)">5</button>
-                    <button class="pad" data-pad="5" title="Pad 6 - Perc (Key: 6)">6</button>
-                    <button class="pad" data-pad="6" title="Pad 7 - FX (Key: 7)">7</button>
-                    <button class="pad" data-pad="7" title="Pad 8 - Cymbal (Key: 8)">8</button>
-                </div>
-            </div>
-            <div class="panel pads-panel pads2">
-                <div class="pads-header">
-                    <span class="panel-title">PADS B</span>
-                    <select id="sampleBank2"><option value="kit1">Kit1</option><option value="kit2">Kit2</option><option value="kit3">Kit3</option></select>
-                </div>
-                <div class="pads-grid">
-                    <button class="pad" data-pad="8">9</button>
-                    <button class="pad" data-pad="9">10</button>
-                    <button class="pad" data-pad="10">11</button>
-                    <button class="pad" data-pad="11">12</button>
-                    <button class="pad" data-pad="12">13</button>
-                    <button class="pad" data-pad="13">14</button>
-                    <button class="pad" data-pad="14">15</button>
-                    <button class="pad" data-pad="15">16</button>
-                </div>
-            </div>
-            <div class="panel knobs-panel">
-                <div class="ctrl-header">
-                    <span class="panel-title">CTRL</span>
-                    <div class="target-btns">
-                        <button class="target-btn active" data-target="fx" title="Control FX parameters">FX</button>
-                        <button class="target-btn" data-target="synth" title="Control Synth parameters">SYN</button>
-                        <button class="target-btn" data-target="sampler" title="Control Sampler parameters">SMP</button>
-                    </div>
-                </div>
-                <div class="knobs-grid">
-                    <div class="knob-group"><div class="knob" id="knobFreq" data-param="freq" data-min="20" data-max="2000" data-value="220" title="Frequency - synth base frequency (Hz)"></div><span>FREQ</span></div>
-                    <div class="knob-group"><div class="knob" id="knobFilter" data-param="filter" data-min="20" data-max="8000" data-value="4000" title="Filter - cutoff frequency (Hz)"></div><span>FILT</span></div>
-                    <div class="knob-group"><div class="knob" id="knobDelay" data-param="delay" data-min="0" data-max="100" data-value="0" title="Delay - echo effect amount"></div><span>DLY</span></div>
-                    <div class="knob-group"><div class="knob" id="knobGrain" data-param="grain" data-min="0" data-max="100" data-value="0" title="Grain - granular texture amount"></div><span>GRN</span></div>
-                    <div class="knob-group"><div class="knob" id="knobReso" data-param="reso" data-min="0" data-max="100" data-value="0" title="Resonance - filter emphasis"></div><span>RES</span></div>
-                    <div class="knob-group"><div class="knob" id="knobDrive" data-param="drive" data-min="0" data-max="100" data-value="0" title="Drive - distortion/saturation"></div><span>DRV</span></div>
-                    <div class="knob-group"><div class="knob" id="knobPan" data-param="pan" data-min="-100" data-max="100" data-value="0" title="Pan - stereo position (L/R)"></div><span>PAN</span></div>
-                    <div class="knob-group"><div class="knob" id="knobVol" data-param="vol" data-min="0" data-max="100" data-value="80" title="Volume - output level"></div><span>VOL</span></div>
-                </div>
-            </div>
-            <div class="panel fx-panel">
-                <div class="fx-header">
-                    <span class="panel-title">FX</span>
-                    <div class="fx-preset-btns" id="fxPresetBtns">
-                        <button class="fx-preset-btn active" data-preset="0" title="No preset - manual settings">--</button>
-                    </div>
-                    <button id="saveFx" title="Save current FX settings as preset">+</button>
-                </div>
-                <div class="fx-params">
-                    <div class="fx-row"><span title="Delay effect">DLY</span><input type="range" id="fxDelay" min="0" max="100" value="0" title="Delay - echo/repeat amount"></div>
-                    <div class="fx-row"><span title="Granular effect">GRN</span><input type="range" id="fxGrain" min="0" max="100" value="0" title="Grain - granular texture"></div>
-                    <div class="fx-row"><span title="Glitch effect">GLI</span><input type="range" id="fxGlitch" min="0" max="100" value="0" title="Glitch - stutter/repeat"></div>
-                    <div class="fx-row"><span title="Bit crusher">CRU</span><input type="range" id="fxCrush" min="1" max="16" value="16" title="Crush - bit depth reduction (lo-fi)"></div>
-                </div>
-                <div class="punch-fx">
-                    <button class="punch-btn" data-fx="stutter" title="Stutter - hold for beat repeat (Q)">STT</button>
-                    <button class="punch-btn" data-fx="reverse" title="Reverse - hold for reverse playback (W)">REV</button>
-                    <button class="punch-btn" data-fx="filter" title="Filter sweep - hold for filter effect (E)">FLT</button>
-                    <button class="punch-btn" data-fx="tape" title="Tape stop - hold for slow-down effect (T)">TPE</button>
-                </div>
-            </div>
-
-            <!-- Row 3: RADIO | LOCATION | AI GEN | REC -->
-            <div class="panel radio-panel">
-                <div class="panel-title">RADIO</div>
-                <div class="radio-search">
-                    <input type="text" id="radioSearch" placeholder="Search..." title="Search for radio stations by name">
-                </div>
-                <div class="radio-controls">
-                    <button id="radioScan" class="radio-btn" title="Scan for local radio stations based on GPS">SCAN</button>
-                    <button id="radioGo" class="radio-btn" title="Search/Play selected station">▶</button>
-                    <button id="radioStop" class="radio-btn" disabled title="Stop radio playback">■</button>
-                </div>
-                <div class="station-list" id="stationList" title="Click a station to play"></div>
-            </div>
-            <div class="panel map-panel">
-                <div class="panel-title">LOCATION</div>
-                <div class="map-box" id="miniMap"><div class="map-img" id="miniMapImg"></div></div>
-                <div class="map-coords" id="miniMapCoords">--</div>
-            </div>
-            <div class="panel eq-panel">
-                <div class="eq-header">
-                    <span class="panel-title">EQ</span>
-                    <div class="ch-btns">
-                        <button class="ch-btn active" data-ch="master" title="EQ Master output">OUT</button>
-                        <button class="ch-btn" data-ch="mic" title="EQ Microphone">MIC</button>
-                        <button class="ch-btn" data-ch="samples" title="EQ Sampler">SMP</button>
-                        <button class="ch-btn" data-ch="synth" title="EQ Synth">SYN</button>
-                        <button class="ch-btn" data-ch="radio" title="EQ Radio">RAD</button>
-                    </div>
-                </div>
-                <div class="eq-sliders">
-                    <div class="eq-band"><span title="Low frequencies (bass)">LO</span><input type="range" class="eq-slider" id="eqLow" min="-12" max="12" value="0" orient="vertical" title="Low EQ (-12 to +12 dB)"><span id="eqLowVal">0</span></div>
-                    <div class="eq-band"><span title="Mid frequencies">MID</span><input type="range" class="eq-slider" id="eqMid" min="-12" max="12" value="0" orient="vertical" title="Mid EQ (-12 to +12 dB)"><span id="eqMidVal">0</span></div>
-                    <div class="eq-band"><span title="High frequencies (treble)">HI</span><input type="range" class="eq-slider" id="eqHigh" min="-12" max="12" value="0" orient="vertical" title="High EQ (-12 to +12 dB)"><span id="eqHighVal">0</span></div>
-                </div>
-            </div>
-            <div class="panel rec-panel" title="Recordings panel - manage saved audio recordings">
-                <div class="rec-header">
-                    <span class="panel-title">REC</span>
-                    <span id="recCount" title="Total number of saved recordings">0</span>
-                </div>
-                <div class="rec-list" id="recList"></div>
-                <div class="rec-actions">
-                    <button id="recListBtn" class="rec-list-btn" title="View list of all saved recordings">LIST</button>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Debug Log Panel -->
-    <div id="debugPanel" class="debug-panel">
-        <div class="debug-header">
-            <span class="debug-title">DEBUG LOG</span>
-            <button id="debugClear" class="debug-btn" title="Clear log">CLR</button>
-            <button id="debugClose" class="debug-btn" title="Close panel">×</button>
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay">
+        <div class="menu-header">
+            <div class="menu-title">MODULE SELECT</div>
+            <button class="menu-close" id="menuClose">&times;</button>
         </div>
-        <div id="debugLog" class="debug-log"></div>
-    </div>
-
-    <!-- Help Modal (Keyboard Shortcuts) -->
-    <div id="helpModal" class="modal help-modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="modal-title">KEYBOARD SHORTCUTS</span>
-                <button id="closeHelp" class="modal-close" title="Close help modal">×</button>
+        <div class="menu-grid">
+            <div class="menu-item" data-module="sampler">
+                <div class="menu-icon">&#x1F941;</div>
+                <div class="menu-label">SAMPLER</div>
+                <div class="menu-sublabel">8 Pads</div>
             </div>
-            <div class="modal-body">
-                <div class="help-section">
-                    <div class="help-section-title">Transport</div>
-                    <div class="shortcut-row"><span class="shortcut-key">SPACE</span><span class="shortcut-desc">Play / Pause</span></div>
-                    <div class="shortcut-row"><span class="shortcut-key">R</span><span class="shortcut-desc">Record</span></div>
-                    <div class="shortcut-row"><span class="shortcut-key">ESC</span><span class="shortcut-desc">Stop All</span></div>
-                </div>
-                <div class="help-section">
-                    <div class="help-section-title">Pads</div>
-                    <div class="shortcut-row"><span class="shortcut-key">1-8</span><span class="shortcut-desc">Trigger Pads 1-8</span></div>
-                </div>
-                <div class="help-section">
-                    <div class="help-section-title">Sequencer</div>
-                    <div class="shortcut-row"><span class="shortcut-key">↑/↓</span><span class="shortcut-desc">Select Track</span></div>
-                    <div class="shortcut-row"><span class="shortcut-key">SHIFT+Click</span><span class="shortcut-desc">Edit P-Locks</span></div>
-                    <div class="shortcut-row"><span class="shortcut-key">D</span><span class="shortcut-desc">Toggle Dub Mode</span></div>
-                    <div class="shortcut-row"><span class="shortcut-key">F</span><span class="shortcut-desc">Hold for Fill</span></div>
-                </div>
-                <div class="help-section">
-                    <div class="help-section-title">FX</div>
-                    <div class="shortcut-row"><span class="shortcut-key">Q</span><span class="shortcut-desc">Punch Stutter</span></div>
-                    <div class="shortcut-row"><span class="shortcut-key">W</span><span class="shortcut-desc">Punch Reverse</span></div>
-                    <div class="shortcut-row"><span class="shortcut-key">E</span><span class="shortcut-desc">Punch Filter</span></div>
-                    <div class="shortcut-row"><span class="shortcut-key">T</span><span class="shortcut-desc">Punch Tape</span></div>
-                </div>
-                <div class="help-section">
-                    <div class="help-section-title">Other</div>
-                    <div class="shortcut-row"><span class="shortcut-key">?</span><span class="shortcut-desc">Show This Help</span></div>
-                    <div class="shortcut-row"><span class="shortcut-key">G</span><span class="shortcut-desc">Generate AI Pattern</span></div>
-                </div>
+            <div class="menu-item" data-module="synth">
+                <div class="menu-icon">&#x1F3B9;</div>
+                <div class="menu-label">SYNTH</div>
+                <div class="menu-sublabel">Dual OSC</div>
+            </div>
+            <div class="menu-item" data-module="radio">
+                <div class="menu-icon">&#x1F4FB;</div>
+                <div class="menu-label">RADIO</div>
+                <div class="menu-sublabel">GPS Stations</div>
+            </div>
+            <div class="menu-item" data-module="fx">
+                <div class="menu-icon">&#x2728;</div>
+                <div class="menu-label">FX</div>
+                <div class="menu-sublabel">Delay / Glitch / Grain</div>
+            </div>
+            <div class="menu-item" data-module="ai">
+                <div class="menu-icon">&#x1F916;</div>
+                <div class="menu-label">AI COMPOSER</div>
+                <div class="menu-sublabel">Soundscape Aware</div>
+            </div>
+            <div class="menu-item" data-module="orchestrate">
+                <div class="menu-icon">&#x1F3AD;</div>
+                <div class="menu-label">AI ORCHESTRATE</div>
+                <div class="menu-sublabel">Full Auto Mode</div>
             </div>
         </div>
     </div>
 
-    <!-- Admin Settings Modal -->
-    <div id="adminModal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="modal-title">SETTINGS</span>
-                <button id="closeAdmin" class="modal-close" title="Close settings modal">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="settings-section">
-                    <div class="settings-title">SAMPLE KITS</div>
-                    <div class="kit-list" id="kitList">
-                        <div class="kit-item active" data-kit="kit1" title="Default drum kit with standard sounds">Kit 1 (Default)</div>
-                        <div class="kit-item" data-kit="kit2" title="Electronic drum kit with synth sounds">Kit 2 (Electronic)</div>
-                        <div class="kit-item" data-kit="kit3" title="Acoustic drum kit with natural sounds">Kit 3 (Acoustic)</div>
-                    </div>
-                    <input type="file" id="uploadKit" accept="audio/*" multiple hidden>
-                    <button id="uploadKitBtn" class="settings-btn" title="Upload your own audio samples as a custom kit">Upload Kit</button>
-                </div>
-                <div class="settings-section">
-                    <div class="settings-title">SYNTH PRESETS</div>
-                    <div class="synth-presets" id="synthPresets">
-                        <div class="preset-item active" data-preset="default" title="Balanced default synth sound">Default</div>
-                        <div class="preset-item" data-preset="bass" title="Deep bass synth preset">Bass</div>
-                        <div class="preset-item" data-preset="lead" title="Bright lead synth preset">Lead</div>
-                        <div class="preset-item" data-preset="pad" title="Ambient pad synth preset">Pad</div>
-                    </div>
-                </div>
-                <div class="settings-section">
-                    <div class="settings-title">THEME</div>
-                    <div class="theme-options">
-                        <button class="theme-btn active" data-theme="mariani" title="Classic Vin Mariani color theme">Vin Mariani</button>
-                        <button class="theme-btn" data-theme="map" title="Theme based on your GPS location map">Location Map</button>
-                        <button class="theme-btn" data-theme="dark" title="Dark mode theme">Dark</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <main class="main-content">
+        <div class="device-container">
+            <div class="enclosure">
+                <div class="artwork"></div>
 
-    <!-- Demo Video Modal -->
-    <div id="demoModal" class="modal demo-modal hidden">
-        <div class="modal-content demo-modal-content">
-            <div class="modal-header">
-                <span class="modal-title">OH MY ONDAS DEMO</span>
-                <button id="closeDemo" class="modal-close" title="Close demo video">×</button>
-            </div>
-            <div class="modal-body demo-modal-body">
-                <div class="demo-video-container">
-                    <!-- Replace YOUR_VIDEO_ID with actual YouTube video ID once recorded -->
-                    <iframe id="demoVideo"
-                            src=""
-                            data-src="https://www.youtube.com/embed/YOUR_VIDEO_ID?autoplay=1&rel=0"
-                            frameborder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen>
+                <!-- 5" Touch Display (iframe) -->
+                <div class="display">
+                    <!-- Menu Button -->
+                    <div class="menu-btn" id="menuBtn">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <iframe id="appDisplay"
+                            src="app.html?embedded=1"
+                            allow="autoplay; microphone"
+                            style="width: 100%; height: 100%; border: none; border-radius: 4px; background: #111;">
                     </iframe>
                 </div>
-                <div class="demo-info">
-                    <div class="demo-stats">
-                        <div class="demo-stat">
-                            <span class="stat-value">10x</span>
-                            <span class="stat-label">Faster than Octatrack</span>
+
+                <!-- 3 Mode Buttons -->
+                <div class="modes-bar">
+                    <button class="mode-btn active" data-mode="picture">PICTURE</button>
+                    <button class="mode-btn" data-mode="soundscape">SOUNDSCAPE</button>
+                    <button class="mode-btn" data-mode="interact">INTERACT</button>
+                </div>
+
+                <!-- Labels -->
+                <span class="section-label label-pads">PADS</span>
+                <span class="section-label label-ctrl">CTRL</span>
+
+                <!-- 8 Touch Pads -->
+                <div class="pads-container" id="padsContainer">
+                    <div class="pad" data-pad="0">1</div>
+                    <div class="pad" data-pad="1">2</div>
+                    <div class="pad" data-pad="2">3</div>
+                    <div class="pad" data-pad="3">4</div>
+                    <div class="pad" data-pad="4">5</div>
+                    <div class="pad" data-pad="5">6</div>
+                    <div class="pad" data-pad="6">7</div>
+                    <div class="pad" data-pad="7">8</div>
+                </div>
+
+                <!-- 4 Encoders -->
+                <div class="encoders-container">
+                    <div class="encoder" data-param="volume">
+                        <div class="encoder-knob" data-value="80">
+                            <div class="encoder-indicator"></div>
                         </div>
-                        <div class="demo-stat">
-                            <span class="stat-value">4.8s</span>
-                            <span class="stat-label">Create a beat</span>
-                        </div>
-                        <div class="demo-stat">
-                            <span class="stat-value">100%</span>
-                            <span class="stat-label">Workflow success</span>
-                        </div>
-                        <div class="demo-stat">
-                            <span class="stat-value">FREE</span>
-                            <span class="stat-label">vs $2,600 hardware</span>
-                        </div>
+                        <span class="encoder-label">VOL</span>
+                        <span class="encoder-value">80</span>
                     </div>
-                    <div class="demo-features">
-                        <h4>Key Features</h4>
-                        <ul>
-                            <li>Professional 8-track sequencer with parameter locks</li>
-                            <li>16 sample pads with effects chain</li>
-                            <li>Punch effects (Q/W/E/T) for live performance</li>
-                            <li>Scene-based performance with instant switching</li>
-                            <li>Session recording with GPS metadata</li>
-                        </ul>
+                    <div class="encoder" data-param="pan">
+                        <div class="encoder-knob" data-value="50">
+                            <div class="encoder-indicator"></div>
+                        </div>
+                        <span class="encoder-label">PAN</span>
+                        <span class="encoder-value">C</span>
                     </div>
-                    <div class="demo-cta">
-                        <button id="closeDemoStart" class="demo-start-btn">Start Making Music</button>
+                    <div class="encoder" data-param="filter">
+                        <div class="encoder-knob" data-value="100">
+                            <div class="encoder-indicator"></div>
+                        </div>
+                        <span class="encoder-label">FILT</span>
+                        <span class="encoder-value">100</span>
+                    </div>
+                    <div class="encoder" data-param="fx">
+                        <div class="encoder-knob" data-value="0">
+                            <div class="encoder-indicator"></div>
+                        </div>
+                        <span class="encoder-label">FX</span>
+                        <span class="encoder-value">0</span>
+                    </div>
+                </div>
+
+                <!-- Transport (3 buttons) -->
+                <div class="transport-container">
+                    <div class="transport-btn play" data-action="play">&#9654;</div>
+                    <div class="transport-btn stop" data-action="stop">&#9632;</div>
+                    <div class="transport-btn rec" data-action="rec">&#9679;</div>
+                </div>
+
+                <!-- GPS Strip (compact, bottom-right) -->
+                <div class="gps-strip" id="gpsStrip">
+                    <div class="gps-icon">+</div>
+                    <div class="gps-info">
+                        <span class="gps-label">GPS</span>
+                        <span class="gps-coords" id="gpsCoords">--</span>
                     </div>
                 </div>
             </div>
+
+            <!-- I/O Ports with labels -->
+            <div class="io-ports">
+                <div style="position: relative;">
+                    <div class="io-port" title="Audio Out"></div>
+                    <div class="io-label" style="top: 2px;">Audio Out</div>
+                    <div class="io-label-line" style="top: 8px;"></div>
+                </div>
+                <div style="position: relative;">
+                    <div class="io-port" title="Headphones"></div>
+                    <div class="io-label" style="top: 2px;">Headphones</div>
+                    <div class="io-label-line" style="top: 8px;"></div>
+                </div>
+                <div style="position: relative;">
+                    <div class="io-port" title="Audio In"></div>
+                    <div class="io-label" style="top: 2px;">Audio In</div>
+                    <div class="io-label-line" style="top: 8px;"></div>
+                </div>
+            </div>
+
+            <!-- External Sensor Diagrams -->
+            <div class="sensor sensor-piezo">
+                <div class="sensor-icon">&#9676;</div>
+                <div class="sensor-info">
+                    <span class="sensor-name">Piezo</span>
+                    <span class="sensor-desc">Vibration sensor</span>
+                </div>
+                <div class="sensor-line"></div>
+            </div>
+            <div class="sensor sensor-mic">
+                <div class="sensor-icon">&#9834;</div>
+                <div class="sensor-info">
+                    <span class="sensor-name">Mic</span>
+                    <span class="sensor-desc">Condenser</span>
+                </div>
+                <div class="sensor-line"></div>
+            </div>
+            <div class="sensor sensor-wifi">
+                <div class="sensor-icon">&#8801;</div>
+                <div class="sensor-info">
+                    <span class="sensor-name">WiFi</span>
+                    <span class="sensor-desc">802.11</span>
+                </div>
+                <div class="sensor-line-v"></div>
+            </div>
+            <div class="sensor sensor-radio">
+                <div class="sensor-icon">&#9399;</div>
+                <div class="sensor-info">
+                    <span class="sensor-name">Radio</span>
+                    <span class="sensor-desc">FM Antenna</span>
+                </div>
+                <div class="sensor-line-v"></div>
+            </div>
         </div>
+    </main>
+
+    <div class="info-bar">
+        <div>Enclosure: <span>200x140x45mm</span></div>
+        <div>Display: <span>5" Touch</span></div>
+        <div>Pads: <span>8x MPR121</span></div>
+        <div>Encoders: <span>4x Rotary</span></div>
+        <div>Time: <span id="timeVal">--:--</span></div>
     </div>
 
-    <script src="js/gps.js"></script>
-    <script src="js/audio-engine.js"></script>
-    <script src="js/mic-input.js"></script>
-    <script src="js/sampler.js"></script>
-    <script src="js/synth.js"></script>
-    <script src="js/radio.js"></script>
-    <script src="js/recorder.js"></script>
-    <script src="js/sequencer.js"></script>
-    <script src="js/mangle.js"></script>
-    <script src="js/scenes.js"></script>
-    <script src="js/arrangement.js"></script>
-    <script src="js/ai-composer.js"></script>
-    <script src="js/landmark.js"></script>
-    <script src="js/app.js"></script>
+    <footer class="page-footer">
+        <span>Oh My Ondas v1.0.0</span>
+        <span>GPL-3.0 License</span>
+        <a href="https://github.com/alevm/oh-my-ondas">GitHub</a>
+    </footer>
+
+    <script>
+    (function() {
+        const appFrame = document.getElementById('appDisplay');
+        let appState = {};
+
+        function sendToApp(action, data) {
+            if (appFrame && appFrame.contentWindow) {
+                appFrame.contentWindow.postMessage({ type: 'mockup-control', action, data }, '*');
+            }
+        }
+
+        // Receive state updates from embedded app
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'app-state') {
+                appState = event.data.data;
+                updateMockupFromState(appState);
+            }
+        });
+
+        function updateMockupFromState(state) {
+            // Update transport button states
+            const playBtn = document.querySelector('.transport-btn.play');
+            if (playBtn) playBtn.classList.toggle('active', state.isPlaying);
+
+            const recBtn = document.querySelector('.transport-btn.rec');
+            if (recBtn) recBtn.classList.toggle('rec-active', state.isRecording);
+
+            // Update GPS coords
+            const gpsCoords = document.getElementById('gpsCoords');
+            if (gpsCoords && state.gps) gpsCoords.textContent = state.gps;
+
+            // Sync mode buttons with app state
+            if (state.mode) {
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.mode === state.mode);
+                });
+            }
+        }
+
+        // Transport buttons
+        document.querySelectorAll('.transport-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const action = btn.classList.contains('play') ? 'play' :
+                              btn.classList.contains('stop') ? 'stop' : 'record';
+                sendToApp('transport', { action });
+                if (action === 'play') btn.classList.toggle('active');
+                if (action === 'record') btn.classList.toggle('rec-active');
+            });
+        });
+
+        // Pads
+        document.querySelectorAll('.pad').forEach(pad => {
+            const trigger = () => {
+                pad.classList.add('active');
+                sendToApp('pad', { index: parseInt(pad.dataset.pad) });
+            };
+            const release = () => pad.classList.remove('active');
+            pad.addEventListener('mousedown', trigger);
+            pad.addEventListener('touchstart', (e) => { e.preventDefault(); trigger(); });
+            pad.addEventListener('mouseup', release);
+            pad.addEventListener('mouseleave', release);
+            pad.addEventListener('touchend', release);
+        });
+
+        // Encoders — drag vertically to change value, forwards to app
+        document.querySelectorAll('.encoder').forEach(enc => {
+            let startY = 0, startVal = 50;
+            const param = enc.dataset.param;
+            const knob = enc.querySelector('.encoder-knob');
+
+            const onMove = (clientY) => {
+                const delta = (startY - clientY) * 0.5;
+                const val = Math.max(0, Math.min(100, startVal + delta));
+                const rounded = Math.round(val);
+
+                // Update visual indicator
+                const indicator = enc.querySelector('.encoder-indicator');
+                if (indicator) {
+                    indicator.style.transform = 'rotate(' + (val * 2.7 - 135) + 'deg)';
+                }
+
+                // Update displayed value
+                const valEl = enc.querySelector('.encoder-value');
+                if (valEl) valEl.textContent = rounded;
+
+                // Store current value
+                if (knob) knob.dataset.value = rounded;
+
+                sendToApp('encoder', { param, value: rounded });
+            };
+
+            enc.addEventListener('mousedown', (e) => {
+                startY = e.clientY;
+                startVal = parseInt(knob?.dataset.value || 50);
+                const move = (e2) => onMove(e2.clientY);
+                const up = () => { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); };
+                document.addEventListener('mousemove', move);
+                document.addEventListener('mouseup', up);
+            });
+        });
+
+        // Mode buttons (PICTURE, SOUNDSCAPE, INTERACT)
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                sendToApp('mode', { mode: btn.dataset.mode });
+            });
+        });
+
+        // Keyboard shortcuts forwarding
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ') { e.preventDefault(); sendToApp('transport', { action: 'play' }); }
+            if (e.key >= '1' && e.key <= '8') { sendToApp('pad', { index: parseInt(e.key) - 1 }); }
+            if (e.key === 'Escape') { sendToApp('transport', { action: 'stop' }); }
+        });
+
+        // Time display
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+            const el = document.getElementById('timeVal');
+            if (el) el.textContent = timeStr;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Menu overlay toggle (keep from prototype.html)
+        const menuOverlay = document.getElementById('menuOverlay');
+        const menuBtn = document.getElementById('menuBtn');
+        const menuClose = document.getElementById('menuClose');
+        if (menuBtn && menuOverlay) {
+            menuBtn.addEventListener('click', () => menuOverlay.classList.toggle('open'));
+        }
+        if (menuClose && menuOverlay) {
+            menuClose.addEventListener('click', () => menuOverlay.classList.remove('open'));
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab' && menuOverlay) { e.preventDefault(); menuOverlay.classList.toggle('open'); }
+        });
+    })();
+    </script>
 </body>
 </html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISE 2026 - Oh My Ondas</title>
+    <link rel="stylesheet" href="css/style.css?v=248">
+    <style>
+        body {
+            overflow: auto;
+        }
+        .page-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            background: rgba(255,255,255,0.95);
+            display: flex;
+            flex-direction: column;
+        }
+        .page-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            flex: 1;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 12px;
+            border-bottom: 3px solid var(--border);
+            padding-bottom: 16px;
+        }
+        .section-header {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 48px 0 24px 0;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+        .section-header:first-of-type {
+            margin-top: 24px;
+        }
+        .solution-cards {
+            display: grid;
+            gap: 24px;
+        }
+        .solution-card {
+            background: #fff;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .solution-card-header {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: #fff;
+            padding: 16px 20px;
+        }
+        .solution-card-header h3 {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+        .solution-card-header .target {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .solution-card-body {
+            padding: 20px;
+        }
+        .solution-field {
+            margin-bottom: 16px;
+        }
+        .solution-field-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .solution-field-content {
+            background: var(--cream);
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        .keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .keyword {
+            background: var(--accent);
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .link-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--cream);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.15s;
+        }
+        .link-card:hover {
+            background: var(--border);
+            color: #fff;
+        }
+        .link-icon {
+            font-size: 24px;
+        }
+        .link-info {
+            flex: 1;
+        }
+        .link-title {
+            font-weight: 700;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div id="mapBackground" class="map-bg"></div>
+
+    <div class="page-container">
+        <header class="page-header">
+            <a href="index.html" class="logo">OH MY ONDAS</a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="app.html" class="nav-link">App</a>
+                <a href="design.html" class="nav-link">Design</a>
+                <a href="about.html" class="nav-link">About</a>
+                <a href="ise.html" class="nav-link active">ISE 2026</a>
+            </nav>
+        </header>
+
+        <main class="page-content">
+            <h1 class="page-title">ISE 2026 — Corporate Challenges</h1>
+
+            <h2 class="section-header">Corporate Challenges (22 companies, 30 challenges)</h2>
+            <p style="color: var(--text-light); margin-bottom: 24px; font-size: 14px;">Challenges relevant to Oh My Ondas are marked with fit level. Full list requires <a href="https://www.b2match.com/e/ise-2026-open-innovation-challenge/components/58991" target="_blank" style="color: var(--accent);">B2Match login</a>.</p>
+
+            <!-- HIGH FIT challenges -->
+            <div class="solution-card" style="margin-bottom: 20px;">
+                <div class="solution-card-header" style="background: linear-gradient(135deg, #1aa167 0%, #148f57 100%); padding: 12px 20px;">
+                    <h3 style="margin: 0; font-size: 16px;">SEAT-Cupra - Contextual Road AI Sound Generation</h3>
+                    <div class="target" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Contact: Enric Perarnau Olle, Innovation Manager</span>
+                        <span style="background: rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 4px; font-weight: 700;">HIGH FIT</span>
+                    </div>
+                </div>
+                <div class="solution-card-body">
+                    <div class="solution-field">
+                        <div class="solution-field-label">What They Want</div>
+                        <div class="solution-field-content">Interior ambient sound for electric vehicles that adjusts in real time to the exterior environment and synchronizes with interior lighting. Sound changes according to road conditions, GPS location, proximity of another CUPRA vehicle, driving conditions (highway or winding road), and traffic.</div>
+                    </div>
+                    <div class="solution-field">
+                        <div class="solution-field-label">Technologies Sought</div>
+                        <div class="keywords">
+                            <span class="keyword">AI</span>
+                            <span class="keyword">Audio</span>
+                            <span class="keyword">Connectivity</span>
+                            <span class="keyword">Design/UX</span>
+                            <span class="keyword">Immersive Audio</span>
+                            <span class="keyword">Contextual Perception</span>
+                        </div>
+                    </div>
+                    <div class="solution-field">
+                        <div class="solution-field-label">Type</div>
+                        <div class="solution-field-content">Proof of concept / pilot testing</div>
+                    </div>
+                    <div class="solution-field" style="margin-bottom: 0;">
+                        <div class="solution-field-label">Why Oh My Ondas Fits</div>
+                        <div class="solution-field-content" style="background: rgba(39, 174, 96, 0.1); border-color: #1aa167;">Oh My Ondas already captures environmental sounds and transforms them into music that responds to location context. The core technology - soundscape capture, AI transformation, GPS awareness - maps directly to SEAT-Cupra's need for in-car ambient sound that adapts to the road environment. Pitch angle: "We already turn the sounds of a place into music - adapting this for in-car ambient sound driven by road context is a natural extension."</div>
+                    </div>
+                    <a href="https://www.b2match.com/e/ise-2026-open-innovation-challenge/opportunities/UGFydGljaXBhdGlvbk9wcG9ydHVuaXR5OjE5OTA0NA==" class="link-card" target="_blank" style="margin-top: 12px; display: inline-flex; padding: 8px 16px;">
+                        <span class="link-icon" style="font-size: 16px;">&#128279;</span>
+                        <div class="link-info">
+                            <div class="link-title" style="font-size: 12px;">View on B2Match</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="solution-card" style="margin-bottom: 20px;">
+                <div class="solution-card-header" style="background: linear-gradient(135deg, #1aa167 0%, #148f57 100%); padding: 12px 20px;">
+                    <h3 style="margin: 0; font-size: 16px;">Gestmusic (Banijay) - Innovative Solutions for Audiovisual Entertainment</h3>
+                    <div class="target" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Contact: Miquel Garcia Guerrero, Postproduction Manager</span>
+                        <span style="background: rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 4px; font-weight: 700;">HIGH FIT</span>
+                    </div>
+                </div>
+                <div class="solution-card-body">
+                    <div class="solution-field">
+                        <div class="solution-field-label">What They Want</div>
+                        <div class="solution-field-content">Connect industrial and technological innovation with television creativity to shape the entertainment experiences of the future. Gestmusic is the world's largest international content producer (Banijay group, 130+ production companies, 23 territories, 185,000+ hours of content).</div>
+                    </div>
+                    <div class="solution-field">
+                        <div class="solution-field-label">Technologies Sought</div>
+                        <div class="keywords">
+                            <span class="keyword">Audio Technologies</span>
+                            <span class="keyword">AI</span>
+                            <span class="keyword">VR/AR/MR</span>
+                            <span class="keyword">Robotics</span>
+                            <span class="keyword">Content Creation</span>
+                            <span class="keyword">TV Production</span>
+                        </div>
+                    </div>
+                    <div class="solution-field">
+                        <div class="solution-field-label">Type</div>
+                        <div class="solution-field-content">Co-development, technological licensing, client-provider collaboration</div>
+                    </div>
+                    <div class="solution-field" style="margin-bottom: 0;">
+                        <div class="solution-field-label">Why Oh My Ondas Fits</div>
+                        <div class="solution-field-content" style="background: rgba(39, 174, 96, 0.1); border-color: #1aa167;">Audio technologies are explicitly listed. Oh My Ondas captures the soundscape of any location and transforms it into music in real time - perfect for innovative TV formats. Pitch angle: "Imagine a TV format where contestants visit places and the sounds of each location become their music - we provide the technology."</div>
+                    </div>
+                    <a href="https://www.b2match.com/e/ise-2026-open-innovation-challenge/participations/615676" class="link-card" target="_blank" style="margin-top: 12px; display: inline-flex; padding: 8px 16px;">
+                        <span class="link-icon" style="font-size: 16px;">&#128279;</span>
+                        <div class="link-info">
+                            <div class="link-title" style="font-size: 12px;">View on B2Match</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- HIGH FIT - not yet scraped -->
+            <div class="solution-card" style="margin-bottom: 20px;">
+                <div class="solution-card-header" style="background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); padding: 12px 20px;">
+                    <h3 style="margin: 0; font-size: 16px;">Moco Museum - Challenge TBC</h3>
+                    <div class="target" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Museum of Modern & Contemporary Art (Amsterdam / Barcelona)</span>
+                        <span style="background: rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 4px; font-weight: 700;">HIGH FIT (expected)</span>
+                    </div>
+                </div>
+                <div class="solution-card-body">
+                    <div class="solution-field">
+                        <div class="solution-field-label">Expected Fit</div>
+                        <div class="solution-field-content">Moco Museum focuses on immersive contemporary art experiences. Likely seeking visitor engagement tech, interactive installations, or digital experience enhancements. Oh My Ondas's "sonic souvenirs" concept maps perfectly to museum visitor experiences.</div>
+                    </div>
+                    <div class="solution-field" style="margin-bottom: 0;">
+                        <div class="solution-field-label">Action</div>
+                        <div class="solution-field-content" style="background: rgba(233, 69, 96, 0.1); border-color: var(--accent);">Log in to B2Match to see their specific challenge and tailor your solution offer accordingly.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="solution-card" style="margin-bottom: 20px;">
+                <div class="solution-card-header" style="background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); padding: 12px 20px;">
+                    <h3 style="margin: 0; font-size: 16px;">CaixaForum+ - Challenge TBC</h3>
+                    <div class="target" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Cultural centre / "la Caixa" Foundation</span>
+                        <span style="background: rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 4px; font-weight: 700;">HIGH FIT (expected)</span>
+                    </div>
+                </div>
+                <div class="solution-card-body">
+                    <div class="solution-field">
+                        <div class="solution-field-label">Expected Fit</div>
+                        <div class="solution-field-content">CaixaForum+ runs exhibition spaces across Spain with focus on art, science, and culture. Likely seeking immersive tech for exhibitions or visitor engagement. Oh My Ondas can create room-specific audio experiences tied to gallery locations.</div>
+                    </div>
+                    <div class="solution-field" style="margin-bottom: 0;">
+                        <div class="solution-field-label">Action</div>
+                        <div class="solution-field-content" style="background: rgba(233, 69, 96, 0.1); border-color: var(--accent);">Log in to B2Match to see their specific challenge and tailor your solution offer accordingly.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="solution-card" style="margin-bottom: 20px;">
+                <div class="solution-card-header" style="background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); padding: 12px 20px;">
+                    <h3 style="margin: 0; font-size: 16px;">Lavinia - Challenge TBC</h3>
+                    <div class="target" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Audiovisual & media production company</span>
+                        <span style="background: rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 4px; font-weight: 700;">HIGH FIT (expected)</span>
+                    </div>
+                </div>
+                <div class="solution-card-body">
+                    <div class="solution-field">
+                        <div class="solution-field-label">Expected Fit</div>
+                        <div class="solution-field-content">Lavinia produces documentaries, news, and broadcast content. Likely seeking production tools or workflow innovation. Oh My Ondas can capture the soundscape of filming locations and transform them into production-ready music and audio.</div>
+                    </div>
+                    <div class="solution-field" style="margin-bottom: 0;">
+                        <div class="solution-field-label">Action</div>
+                        <div class="solution-field-content" style="background: rgba(233, 69, 96, 0.1); border-color: var(--accent);">Log in to B2Match to see their specific challenge and tailor your solution offer accordingly.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other participants -->
+            <div class="solution-card" style="margin-bottom: 20px;">
+                <div class="solution-card-header" style="background: linear-gradient(135deg, #7f8c8d 0%, #5d6d7e 100%); padding: 12px 20px;">
+                    <h3 style="margin: 0; font-size: 16px;">Other Known Participants</h3>
+                    <div class="target">Check B2Match for full details</div>
+                </div>
+                <div class="solution-card-body">
+                    <div class="solution-field">
+                        <div class="solution-field-label">Abacus</div>
+                        <div class="solution-field-content">Cooperative retail / cultural products - MEDIUM fit</div>
+                    </div>
+                    <div class="solution-field">
+                        <div class="solution-field-label">Alguna Pregunta</div>
+                        <div class="solution-field-content">Details unknown - check B2Match</div>
+                    </div>
+                    <div class="solution-field" style="margin-bottom: 0;">
+                        <div class="solution-field-label">LUXES (Aussie Group)</div>
+                        <div class="solution-field-content">Immersive visualization for lighting design - LOW fit (focused on AR/VR for luminaire configuration)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: var(--cream); border: 2px solid var(--border); border-radius: 8px; padding: 16px; border-color: var(--green); background: rgba(39, 174, 96, 0.05);">
+                <div style="font-size: 14px; font-weight: 700; color: var(--green); margin-bottom: 12px;">15+ more challenges available on B2Match</div>
+                <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 12px; font-size: 13px; line-height: 1.6; white-space: pre-wrap;">22 companies have posted 30 challenges total. The ones above are the known participants. Log in to B2Match to discover all challenges and find additional matches for Oh My Ondas.
+
+Priority actions:
+1. Register and complete profile
+2. Check Moco Museum, CaixaForum+, and Lavinia challenge details
+3. Create tailored solution offers for each matching challenge
+4. Request meetings with SEAT-Cupra and Gestmusic first (strongest confirmed fit)</div>
+            </div>
+        </main>
+
+        <footer class="page-footer">
+            <span>Oh My Ondas v2.4.6</span>
+            <span>GPL-3.0</span>
+            <a href="https://github.com/manuelvargasmontero/ohmyondas" target="_blank">GitHub</a>
+        </footer>
+    </div>
+</body>
+</html>

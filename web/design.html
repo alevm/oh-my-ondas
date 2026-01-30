@@ -15,50 +15,7 @@
             min-height: 100vh;
             background: rgba(255,255,255,0.95);
         }
-        .page-header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 12px 16px;
-            background: linear-gradient(180deg, var(--cream) 0%, #e8e0d5 100%);
-            border-bottom: 3px solid var(--border);
-            height: 96px;
-        }
-        .page-header .logo {
-            font-weight: 800;
-            font-size: 22px;
-            color: var(--accent);
-            letter-spacing: 1px;
-            text-decoration: none;
-        }
-        .page-header .logo:hover {
-            opacity: 0.8;
-        }
-        .nav-links {
-            display: flex;
-            gap: 12px;
-            margin-left: 24px;
-        }
-        .nav-link {
-            padding: 10px 16px;
-            border: 2px solid var(--border);
-            border-radius: 6px;
-            background: var(--cream);
-            color: var(--text);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.15s ease;
-        }
-        .nav-link:hover {
-            background: var(--border);
-            color: #fff;
-        }
-        .nav-link.active {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: #fff;
-        }
+        /* Header styles inherited from style.css */
         .page-content {
             max-width: 1400px;
             margin: 0 auto;
@@ -82,7 +39,7 @@
         .section-header {
             font-size: 24px;
             font-weight: 700;
-            color: var(--border);
+            color: var(--text);
             margin: 48px 0 24px 0;
             padding-bottom: 12px;
             border-bottom: 2px solid var(--border);
@@ -1051,7 +1008,7 @@
             color: var(--accent);
         }
         .bom-total {
-            background: var(--border) !important;
+            background: var(--accent) !important;
             color: #fff;
             font-weight: 700;
         }
@@ -1064,7 +1021,7 @@
             font-size: 13px;
         }
         .pin-table th {
-            background: var(--border);
+            background: var(--text);
             color: #fff;
             padding: 10px 12px;
             text-align: left;
@@ -1090,10 +1047,11 @@
         <header class="page-header">
             <a href="index.html" class="logo">OH MY ONDAS</a>
             <nav class="nav-links">
-                <a href="index.html" class="nav-link">App</a>
-                <a href="hardware-mockup.html" class="nav-link active">Design</a>
-                <a href="hardware-interactive.html" class="nav-link">Interactive</a>
-                <a href="scope.html" class="nav-link">Scope</a>
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="app.html" class="nav-link">App</a>
+                <a href="design.html" class="nav-link active">Design</a>
+                <a href="about.html" class="nav-link">About</a>
+                <a href="ise.html" class="nav-link">ISE 2026</a>
             </nav>
         </header>
 
@@ -1553,6 +1511,12 @@
             </table>
 
         </main>
+
+        <footer class="page-footer">
+            <span>Oh My Ondas v1.0.0</span>
+            <span>GPL-3.0 License</span>
+            <a href="https://github.com/alevm/oh-my-ondas">GitHub</a>
+        </footer>
     </div>
 </body>
 </html>
