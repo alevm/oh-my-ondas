@@ -15,9 +15,10 @@ on:
 
 jobs:
   build:
-    name: PlatformIO Build
+    name: PlatformIO Build (${{ matrix.environment }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         environment: [teensy41, esp32]
 
@@ -31,20 +32,10 @@ jobs:
       - name: Install PlatformIO
         run: pip install platformio
 
-      - name: Install platform
-        working-directory: firmware
-        run: |
-          if [ "${{ matrix.environment }}" = "teensy41" ]; then
-            pio pkg install -p "platformio/teensy"
-          else
-            pio pkg install -p "platformio/espressif32"
-          fi
-
       - name: Build firmware
         working-directory: firmware
         run: |
           if [ "${{ matrix.environment }}" = "esp32" ]; then
-            # ESP32 uses a different source directory
             PLATFORMIO_SRC_DIR=esp32 pio run -e esp32
           else
             pio run -e ${{ matrix.environment }}
