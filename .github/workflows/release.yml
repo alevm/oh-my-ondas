@@ -23,9 +23,10 @@ jobs:
         run: pip install platformio
 
       - name: Install platforms
+        working-directory: firmware
         run: |
-          pio pkg install -g -p "platformio/teensy"
-          pio pkg install -g -p "platformio/espressif32"
+          pio pkg install -p "platformio/teensy"
+          pio pkg install -p "platformio/espressif32"
 
       - name: Build Teensy firmware
         working-directory: firmware

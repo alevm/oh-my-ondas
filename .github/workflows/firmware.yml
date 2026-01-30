@@ -32,11 +32,12 @@ jobs:
         run: pip install platformio
 
       - name: Install platform
+        working-directory: firmware
         run: |
           if [ "${{ matrix.environment }}" = "teensy41" ]; then
-            pio pkg install -g -p "platformio/teensy"
+            pio pkg install -p "platformio/teensy"
           else
-            pio pkg install -g -p "platformio/espressif32"
+            pio pkg install -p "platformio/espressif32"
           fi
 
       - name: Build firmware
