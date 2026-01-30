@@ -404,17 +404,43 @@ html, body {
     border-color: var(--accent);
 }
 
-/* AI panel buttons styling */
-.ai-panel .vibe-btn {
-    background: #f0f0f0 !important;
-    border-color: #ccc !important;
-    color: var(--text) !important;
+/* AI sense readout */
+.ai-sense-readout {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+    padding: 10px;
+    background: rgba(26, 161, 103, 0.05);
+    border: 1px solid rgba(26, 161, 103, 0.15);
+    border-radius: 6px;
 }
-
-.ai-panel .vibe-btn.active {
-    background: var(--green) !important;
-    border-color: var(--green) !important;
-    color: #fff !important;
+.ai-sense-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.ai-sense-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-light);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+.ai-sense-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+.ai-sense-vibe {
+    padding-top: 6px;
+    border-top: 1px solid rgba(26, 161, 103, 0.15);
+}
+.ai-vibe-display {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--green);
+    letter-spacing: 0.5px;
 }
 
 .ai-panel .ai-btn {
@@ -423,6 +449,19 @@ html, body {
     color: #fff !important;
     font-size: 15px !important;
     height: 48px !important;
+}
+
+/* Embedded AI panel tweaks */
+body.embedded-mode .device > .ai-panel.panel-visible .ai-sense-readout {
+    padding: 12px;
+    gap: 8px;
+}
+body.embedded-mode .device > .ai-panel.panel-visible .ai-vibe-display {
+    font-size: 20px;
+}
+body.embedded-mode .device > .ai-panel.panel-visible .ai-btn {
+    height: 56px !important;
+    font-size: 17px !important;
 }
 
 .panel {
@@ -1335,6 +1374,50 @@ html, body {
     padding: 4px 0;
 }
 
+/* ===== PANEL TAB BAR (embedded mode only) ===== */
+.panel-tabs {
+    display: none;
+    align-items: center;
+    gap: 0;
+    background: #1a1a1a;
+    border-bottom: 1px solid #333;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    grid-column: 1 / -1;
+    flex-shrink: 0;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.panel-tabs::-webkit-scrollbar { display: none; }
+
+.panel-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #777;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.panel-tab:hover {
+    color: #bbb;
+    background: rgba(255,255,255,0.03);
+}
+.panel-tab.active {
+    color: #fff;
+    border-bottom-color: var(--green);
+    background: rgba(26, 161, 103, 0.08);
+}
+
 /* ===== INLINE TRANSPORT (embedded mode only) ===== */
 .transport-panel {
     display: none;
@@ -1400,7 +1483,12 @@ body.embedded-mode .app-layout {
     grid-template-columns: 1fr;
 }
 body.embedded-mode .transport-panel {
-    display: flex;
+    display: flex !important;
+    flex-shrink: 0;
+}
+body.embedded-mode .panel-tabs {
+    display: flex !important;
+    flex-shrink: 0;
 }
 body.embedded-mode #app {
     background: transparent;
@@ -1411,20 +1499,82 @@ body.embedded-mode .map-bg {
 body.embedded-mode .debug-panel {
     display: none !important;
 }
+
+/* Single-panel display: flex column, one panel at a time */
 body.embedded-mode .device {
-    overflow: auto;
+    display: flex !important;
+    flex-direction: column;
+    overflow: hidden;
     max-height: 100vh;
-    grid-template-rows: auto auto auto auto;
+    gap: 0;
+    padding: 0;
 }
+
+/* Hide ALL panels by default in embedded mode */
 body.embedded-mode .device > .panel {
-    padding: 4px 6px;
+    display: none !important;
     min-height: 0;
 }
-body.embedded-mode .device > .seq-panel {
+
+/* Show the active panel — takes all remaining space */
+body.embedded-mode .device > .panel.panel-visible {
+    display: flex !important;
+    flex: 1;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 6px 8px;
+    border-radius: 0;
+    border: none;
+    border-left: none !important;
+}
+
+/* Always hide pads and knobs (they exist as physical controls on the mockup) */
+body.embedded-mode .device > .pads-panel,
+body.embedded-mode .device > .knobs-panel {
+    display: none !important;
+}
+
+/* Panel-specific tweaks for embedded full-height display */
+body.embedded-mode .device > .seq-panel.panel-visible {
+    min-height: 0;
+}
+body.embedded-mode .device > .seq-panel.panel-visible .oct-tracks {
+    flex: 1;
     min-height: 100px;
 }
-body.embedded-mode .transport-panel {
-    flex-shrink: 0;
+
+body.embedded-mode .device > .mixer-panel.panel-visible .mixer-channels {
+    flex: 1;
+    height: auto;
+}
+body.embedded-mode .device > .mixer-panel.panel-visible .v-fader {
+    min-height: 80px;
+}
+body.embedded-mode .device > .mixer-panel.panel-visible .vu-meter {
+    height: 60px;
+}
+
+body.embedded-mode .device > .ai-panel.panel-visible .ai-sense-readout {
+    flex: 1;
+}
+body.embedded-mode .device > .ai-panel.panel-visible .ai-action-btns {
+    gap: 10px;
+}
+
+body.embedded-mode .device > .eq-panel.panel-visible .eq-sliders {
+    flex: 1;
+}
+body.embedded-mode .device > .eq-panel.panel-visible .eq-slider {
+    min-height: 80px;
+}
+
+body.embedded-mode .device > .fx-panel.panel-visible .fx-params {
+    flex: 1;
+}
+
+body.embedded-mode .device > .radio-panel.panel-visible .station-list {
+    flex: 1;
+    max-height: none;
 }
 
 /* ===== PAGE FOOTER ===== */

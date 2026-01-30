@@ -4,493 +4,362 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hardware Design - Oh My Ondas</title>
-    <link rel="stylesheet" href="css/style.css?v=137">
+    <link rel="stylesheet" href="css/style.css?v=248">
     <style>
-        body {
-            overflow: auto;
+        :root {
+            --bg: #f5f5f5;
+            --accent: #ff6b2b;
+            --green: #1aa167;
+            --blue: #1270b8;
+            --yellow: #ffc003;
+            --pastel-gray: #ffffff;
+            --gray-text: #555;
         }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+
         .page-container {
             position: relative;
             z-index: 1;
             min-height: 100vh;
             background: rgba(255,255,255,0.95);
         }
-        /* Header styles inherited from style.css */
+
         .page-content {
             max-width: 1400px;
             margin: 0 auto;
             padding: 40px 24px;
         }
+
         .page-title {
             font-size: 32px;
             font-weight: 800;
             color: var(--accent);
             margin-bottom: 12px;
-            border-bottom: 3px solid var(--border);
+            border-bottom: 3px solid #e0e0e0;
             padding-bottom: 16px;
         }
         .page-subtitle {
-            color: var(--text-light);
+            color: #888;
             margin-bottom: 32px;
             font-size: 16px;
         }
 
-        /* Section Headers */
         .section-header {
             font-size: 24px;
             font-weight: 700;
-            color: var(--text);
+            color: #1a1a1a;
             margin: 48px 0 24px 0;
             padding-bottom: 12px;
-            border-bottom: 2px solid var(--border);
+            border-bottom: 2px solid #e0e0e0;
         }
 
-        /* ==================== ARTISTIC HARDWARE BOX ==================== */
-        .artistic-container {
+        /* ==================== 3D SHOWCASE ==================== */
+        .showcase-stage {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 60px;
-            padding: 40px 0;
+            padding: 60px 0 40px;
+            perspective: 2400px;
+            overflow: visible;
         }
 
-        .device-artwork {
-            position: relative;
-            width: 900px;
-            height: 580px;
+        .showcase-rotator {
+            transform-style: preserve-3d;
+            animation: showcase-rock 12s ease-in-out infinite;
         }
 
-        /* The main enclosure - 200x140mm (scaled ~3.5x for display) */
+        @keyframes showcase-rock {
+            0%   { transform: rotateY(-8deg) rotateX(2deg); }
+            25%  { transform: rotateY(4deg) rotateX(-1deg); }
+            50%  { transform: rotateY(8deg) rotateX(2deg); }
+            75%  { transform: rotateY(-4deg) rotateX(-1deg); }
+            100% { transform: rotateY(-8deg) rotateX(2deg); }
+        }
+
+        .showcase-rotator:hover {
+            animation-play-state: paused;
+        }
+
+        /* Device — same dimensions as index.html */
+        .device-container { position: relative; width: 1100px; height: 700px; overflow: visible; }
+
         .enclosure {
             position: absolute;
-            top: 30px;
-            left: 75px;
-            width: 750px;
-            height: 520px;
-            background: linear-gradient(165deg, #2a2a2a 0%, #1a1a1a 40%, #0f0f0f 100%);
-            border-radius: 20px;
-            box-shadow:
-                0 30px 80px rgba(0,0,0,0.5),
-                0 0 0 2px #3a3a3a,
-                inset 0 1px 0 rgba(255,255,255,0.08),
-                inset 0 -2px 0 rgba(0,0,0,0.3);
+            top: 10px;
+            left: 10px;
+            width: 1080px;
+            height: 670px;
+            background: linear-gradient(165deg, #e8e8e8 0%, #d5d5d5 40%, #c8c8c8 100%);
+            border-radius: 14px;
+            border: 2px solid #bbb;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
         }
 
-        /* Decorative border with fine lines */
         .enclosure::before {
             content: '';
             position: absolute;
-            top: 8px;
-            left: 8px;
-            right: 8px;
-            bottom: 8px;
-            border: 1px solid rgba(139, 90, 43, 0.3);
-            border-radius: 18px;
-            pointer-events: none;
-        }
-
-        /* Inner fine line decoration */
-        .enclosure::after {
-            content: '';
-            position: absolute;
-            top: 16px;
-            left: 16px;
-            right: 16px;
-            bottom: 16px;
-            border: 1px solid rgba(255,255,255,0.03);
-            border-radius: 12px;
-            pointer-events: none;
-        }
-
-        /* ==================== DISPLAY WITH APP MOCKUP ==================== */
-        .display-bezel {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            height: 160px;
-            background: #0a0a0a;
+            top: 5px; left: 5px; right: 5px; bottom: 5px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
             border-radius: 10px;
-            border: 3px solid #2a2a2a;
-            box-shadow:
-                inset 0 2px 15px rgba(0,0,0,0.8),
-                0 2px 4px rgba(0,0,0,0.3);
-            overflow: hidden;
+            pointer-events: none;
         }
 
-        /* ==================== GPS DISPLAY (Small corner) ==================== */
-        .gps-display-bezel {
+        /* Artwork */
+        .artwork {
             position: absolute;
-            top: 24px;
-            right: 24px;
-            width: 70px;
-            height: 70px;
-            background: #0a0a0a;
+            top: 390px; left: 10px; right: 10px; bottom: 10px;
+            opacity: 0.08;
+            background-image: url('https://media.rhizome.org/blog/8979/Chombart-de-Lauwe.jpg');
+            background-size: cover;
             border-radius: 8px;
-            border: 2px solid #2a2a2a;
-            box-shadow:
-                inset 0 2px 10px rgba(0,0,0,0.8),
-                0 2px 4px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 4px;
-            gap: 2px;
-            z-index: 10;
+            z-index: 0;
+            pointer-events: none;
         }
 
-        .gps-map-circle {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(180deg, #1a3a1a 0%, #0d1f0d 100%);
-            border: 2px solid #2a4a2a;
-            box-shadow:
-                inset 0 0 15px rgba(39, 174, 96, 0.3),
-                0 0 6px rgba(39, 174, 96, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Map grid lines */
-        .gps-map-circle::before {
-            content: '';
+        /* Display — static, no iframe */
+        .display {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background:
-                linear-gradient(90deg, transparent 48%, rgba(39, 174, 96, 0.2) 49%, rgba(39, 174, 96, 0.2) 51%, transparent 52%),
-                linear-gradient(0deg, transparent 48%, rgba(39, 174, 96, 0.2) 49%, rgba(39, 174, 96, 0.2) 51%, transparent 52%);
-            background-size: 20px 20px;
-        }
-
-        /* Center crosshair */
-        .gps-map-circle::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 10px;
-            height: 10px;
-            background: #27ae60;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 10px #27ae60, 0 0 20px rgba(39, 174, 96, 0.5);
-            animation: gps-pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes gps-pulse {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.7; }
-        }
-
-        /* Map land masses (simplified) */
-        .gps-map-land {
-            position: absolute;
-            background: rgba(39, 174, 96, 0.25);
-            border-radius: 50%;
-        }
-
-        .gps-map-land.l1 { top: 10px; left: 12px; width: 15px; height: 12px; border-radius: 40%; }
-        .gps-map-land.l2 { top: 22px; left: 28px; width: 12px; height: 15px; border-radius: 30%; }
-        .gps-map-land.l3 { top: 32px; left: 8px; width: 10px; height: 8px; border-radius: 50%; }
-
-        /* Coordinate text */
-        .gps-coords {
-            display: none;
-        }
-
-        .gps-coord-line {
-            font-family: 'Courier New', monospace;
-            font-size: 6px;
-            font-weight: 700;
-            color: #27ae60;
-            letter-spacing: 0.5px;
-            text-shadow: 0 0 6px rgba(39, 174, 96, 0.8);
-        }
-
-        .gps-label {
-            font-size: 7px;
-            color: #27ae60;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-top: 2px;
-        }
-
-        .display-screen {
-            position: absolute;
-            top: 6px;
-            left: 6px;
-            right: 6px;
-            bottom: 6px;
-            background: #1a1a0a;
+            top: 10px; left: 10px; right: 10px;
+            height: 380px;
+            background: #0a0a0a;
             border-radius: 6px;
-            display: flex;
-            flex-direction: column;
+            border: 2px solid #333;
             overflow: hidden;
-            font-family: 'Courier New', monospace;
+            z-index: 2;
         }
 
-        /* LCD Status Bar */
-        .lcd-status {
-            height: 24px;
-            background: #0d0d05;
+        /* Static LCD screen content */
+        .lcd-screen {
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Courier New', monospace;
+            background: #111;
+        }
+
+        .lcd-status-bar {
+            height: 30px;
+            background: #0d0d0d;
             border-bottom: 1px solid #333;
             display: flex;
             align-items: center;
-            padding: 0 10px;
-            gap: 20px;
+            padding: 0 12px;
+            gap: 12px;
         }
-
-        .lcd-pattern {
-            font-size: 12px;
-            font-weight: 700;
-            color: #ff6600;
-            text-shadow: 0 0 8px rgba(255, 102, 0, 0.8);
+        .lcd-transport { display: flex; gap: 6px; }
+        .lcd-tr-btn {
+            width: 24px; height: 24px;
+            border-radius: 4px;
+            border: 1px solid #444;
+            background: #222;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; color: #666;
         }
+        .lcd-tr-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
+        .lcd-bpm { font-size: 13px; font-weight: 700; color: #ccc; }
+        .lcd-bpm-val { color: var(--green); }
+        .lcd-tap { font-size: 9px; color: #666; border: 1px solid #444; padding: 2px 6px; border-radius: 3px; }
+        .lcd-gps { margin-left: auto; font-size: 9px; color: #666; }
+        .lcd-time { font-size: 12px; font-weight: 600; color: var(--green); }
 
-        .lcd-bpm {
-            font-size: 14px;
-            font-weight: 700;
-            color: #00ff66;
-            text-shadow: 0 0 8px rgba(0, 255, 102, 0.8);
-        }
-
-        .lcd-bpm::after {
-            content: ' BPM';
-            font-size: 8px;
-            color: #00aa44;
-        }
-
-        .lcd-time {
-            margin-left: auto;
-            font-size: 11px;
-            color: #ffcc00;
-            text-shadow: 0 0 6px rgba(255, 204, 0, 0.6);
-        }
-
-        /* LCD Sequencer */
-        .lcd-seq {
-            flex: 1;
+        /* Tab bar (static) */
+        .lcd-tabs {
+            height: 28px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
             display: flex;
-            padding: 8px;
-            gap: 6px;
+            align-items: center;
+            gap: 0;
+        }
+        .lcd-tab {
+            padding: 0 12px;
+            height: 100%;
+            display: flex; align-items: center;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+            color: #555;
+            border-bottom: 2px solid transparent;
+        }
+        .lcd-tab.active {
+            color: #fff;
+            border-bottom-color: var(--green);
+            background: rgba(26, 161, 103, 0.08);
         }
 
-        .lcd-tracks {
+        /* Static sequencer grid */
+        .lcd-seq-area {
+            flex: 1;
+            background: #1a1a1a;
+            padding: 8px;
             display: flex;
             flex-direction: column;
-            gap: 3px;
-            padding-top: 2px;
+            gap: 4px;
         }
-
-        .lcd-tracks span {
-            font-size: 8px;
-            color: #666;
-            height: 12px;
-            display: flex;
-            align-items: center;
+        .lcd-seq-header {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 4px;
         }
+        .lcd-seq-title { font-size: 11px; font-weight: 700; color: var(--green); }
+        .lcd-seq-ctrl {
+            font-size: 9px; color: #666; border: 1px solid #444; padding: 2px 6px;
+            border-radius: 3px; background: #222;
+        }
+        .lcd-seq-ctrl.active { color: var(--green); border-color: var(--green); }
 
-        .lcd-grid {
+        .lcd-patterns {
+            display: flex; gap: 3px; margin-bottom: 6px;
+        }
+        .lcd-pat {
+            width: 20px; height: 18px;
+            border: 1px solid #444; border-radius: 3px;
+            background: #222; color: #666;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 9px; font-weight: 700;
+        }
+        .lcd-pat.active { background: var(--green); color: #fff; border-color: var(--green); }
+
+        .lcd-tracks {
             flex: 1;
-            display: grid;
-            grid-template-columns: repeat(16, 1fr);
-            grid-template-rows: repeat(8, 1fr);
-            gap: 2px;
+            display: flex; flex-direction: column; gap: 3px;
         }
-
+        .lcd-track {
+            display: flex; align-items: center; gap: 4px; height: 18px;
+        }
+        .lcd-track-num { width: 12px; font-size: 9px; font-weight: 700; color: #555; }
+        .lcd-track-src { width: 22px; font-size: 8px; color: #444; }
+        .lcd-steps {
+            flex: 1; display: flex; gap: 1px; height: 100%;
+        }
         .lcd-step {
-            background: #2a2a1a;
-            border-radius: 2px;
-            border: 1px solid #333;
+            flex: 1; height: 100%;
+            background: #222; border-radius: 2px;
         }
+        .lcd-step.beat { background: #2a2a2a; }
+        .lcd-step.on { background: var(--accent); }
+        .lcd-step.current { background: var(--green); }
+        .lcd-track.selected { background: rgba(233, 69, 96, 0.1); border-radius: 2px; }
 
-        .lcd-step.on {
-            background: #ff6600;
-            border-color: #ff8833;
-            box-shadow: 0 0 4px rgba(255, 102, 0, 0.6);
-        }
-
-        .lcd-step.play {
-            background: #00ff66;
-            border-color: #33ff88;
-            box-shadow: 0 0 6px rgba(0, 255, 102, 0.8);
-        }
-
-        /* LCD Info Bar */
-        .lcd-info {
-            height: 22px;
-            background: #0d0d05;
-            border-top: 1px solid #333;
-            display: flex;
-            align-items: center;
-            padding: 0 10px;
-            gap: 20px;
-        }
-
-        .lcd-sample {
-            font-size: 9px;
-            color: #00ccff;
-            text-shadow: 0 0 6px rgba(0, 204, 255, 0.6);
-        }
-
-        .lcd-file {
-            margin-left: auto;
+        /* Section labels */
+        .section-label {
+            position: absolute;
             font-size: 8px;
-            color: #888;
+            font-weight: 700;
+            letter-spacing: 1px;
+            z-index: 3;
         }
+        .label-pads { top: 450px; left: 25px; color: var(--gray-text); }
+        .label-ctrl { top: 450px; right: 25px; color: var(--gray-text); width: 200px; text-align: center; }
 
-        /* ==================== PASTEL PANEL BACKGROUNDS (matches webapp) ==================== */
-        .hw-panel-bg {
+        /* 3 Mode Buttons — identical to index.html */
+        .modes-bar {
             position: absolute;
-            border-radius: 8px;
-            z-index: 1;
+            top: 400px; left: 25px; right: 25px;
+            height: 46px;
+            display: flex;
+            gap: 10px;
+            z-index: 2;
         }
-
-        /* Pads panel - Pastel Gray (matches webapp) */
-        .panel-pads-bg {
-            top: 190px;
-            left: 25px;
-            width: 380px;
-            height: 240px;
-            background: #e8e8e8;
-            border: 1px solid #c0c0c0;
-        }
-
-        /* CTRL/Encoders panel - Pastel Gray (matches webapp) */
-        .panel-ctrl-bg {
-            top: 190px;
-            right: 25px;
-            width: 160px;
-            height: 200px;
-            background: #e8e8e8;
-            border: 1px solid #c0c0c0;
-        }
-
-        /* ==================== ARTWORK ON ENCLOSURE EDGES ONLY ==================== */
-        .sp404-art {
-            position: absolute;
-            top: 185px;
-            left: 15px;
-            right: 15px;
-            bottom: 15px;
+        .mode-btn {
+            flex: 1;
+            height: 40px;
+            border-radius: 6px;
+            border: 2px solid;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
             pointer-events: none;
-            opacity: 0.12;
-            background-image: url('https://media.rhizome.org/blog/8979/Chombart-de-Lauwe.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            filter: invert(1) brightness(1.5);
-            border-radius: 12px;
-            z-index: 0;
+        }
+        .mode-btn[data-mode="picture"] {
+            border-color: #ff6b2b; background: #ff6b2b; color: #fff;
+        }
+        .mode-btn[data-mode="soundscape"] {
+            border-color: #1aa167; background: transparent; color: #1aa167;
+        }
+        .mode-btn[data-mode="interact"] {
+            border-color: #1270b8; background: transparent; color: #1270b8;
         }
 
-        .sp404-art svg {
-            display: none;
-        }
-
-        /* ==================== PHYSICAL CONTROLS ==================== */
-
-        /* Touch Pads - LEFT SIDE (matches webapp PADS panel) */
-        .pads-area {
+        /* 8 Touch Pads — identical to index.html */
+        .pads-container {
             position: absolute;
-            top: 215px;
-            left: 35px;
+            top: 460px; left: 25px;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(2, 1fr);
-            gap: 12px;
-            width: 360px;
-            height: 160px;
+            gap: 8px;
+            width: 480px;
+            height: 110px;
             z-index: 2;
         }
 
-        .hw-pad {
-            background: linear-gradient(145deg, #3a3a3a 0%, #222 100%);
-            border-radius: 10px;
-            box-shadow:
-                0 4px 12px rgba(0,0,0,0.4),
-                inset 0 1px 0 rgba(255,255,255,0.1),
-                inset 0 -1px 0 rgba(0,0,0,0.3);
-            border: 2px solid #444;
+        .pad {
+            background: linear-gradient(145deg, #f5f5f5 0%, #e0e0e0 100%);
+            border-radius: 8px;
+            border: 2px solid #ccc;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #555;
+            color: #666;
             font-size: 14px;
             font-weight: 700;
             position: relative;
-            cursor: pointer;
-            transition: all 0.1s;
         }
+        .pad:nth-child(1) { border-color: #ff6b2b; }
+        .pad:nth-child(2) { border-color: #1270b8; }
+        .pad:nth-child(3) { border-color: #1aa167; }
+        .pad:nth-child(4) { border-color: #ffc003; }
+        .pad:nth-child(5) { border-color: #ce2021; }
+        .pad:nth-child(6) { border-color: #9b59b6; }
+        .pad:nth-child(7) { border-color: #1270b8; }
+        .pad:nth-child(8) { border-color: #ff6b2b; }
 
-        .hw-pad:hover {
-            background: linear-gradient(145deg, #4a4a4a 0%, #333 100%);
-            transform: translateY(-2px);
-        }
-
-        .hw-pad::before {
+        .pad::before {
             content: '';
             position: absolute;
-            top: 6px;
-            right: 6px;
-            width: 8px;
-            height: 8px;
+            top: 4px; right: 4px;
+            width: 6px; height: 6px;
             border-radius: 50%;
-            background: #333;
-            border: 1px solid #444;
+            background: #ccc;
         }
 
-        .hw-pad.lit::before {
-            background: #e94560;
-            box-shadow: 0 0 10px #e94560;
-        }
-
-        /* Encoders - RIGHT COLUMN (4x context-sensitive) */
-        .encoders-area {
+        /* 4 Encoders — identical to index.html */
+        .encoders-container {
             position: absolute;
-            top: 210px;
-            right: 35px;
+            top: 460px; right: 25px;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             grid-template-rows: repeat(2, 1fr);
-            gap: 14px;
-            width: 140px;
-            height: 150px;
+            gap: 10px;
+            width: 200px;
+            height: 110px;
             z-index: 2;
         }
 
-        .hw-encoder {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
+        .encoder { display: flex; flex-direction: column; align-items: center; gap: 3px; }
 
         .encoder-knob {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(145deg, #555 0%, #333 100%);
+            width: 36px; height: 36px;
+            background: linear-gradient(145deg, #f5f5f5 0%, #ddd 100%);
             border-radius: 50%;
-            border: 2px solid #222;
-            box-shadow:
-                0 3px 8px rgba(0,0,0,0.4),
-                inset 0 2px 4px rgba(255,255,255,0.1);
+            border: 2px solid #bbb;
             position: relative;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
         }
 
         .encoder-knob::before {
             content: '';
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 16px;
-            height: 16px;
-            background: linear-gradient(145deg, #444 0%, #2a2a2a 100%);
+            top: 50%; left: 50%;
+            width: 14px; height: 14px;
+            background: linear-gradient(145deg, #eee 0%, #ccc 100%);
             border-radius: 50%;
             transform: translate(-50%, -50%);
         }
@@ -498,546 +367,229 @@
         .encoder-knob::after {
             content: '';
             position: absolute;
-            top: 5px;
-            left: 50%;
-            width: 2px;
-            height: 10px;
-            background: #e94560;
+            top: 4px; left: 50%;
+            width: 3px; height: 8px;
+            background: var(--accent);
             border-radius: 2px;
             transform: translateX(-50%);
         }
 
-        .encoder-label {
-            font-size: 8px;
-            color: #888;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
+        .encoder-label { font-size: 9px; color: var(--gray-text); font-weight: 600; }
+        .encoder-value { font-size: 8px; color: #666; font-family: monospace; }
 
-        /* Pattern Buttons - CENTER (below pads, matches webapp SEQ patterns) */
-        .pattern-area {
+        /* Transport — identical to index.html */
+        .transport-container {
             position: absolute;
-            top: 355px;
-            left: 145px;
+            bottom: 18px; left: 25px;
             display: flex;
-            gap: 6px;
+            gap: 10px;
             z-index: 2;
         }
 
-        .hw-pattern-btn {
-            width: 32px;
-            height: 28px;
-            background: linear-gradient(145deg, #3a3a3a 0%, #252525 100%);
-            border-radius: 4px;
-            border: 2px solid #444;
+        .transport-btn {
+            width: 38px; height: 38px;
+            background: linear-gradient(145deg, #f5f5f5 0%, #ddd 100%);
+            border-radius: 50%;
+            border: 2px solid #bbb;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #666;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
+            font-size: 14px;
         }
 
-        .hw-pattern-btn.active {
-            background: linear-gradient(145deg, #4a4a4a 0%, #333 100%);
-            border-color: #e94560;
-            color: #e94560;
-        }
+        .transport-btn.play.active { background: #1aa167; color: #fff; border-color: #1aa167; }
 
-        /* Section Labels */
-        .section-label {
+        /* GPS Strip — identical to index.html */
+        .gps-strip {
             position: absolute;
-            font-size: 9px;
-            font-weight: 700;
-            color: #1a5276;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            z-index: 3;
-        }
-
-        .label-pads { top: 195px; left: 35px; color: #2c3e50; }
-        .label-ctrl { top: 195px; right: 30px; width: 220px; text-align: center; color: #2c3e50; }
-
-        /* FX Punch Buttons Area - Pastel Violet (matches webapp) */
-        .fx-area {
-            position: absolute;
-            top: 375px;
-            right: 30px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            z-index: 2;
-        }
-
-        .fx-btns {
-            display: flex;
-            gap: 6px;
-        }
-
-        .hw-fx-btn {
-            width: 50px;
-            height: 32px;
-            background: #d7bde2;
-            border-radius: 6px;
-            border: 2px solid #af7ac5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #4a235a;
-            font-size: 10px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .hw-fx-btn:hover {
-            background: #8e44ad;
-            color: #fff;
-        }
-
-        /* ==================== HARDWARE MIXER FADERS - LEFT COLUMN (matches webapp MIXER panel) ==================== */
-        .mixer-area {
-            position: absolute;
-            top: 215px;
-            left: 28px;
-            display: flex;
-            flex-direction: row;
-            gap: 6px;
-            align-items: flex-start;
-            z-index: 2;
-        }
-
-        .hw-fader {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .fader-track {
-            width: 10px;
-            height: 120px;
-            background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
-            border-radius: 5px;
-            border: 2px solid #333;
-            position: relative;
-            box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);
-        }
-
-        .fader-knob {
-            position: absolute;
-            left: -4px;
-            width: 20px;
-            height: 14px;
-            background: linear-gradient(180deg, #666 0%, #444 50%, #333 100%);
-            border-radius: 3px;
-            border: 1px solid #555;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-            cursor: pointer;
-        }
-
-        .hw-fader:nth-child(1) .fader-knob { bottom: 60%; }
-        .hw-fader:nth-child(2) .fader-knob { bottom: 75%; }
-        .hw-fader:nth-child(3) .fader-knob { bottom: 40%; }
-        .hw-fader:nth-child(4) .fader-knob { bottom: 55%; }
-        .hw-fader:nth-child(5) .fader-knob { bottom: 80%; }
-
-        .fader-label {
-            font-size: 8px;
-            color: #1a5276;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        /* ==================== HARDWARE SCENE BUTTONS - RIGHT BOTTOM (matches webapp SCENES panel) ==================== */
-        .scenes-area {
-            position: absolute;
-            bottom: 25px;
-            right: 30px;
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            z-index: 2;
-        }
-
-        .scenes-label {
-            font-size: 9px;
-            color: #2c3e50;
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin-right: 4px;
-        }
-
-        .hw-scene-btn {
-            width: 32px;
-            height: 32px;
-            background: #d5d8dc;
-            border-radius: 6px;
-            border: 2px solid #aeb6bf;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #2c3e50;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .hw-scene-btn::before {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: #bbb;
-            border: 1px solid #999;
-        }
-
-        .hw-scene-btn.active {
-            background: #27ae60;
-            border-color: #27ae60;
-            color: #fff;
-        }
-
-        .hw-scene-btn.active::before {
+            bottom: 18px; right: 25px;
+            width: 200px; height: 45px;
             background: #fff;
-            box-shadow: 0 0 6px #fff;
-        }
-
-        /* Transport Buttons - CENTER BOTTOM */
-        .transport-area {
-            position: absolute;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            z-index: 2;
-        }
-
-        .hw-btn {
-            width: 48px;
-            height: 32px;
-            background: linear-gradient(145deg, #3a3a3a 0%, #252525 100%);
+            border: 1px solid #ddd;
             border-radius: 6px;
-            border: 2px solid #444;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #888;
-            font-size: 9px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .hw-transport {
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            border: 3px solid #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-
-        .hw-transport.play {
-            background: linear-gradient(145deg, #2ecc71 0%, #27ae60 100%);
-            color: #fff;
-        }
-
-        .hw-transport.stop {
-            background: linear-gradient(145deg, #555 0%, #333 100%);
-            color: #fff;
-        }
-
-        .hw-transport.rec {
-            background: linear-gradient(145deg, #e74c3c 0%, #c0392b 100%);
-            color: #fff;
-        }
-
-        /* RGB Status LEDs (BOM: 4x WS2812) */
-        .leds-area {
-            position: absolute;
-            top: 365px;
-            right: 45px;
-            display: flex;
-            gap: 10px;
             z-index: 2;
-        }
-
-        .hw-led {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #222;
-            border: 1px solid #444;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
-        }
-
-        .hw-led.on {
-            background: #27ae60;
-            box-shadow: 0 0 8px #27ae60;
-        }
-
-        /* ==================== FINE LINE SCHEMATICS ==================== */
-        .schematics-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        /* Signal flow lines */
-        .signal-line {
-            fill: none;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        .line-mic { stroke: #3498db; stroke-width: 1.5; }
-        .line-radio { stroke: #9b59b6; stroke-width: 1.5; }
-        .line-synth { stroke: #e94560; stroke-width: 1.5; }
-        .line-fx { stroke: #27ae60; stroke-width: 1.5; }
-        .line-audio { stroke: #f39c12; stroke-width: 2; }
-
-        .line-dashed {
-            stroke-dasharray: 4, 3;
-        }
-
-        /* Component symbols */
-        .symbol {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-size: 9px;
-            font-weight: 600;
-        }
-
-        .symbol-mic { fill: #3498db; }
-        .symbol-radio { fill: #9b59b6; }
-        .symbol-synth { fill: #e94560; }
-        .symbol-fx { fill: #27ae60; }
-        .symbol-out { fill: #f39c12; }
-
-        /* Schematic boxes */
-        .schematic-box {
-            fill: rgba(255,255,255,0.03);
-            stroke-width: 1;
-            rx: 4;
-        }
-
-        .schematic-label {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-size: 8px;
-            fill: #666;
-        }
-
-        /* Circuit nodes */
-        .node {
-            fill: currentColor;
-        }
-
-        /* Waveform symbols */
-        .waveform {
-            fill: none;
-            stroke-width: 1.5;
-        }
-
-        /* I/O Ports on sides */
-        .io-port-group {
-            position: absolute;
-        }
-
-        .io-port {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-bottom: 8px;
+            padding: 0 10px;
+            gap: 8px;
         }
+        .gps-strip .gps-icon { font-size: 16px; color: var(--accent); flex-shrink: 0; }
+        .gps-strip .gps-info { display: flex; flex-direction: column; gap: 1px; }
+        .gps-strip .gps-label { font-size: 8px; font-weight: 700; color: var(--gray-text); letter-spacing: 1px; }
+        .gps-strip .gps-coords { font-size: 9px; color: #888; font-family: monospace; }
 
-        .port-jack {
-            width: 16px;
-            height: 16px;
-            background: #0a0a0a;
-            border-radius: 50%;
-            border: 2px solid #444;
-            position: relative;
+        /* I/O ports — identical to index.html */
+        .io-ports {
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        .port-jack::after {
+        .io-port {
+            width: 16px; height: 16px;
+            background: #999;
+            border-radius: 50%;
+            border: 2px solid #ce2021;
+        }
+        .io-label {
+            position: absolute;
+            right: -160px;
+            font-size: 9px; font-weight: 800;
+            color: #ce2021; text-transform: uppercase;
+            letter-spacing: 0.5px; white-space: nowrap;
+        }
+        .io-label-line {
+            position: absolute;
+            right: -25px;
+            width: 25px;
+            border-top: 2px solid #ce2021;
+        }
+        .io-label-line::after {
             content: '';
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 6px;
-            height: 6px;
-            background: #333;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
+            right: -1px; top: -4px;
+            width: 6px; height: 6px;
+            background: #ce2021;
         }
 
-        .port-label {
-            font-size: 8px;
-            color: #666;
-            font-weight: 600;
-        }
-
-        /* Left I/O */
-        .io-left {
-            left: -80px;
-            top: 80px;
-        }
-
-        /* Right I/O */
-        .io-right {
-            right: -80px;
-            top: 80px;
-        }
-
-        /* ==================== LEGEND ==================== */
-        .schematic-legend {
-            display: flex;
-            gap: 32px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 24px;
-        }
-
-        .legend-item {
+        /* Sensor diagrams — identical to index.html */
+        .sensor {
+            position: absolute;
             display: flex;
             align-items: center;
             gap: 8px;
+            z-index: 0;
         }
-
-        .legend-line {
-            width: 32px;
-            height: 3px;
-            border-radius: 2px;
+        .sensor-icon {
+            width: 32px; height: 32px;
+            border: 2px solid #1270b8;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; background: #1a1a1a; color: #fff;
+            flex-shrink: 0;
         }
+        .sensor-info { display: flex; flex-direction: column; gap: 1px; }
+        .sensor-name { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #1270b8; }
+        .sensor-desc { font-size: 8px; color: #666; }
+        .sensor-line { position: absolute; border-top: 2px solid #1270b8; }
+        .sensor-line-v { position: absolute; border-left: 2px solid #1270b8; }
 
-        .legend-line.mic { background: #3498db; }
-        .legend-line.radio { background: #9b59b6; }
-        .legend-line.synth { background: #e94560; }
-        .legend-line.fx { background: #27ae60; }
-        .legend-line.audio { background: #f39c12; }
-
-        .legend-text {
-            font-size: 12px;
-            color: #666;
-            font-weight: 500;
+        .sensor-line::after, .sensor-line-v::after {
+            content: '';
+            position: absolute;
+            width: 8px; height: 8px;
+            background: currentColor;
+            border-radius: 50%;
         }
+        .sensor-line::after { right: -4px; top: -5px; }
+        .sensor-line-v::after { bottom: -4px; left: -5px; }
 
-        /* ==================== SPECS SECTION ==================== */
+        .sensor-piezo .sensor-icon { border-color: #ff6b2b; }
+        .sensor-piezo .sensor-name { color: #ff6b2b; }
+        .sensor-piezo .sensor-line { border-color: #ff6b2b; color: #ff6b2b; }
+        .sensor-mic .sensor-icon { border-color: #1aa167; }
+        .sensor-mic .sensor-name { color: #1aa167; }
+        .sensor-mic .sensor-line { border-color: #1aa167; color: #1aa167; }
+        .sensor-wifi .sensor-icon { border-color: #ffc003; }
+        .sensor-wifi .sensor-name { color: #ffc003; }
+        .sensor-wifi .sensor-line-v { border-color: #ffc003; color: #ffc003; }
+        .sensor-radio .sensor-icon { border-color: #1270b8; }
+        .sensor-radio .sensor-name { color: #1270b8; }
+        .sensor-radio .sensor-line-v { border-color: #1270b8; color: #1270b8; }
+
+        .sensor-piezo { top: 200px; left: -190px; }
+        .sensor-piezo .sensor-line { top: 16px; left: 145px; width: 35px; }
+        .sensor-mic { top: 320px; left: -190px; }
+        .sensor-mic .sensor-line { top: 16px; left: 145px; width: 35px; }
+        .sensor-wifi { top: -55px; left: 200px; flex-direction: column; }
+        .sensor-wifi .sensor-line-v { top: 42px; left: 15px; height: 23px; }
+        .sensor-radio { top: -55px; right: 200px; left: auto; flex-direction: column; }
+        .sensor-radio .sensor-line-v { top: 42px; left: 15px; height: 23px; }
+
+        .sensor-piezo .sensor-line::before,
+        .sensor-mic .sensor-line::before {
+            content: '';
+            position: absolute;
+            right: -2px; top: -12px;
+            width: 0; height: 12px;
+            border-left: 2px solid;
+        }
+        .sensor-piezo .sensor-line::before { border-color: #ff6b2b; }
+        .sensor-mic .sensor-line::before { border-color: #1aa167; }
+
+        /* Info bar */
+        .info-bar {
+            background: #fff;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            color: #888;
+            font-size: 11px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .info-bar span { color: #1aa167; font-weight: 600; }
+
+        /* Specs grid (kept from original) */
         .specs-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
             margin-top: 24px;
         }
-
         .spec-card {
-            background: var(--cream);
+            background: #fafafa;
             border-radius: 12px;
             padding: 20px;
-            border: 2px solid var(--border);
+            border: 2px solid #e0e0e0;
         }
-
         .spec-card h3 {
             color: var(--accent);
             font-size: 16px;
             margin-bottom: 12px;
             padding-bottom: 8px;
-            border-bottom: 2px solid var(--border);
+            border-bottom: 2px solid #e0e0e0;
         }
-
-        .spec-card ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
+        .spec-card ul { list-style: none; padding: 0; margin: 0; }
         .spec-card li {
-            padding: 6px 0;
-            font-size: 13px;
-            color: var(--text);
-            border-bottom: 1px solid rgba(139, 90, 43, 0.2);
+            padding: 6px 0; font-size: 13px; color: #1a1a1a;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
         }
-
-        .spec-card li:last-child {
-            border-bottom: none;
-        }
-
+        .spec-card li:last-child { border-bottom: none; }
         .spec-card code {
-            background: rgba(139, 90, 43, 0.15);
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 11px;
+            background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 3px; font-size: 11px;
         }
 
-        /* BOM Table */
+        /* BOM table */
         .bom-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 16px;
-            font-size: 13px;
+            width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px;
         }
-        .bom-table th {
-            background: var(--accent);
-            color: #fff;
-            padding: 10px 12px;
-            text-align: left;
-        }
-        .bom-table td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #ddd;
-        }
-        .bom-table tr:nth-child(even) {
-            background: var(--cream);
-        }
-        .bom-table .price {
-            font-weight: 600;
-            color: var(--accent);
-        }
-        .bom-total {
-            background: var(--accent) !important;
-            color: #fff;
-            font-weight: 700;
-        }
+        .bom-table th { background: var(--accent); color: #fff; padding: 10px 12px; text-align: left; }
+        .bom-table td { padding: 10px 12px; border-bottom: 1px solid #ddd; }
+        .bom-table tr:nth-child(even) { background: #fafafa; }
+        .bom-table .price { font-weight: 600; color: var(--accent); }
+        .bom-total { background: var(--accent) !important; color: #fff; font-weight: 700; }
 
-        /* Pin Table */
+        /* Pin table */
         .pin-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 16px;
-            font-size: 13px;
+            width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px;
         }
-        .pin-table th {
-            background: var(--text);
-            color: #fff;
-            padding: 10px 12px;
-            text-align: left;
+        .pin-table th { background: #1a1a1a; color: #fff; padding: 10px 12px; text-align: left; }
+        .pin-table td { padding: 8px 12px; border-bottom: 1px solid #ddd; }
+        .pin-table tr:nth-child(even) { background: #fafafa; }
+        .pin-table .pin-num { font-family: monospace; font-weight: 700; color: var(--accent); }
+
+        /* Sequencer step animation — playhead cycling */
+        @keyframes playhead-cycle {
+            0%   { background: var(--green); }
+            6%   { background: #222; }
+            100% { background: #222; }
         }
-        .pin-table td {
-            padding: 8px 12px;
-            border-bottom: 1px solid #ddd;
-        }
-        .pin-table tr:nth-child(even) {
-            background: var(--cream);
-        }
-        .pin-table .pin-num {
-            font-family: monospace;
-            font-weight: 700;
-            color: var(--accent);
-        }
+        .lcd-step.animated { animation: playhead-cycle 8s linear infinite; }
     </style>
 </head>
 <body>
@@ -1051,343 +603,201 @@
                 <a href="app.html" class="nav-link">App</a>
                 <a href="design.html" class="nav-link active">Design</a>
                 <a href="about.html" class="nav-link">About</a>
-                <a href="ise.html" class="nav-link">ISE 2026</a>
             </nav>
         </header>
 
         <main class="page-content">
-            <div style="display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #1a5276 0%, #2874a6 100%); color: #fff; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: 1px; margin-bottom: 24px;">
-                <span>ISE 2026 OPEN INNOVATION CHALLENGE</span>
-                <span style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px; font-size: 11px;">Feb 3-5, Barcelona</span>
-            </div>
             <h1 class="page-title">Hardware Design</h1>
             <p class="page-subtitle">Portable music instrument with location-aware sampling, synthesis, and AI composition</p>
 
-            <!-- Artistic Hardware Mockup -->
-            <div class="artistic-container">
-                <div class="device-artwork">
-                    <!-- The Enclosure -->
-                    <div class="enclosure">
-                        <!-- Display - Sequencer & Setup Only (minimal LED) -->
-                        <div class="display-bezel">
-                            <div class="display-screen">
-                                <!-- Status Bar -->
-                                <div class="lcd-status">
-                                    <span class="lcd-pattern">PTN A1</span>
-                                    <span class="lcd-bpm">120</span>
-                                    <span class="lcd-time">00:42</span>
-                                </div>
-                                <!-- Main Sequencer Grid -->
-                                <div class="lcd-seq">
-                                    <div class="lcd-tracks">
-                                        <span>BD</span><span>SD</span><span>HH</span><span>PC</span><span>S1</span><span>S2</span><span>S3</span><span>S4</span>
+            <!-- 3D Showcase -->
+            <div class="showcase-stage">
+                <div class="showcase-rotator">
+                    <div class="device-container">
+                        <div class="enclosure">
+                            <div class="artwork"></div>
+
+                            <!-- Static Display -->
+                            <div class="display">
+                                <div class="lcd-screen">
+                                    <!-- Transport bar -->
+                                    <div class="lcd-status-bar">
+                                        <div class="lcd-transport">
+                                            <div class="lcd-tr-btn active">&#9654;</div>
+                                            <div class="lcd-tr-btn">&#9632;</div>
+                                            <div class="lcd-tr-btn">&#9679;</div>
+                                        </div>
+                                        <div class="lcd-bpm"><span class="lcd-bpm-val">120</span> BPM</div>
+                                        <div class="lcd-tap">TAP</div>
+                                        <div class="lcd-gps">40.4168, -3.7038</div>
+                                        <div class="lcd-time">14:32</div>
                                     </div>
-                                    <div class="lcd-grid">
-                                        <!-- Track 1 - BD -->
-                                        <div class="lcd-step on"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step on"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step on"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step on"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div>
-                                        <!-- Track 2 - SD -->
-                                        <div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step on"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step on"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div>
-                                        <!-- Track 3 - HH -->
-                                        <div class="lcd-step on"></div><div class="lcd-step"></div><div class="lcd-step on"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step on"></div><div class="lcd-step"></div><div class="lcd-step on"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step on"></div><div class="lcd-step"></div><div class="lcd-step on"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step on play"></div><div class="lcd-step"></div><div class="lcd-step on"></div><div class="lcd-step"></div>
-                                        <!-- Track 4 - PC -->
-                                        <div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step on"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step on"></div>
-                                        <div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step on"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step on"></div>
-                                        <!-- Track 5-8 (samples) -->
-                                        <div class="lcd-step on"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step on"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step on"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step"></div><div class="lcd-step on"></div><div class="lcd-step"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step on"></div>
-                                        <div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step on"></div>
-                                        <div class="lcd-step on"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step on"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step"></div><div class="lcd-step on"></div><div class="lcd-step"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step on"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step"></div>
-                                        <div class="lcd-step on"></div><div class="lcd-step"></div><div class="lcd-step"></div><div class="lcd-step on"></div>
-                                        <div class="lcd-step"></div><div class="lcd-step on"></div><div class="lcd-step"></div><div class="lcd-step"></div>
+
+                                    <!-- Tab bar -->
+                                    <div class="lcd-tabs">
+                                        <div class="lcd-tab active">SEQ</div>
+                                        <div class="lcd-tab">MIX</div>
+                                        <div class="lcd-tab">SYN</div>
+                                        <div class="lcd-tab">SCN</div>
+                                        <div class="lcd-tab">AI</div>
+                                        <div class="lcd-tab">FX</div>
+                                        <div class="lcd-tab">RAD</div>
+                                        <div class="lcd-tab">EQ</div>
+                                    </div>
+
+                                    <!-- SEQ panel content -->
+                                    <div class="lcd-seq-area">
+                                        <div class="lcd-seq-header">
+                                            <span class="lcd-seq-title">SEQ</span>
+                                            <span class="lcd-seq-ctrl active">SMP</span>
+                                            <span class="lcd-seq-ctrl">SYN</span>
+                                            <span class="lcd-seq-ctrl">RAD</span>
+                                            <span class="lcd-seq-ctrl">MIC</span>
+                                            <span class="lcd-seq-ctrl" style="margin-left: auto;">RND</span>
+                                            <span class="lcd-seq-ctrl">CLR</span>
+                                            <span class="lcd-seq-ctrl">EUC</span>
+                                            <span class="lcd-seq-ctrl">DUB</span>
+                                        </div>
+                                        <div class="lcd-patterns">
+                                            <div class="lcd-pat active">A</div>
+                                            <div class="lcd-pat">B</div>
+                                            <div class="lcd-pat">C</div>
+                                            <div class="lcd-pat">D</div>
+                                            <div class="lcd-pat">E</div>
+                                            <div class="lcd-pat">F</div>
+                                            <div class="lcd-pat">G</div>
+                                            <div class="lcd-pat">H</div>
+                                        </div>
+                                        <div class="lcd-tracks" id="lcdTracks"></div>
                                     </div>
                                 </div>
-                                <!-- Sample Info -->
-                                <div class="lcd-info">
-                                    <span class="lcd-sample">S2: field_birds.wav</span>
-                                    <span class="lcd-file">PROJECT: Madrid_Park</span>
+                            </div>
+
+                            <!-- 3 Mode Buttons -->
+                            <div class="modes-bar">
+                                <div class="mode-btn" data-mode="picture">PICTURE</div>
+                                <div class="mode-btn" data-mode="soundscape">SOUNDSCAPE</div>
+                                <div class="mode-btn" data-mode="interact">INTERACT</div>
+                            </div>
+
+                            <!-- Labels -->
+                            <span class="section-label label-pads">PADS</span>
+                            <span class="section-label label-ctrl">CTRL</span>
+
+                            <!-- 8 Touch Pads -->
+                            <div class="pads-container">
+                                <div class="pad">1</div>
+                                <div class="pad">2</div>
+                                <div class="pad">3</div>
+                                <div class="pad">4</div>
+                                <div class="pad">5</div>
+                                <div class="pad">6</div>
+                                <div class="pad">7</div>
+                                <div class="pad">8</div>
+                            </div>
+
+                            <!-- 4 Encoders -->
+                            <div class="encoders-container">
+                                <div class="encoder">
+                                    <div class="encoder-knob"></div>
+                                    <span class="encoder-label">VOL</span>
+                                    <span class="encoder-value">80</span>
+                                </div>
+                                <div class="encoder">
+                                    <div class="encoder-knob"></div>
+                                    <span class="encoder-label">SWG</span>
+                                    <span class="encoder-value">0</span>
+                                </div>
+                                <div class="encoder">
+                                    <div class="encoder-knob"></div>
+                                    <span class="encoder-label">LEN</span>
+                                    <span class="encoder-value">16</span>
+                                </div>
+                                <div class="encoder">
+                                    <div class="encoder-knob"></div>
+                                    <span class="encoder-label">BPM</span>
+                                    <span class="encoder-value">120</span>
+                                </div>
+                            </div>
+
+                            <!-- Transport -->
+                            <div class="transport-container">
+                                <div class="transport-btn play active">&#9654;</div>
+                                <div class="transport-btn stop">&#9632;</div>
+                                <div class="transport-btn rec">&#9679;</div>
+                            </div>
+
+                            <!-- GPS Strip -->
+                            <div class="gps-strip">
+                                <div class="gps-icon">+</div>
+                                <div class="gps-info">
+                                    <span class="gps-label">GPS</span>
+                                    <span class="gps-coords">40.4168, -3.7038</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- GPS Display (Round Map) -->
-                        <div class="gps-display-bezel">
-                            <div class="gps-map-circle">
-                                <div class="gps-map-land l1"></div>
-                                <div class="gps-map-land l2"></div>
-                                <div class="gps-map-land l3"></div>
+                        <!-- I/O Ports -->
+                        <div class="io-ports">
+                            <div style="position: relative;">
+                                <div class="io-port"></div>
+                                <div class="io-label" style="top: 2px;">Audio Out</div>
+                                <div class="io-label-line" style="top: 8px;"></div>
                             </div>
-                            <div class="gps-coords">
-                                <span class="gps-coord-line">40.7128°N</span>
-                                <span class="gps-coord-line">74.0060°W</span>
+                            <div style="position: relative;">
+                                <div class="io-port"></div>
+                                <div class="io-label" style="top: 2px;">Headphones</div>
+                                <div class="io-label-line" style="top: 8px;"></div>
                             </div>
-                            <span class="gps-label">GPS</span>
+                            <div style="position: relative;">
+                                <div class="io-port"></div>
+                                <div class="io-label" style="top: 2px;">Audio In</div>
+                                <div class="io-label-line" style="top: 8px;"></div>
+                            </div>
                         </div>
 
-                        <!-- Pastel Panel Backgrounds (matches webapp colors) -->
-                        <div class="hw-panel-bg panel-pads-bg"></div>
-                        <div class="hw-panel-bg panel-ctrl-bg"></div>
-
-                        <!-- Section Labels -->
-                        <span class="section-label label-pads">PADS</span>
-                        <span class="section-label label-ctrl">CTRL</span>
-
-                        <!-- Touch Pads - CENTER COLUMN -->
-                        <div class="pads-area">
-                            <div class="hw-pad">1</div>
-                            <div class="hw-pad lit">2</div>
-                            <div class="hw-pad">3</div>
-                            <div class="hw-pad">4</div>
-                            <div class="hw-pad">5</div>
-                            <div class="hw-pad">6</div>
-                            <div class="hw-pad">7</div>
-                            <div class="hw-pad">8</div>
+                        <!-- External Sensors -->
+                        <div class="sensor sensor-piezo">
+                            <div class="sensor-icon">&#9676;</div>
+                            <div class="sensor-info">
+                                <span class="sensor-name">Piezo</span>
+                                <span class="sensor-desc">Vibration sensor</span>
+                            </div>
+                            <div class="sensor-line"></div>
                         </div>
-
-                        <!-- Encoders - RIGHT COLUMN (4x context-sensitive) -->
-                        <div class="encoders-area">
-                            <div class="hw-encoder"><div class="encoder-knob"></div><span class="encoder-label">VOL</span></div>
-                            <div class="hw-encoder"><div class="encoder-knob"></div><span class="encoder-label">PAN</span></div>
-                            <div class="hw-encoder"><div class="encoder-knob"></div><span class="encoder-label">FILT</span></div>
-                            <div class="hw-encoder"><div class="encoder-knob"></div><span class="encoder-label">FX</span></div>
+                        <div class="sensor sensor-mic">
+                            <div class="sensor-icon">&#9834;</div>
+                            <div class="sensor-info">
+                                <span class="sensor-name">Mic</span>
+                                <span class="sensor-desc">Condenser</span>
+                            </div>
+                            <div class="sensor-line"></div>
                         </div>
-
-                        <!-- 4 RGB Status LEDs -->
-                        <div class="leds-area">
-                            <div class="hw-led on"></div>
-                            <div class="hw-led"></div>
-                            <div class="hw-led"></div>
-                            <div class="hw-led"></div>
+                        <div class="sensor sensor-wifi">
+                            <div class="sensor-icon">&#8801;</div>
+                            <div class="sensor-info">
+                                <span class="sensor-name">WiFi</span>
+                                <span class="sensor-desc">802.11</span>
+                            </div>
+                            <div class="sensor-line-v"></div>
                         </div>
-
-                        <!-- Transport (3 buttons only - matches BOM) -->
-                        <div class="transport-area">
-                            <div class="hw-transport play">&#9654;</div>
-                            <div class="hw-transport stop">&#9632;</div>
-                            <div class="hw-transport rec">&#9679;</div>
+                        <div class="sensor sensor-radio">
+                            <div class="sensor-icon">&#9399;</div>
+                            <div class="sensor-info">
+                                <span class="sensor-name">Radio</span>
+                                <span class="sensor-desc">FM Antenna</span>
+                            </div>
+                            <div class="sensor-line-v"></div>
                         </div>
-
-                        <!-- SP-404 Style Artwork Overlay -->
-                        <div class="sp404-art">
-                            <svg viewBox="0 0 700 600" preserveAspectRatio="xMidYMid slice">
-                                <!-- Abstract geometric patterns -->
-                                <defs>
-                                    <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
-                                        <circle cx="2" cy="2" r="1" fill="#e94560"/>
-                                    </pattern>
-                                    <pattern id="lines" width="10" height="10" patternUnits="userSpaceOnUse">
-                                        <line x1="0" y1="10" x2="10" y2="0" stroke="#e94560" stroke-width="0.5"/>
-                                    </pattern>
-                                </defs>
-
-                                <!-- Retro wave circles -->
-                                <circle cx="600" cy="100" r="80" fill="none" stroke="#e94560" stroke-width="1"/>
-                                <circle cx="600" cy="100" r="60" fill="none" stroke="#e94560" stroke-width="0.5"/>
-                                <circle cx="600" cy="100" r="40" fill="none" stroke="#e94560" stroke-width="0.5"/>
-
-                                <!-- Sound wave visualization -->
-                                <path d="M 50 520 Q 80 480 110 520 Q 140 560 170 520 Q 200 480 230 520 Q 260 560 290 520"
-                                      fill="none" stroke="#27ae60" stroke-width="2" opacity="0.6"/>
-                                <path d="M 50 535 Q 90 510 130 535 Q 170 560 210 535 Q 250 510 290 535"
-                                      fill="none" stroke="#27ae60" stroke-width="1" opacity="0.4"/>
-
-                                <!-- Grid pattern area -->
-                                <rect x="480" y="450" width="180" height="120" fill="url(#dots)" opacity="0.3"/>
-
-                                <!-- Abstract shapes -->
-                                <polygon points="100,80 140,120 100,160 60,120" fill="none" stroke="#9b59b6" stroke-width="1.5"/>
-                                <polygon points="110,90 140,115 110,140 80,115" fill="none" stroke="#9b59b6" stroke-width="0.5"/>
-
-                                <!-- Frequency bars -->
-                                <rect x="520" y="280" width="8" height="40" fill="#3498db" opacity="0.4"/>
-                                <rect x="532" y="260" width="8" height="60" fill="#3498db" opacity="0.5"/>
-                                <rect x="544" y="240" width="8" height="80" fill="#3498db" opacity="0.6"/>
-                                <rect x="556" y="255" width="8" height="65" fill="#3498db" opacity="0.5"/>
-                                <rect x="568" y="270" width="8" height="50" fill="#3498db" opacity="0.4"/>
-
-                                <!-- Cassette tape motif -->
-                                <rect x="30" y="380" width="100" height="60" rx="5" fill="none" stroke="#fff" stroke-width="1"/>
-                                <circle cx="55" cy="410" r="15" fill="none" stroke="#fff" stroke-width="0.5"/>
-                                <circle cx="105" cy="410" r="15" fill="none" stroke="#fff" stroke-width="0.5"/>
-                                <rect x="45" y="430" width="70" height="5" fill="none" stroke="#fff" stroke-width="0.5"/>
-
-                                <!-- Abstract lines -->
-                                <line x1="620" y1="200" x2="680" y2="350" stroke="#ffcc00" stroke-width="1" opacity="0.5"/>
-                                <line x1="640" y1="200" x2="700" y2="320" stroke="#ffcc00" stroke-width="0.5" opacity="0.4"/>
-
-                                <!-- Text elements (lo-fi aesthetic) -->
-                                <text x="520" y="400" font-family="monospace" font-size="8" fill="#666" opacity="0.5">SAMPLE</text>
-                                <text x="520" y="415" font-family="monospace" font-size="8" fill="#666" opacity="0.5">FLIP</text>
-                                <text x="60" y="360" font-family="monospace" font-size="6" fill="#888" opacity="0.4">TAPE LOOP</text>
-                            </svg>
-                        </div>
-                    </div>
-
-                    <!-- Fine Line Schematics Overlay -->
-                    <svg class="schematics-overlay" viewBox="0 0 900 750">
-                        <!-- MIC Signal Path (Blue) -->
-                        <g class="mic-path">
-                            <!-- Mic input jack -->
-                            <circle cx="20" cy="180" r="8" class="node" style="color: #3498db"/>
-                            <text x="8" y="165" class="symbol symbol-mic">MIC IN</text>
-                            <!-- Signal line to processor -->
-                            <path d="M 28 180 Q 60 180 80 200 L 80 280 Q 80 320 120 340" class="signal-line line-mic"/>
-                            <!-- Preamp symbol -->
-                            <polygon points="50,175 70,185 50,195" fill="none" stroke="#3498db" stroke-width="1.5"/>
-                            <text x="52" y="210" class="schematic-label">PREAMP</text>
-                            <!-- ADC -->
-                            <rect x="85" y="270" width="30" height="20" class="schematic-box" stroke="#3498db"/>
-                            <text x="92" y="283" class="schematic-label" style="fill: #3498db">ADC</text>
-                        </g>
-
-                        <!-- RADIO Signal Path (Purple) -->
-                        <g class="radio-path">
-                            <!-- Antenna symbol -->
-                            <path d="M 20 280 L 20 260 M 10 260 L 30 260 M 15 255 L 25 255" stroke="#9b59b6" stroke-width="1.5" fill="none"/>
-                            <text x="5" y="295" class="symbol symbol-radio">RADIO</text>
-                            <!-- Signal to demodulator -->
-                            <path d="M 30 280 Q 50 280 60 300 L 60 360 Q 60 400 120 420" class="signal-line line-radio line-dashed"/>
-                            <!-- Demod box -->
-                            <rect x="40" y="310" width="35" height="18" class="schematic-box" stroke="#9b59b6"/>
-                            <text x="44" y="322" class="schematic-label" style="fill: #9b59b6">DEMOD</text>
-                        </g>
-
-                        <!-- SYNTH Signal Path (Red/Pink) -->
-                        <g class="synth-path">
-                            <!-- Oscillator waveform -->
-                            <path d="M 850 150 Q 860 130 870 150 Q 880 170 890 150" class="waveform" stroke="#e94560"/>
-                            <text x="845" y="140" class="symbol symbol-synth">OSC</text>
-                            <!-- VCF -->
-                            <rect x="830" y="180" width="35" height="18" class="schematic-box" stroke="#e94560"/>
-                            <text x="838" y="192" class="schematic-label" style="fill: #e94560">VCF</text>
-                            <!-- VCA -->
-                            <rect x="830" y="210" width="35" height="18" class="schematic-box" stroke="#e94560"/>
-                            <text x="838" y="222" class="schematic-label" style="fill: #e94560">VCA</text>
-                            <!-- Signal flow -->
-                            <path d="M 850 165 L 850 180" class="signal-line line-synth"/>
-                            <path d="M 850 198 L 850 210" class="signal-line line-synth"/>
-                            <path d="M 850 228 L 850 280 Q 850 340 780 380" class="signal-line line-synth"/>
-                            <!-- ADSR envelope -->
-                            <path d="M 880 240 L 885 220 L 890 230 L 900 230 L 905 250" stroke="#e94560" stroke-width="1" fill="none"/>
-                            <text x="878" y="260" class="schematic-label" style="fill: #e94560">ENV</text>
-                        </g>
-
-                        <!-- FX Signal Path (Green) -->
-                        <g class="fx-path">
-                            <!-- Delay line -->
-                            <rect x="830" y="320" width="40" height="18" class="schematic-box" stroke="#27ae60"/>
-                            <text x="835" y="332" class="schematic-label" style="fill: #27ae60">DELAY</text>
-                            <!-- Reverb -->
-                            <rect x="830" y="350" width="40" height="18" class="schematic-box" stroke="#27ae60"/>
-                            <text x="833" y="362" class="schematic-label" style="fill: #27ae60">REVERB</text>
-                            <!-- Filter -->
-                            <rect x="830" y="380" width="40" height="18" class="schematic-box" stroke="#27ae60"/>
-                            <text x="835" y="392" class="schematic-label" style="fill: #27ae60">FILTER</text>
-                            <!-- Connections -->
-                            <path d="M 825 329 L 800 329 Q 780 329 780 350 L 780 450" class="signal-line line-fx"/>
-                            <path d="M 825 359 L 790 359 Q 770 359 770 380 L 770 450" class="signal-line line-fx line-dashed"/>
-                            <path d="M 825 389 L 760 389 Q 740 389 740 420 L 740 450" class="signal-line line-fx"/>
-                            <text x="815" y="420" class="symbol symbol-fx">FX</text>
-                        </g>
-
-                        <!-- AUDIO OUTPUT Path (Orange/Gold) -->
-                        <g class="output-path">
-                            <!-- Master mix bus -->
-                            <rect x="400" y="520" width="100" height="25" class="schematic-box" stroke="#f39c12"/>
-                            <text x="420" y="537" class="symbol symbol-out">MASTER BUS</text>
-                            <!-- DAC -->
-                            <rect x="520" y="525" width="30" height="18" class="schematic-box" stroke="#f39c12"/>
-                            <text x="527" y="537" class="schematic-label" style="fill: #f39c12">DAC</text>
-                            <!-- Output amp -->
-                            <polygon points="570,524 590,534 570,544" fill="none" stroke="#f39c12" stroke-width="1.5"/>
-                            <!-- Output jack -->
-                            <circle cx="620" cy="534" r="8" class="node" style="color: #f39c12"/>
-                            <text x="630" y="538" class="symbol symbol-out">OUT</text>
-                            <!-- Connection lines -->
-                            <path d="M 500 532 L 520 532" class="signal-line line-audio"/>
-                            <path d="M 550 534 L 570 534" class="signal-line line-audio"/>
-                            <path d="M 590 534 L 612 534" class="signal-line line-audio"/>
-                            <!-- Headphone out -->
-                            <path d="M 580 534 L 580 560 L 620 560" class="signal-line line-audio line-dashed"/>
-                            <circle cx="628" cy="560" r="6" class="node" style="color: #f39c12"/>
-                            <text x="638" y="564" class="schematic-label" style="fill: #f39c12">HP</text>
-                        </g>
-
-                        <!-- Signal routing to master bus -->
-                        <path d="M 120 340 Q 200 340 300 400 L 400 520" class="signal-line line-mic"/>
-                        <path d="M 120 420 Q 200 420 320 480 L 400 525" class="signal-line line-radio"/>
-                        <path d="M 780 380 Q 700 420 550 480 L 500 525" class="signal-line line-synth"/>
-                        <path d="M 760 450 Q 650 480 550 510 L 500 530" class="signal-line line-fx"/>
-
-                        <!-- Dimensions annotation -->
-                        <g class="dimensions">
-                            <line x1="100" y1="580" x2="800" y2="580" stroke="#999" stroke-width="1"/>
-                            <line x1="100" y1="575" x2="100" y2="585" stroke="#999" stroke-width="1"/>
-                            <line x1="800" y1="575" x2="800" y2="585" stroke="#999" stroke-width="1"/>
-                            <text x="420" y="600" class="schematic-label" style="font-size: 10px">250mm</text>
-                        </g>
-                    </svg>
-
-                    <!-- I/O Ports - Left Side -->
-                    <div class="io-port-group io-left">
-                        <div class="io-port"><div class="port-jack"></div><span class="port-label">LINE L</span></div>
-                        <div class="io-port"><div class="port-jack"></div><span class="port-label">LINE R</span></div>
-                        <div class="io-port"><div class="port-jack"></div><span class="port-label">MIC</span></div>
-                        <div class="io-port"><div class="port-jack"></div><span class="port-label">MIDI IN</span></div>
-                    </div>
-
-                    <!-- I/O Ports - Right Side -->
-                    <div class="io-port-group io-right">
-                        <div class="io-port"><span class="port-label">MAIN L</span><div class="port-jack"></div></div>
-                        <div class="io-port"><span class="port-label">MAIN R</span><div class="port-jack"></div></div>
-                        <div class="io-port"><span class="port-label">PHONES</span><div class="port-jack"></div></div>
-                        <div class="io-port"><span class="port-label">MIDI OUT</span><div class="port-jack"></div></div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Legend -->
-                <div class="schematic-legend">
-                    <div class="legend-item">
-                        <div class="legend-line mic"></div>
-                        <span class="legend-text">Microphone</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-line radio"></div>
-                        <span class="legend-text">Radio/SDR</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-line synth"></div>
-                        <span class="legend-text">Synthesizer</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-line fx"></div>
-                        <span class="legend-text">Effects</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-line audio"></div>
-                        <span class="legend-text">Audio Output</span>
-                    </div>
-                </div>
+            <div class="info-bar" style="border-radius: 8px; margin-bottom: 40px;">
+                <div>Enclosure: <span>200x140x45mm</span></div>
+                <div>Display: <span>5" Touch</span></div>
+                <div>Pads: <span>8x MPR121</span></div>
+                <div>Encoders: <span>4x Rotary</span></div>
             </div>
 
             <!-- Technical Specifications -->
@@ -1429,7 +839,7 @@
                         <li>8x Touch Pads (MPR121)</li>
                         <li>4x Rotary Encoders (context-sensitive)</li>
                         <li>3x Transport Buttons (Play/Stop/Rec)</li>
-                        <li>4x RGB LED Indicators</li>
+                        <li>3x Mode Buttons (Picture/Soundscape/Interact)</li>
                     </ul>
                 </div>
                 <div class="spec-card">
@@ -1469,9 +879,9 @@
                 </tbody>
             </table>
 
-            <!-- Bill of Materials (v3.0 Compromise) -->
+            <!-- Bill of Materials -->
             <h2 class="section-header">Bill of Materials v3.0</h2>
-            <p style="color:#888; font-size:12px; margin-bottom:10px;">See HARDWARE-SPEC.txt for detailed breakdown</p>
+            <p style="color:#888; font-size:12px; margin-bottom:10px;">European suppliers (Mouser.es, Farnell, Bricogeek)</p>
             <table class="bom-table">
                 <thead>
                     <tr><th>Component</th><th>Description</th><th>Qty</th><th>Price</th></tr>
@@ -1490,8 +900,7 @@
                     <tr><td>Copper Tape</td><td>Conductive, for pads</td><td>1</td><td class="price">$6.00</td></tr>
                     <tr><td>Rotary Encoders</td><td>With push button</td><td>4</td><td class="price">$11.80</td></tr>
                     <tr><td>Encoder Knobs</td><td>Aluminum 18mm</td><td>4</td><td class="price">$6.00</td></tr>
-                    <tr><td>Tactile Buttons</td><td>Transport (6x6mm)</td><td>3</td><td class="price">$1.50</td></tr>
-                    <tr><td>RGB LEDs</td><td>WS2812 indicators</td><td>4</td><td class="price">$2.00</td></tr>
+                    <tr><td>Tactile Buttons</td><td>Transport + Mode (6x6mm)</td><td>6</td><td class="price">$3.00</td></tr>
                     <tr><td colspan="4" style="background:#1a1a1a;color:#e67e22;font-weight:700;">CONNECTIVITY & POWER</td></tr>
                     <tr><td>GPS Module</td><td>NEO-6M with antenna</td><td>1</td><td class="price">$12.00</td></tr>
                     <tr><td>Audio Jacks</td><td>3.5mm stereo</td><td>3</td><td class="price">$4.50</td></tr>
@@ -1509,7 +918,6 @@
                     <tr class="bom-total" style="color:#27ae60;"><td colspan="3">GRAND TOTAL</td><td>~$280</td></tr>
                 </tbody>
             </table>
-
         </main>
 
         <footer class="page-footer">
@@ -1518,5 +926,58 @@
             <a href="https://github.com/alevm/oh-my-ondas">GitHub</a>
         </footer>
     </div>
+
+    <script>
+    // Generate static sequencer grid with a frozen playhead
+    (function() {
+        const tracks = document.getElementById('lcdTracks');
+        if (!tracks) return;
+
+        const sources = ['BD', 'SD', 'HH', 'PC', 'S1', 'S2', 'S3', 'S4'];
+        const patterns = [
+            [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],
+            [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],
+            [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0],
+            [0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,1],
+            [1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0],
+            [0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0],
+            [0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0],
+            [0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1]
+        ];
+
+        const playheadPos = 12; // frozen playhead position
+
+        sources.forEach((src, t) => {
+            const row = document.createElement('div');
+            row.className = 'lcd-track' + (t === 0 ? ' selected' : '');
+
+            const num = document.createElement('span');
+            num.className = 'lcd-track-num';
+            num.textContent = (t + 1);
+            row.appendChild(num);
+
+            const srcEl = document.createElement('span');
+            srcEl.className = 'lcd-track-src';
+            srcEl.textContent = src;
+            row.appendChild(srcEl);
+
+            const steps = document.createElement('div');
+            steps.className = 'lcd-steps';
+
+            for (let s = 0; s < 16; s++) {
+                const step = document.createElement('div');
+                let cls = 'lcd-step';
+                if (s % 4 === 0) cls += ' beat';
+                if (patterns[t][s]) cls += ' on';
+                if (s === playheadPos) cls += ' current';
+                step.className = cls;
+                steps.appendChild(step);
+            }
+
+            row.appendChild(steps);
+            tracks.appendChild(row);
+        });
+    })();
+    </script>
 </body>
 </html>

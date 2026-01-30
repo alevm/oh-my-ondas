@@ -35,36 +35,64 @@
             font-size: 20px;
             font-weight: 700;
             color: var(--text);
-            margin: 40px 0 16px 0;
+            margin: 32px 0 12px 0;
         }
         .page-content p {
             font-size: 15px;
             line-height: 1.75;
             color: var(--text);
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
         .specs-section {
-            margin-top: 48px;
-            padding-top: 32px;
+            margin-top: 40px;
+            padding-top: 24px;
             border-top: 2px solid var(--border);
         }
         .specs-section h2 {
             font-size: 20px;
             font-weight: 700;
             color: var(--text);
-            margin: 0 0 20px 0;
+            margin: 0 0 16px 0;
         }
         .specs-section dt {
             font-weight: 700;
             font-size: 14px;
             color: var(--accent);
-            margin-top: 14px;
+            margin-top: 12px;
         }
         .specs-section dd {
             font-size: 14px;
             line-height: 1.6;
             color: var(--text);
             margin: 4px 0 0 0;
+        }
+        .timeline {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 2px solid var(--border);
+        }
+        .timeline h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0 0 16px 0;
+        }
+        .timeline-item {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .timeline-date {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent);
+            min-width: 80px;
+            flex-shrink: 0;
+        }
+        .timeline-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text);
         }
     </style>
 </head>
@@ -79,63 +107,82 @@
                 <a href="app.html" class="nav-link">App</a>
                 <a href="design.html" class="nav-link">Design</a>
                 <a href="about.html" class="nav-link active">About</a>
-                <a href="ise.html" class="nav-link">ISE 2026</a>
             </nav>
         </header>
 
         <main class="page-content">
-            <h1 class="page-title">About Oh My Ondas</h1>
+            <h1 class="page-title">About</h1>
 
-            <p>I'm building a thing that takes a sonic photograph of a place. You stand somewhere &mdash; a street corner, a museum gallery, a festival &mdash; press record, and it grabs the GPS coordinates, the ambient sound, whatever radio frequencies it can pick up, and layers all of that with beats and synthesis into something you can play back later. A sonic snapshot that's tied to that exact place and moment. The composition literally can't be reproduced anywhere else because half the source material only existed right there, right then.</p>
+            <p>Oh My Ondas is a portable instrument that captures the sound of a place and turns it into music. It records GPS coordinates, ambient audio, and local radio frequencies, then layers everything with beats and synthesis. Each composition is tied to a specific location and moment &mdash; it can't be reproduced anywhere else because the source material only existed right there, right then.</p>
 
-            <p>The name is a play on "ondas" &mdash; waves in Spanish. Sound waves, radio waves, the waves of a place washing over you. Also it just sounds fun to say.</p>
+            <p>"Ondas" means waves in Spanish. Sound waves, radio waves, the waves of a place.</p>
 
-            <h2>How it works</h2>
+            <h2>What it does</h2>
 
-            <p>Under the hood there's an 8-track step sequencer, a sampler with 8 pads (think Roland SP-404 but in a browser), a basic subtractive synth, and an effects chain with delay, granular, glitch, and crush. Every pattern you make gets tagged with GPS coordinates and a timestamp, so when you save something you've made on a rooftop in Barcelona at 2am, that context stays with it forever.</p>
+            <p>8-track step sequencer, sampler with 8 pads, subtractive synth, effects chain (delay, granular, glitch, bitcrush). Every pattern gets tagged with GPS coordinates and a timestamp. An AI composition engine detects the environment &mdash; location type, time of day &mdash; and generates rhythms that fit the context. Internet radio sampling discovers local stations via GPS and lets you capture whatever's broadcasting nearby.</p>
 
-            <p>The sampler does what you'd expect &mdash; load sounds onto pads, trigger them, mess with speed and direction, loop them, chop them up with granular effects. The sequencer runs up to 64 steps with parameter locks, euclidean rhythms, and trigger conditions, which is enough to build full arrangements without it feeling like a toy. There's also an AI composition mode that can generate patterns based on vibes &mdash; tell it something about the mood or context and it'll spit out a starting point. Sometimes the results are surprisingly good, sometimes they're garbage, but that's half the fun.</p>
+            <h2>Why it's built this way</h2>
 
-            <p>One of the weirder features is internet radio sampling. The instrument can discover local radio stations based on your GPS position, stream them in, and you can sample directly from whatever's broadcasting nearby. So your beat might contain a fragment of a Spanish talk show or a Turkish pop song that was on air at that exact moment. That's the kind of unrepeatable detail that makes each piece genuinely unique.</p>
-
-            <h2>Why it looks the way it does</h2>
-
-            <p>I wanted the interface to feel like actual hardware &mdash; no dropdowns, no right-click menus. Everything's a button you can see and hit. The reason is practical: this is supposed to become a physical instrument running on a Raspberry Pi with a touchscreen, so every UI element needs to map directly to something you can tap or twist. If I can't imagine pressing it with my thumb on a 7-inch screen, it doesn't belong in the interface.</p>
-
-            <p>Fill effects and punch-in FX use a hold-to-activate pattern, like holding a button on a drum machine. You press, the effect fires, you let go, it stops. That feels right for live performance in a way that toggle switches don't. Visual feedback leans heavily on LED-style animations and VU meters &mdash; again, mimicking hardware, but also because that kind of feedback actually matters when you're performing and need to glance at the screen and instantly know what's active.</p>
-
-            <p>The whole location-binding thing isn't a gimmick bolted on at the end. It's the core idea. Every composition is supposed to be unrepeatable because it incorporates sounds, radio content, and context that only existed at that coordinate and time. Take the instrument to a different corner and you get a different piece. That's the point.</p>
-
-            <h2>Who would use this</h2>
-
-            <p>If you make beats, do field recording, perform live, build weird instruments, or just think the idea of GPS-tagged sonic photographs sounds cool &mdash; this is for you. I think there's overlap with the kind of people who own a Pocket Operator or an OP-1 and also carry a field recorder around. Sound designers working on installations or site-specific art would probably get a lot out of it too. But honestly, I'm mostly building it because I want one.</p>
-
-            <h2>Where it's at</h2>
-
-            <p>Right now the web prototype works &mdash; you can make beats, trigger pads, run the sequencer, use the synth, apply effects, even do AI-assisted pattern generation. The hardware design exists as CAD models and a mockup. Next up is firmware on a Raspberry Pi and getting the physical build done. The whole project is open source under GPL-3.0, so if you want to build your own or hack on the code, go for it.</p>
+            <p>The interface maps directly to physical controls &mdash; no menus, no dropdowns, everything is a button you can hit with your thumb. Fill effects use hold-to-activate like hardware drum machines. The location binding isn't a feature added on top; it's the core concept. Take the instrument to a different corner and you get a different piece.</p>
 
             <div class="specs-section">
                 <h2>Specs</h2>
                 <dl>
-                    <dt>Hardware</dt>
-                    <dd>Raspberry Pi 4/5, 7" touchscreen, USB audio interface, 8 silicon pads, rotary encoders, transport buttons, GPS module, battery pack</dd>
+                    <dt>Processor</dt>
+                    <dd>Teensy 4.1 (600MHz ARM Cortex-M7) + ESP32-WROOM (WiFi/BT/GPS comms)</dd>
+
+                    <dt>Audio</dt>
+                    <dd>SGTL5000 codec (Teensy Audio Shield), Web Audio API, 3.5mm stereo out + mic in</dd>
+
+                    <dt>Interface</dt>
+                    <dd>5" IPS capacitive touchscreen (800&times;480), 8 copper-tape touch pads (MPR121), 4 rotary encoders, transport buttons, WS2812B RGB LEDs</dd>
+
+                    <dt>Connectivity</dt>
+                    <dd>WiFi, Bluetooth, GPS (NEO-6M), RTL-SDR radio input, USB-C, MIDI</dd>
 
                     <dt>Software</dt>
-                    <dd>Web Audio API, 8-track sequencer, sample playback, subtractive synth, effects processing, scene management, AI pattern generation, internet radio</dd>
+                    <dd>8-track sequencer, sample playback, subtractive synth, FX processing, scene management, AI pattern generation, internet radio</dd>
 
-                    <dt>Targets</dt>
-                    <dd>Audio latency &lt;10ms, touch response &lt;50ms, battery 4+ hours, boot &lt;30s</dd>
+                    <dt>Power</dt>
+                    <dd>3500mAh LiPo, USB-C charging, 5&ndash;7 hours runtime</dd>
 
                     <dt>Enclosure</dt>
-                    <dd>250&times;180&times;50mm, CNC aluminum or 3D print, USB-C + 3.5mm audio + MIDI</dd>
+                    <dd>200&times;140&times;45mm, CNC aluminum, ~600g with battery</dd>
+
+                    <dt>Targets</dt>
+                    <dd>Audio latency &lt;10ms, touch response &lt;50ms, boot &lt;30s</dd>
                 </dl>
+            </div>
+
+            <div class="timeline">
+                <h2>Timeline</h2>
+                <div class="timeline-item">
+                    <span class="timeline-date">2024 Q4</span>
+                    <span class="timeline-text">Concept and initial web prototype &mdash; sequencer, sampler, synth, effects</span>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-date">2025 Q1</span>
+                    <span class="timeline-text">GPS integration, internet radio sampling, AI composition engine</span>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-date">2025 Q2</span>
+                    <span class="timeline-text">Hardware design &mdash; Teensy 4.1 + ESP32 architecture, BOM, CAD enclosure</span>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-date">2025 Q3</span>
+                    <span class="timeline-text">Firmware development, physical prototype build</span>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-date">2025 Q4</span>
+                    <span class="timeline-text">Testing, iteration, open-source release</span>
+                </div>
             </div>
         </main>
 
         <footer class="page-footer">
-            <span>Oh My Ondas v2.4.6</span>
+            <span>Oh My Ondas</span>
             <span>GPL-3.0</span>
-            <a href="https://github.com/manuelvargasmontero/ohmyondas" target="_blank">GitHub</a>
+            <a href="https://github.com/alevm/oh-my-ondas" target="_blank">GitHub</a>
         </footer>
     </div>
 </body>

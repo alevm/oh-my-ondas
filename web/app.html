@@ -28,7 +28,6 @@
                 <a href="app.html" class="nav-link active">App</a>
                 <a href="design.html" class="nav-link">Design</a>
                 <a href="about.html" class="nav-link">About</a>
-                <a href="ise.html" class="nav-link">ISE 2026</a>
             </nav>
         </header>
 
@@ -98,8 +97,20 @@
                     <button id="btnAdminE" class="admin-btn">&#9881;</button>
                 </div>
 
+                <!-- Tab bar (shown ONLY in embedded mode via CSS) -->
+                <nav class="panel-tabs" id="panelTabs">
+                    <button class="panel-tab active" data-panel="seq-panel">SEQ</button>
+                    <button class="panel-tab" data-panel="mixer-panel">MIX</button>
+                    <button class="panel-tab" data-panel="synth-panel">SYN</button>
+                    <button class="panel-tab" data-panel="scenes-panel">SCN</button>
+                    <button class="panel-tab" data-panel="ai-panel">AI</button>
+                    <button class="panel-tab" data-panel="fx-panel">FX</button>
+                    <button class="panel-tab" data-panel="radio-panel">RAD</button>
+                    <button class="panel-tab" data-panel="eq-panel">EQ</button>
+                </nav>
+
                 <!-- Row 1: SEQ | MIXER | SYNTH | SCENES -->
-                <div class="panel seq-panel">
+                <div class="panel seq-panel" data-panel-id="seq-panel">
                     <div class="seq-header">
                         <span class="panel-title">SEQ</span>
                         <div class="seq-controls">
@@ -175,7 +186,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="panel mixer-panel">
+                <div class="panel mixer-panel" data-panel-id="mixer-panel">
                     <div class="panel-title">MIXER</div>
                     <div class="mixer-channels">
                         <div class="ch" data-ch="mic">
@@ -234,7 +245,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="panel synth-panel">
+                <div class="panel synth-panel" data-panel-id="synth-panel">
                     <div class="synth-header">
                         <span class="panel-title">SYNTH</span>
                         <div class="synth-header-ctrls">
@@ -324,7 +335,7 @@
                         <div class="adsr-param"><span title="Release time">R</span><input type="range" id="adsrRelease" min="0" max="2000" value="200" title="Release - fade out time after key release (ms)"><span id="adsrRVal">200</span></div>
                     </div>
                 </div>
-                <div class="panel scenes-panel">
+                <div class="panel scenes-panel" data-panel-id="scenes-panel">
                     <div class="scene-header">
                         <span class="panel-title">SCENES</span>
                         <div class="scene-tools">
@@ -388,23 +399,31 @@
                         <button id="loadScene" title="Load settings from selected scene">LOAD</button>
                     </div>
                 </div>
-                <div class="panel ai-panel">
+                <div class="panel ai-panel" data-panel-id="ai-panel">
                     <div class="panel-title">AI GEN</div>
-                    <div class="vibe-btns vibe-btns-large">
-                        <button class="vibe-btn" data-vibe="calm" title="Calm vibe - relaxed, ambient patterns">C<span>Calm</span></button>
-                        <button class="vibe-btn active" data-vibe="urban" title="Urban vibe - hip-hop, trap beats">U<span>Urban</span></button>
-                        <button class="vibe-btn" data-vibe="nature" title="Nature vibe - organic, flowing patterns">N<span>Nature</span></button>
-                        <button class="vibe-btn" data-vibe="chaos" title="Chaos vibe - experimental, random patterns">X<span>Chaos</span></button>
+                    <div class="ai-sense-readout">
+                        <div class="ai-sense-row">
+                            <span class="ai-sense-label">LOCATION</span>
+                            <span class="ai-sense-value" id="aiLocation">Detecting...</span>
+                        </div>
+                        <div class="ai-sense-row">
+                            <span class="ai-sense-label">TIME</span>
+                            <span class="ai-sense-value" id="aiTime">--:--</span>
+                        </div>
+                        <div class="ai-sense-row ai-sense-vibe">
+                            <span class="ai-sense-label">DETECTED MOOD</span>
+                            <span class="ai-sense-value ai-vibe-display" id="aiVibe">Calm</span>
+                        </div>
                     </div>
                     <div class="ai-action-btns">
-                        <button id="aiGenerate" class="ai-btn ai-btn-generate" title="Generate a new pattern based on selected vibe">GENERATE</button>
+                        <button id="aiGenerate" class="ai-btn ai-btn-generate" title="Generate a pattern from detected environment">GENERATE</button>
                         <button id="landmarkBtn" class="landmark-btn" title="Capture sonic snapshot of this location using GPS">LANDMARK</button>
                     </div>
-                    <div class="ai-status" id="aiStatus">Ready</div>
+                    <div class="ai-status" id="aiStatus">AI senses the environment and generates music accordingly</div>
                 </div>
 
                 <!-- Row 2: PADS | PADS2 | CTRL | FX -->
-                <div class="panel pads-panel">
+                <div class="panel pads-panel" data-panel-id="pads-panel">
                     <div class="pads-header">
                         <span class="panel-title">PADS A</span>
                         <div class="kit-btns">
@@ -424,7 +443,7 @@
                         <button class="pad" data-pad="7" title="Pad 8 - Cymbal (Key: 8)">8</button>
                     </div>
                 </div>
-                <div class="panel pads-panel pads2">
+                <div class="panel pads-panel pads2" data-panel-id="pads2-panel">
                     <div class="pads-header">
                         <span class="panel-title">PADS B</span>
                         <select id="sampleBank2"><option value="kit1">Kit1</option><option value="kit2">Kit2</option><option value="kit3">Kit3</option></select>
@@ -440,7 +459,7 @@
                         <button class="pad" data-pad="15">16</button>
                     </div>
                 </div>
-                <div class="panel knobs-panel">
+                <div class="panel knobs-panel" data-panel-id="knobs-panel">
                     <div class="ctrl-header">
                         <span class="panel-title">CTRL</span>
                         <div class="target-btns">
@@ -460,7 +479,7 @@
                         <div class="knob-group"><div class="knob" id="knobVol" data-param="vol" data-min="0" data-max="100" data-value="80" title="Volume - output level"></div><span>VOL</span></div>
                     </div>
                 </div>
-                <div class="panel fx-panel">
+                <div class="panel fx-panel" data-panel-id="fx-panel">
                     <div class="fx-header">
                         <span class="panel-title">FX</span>
                         <div class="fx-preset-btns" id="fxPresetBtns">
@@ -483,7 +502,7 @@
                 </div>
 
                 <!-- Row 3: RADIO | LOCATION | EQ | REC -->
-                <div class="panel radio-panel">
+                <div class="panel radio-panel" data-panel-id="radio-panel">
                     <div class="panel-title">RADIO</div>
                     <div class="radio-search">
                         <input type="text" id="radioSearch" placeholder="Search..." title="Search for radio stations by name">
@@ -495,7 +514,7 @@
                     </div>
                     <div class="station-list" id="stationList" title="Click a station to play"></div>
                 </div>
-                <div class="panel eq-panel">
+                <div class="panel eq-panel" data-panel-id="eq-panel">
                     <div class="eq-header">
                         <span class="panel-title">EQ</span>
                         <div class="ch-btns">

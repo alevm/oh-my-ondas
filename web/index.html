@@ -586,7 +586,6 @@
             <a href="app.html" class="nav-link">App</a>
             <a href="design.html" class="nav-link">Design</a>
             <a href="about.html" class="nav-link">About</a>
-            <a href="ise.html" class="nav-link">ISE 2026</a>
         </nav>
     </header>
 
@@ -800,13 +799,30 @@
             }
         }
 
-        // Receive state updates from embedded app
+        // Receive messages from embedded app
         window.addEventListener('message', (event) => {
-            if (event.data && event.data.type === 'app-state') {
+            if (!event.data) return;
+
+            if (event.data.type === 'app-state') {
                 appState = event.data.data;
                 updateMockupFromState(appState);
             }
+
+            if (event.data.type === 'encoder-context') {
+                updateEncoderLabels(event.data.data);
+            }
         });
+
+        function updateEncoderLabels(ctx) {
+            if (!ctx || !ctx.encoders) return;
+            const encoders = document.querySelectorAll('.encoder');
+            ctx.encoders.forEach((label, i) => {
+                if (encoders[i]) {
+                    const labelEl = encoders[i].querySelector('.encoder-label');
+                    if (labelEl) labelEl.textContent = label;
+                }
+            });
+        }
 
         function updateMockupFromState(state) {
             // Update transport button states

@@ -21,6 +21,11 @@ class App {
         // Tap tempo state
         this.tapTimes = [];
         this.lastTapTime = 0;
+
+        // Embedded panel state
+        this._activePanel = 'seq-panel';
+        this._currentMode = 'picture';
+        this._encoderContext = null;
     }
 
     loadSettings() {
@@ -99,6 +104,7 @@ class App {
         this.setupTapTempo();
         this.setupHelpModal();
         this.setupPostMessageBridge();
+        this.setupPanelTabs();
 
         // GPS display and map background
         window.gpsTracker.addListener(() => this.updateGPS());
@@ -1298,6 +1304,11 @@ class App {
                         if (btn) btn.click();
                     }
                     break;
+                case 'panel':
+                    if (msg.data.panelId) {
+                        this.switchToPanel(msg.data.panelId);
+                    }
+                    break;
             }
         });
 
@@ -1313,7 +1324,8 @@ class App {
                     bpm: window.sequencer?.getTempo() || 120,
                     currentStep: window.sequencer?.getCurrentStep() || 0,
                     currentPattern: window.sequencer?.currentPattern || 0,
-                    mode: this._currentMode || 'interact',
+                    mode: this._currentMode || 'picture',
+                    activePanel: this._activePanel || 'seq-panel',
                     gps: gps ? `${gps.latitude.toFixed(4)}, ${gps.longitude.toFixed(4)}` : null
                 }
             }, '*');
@@ -1323,6 +1335,18 @@ class App {
     // Handle mode switch from mockup (PICTURE / SOUNDSCAPE / INTERACT)
     handleMockupMode(mode) {
         this._currentMode = mode;
+
+        // Mode → default panel mapping
+        const modePanelMap = {
+            picture: 'seq-panel',
+            soundscape: 'ai-panel',
+            interact: 'mixer-panel'
+        };
+
+        // Switch to the default panel for this mode
+        if (this.isEmbedded() && modePanelMap[mode]) {
+            this.switchToPanel(modePanelMap[mode]);
+        }
 
         switch (mode) {
             case 'picture':
@@ -1340,10 +1364,9 @@ class App {
                 break;
 
             case 'soundscape':
-                // AI ambient mode: generate composition + start playing
+                // AI ambient mode: use auto-detected vibe, generate + play
                 {
-                    const vibes = ['calm', 'nature', 'urban'];
-                    const vibe = vibes[Math.floor(Math.random() * vibes.length)];
+                    const vibe = window.aiComposer?.context?.vibe || 'calm';
                     this.generateFullComposition(vibe);
                     if (!window.sequencer?.isPlaying()) {
                         window.sequencer?.play();
@@ -1396,6 +1419,71 @@ class App {
             case 'delay':
                 window.mangleEngine?.setDelayMix(value);
                 break;
+        }
+    }
+
+    // Panel tab navigation (embedded mode only)
+    setupPanelTabs() {
+        if (!this.isEmbedded()) return;
+
+        // Set initial panel
+        this.switchToPanel(this._activePanel);
+
+        // Bind tab click handlers
+        document.querySelectorAll('.panel-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                this.switchToPanel(tab.dataset.panel);
+            });
+        });
+    }
+
+    switchToPanel(panelId) {
+        this._activePanel = panelId;
+
+        // Update tab bar active state
+        document.querySelectorAll('.panel-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.panel === panelId);
+        });
+
+        // Hide all panels, show the target
+        document.querySelectorAll('.device > .panel').forEach(panel => {
+            panel.classList.remove('panel-visible');
+        });
+        const target = document.querySelector(`.device > .panel[data-panel-id="${panelId}"]`);
+        if (target) {
+            target.classList.add('panel-visible');
+        }
+
+        // Update encoder context
+        this.updateEncoderContext(panelId);
+
+        // Trigger resize for canvas/layout recalculation
+        window.dispatchEvent(new Event('resize'));
+    }
+
+    updateEncoderContext(panelId) {
+        const encoderMappings = {
+            'seq-panel':    ['VOL', 'SWG', 'LEN', 'BPM'],
+            'mixer-panel':  ['VOL', 'PAN', 'FILT', 'FX'],
+            'synth-panel':  ['VOL', 'DET', 'CUT', 'RES'],
+            'fx-panel':     ['DLY', 'GRN', 'GLI', 'CRU'],
+            'ai-panel':     ['VOL', 'VIBE', 'FILT', 'FX'],
+            'scenes-panel': ['VOL', 'XFAD', 'FILT', 'AUTO'],
+            'radio-panel':  ['VOL', 'PAN', 'FILT', 'SCAN'],
+            'eq-panel':     ['LO', 'MID', 'HI', 'VOL']
+        };
+
+        this._encoderContext = encoderMappings[panelId] || ['VOL', 'PAN', 'FILT', 'FX'];
+
+        // Notify parent mockup of encoder context change
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({
+                type: 'encoder-context',
+                data: {
+                    panel: panelId,
+                    encoders: this._encoderContext
+                }
+            }, '*');
         }
     }
 
@@ -2291,19 +2379,12 @@ class App {
 
     // AI
     setupAI() {
-        const vibeBtns = document.querySelectorAll('.vibe-btn');
         const generateBtn = document.getElementById('aiGenerate');
-
-        vibeBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                vibeBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            });
-        });
 
         if (generateBtn) {
             generateBtn.addEventListener('click', () => {
-                const vibe = document.querySelector('.vibe-btn.active')?.dataset.vibe || 'calm';
+                // Use auto-detected vibe from AI composer
+                const vibe = window.aiComposer?.context?.vibe || 'calm';
                 this.generateFullComposition(vibe);
             });
         }

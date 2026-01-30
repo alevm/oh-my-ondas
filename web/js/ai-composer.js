@@ -228,9 +228,8 @@ class AIComposer {
         document.getElementById('tempoValue').textContent = result.tempo;
 
         // Update vibe buttons
-        document.querySelectorAll('.vibe-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.vibe === result.vibe);
-        });
+        const vibeDisplay = document.getElementById('aiVibe');
+        if (vibeDisplay) vibeDisplay.textContent = result.vibe.charAt(0).toUpperCase() + result.vibe.slice(1);
 
         document.getElementById('aiDensity').value = result.density;
         document.getElementById('aiDensityDisplay').textContent = Math.round(result.density);
