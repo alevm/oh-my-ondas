@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      - name: Build Teensy firmware
+        working-directory: firmware
+        run: pio run -e teensy41
+
+      - name: Build ESP32 firmware
+        working-directory: firmware
+        run: pio run -e esp32
+
+      - name: Package web app
+        run: cd web && zip -r ../oh-my-ondas-web.zip . -x '*.gitkeep'
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            oh-my-ondas-web.zip
+            firmware/.pio/build/teensy41/firmware.hex
+            firmware/.pio/build/esp32/firmware.bin

@@ -1,0 +1,24 @@
+{
+  "name": "oh-my-ondas-tests",
+  "version": "1.0.0",
+  "description": "Automated testing suite for Oh My Ondas web application",
+  "main": "e2e/oh-my-ondas-test.js",
+  "scripts": {
+    "test": "node e2e/oh-my-ondas-test.js",
+    "test:headless": "HEADLESS=true node e2e/oh-my-ondas-test.js",
+    "test:advanced": "node e2e/oh-my-ondas-advanced-tests.js",
+    "test:workflow": "node e2e/oh-my-ondas-workflow-tests.js"
+  },
+  "keywords": [
+    "testing",
+    "puppeteer",
+    "automation",
+    "music",
+    "sequencer"
+  ],
+  "author": "",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "puppeteer": "^24.34.0"
+  }
+}

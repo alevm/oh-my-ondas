@@ -1,0 +1,2164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oh My Ondas - Interactive Hardware</title>
+    <style>
+        :root {
+            --bg: #f5f0e8;
+            --accent: #e94560;
+            --pastel-blue: #d6eaf8;
+            --pastel-gray: #e8e8e8;
+            --pastel-violet: #e8daef;
+            --blue-text: #1a5276;
+            --gray-text: #2c3e50;
+            --violet-text: #4a235a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .top-bar {
+            background: linear-gradient(180deg, #3d2817 0%, #2a1a0f 100%);
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 2px solid #8b5a2b;
+        }
+
+        .logo { font-size: 18px; font-weight: 800; color: #d4a574; letter-spacing: 2px; }
+
+        .nav-links { display: flex; gap: 8px; margin-left: auto; }
+
+        .nav-link {
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 4px;
+            color: #d4a574;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+        .nav-link.active { background: var(--accent); color: #fff; }
+
+        /* Main */
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(180deg, #2a1a0f 0%, #1a100a 100%);
+        }
+
+        /* Device - 200x140mm scaled (~3.5x) */
+        .device-container { position: relative; width: 720px; height: 520px; }
+
+        .enclosure {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 700px;
+            height: 490px;
+            background: linear-gradient(165deg, #2a2a2a 0%, #1a1a1a 40%, #0f0f0f 100%);
+            border-radius: 14px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 2px #3a3a3a, inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+
+        .enclosure::before {
+            content: '';
+            position: absolute;
+            top: 5px; left: 5px; right: 5px; bottom: 5px;
+            border: 1px solid rgba(139, 90, 43, 0.2);
+            border-radius: 10px;
+            pointer-events: none;
+        }
+
+        /* Artwork */
+        .artwork {
+            position: absolute;
+            top: 200px; left: 10px; right: 10px; bottom: 10px;
+            opacity: 0.06;
+            background-image: url('https://media.rhizome.org/blog/8979/Chombart-de-Lauwe.jpg');
+            background-size: cover;
+            filter: invert(1) brightness(1.5);
+            border-radius: 8px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Panel backgrounds */
+        .panel-bg { position: absolute; border-radius: 6px; z-index: 1; }
+        .panel-pads { top: 210px; left: 15px; width: 340px; height: 180px; background: var(--pastel-gray); border: 1px solid #c0c0c0; }
+        .panel-ctrl { top: 210px; right: 15px; width: 180px; height: 180px; background: var(--pastel-gray); border: 1px solid #c0c0c0; }
+        .panel-transport { bottom: 15px; left: 15px; width: 150px; height: 45px; background: var(--pastel-gray); border: 1px solid #c0c0c0; }
+        .panel-scenes { bottom: 15px; right: 15px; width: 160px; height: 45px; background: var(--pastel-gray); border: 1px solid #c0c0c0; }
+
+        /* 5" Display (800x480 scaled) */
+        .display {
+            position: absolute;
+            top: 10px; left: 10px; right: 10px;
+            height: 190px;
+            background: #0a0a0a;
+            border-radius: 6px;
+            border: 2px solid #333;
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        .display-content {
+            width: 100%;
+            height: 100%;
+            background: #111;
+            padding: 6px;
+            display: grid;
+            grid-template-columns: 1fr 100px 90px;
+            gap: 6px;
+        }
+
+        /* Sequencer in display */
+        .seq-panel {
+            background: #0d0d0d;
+            border-radius: 4px;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .seq-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .seq-title { color: #27ae60; font-size: 10px; font-weight: 700; }
+        .seq-info { display: flex; gap: 10px; }
+        .seq-info span { color: #666; font-size: 9px; }
+        .seq-info .val { color: #27ae60; }
+
+        .seq-grid {
+            display: grid;
+            grid-template-columns: 24px repeat(16, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            gap: 1px;
+            flex: 1;
+        }
+
+        .track-label { display: flex; align-items: center; justify-content: center; color: #555; font-size: 7px; font-weight: 600; }
+        .step { background: #1a1a1a; border-radius: 1px; cursor: pointer; }
+        .step:hover { background: #252525; }
+        .step.on { background: #27ae60; }
+        .step.playing { box-shadow: inset 0 0 0 1px #fff; }
+
+        /* Touch Mixer in display */
+        .mixer-panel {
+            background: #0d0d0d;
+            border-radius: 4px;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mixer-title { color: var(--blue-text); font-size: 9px; font-weight: 700; margin-bottom: 4px; background: var(--pastel-blue); padding: 2px 4px; border-radius: 2px; text-align: center; }
+
+        .mixer-faders {
+            display: flex;
+            justify-content: space-around;
+            flex: 1;
+            padding-top: 4px;
+        }
+
+        .touch-fader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .fader-track {
+            width: 10px;
+            height: 100px;
+            background: linear-gradient(180deg, #27ae60 0%, #1a5276 50%, #0d0d0d 100%);
+            border-radius: 3px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .fader-level {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #27ae60;
+            border-radius: 3px;
+            transition: height 0.1s;
+        }
+
+        .fader-label { font-size: 7px; color: #888; }
+
+        /* Status panel in display */
+        .status-panel {
+            background: #0d0d0d;
+            border-radius: 4px;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .status-item { text-align: center; padding: 3px; background: #080808; border-radius: 2px; }
+        .status-label { font-size: 7px; color: #555; }
+        .status-value { font-size: 12px; color: #27ae60; font-weight: 700; font-family: monospace; }
+        .status-value.rec { color: #e94560; }
+
+        /* Pattern/Scene buttons in display */
+        .btn-row { display: flex; gap: 3px; margin-top: 4px; }
+        .display-btn {
+            flex: 1;
+            height: 18px;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 2px;
+            color: #666;
+            font-size: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .display-btn:hover { background: #2a2a2a; }
+        .display-btn.active { background: #27ae60; color: #fff; border-color: #27ae60; }
+
+        /* Section labels */
+        .section-label {
+            position: absolute;
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            z-index: 3;
+        }
+        .label-pads { top: 215px; left: 25px; color: var(--gray-text); }
+        .label-ctrl { top: 215px; right: 25px; color: var(--gray-text); width: 160px; text-align: center; }
+
+        /* 8 Touch Pads */
+        .pads-container {
+            position: absolute;
+            top: 235px; left: 25px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 8px;
+            width: 320px;
+            height: 140px;
+            z-index: 2;
+        }
+
+        .pad {
+            background: linear-gradient(145deg, #4a4a4a 0%, #2a2a2a 100%);
+            border-radius: 8px;
+            border: 2px solid #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+
+        .pad:hover { background: linear-gradient(145deg, #5a5a5a 0%, #3a3a3a 100%); }
+        .pad:active, .pad.active {
+            background: linear-gradient(145deg, #27ae60 0%, #1e8449 100%);
+            border-color: #27ae60;
+            color: #fff;
+        }
+
+        .pad::before {
+            content: '';
+            position: absolute;
+            top: 4px; right: 4px;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #333;
+        }
+        .pad.active::before { background: #fff; box-shadow: 0 0 6px #fff; }
+
+        /* 4 Encoders */
+        .encoders-container {
+            position: absolute;
+            top: 235px; right: 25px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 10px;
+            width: 160px;
+            height: 150px;
+            z-index: 2;
+        }
+
+        .encoder { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+
+        .encoder-knob {
+            width: 44px; height: 44px;
+            background: linear-gradient(145deg, #666 0%, #444 100%);
+            border-radius: 50%;
+            border: 2px solid #333;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+        }
+
+        .encoder-knob::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 18px; height: 18px;
+            background: linear-gradient(145deg, #555 0%, #333 100%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .encoder-knob::after {
+            content: '';
+            position: absolute;
+            top: 5px; left: 50%;
+            width: 3px; height: 10px;
+            background: var(--accent);
+            border-radius: 2px;
+            transform: translateX(-50%);
+        }
+
+        .encoder-label { font-size: 9px; color: var(--gray-text); font-weight: 600; }
+        .encoder-value { font-size: 8px; color: #666; font-family: monospace; }
+
+        /* 4 RGB LEDs */
+        .leds-container {
+            position: absolute;
+            top: 400px; right: 35px;
+            display: flex;
+            gap: 12px;
+            z-index: 2;
+        }
+
+        .led {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #222;
+            border: 1px solid #444;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+        }
+        .led.on-green { background: #27ae60; box-shadow: 0 0 8px #27ae60; }
+        .led.on-red { background: #e94560; box-shadow: 0 0 8px #e94560; }
+        .led.on-blue { background: #3498db; box-shadow: 0 0 8px #3498db; }
+
+        /* Transport */
+        .transport-container {
+            position: absolute;
+            bottom: 22px; left: 25px;
+            display: flex;
+            gap: 10px;
+            z-index: 2;
+        }
+
+        .transport-btn {
+            width: 38px; height: 38px;
+            background: linear-gradient(145deg, #4a4a4a 0%, #2a2a2a 100%);
+            border-radius: 50%;
+            border: 2px solid #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .transport-btn:hover { background: linear-gradient(145deg, #5a5a5a 0%, #3a3a3a 100%); }
+        .transport-btn.play.active { background: #27ae60; color: #fff; border-color: #27ae60; }
+        .transport-btn.rec.active { background: #e94560; color: #fff; border-color: #e94560; }
+
+        /* Scenes */
+        .scenes-container {
+            position: absolute;
+            bottom: 22px; right: 25px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            z-index: 2;
+        }
+
+        .scenes-label { font-size: 8px; color: var(--gray-text); font-weight: 700; margin-right: 4px; }
+
+        .scene-btn {
+            width: 30px; height: 30px;
+            background: #d5d8dc;
+            border: 2px solid #aeb6bf;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-text);
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .scene-btn:hover { background: #bdc3c7; }
+        .scene-btn.active { background: #27ae60; border-color: #27ae60; color: #fff; }
+
+        /* I/O */
+        .io-ports {
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .io-port {
+            width: 16px; height: 16px;
+            background: #0a0a0a;
+            border-radius: 50%;
+            border: 2px solid #444;
+        }
+
+        /* Info bar */
+        .info-bar {
+            background: #1a1a1a;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            color: #888;
+            font-size: 11px;
+        }
+        .info-bar span { color: #27ae60; font-weight: 600; }
+
+        /* ==========================================
+           MENU OVERLAY SYSTEM
+           ========================================== */
+        .menu-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .menu-overlay.active { display: flex; }
+
+        .menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+        .menu-title { color: #27ae60; font-size: 18px; font-weight: 700; }
+        .menu-close {
+            width: 40px; height: 40px;
+            background: #e94560;
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            padding: 20px 0;
+            flex: 1;
+            align-content: start;
+        }
+
+        .menu-item {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .menu-item:hover { border-color: #27ae60; transform: scale(1.02); }
+        .menu-item.active { border-color: #27ae60; background: rgba(39, 174, 96, 0.2); }
+        .menu-item.synth { border-color: #9b59b6; }
+        .menu-item.synth.active { background: rgba(155, 89, 182, 0.2); }
+        .menu-item.fx { border-color: #e94560; }
+        .menu-item.fx.active { background: rgba(233, 69, 96, 0.2); }
+        .menu-item.radio { border-color: #3498db; }
+        .menu-item.radio.active { background: rgba(52, 152, 219, 0.2); }
+        .menu-item.ai { border-color: #f39c12; }
+        .menu-item.ai.active { background: rgba(243, 156, 18, 0.2); }
+
+        .menu-icon { font-size: 32px; margin-bottom: 8px; }
+        .menu-label { color: #fff; font-size: 14px; font-weight: 600; }
+        .menu-sublabel { color: #666; font-size: 10px; margin-top: 4px; }
+
+        /* Module parameter panel in menu */
+        .param-panel {
+            background: #111;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+        }
+        .param-panel.active { display: block; }
+        .param-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #222;
+        }
+        .param-name { color: #888; font-size: 12px; }
+        .param-value { color: #27ae60; font-size: 14px; font-weight: 600; }
+        .param-slider {
+            width: 150px;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #333;
+            border-radius: 3px;
+        }
+        .param-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px; height: 16px;
+            background: #27ae60;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Module Focus Indicator */
+        .focus-indicator {
+            position: absolute;
+            top: 205px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 12px;
+            background: #27ae60;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #fff;
+            z-index: 5;
+            display: none;
+        }
+        .focus-indicator.active { display: block; }
+        .focus-indicator.synth { background: #9b59b6; }
+        .focus-indicator.fx { background: #e94560; }
+        .focus-indicator.radio { background: #3498db; }
+        .focus-indicator.ai { background: #f39c12; }
+        .focus-indicator.sampler { background: #27ae60; }
+
+        /* AI Orchestration indicator */
+        .ai-orchestration {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 6px 12px;
+            background: #f39c12;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #000;
+            z-index: 10;
+            display: none;
+            animation: pulse 1s infinite;
+        }
+        .ai-orchestration.active { display: flex; align-items: center; gap: 6px; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Mic Level Meter */
+        .mic-meter {
+            position: absolute;
+            bottom: 70px;
+            left: 25px;
+            width: 100px;
+            height: 8px;
+            background: #222;
+            border-radius: 4px;
+            overflow: hidden;
+            z-index: 3;
+        }
+        .mic-meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60, #f39c12, #e94560);
+            width: 0%;
+            transition: width 0.05s;
+        }
+        .mic-meter-label {
+            position: absolute;
+            bottom: 80px;
+            left: 25px;
+            font-size: 7px;
+            color: #666;
+            z-index: 3;
+        }
+
+        /* Menu button on display */
+        .menu-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 3px;
+            z-index: 5;
+        }
+        .menu-btn span {
+            width: 12px;
+            height: 2px;
+            background: #888;
+            border-radius: 1px;
+        }
+        .menu-btn:hover { background: #444; }
+        .menu-btn:hover span { background: #27ae60; }
+
+        /* Source selection buttons */
+        .source-panel {
+            position: absolute;
+            top: 400px; left: 25px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            z-index: 2;
+        }
+        .source-label { font-size: 8px; color: var(--gray-text); font-weight: 700; }
+        .src-btn {
+            padding: 4px 8px;
+            background: #d5d8dc;
+            border: 2px solid #aeb6bf;
+            border-radius: 4px;
+            font-size: 8px;
+            font-weight: 700;
+            color: var(--gray-text);
+            cursor: pointer;
+        }
+        .src-btn:hover { background: #bdc3c7; }
+        .src-btn.active { background: #27ae60; border-color: #27ae60; color: #fff; }
+        .src-btn.synth.active { background: #9b59b6; border-color: #9b59b6; }
+        .src-btn.radio.active { background: #3498db; border-color: #3498db; }
+        .src-btn.mic.active { background: #e74c3c; border-color: #e74c3c; }
+
+        /* Mode panel (AI/FX) */
+        .mode-panel {
+            position: absolute;
+            top: 400px; left: 200px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            z-index: 2;
+        }
+        .mode-btn {
+            padding: 4px 10px;
+            background: #222;
+            border: 2px solid #444;
+            border-radius: 4px;
+            font-size: 8px;
+            font-weight: 700;
+            color: #888;
+            cursor: pointer;
+        }
+        .mode-btn:hover { background: #333; }
+        .mode-btn.active { background: #e94560; border-color: #e94560; color: #fff; }
+        .mode-btn.ai.active { background: #9b59b6; border-color: #9b59b6; }
+        .mode-btn.landmark { font-size: 10px; }
+        .mode-btn.landmark.active { background: #e94560; border-color: #e94560; animation: landmark-blink 0.5s infinite; }
+        @keyframes landmark-blink { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .transport-btn.rec.ready { background: #e94560; border-color: #e94560; color: #fff; animation: rec-blink 0.5s infinite; }
+        @keyframes rec-blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* Radio indicator */
+        .radio-indicator {
+            position: absolute;
+            top: 430px; left: 25px;
+            font-size: 9px;
+            color: #3498db;
+            z-index: 2;
+            display: none;
+        }
+        .radio-indicator.active { display: block; }
+        .radio-indicator .station { color: #fff; font-weight: 600; }
+
+        /* Track source indicators on grid */
+        .track-label.synth { color: #9b59b6 !important; }
+        .track-label.radio { color: #3498db !important; }
+        .track-label.mic { color: #e74c3c !important; }
+        .track-label.sampler { color: #27ae60 !important; }
+    </style>
+    <!-- Audio Module Scripts -->
+    <script src="js/audio-engine.js"></script>
+    <script src="js/sampler.js"></script>
+    <script src="js/synth.js"></script>
+    <script src="js/radio.js"></script>
+    <script src="js/mangle.js"></script>
+    <script src="js/sequencer.js"></script>
+    <script src="js/ai-composer.js"></script>
+</head>
+<body>
+    <header class="top-bar">
+        <div class="logo">OH MY ONDAS</div>
+        <nav class="nav-links">
+            <a href="index.html" class="nav-link">Web App</a>
+            <a href="hardware-mockup.html" class="nav-link">Design</a>
+            <a href="hardware-interactive.html" class="nav-link active">Interactive</a>
+            <a href="requirements.html" class="nav-link">Requirements</a>
+        </nav>
+    </header>
+
+    <!-- ==========================================
+         MENU OVERLAY
+         ========================================== -->
+    <div class="menu-overlay" id="menuOverlay">
+        <div class="menu-header">
+            <div class="menu-title">MODULE SELECT</div>
+            <button class="menu-close" id="menuClose">&times;</button>
+        </div>
+
+        <div class="menu-grid">
+            <!-- Sampler -->
+            <div class="menu-item sampler" data-module="sampler">
+                <div class="menu-icon">🥁</div>
+                <div class="menu-label">SAMPLER</div>
+                <div class="menu-sublabel">8 Pads • 3 Kits</div>
+            </div>
+
+            <!-- Synth -->
+            <div class="menu-item synth" data-module="synth">
+                <div class="menu-icon">🎹</div>
+                <div class="menu-label">SYNTH</div>
+                <div class="menu-sublabel">Dual OSC • Filter</div>
+            </div>
+
+            <!-- Radio -->
+            <div class="menu-item radio" data-module="radio">
+                <div class="menu-icon">📻</div>
+                <div class="menu-label">RADIO</div>
+                <div class="menu-sublabel">GPS Local Stations</div>
+            </div>
+
+            <!-- FX -->
+            <div class="menu-item fx" data-module="fx">
+                <div class="menu-icon">✨</div>
+                <div class="menu-label">FX</div>
+                <div class="menu-sublabel">Delay • Glitch • Grain</div>
+            </div>
+
+            <!-- AI Composer -->
+            <div class="menu-item ai" data-module="ai">
+                <div class="menu-icon">🤖</div>
+                <div class="menu-label">AI COMPOSER</div>
+                <div class="menu-sublabel">Soundscape Aware</div>
+            </div>
+
+            <!-- AI Orchestration -->
+            <div class="menu-item ai" data-module="orchestrate" id="orchestrateBtn">
+                <div class="menu-icon">🎭</div>
+                <div class="menu-label">AI ORCHESTRATE</div>
+                <div class="menu-sublabel">Full Auto Mode</div>
+            </div>
+        </div>
+
+        <!-- Parameter panels for each module -->
+        <div class="param-panel" id="paramPanel">
+            <div id="paramContent"></div>
+        </div>
+    </div>
+
+    <main class="main-content">
+        <div class="device-container">
+            <div class="enclosure">
+                <div class="artwork"></div>
+
+                <!-- Panel backgrounds -->
+                <div class="panel-bg panel-pads"></div>
+                <div class="panel-bg panel-ctrl"></div>
+                <div class="panel-bg panel-transport"></div>
+                <div class="panel-bg panel-scenes"></div>
+
+                <!-- Focus Mode Indicator -->
+                <div class="focus-indicator" id="focusIndicator">SAMPLER</div>
+
+                <!-- AI Orchestration Indicator -->
+                <div class="ai-orchestration" id="aiOrchestration">
+                    <span>🎭</span> AI ORCHESTRATING
+                </div>
+
+                <!-- Mic Level Meter -->
+                <div class="mic-meter-label">MIC INPUT</div>
+                <div class="mic-meter">
+                    <div class="mic-meter-fill" id="micMeterFill"></div>
+                </div>
+
+                <!-- 5" Touch Display -->
+                <div class="display">
+                    <!-- Menu Button -->
+                    <div class="menu-btn" id="menuBtn">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <div class="display-content">
+                        <!-- Sequencer -->
+                        <div class="seq-panel">
+                            <div class="seq-header">
+                                <span class="seq-title">SEQUENCER</span>
+                                <div class="seq-info">
+                                    <span>PTN:<span class="val" id="ptnDisplay">A</span></span>
+                                    <span>BPM:<span class="val" id="bpmVal">120</span></span>
+                                </div>
+                            </div>
+                            <div class="seq-grid" id="seqGrid"></div>
+                            <div class="btn-row" id="patternBtns">
+                                <div class="display-btn active" data-ptn="0">A</div>
+                                <div class="display-btn" data-ptn="1">B</div>
+                                <div class="display-btn" data-ptn="2">C</div>
+                                <div class="display-btn" data-ptn="3">D</div>
+                                <div class="display-btn" data-ptn="4">E</div>
+                                <div class="display-btn" data-ptn="5">F</div>
+                                <div class="display-btn" data-ptn="6">G</div>
+                                <div class="display-btn" data-ptn="7">H</div>
+                            </div>
+                        </div>
+
+                        <!-- Touch Mixer -->
+                        <div class="mixer-panel">
+                            <div class="mixer-title">MIXER</div>
+                            <div class="mixer-faders">
+                                <div class="touch-fader" data-ch="mic">
+                                    <div class="fader-track"><div class="fader-level" style="height:70%"></div></div>
+                                    <span class="fader-label">MIC</span>
+                                </div>
+                                <div class="touch-fader" data-ch="smp">
+                                    <div class="fader-track"><div class="fader-level" style="height:80%"></div></div>
+                                    <span class="fader-label">SMP</span>
+                                </div>
+                                <div class="touch-fader" data-ch="syn">
+                                    <div class="fader-track"><div class="fader-level" style="height:75%"></div></div>
+                                    <span class="fader-label">SYN</span>
+                                </div>
+                                <div class="touch-fader" data-ch="rad">
+                                    <div class="fader-track"><div class="fader-level" style="height:60%"></div></div>
+                                    <span class="fader-label">RAD</span>
+                                </div>
+                                <div class="touch-fader" data-ch="out">
+                                    <div class="fader-track"><div class="fader-level" style="height:85%"></div></div>
+                                    <span class="fader-label">OUT</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="status-panel">
+                            <div class="status-item">
+                                <div class="status-label">TIME</div>
+                                <div class="status-value" id="timeDisplay">00:00</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-label">STATUS</div>
+                                <div class="status-value" id="statusDisplay">STOP</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-label">GPS</div>
+                                <div class="status-value" style="font-size:8px;">40.71°N</div>
+                            </div>
+                            <div class="btn-row">
+                                <div class="display-btn active" data-scene="0">A</div>
+                                <div class="display-btn" data-scene="1">B</div>
+                                <div class="display-btn" data-scene="2">C</div>
+                                <div class="display-btn" data-scene="3">D</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Labels -->
+                <span class="section-label label-pads">PADS</span>
+                <span class="section-label label-ctrl">CTRL</span>
+
+                <!-- 8 Touch Pads -->
+                <div class="pads-container" id="padsContainer">
+                    <div class="pad" data-pad="0">1</div>
+                    <div class="pad" data-pad="1">2</div>
+                    <div class="pad" data-pad="2">3</div>
+                    <div class="pad" data-pad="3">4</div>
+                    <div class="pad" data-pad="4">5</div>
+                    <div class="pad" data-pad="5">6</div>
+                    <div class="pad" data-pad="6">7</div>
+                    <div class="pad" data-pad="7">8</div>
+                </div>
+
+                <!-- 4 Encoders -->
+                <div class="encoders-container">
+                    <div class="encoder" data-param="volume">
+                        <div class="encoder-knob" data-value="80"></div>
+                        <span class="encoder-label">VOL</span>
+                        <span class="encoder-value">80</span>
+                    </div>
+                    <div class="encoder" data-param="pan">
+                        <div class="encoder-knob" data-value="50"></div>
+                        <span class="encoder-label">PAN</span>
+                        <span class="encoder-value">C</span>
+                    </div>
+                    <div class="encoder" data-param="filter">
+                        <div class="encoder-knob" data-value="100"></div>
+                        <span class="encoder-label">FILT</span>
+                        <span class="encoder-value">100</span>
+                    </div>
+                    <div class="encoder" data-param="fx">
+                        <div class="encoder-knob" data-value="0"></div>
+                        <span class="encoder-label">FX</span>
+                        <span class="encoder-value">0</span>
+                    </div>
+                </div>
+
+                <!-- 4 RGB LEDs -->
+                <div class="leds-container">
+                    <div class="led on-green" id="led1"></div>
+                    <div class="led" id="led2"></div>
+                    <div class="led" id="led3"></div>
+                    <div class="led" id="led4"></div>
+                </div>
+
+                <!-- Source Selection Panel -->
+                <div class="source-panel">
+                    <span class="source-label">SRC:</span>
+                    <button class="src-btn sampler active" data-src="sampler">SMP</button>
+                    <button class="src-btn synth" data-src="synth">SYN</button>
+                    <button class="src-btn radio" data-src="radio">RAD</button>
+                    <button class="src-btn mic" data-src="mic">MIC</button>
+                </div>
+
+                <!-- Mode Panel (FX/AI/LANDMARK) -->
+                <div class="mode-panel">
+                    <button class="mode-btn fx" data-mode="fx">FX</button>
+                    <button class="mode-btn ai" data-mode="ai">AI</button>
+                    <button class="mode-btn landmark" id="landmarkBtn" data-mode="landmark">📍</button>
+                </div>
+
+                <!-- Radio Status Indicator -->
+                <div class="radio-indicator" id="radioIndicator">
+                    RADIO: <span class="station" id="stationName">--</span>
+                </div>
+
+                <!-- Transport (3 buttons) -->
+                <div class="transport-container">
+                    <div class="transport-btn play" data-action="play">&#9654;</div>
+                    <div class="transport-btn stop" data-action="stop">&#9632;</div>
+                    <div class="transport-btn rec" data-action="rec">&#9679;</div>
+                </div>
+
+                <!-- Scene buttons -->
+                <div class="scenes-container">
+                    <span class="scenes-label">SCENE</span>
+                    <div class="scene-btn active" data-scene="0">A</div>
+                    <div class="scene-btn" data-scene="1">B</div>
+                    <div class="scene-btn" data-scene="2">C</div>
+                    <div class="scene-btn" data-scene="3">D</div>
+                </div>
+            </div>
+
+            <!-- I/O Ports -->
+            <div class="io-ports">
+                <div class="io-port" title="Audio Out"></div>
+                <div class="io-port" title="Headphones"></div>
+                <div class="io-port" title="Mic In"></div>
+            </div>
+        </div>
+    </main>
+
+    <div class="info-bar">
+        <div>Enclosure: <span>200×140×45mm</span></div>
+        <div>Display: <span>5" Touch</span></div>
+        <div>Pads: <span>8× MPR121</span></div>
+        <div>Encoders: <span>4× Rotary</span></div>
+        <div>Cost: <span>~$280</span></div>
+    </div>
+
+    <script>
+        // ==========================================
+        // INTEGRATED AUDIO SYSTEM - ENHANCED
+        // ==========================================
+
+        let isPlaying = false;
+        let isRecording = false;
+        let currentStep = 0;
+        let currentPattern = 0;
+        let bpm = 120;
+        let stepInterval = null;
+        let selectedTrack = 0;
+        let currentMode = 'normal'; // 'normal', 'fx', 'ai'
+
+        // MODULE FOCUS SYSTEM
+        let focusedModule = null; // 'sampler', 'synth', 'radio', 'fx', 'ai', null
+        let aiOrchestrationActive = false;
+        let orchestrationInterval = null;
+
+        // Track sources: each track can route to sampler/synth/radio/mic
+        const trackSources = ['sampler', 'sampler', 'sampler', 'sampler', 'sampler', 'sampler', 'sampler', 'sampler'];
+        const trackLabels = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8'];
+
+        // Patterns storage
+        const patterns = Array(8).fill(null).map(() =>
+            Array(8).fill(null).map(() =>
+                Array(16).fill(null).map(() => ({ active: false, pLocks: {} }))
+            )
+        );
+
+        // Synth note frequencies per track
+        const synthNotes = [110, 147, 165, 196, 220, 262, 330, 392]; // A2 to G4
+
+        // ==========================================
+        // MIC AUDIO ANALYZER (for AI composition)
+        // ==========================================
+        class MicAnalyzer {
+            constructor() {
+                this.analyser = null;
+                this.dataArray = null;
+                this.freqArray = null;
+                this.micStream = null;
+                this.isListening = false;
+
+                // Audio features for AI
+                this.features = {
+                    energy: 0,          // 0-1 overall loudness
+                    spectralCentroid: 0, // brightness
+                    bassEnergy: 0,      // low freq energy
+                    midEnergy: 0,       // mid freq energy
+                    highEnergy: 0,      // high freq energy
+                    tempo: 120,         // detected tempo
+                    rhythmDensity: 0,   // how rhythmic
+                    lastOnsets: [],     // recent transient times
+                    dominantFreq: 0,    // most prominent frequency
+                    isSilent: true
+                };
+
+                this.onsetThreshold = 0.3;
+                this.lastOnsetTime = 0;
+            }
+
+            async init() {
+                try {
+                    const ctx = window.audioEngine?.getContext();
+                    if (!ctx) return false;
+
+                    // Get microphone
+                    this.micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const source = ctx.createMediaStreamSource(this.micStream);
+
+                    // Create analyser
+                    this.analyser = ctx.createAnalyser();
+                    this.analyser.fftSize = 2048;
+                    this.analyser.smoothingTimeConstant = 0.8;
+
+                    source.connect(this.analyser);
+
+                    this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+                    this.freqArray = new Uint8Array(this.analyser.frequencyBinCount);
+
+                    this.isListening = true;
+                    this.startAnalysis();
+
+                    console.log('MicAnalyzer initialized');
+                    return true;
+                } catch (err) {
+                    console.error('MicAnalyzer init failed:', err);
+                    return false;
+                }
+            }
+
+            startAnalysis() {
+                const analyze = () => {
+                    if (!this.isListening) return;
+
+                    this.analyser.getByteTimeDomainData(this.dataArray);
+                    this.analyser.getByteFrequencyData(this.freqArray);
+
+                    // Calculate energy (RMS)
+                    let sum = 0;
+                    for (let i = 0; i < this.dataArray.length; i++) {
+                        const v = (this.dataArray[i] - 128) / 128;
+                        sum += v * v;
+                    }
+                    this.features.energy = Math.sqrt(sum / this.dataArray.length);
+                    this.features.isSilent = this.features.energy < 0.02;
+
+                    // Calculate spectral bands
+                    const binCount = this.freqArray.length;
+                    const bassEnd = Math.floor(binCount * 0.1);  // ~200Hz
+                    const midEnd = Math.floor(binCount * 0.4);   // ~2kHz
+
+                    let bassSum = 0, midSum = 0, highSum = 0, totalSum = 0;
+                    let maxBin = 0, maxVal = 0;
+
+                    for (let i = 0; i < binCount; i++) {
+                        const val = this.freqArray[i];
+                        totalSum += val;
+
+                        if (i < bassEnd) bassSum += val;
+                        else if (i < midEnd) midSum += val;
+                        else highSum += val;
+
+                        if (val > maxVal) {
+                            maxVal = val;
+                            maxBin = i;
+                        }
+                    }
+
+                    this.features.bassEnergy = bassSum / (bassEnd * 255);
+                    this.features.midEnergy = midSum / ((midEnd - bassEnd) * 255);
+                    this.features.highEnergy = highSum / ((binCount - midEnd) * 255);
+                    this.features.spectralCentroid = totalSum > 0 ? maxBin / binCount : 0.5;
+
+                    // Dominant frequency (approximation)
+                    const ctx = window.audioEngine?.getContext();
+                    if (ctx) {
+                        const nyquist = ctx.sampleRate / 2;
+                        this.features.dominantFreq = (maxBin / binCount) * nyquist;
+                    }
+
+                    // Onset detection (simple transient detection)
+                    const now = performance.now();
+                    if (this.features.energy > this.onsetThreshold &&
+                        now - this.lastOnsetTime > 100) {
+                        this.lastOnsetTime = now;
+                        this.features.lastOnsets.push(now);
+                        if (this.features.lastOnsets.length > 16) {
+                            this.features.lastOnsets.shift();
+                        }
+                        this.estimateTempo();
+                    }
+
+                    // Update mic meter UI
+                    const meterFill = document.getElementById('micMeterFill');
+                    if (meterFill) {
+                        meterFill.style.width = (this.features.energy * 100) + '%';
+                    }
+
+                    requestAnimationFrame(analyze);
+                };
+                analyze();
+            }
+
+            estimateTempo() {
+                if (this.features.lastOnsets.length < 4) return;
+
+                // Calculate intervals between onsets
+                const intervals = [];
+                for (let i = 1; i < this.features.lastOnsets.length; i++) {
+                    intervals.push(this.features.lastOnsets[i] - this.features.lastOnsets[i-1]);
+                }
+
+                // Find median interval
+                intervals.sort((a, b) => a - b);
+                const medianInterval = intervals[Math.floor(intervals.length / 2)];
+
+                // Convert to BPM (assuming 16th notes)
+                if (medianInterval > 50 && medianInterval < 1000) {
+                    const estimatedBPM = (60000 / medianInterval) / 4;
+                    // Constrain to reasonable range
+                    if (estimatedBPM >= 60 && estimatedBPM <= 180) {
+                        this.features.tempo = Math.round(estimatedBPM);
+                    }
+                }
+
+                // Calculate rhythm density
+                this.features.rhythmDensity = Math.min(1, this.features.lastOnsets.length / 16);
+            }
+
+            getFeatures() {
+                return { ...this.features };
+            }
+
+            getSuggestedVibe() {
+                const { energy, bassEnergy, highEnergy, rhythmDensity, isSilent } = this.features;
+
+                if (isSilent) return 'calm';
+                if (energy > 0.6 && rhythmDensity > 0.5) return 'chaos';
+                if (bassEnergy > 0.4 && rhythmDensity > 0.3) return 'groove';
+                if (highEnergy > 0.4) return 'bright';
+                if (energy < 0.3) return 'calm';
+                return 'nature';
+            }
+
+            stop() {
+                this.isListening = false;
+                if (this.micStream) {
+                    this.micStream.getTracks().forEach(t => t.stop());
+                }
+            }
+        }
+
+        // Global mic analyzer instance
+        let micAnalyzer = null;
+
+        // ==========================================
+        // AUDIO SYSTEM INITIALIZATION
+        // ==========================================
+
+        async function initAudioSystem() {
+            try {
+                // Initialize audio engine
+                if (window.AudioEngine) {
+                    window.audioEngine = new AudioEngine();
+                    await window.audioEngine.init();
+                    console.log('Audio Engine initialized');
+                }
+
+                // Initialize sampler
+                if (window.Sampler) {
+                    window.sampler = new Sampler();
+                    await window.sampler.init();
+                    console.log('Sampler initialized');
+                }
+
+                // Initialize synth
+                if (window.Synth) {
+                    window.synth = new Synth();
+                    await window.synth.init();
+                    console.log('Synth initialized');
+                }
+
+                // Initialize radio player
+                if (window.RadioPlayer) {
+                    window.radioPlayer = new RadioPlayer();
+                    await window.radioPlayer.init();
+                    console.log('Radio Player initialized');
+                }
+
+                // Initialize mangle engine (FX)
+                if (window.MangleEngine) {
+                    window.mangleEngine = new MangleEngine();
+                    await window.mangleEngine.init();
+                    console.log('Mangle Engine (FX) initialized');
+                }
+
+                // Initialize AI composer
+                if (window.AIComposer) {
+                    window.aiComposer = new AIComposer();
+                    window.aiComposer.init();
+                    console.log('AI Composer initialized');
+                }
+
+                // Initialize mic analyzer
+                micAnalyzer = new MicAnalyzer();
+                await micAnalyzer.init();
+
+                console.log('All audio modules loaded!');
+                updateStatusDisplay('READY');
+
+            } catch (err) {
+                console.error('Audio init error:', err);
+                updateStatusDisplay('ERR');
+            }
+        }
+
+        // ==========================================
+        // MENU SYSTEM
+        // ==========================================
+
+        function openMenu() {
+            document.getElementById('menuOverlay').classList.add('active');
+        }
+
+        function closeMenu() {
+            document.getElementById('menuOverlay').classList.remove('active');
+        }
+
+        document.getElementById('menuBtn').onclick = openMenu;
+        document.getElementById('menuClose').onclick = closeMenu;
+
+        // Module selection from menu
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.onclick = () => {
+                const module = item.dataset.module;
+
+                if (module === 'orchestrate') {
+                    toggleAIOrchestration();
+                    closeMenu();
+                    return;
+                }
+
+                // Toggle focus mode
+                if (focusedModule === module) {
+                    clearModuleFocus();
+                } else {
+                    setModuleFocus(module);
+                }
+
+                // Update menu item states
+                document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+                if (focusedModule) {
+                    item.classList.add('active');
+                }
+
+                // Show parameter panel for this module
+                showModuleParams(module);
+            };
+        });
+
+        // ==========================================
+        // MODULE FOCUS SYSTEM
+        // ==========================================
+
+        function setModuleFocus(module) {
+            focusedModule = module;
+
+            // Update focus indicator
+            const indicator = document.getElementById('focusIndicator');
+            indicator.textContent = module.toUpperCase();
+            indicator.className = 'focus-indicator active ' + module;
+
+            // Update encoder labels based on module
+            updateEncoderLabels(module);
+
+            // If radio focused, start radio
+            if (module === 'radio' && window.radioPlayer && !window.radioPlayer.playing) {
+                window.radioPlayer.autoTuneLocal();
+            }
+
+            console.log('Module focus:', module);
+        }
+
+        function clearModuleFocus() {
+            focusedModule = null;
+            document.getElementById('focusIndicator').classList.remove('active');
+
+            // Reset encoder labels
+            updateEncoderLabels(null);
+        }
+
+        function updateEncoderLabels(module) {
+            const encoders = document.querySelectorAll('.encoder');
+            const labelMaps = {
+                sampler: ['VOL', 'PAN', 'PITCH', 'DECAY'],
+                synth: ['CUTOFF', 'RES', 'DETUNE', 'ATTACK'],
+                fx: ['DELAY', 'FDBK', 'GLITCH', 'GRAIN'],
+                radio: ['VOL', 'TUNE', 'SEARCH', 'GPS'],
+                ai: ['DENSITY', 'COMPLEX', 'VIBE', 'TEMPO'],
+                null: ['VOL', 'PAN', 'FILT', 'FX']
+            };
+
+            const labels = labelMaps[module] || labelMaps[null];
+            encoders.forEach((enc, i) => {
+                const label = enc.querySelector('.encoder-label');
+                if (label && labels[i]) {
+                    label.textContent = labels[i];
+                }
+            });
+        }
+
+        function showModuleParams(module) {
+            const panel = document.getElementById('paramPanel');
+            const content = document.getElementById('paramContent');
+
+            const paramConfigs = {
+                synth: [
+                    { name: 'Waveform', value: 'SAW', type: 'text' },
+                    { name: 'Filter Cutoff', value: 2000, max: 8000, type: 'slider' },
+                    { name: 'Resonance', value: 0.5, max: 1, type: 'slider' },
+                    { name: 'Attack', value: 0.01, max: 1, type: 'slider' },
+                    { name: 'Release', value: 0.3, max: 2, type: 'slider' }
+                ],
+                fx: [
+                    { name: 'Delay Time', value: 250, max: 1000, type: 'slider' },
+                    { name: 'Feedback', value: 30, max: 100, type: 'slider' },
+                    { name: 'Glitch Prob', value: 0, max: 100, type: 'slider' },
+                    { name: 'Grain Density', value: 0, max: 100, type: 'slider' }
+                ],
+                ai: [
+                    { name: 'Vibe', value: 'calm', type: 'text' },
+                    { name: 'Density', value: 50, max: 100, type: 'slider' },
+                    { name: 'Complexity', value: 50, max: 100, type: 'slider' },
+                    { name: 'Use Mic Input', value: 'ON', type: 'toggle' }
+                ]
+            };
+
+            const params = paramConfigs[module];
+            if (!params) {
+                panel.classList.remove('active');
+                return;
+            }
+
+            content.innerHTML = params.map(p => `
+                <div class="param-row">
+                    <span class="param-name">${p.name}</span>
+                    ${p.type === 'slider' ?
+                        `<input type="range" class="param-slider" min="0" max="${p.max}" value="${p.value}" data-param="${p.name}">` :
+                        `<span class="param-value">${p.value}</span>`
+                    }
+                </div>
+            `).join('');
+
+            panel.classList.add('active');
+        }
+
+        // ==========================================
+        // AI ORCHESTRATION MODE
+        // ==========================================
+
+        function toggleAIOrchestration() {
+            aiOrchestrationActive = !aiOrchestrationActive;
+
+            const indicator = document.getElementById('aiOrchestration');
+            const btn = document.getElementById('orchestrateBtn');
+
+            if (aiOrchestrationActive) {
+                indicator.classList.add('active');
+                btn.classList.add('active');
+                startAIOrchestration();
+            } else {
+                indicator.classList.remove('active');
+                btn.classList.remove('active');
+                stopAIOrchestration();
+            }
+        }
+
+        function startAIOrchestration() {
+            console.log('AI Orchestration started');
+
+            // Start playback if not already
+            if (!isPlaying) {
+                startPlay();
+            }
+
+            // Orchestration loop - runs every 4 bars (16 steps * 4)
+            orchestrationInterval = setInterval(() => {
+                if (!aiOrchestrationActive) return;
+
+                // Get mic analysis features
+                const features = micAnalyzer?.getFeatures() || {};
+                const suggestedVibe = micAnalyzer?.getSuggestedVibe() || 'calm';
+
+                console.log('AI Orchestration tick:', { vibe: suggestedVibe, features });
+
+                // Map mic features to composition parameters
+                const density = Math.floor((features.energy || 0.5) * 100);
+                const complexity = Math.floor((features.rhythmDensity || 0.5) * 100);
+
+                // Adjust BPM based on detected tempo
+                if (features.tempo && Math.abs(features.tempo - bpm) > 10) {
+                    bpm = Math.round(bpm * 0.8 + features.tempo * 0.2); // Smooth transition
+                    document.getElementById('bpmVal').textContent = bpm;
+                    if (isPlaying) {
+                        clearInterval(stepInterval);
+                        stepInterval = setInterval(playStep, (60 / bpm) * 1000 / 4);
+                    }
+                }
+
+                // Generate new pattern based on soundscape
+                if (window.aiComposer) {
+                    window.aiComposer.generateRhythm(suggestedVibe, density, complexity);
+                    initSeqGrid(); // Refresh grid
+                }
+
+                // Adjust FX based on features
+                if (window.mangleEngine) {
+                    // More bass = more delay
+                    window.mangleEngine.setDelayMix(features.bassEnergy * 50);
+
+                    // More energy = more glitch
+                    if (features.energy > 0.5) {
+                        window.mangleEngine.setGlitch(features.energy * 30, 100, 'stutter');
+                    } else {
+                        window.mangleEngine.setGlitch(0, 100, 'stutter');
+                    }
+                }
+
+                // Map spectral content to synth
+                if (window.synth && features.dominantFreq) {
+                    // Adjust filter based on spectral centroid
+                    window.synth.setFilterCutoff(features.spectralCentroid * 6000 + 200);
+                }
+
+            }, (60 / bpm) * 1000 * 16); // Every 16 steps (1 bar at 4/4)
+        }
+
+        function stopAIOrchestration() {
+            if (orchestrationInterval) {
+                clearInterval(orchestrationInterval);
+                orchestrationInterval = null;
+            }
+            console.log('AI Orchestration stopped');
+        }
+
+        // ==========================================
+        // SOUND TRIGGERING (ROUTED BY SOURCE)
+        // ==========================================
+
+        function triggerSound(trackIndex, velocity = 100) {
+            const source = trackSources[trackIndex];
+            const step = patterns[currentPattern][trackIndex][currentStep];
+            const pLocks = step?.pLocks || {};
+
+            switch (source) {
+                case 'sampler':
+                    if (window.sampler) {
+                        window.sampler.trigger(trackIndex);
+                    }
+                    break;
+
+                case 'synth':
+                    if (window.synth) {
+                        let freq = synthNotes[trackIndex];
+                        // Apply pitch p-lock if exists
+                        if (pLocks.pitch !== undefined) {
+                            freq = freq * Math.pow(2, pLocks.pitch / 12);
+                        }
+                        window.synth.triggerNote(freq, 0.15);
+                    }
+                    break;
+
+                case 'radio':
+                    // Radio is continuous - start if not playing
+                    if (window.radioPlayer && !window.radioPlayer.playing) {
+                        window.radioPlayer.autoTuneLocal();
+                    }
+                    break;
+
+                case 'mic':
+                    // Mic is continuous passthrough
+                    if (window.audioEngine) {
+                        window.audioEngine.setChannelLevel('mic', velocity / 100);
+                    }
+                    break;
+            }
+
+            // Apply FX p-locks
+            if (window.mangleEngine) {
+                if (pLocks.delay !== undefined) {
+                    window.mangleEngine.setDelayMix(pLocks.delay);
+                }
+                if (pLocks.grain !== undefined) {
+                    window.mangleEngine.setGrain(pLocks.grain, 50, 0);
+                }
+            }
+        }
+
+        // ==========================================
+        // SEQUENCER GRID
+        // ==========================================
+
+        function initSeqGrid() {
+            const grid = document.getElementById('seqGrid');
+            grid.innerHTML = '';
+
+            trackLabels.forEach((label, ti) => {
+                const labelEl = document.createElement('div');
+                labelEl.className = `track-label ${trackSources[ti]}`;
+                labelEl.textContent = label;
+                labelEl.dataset.track = ti;
+                labelEl.onclick = () => selectTrack(ti);
+                grid.appendChild(labelEl);
+
+                for (let s = 0; s < 16; s++) {
+                    const step = document.createElement('div');
+                    step.className = 'step' + (patterns[currentPattern][ti][s].active ? ' on' : '');
+                    step.dataset.track = ti;
+                    step.dataset.step = s;
+                    step.onclick = () => toggleStep(ti, s);
+                    grid.appendChild(step);
+                }
+            });
+        }
+
+        function toggleStep(track, step) {
+            patterns[currentPattern][track][step].active = !patterns[currentPattern][track][step].active;
+            const stepEl = document.querySelector(`.step[data-track="${track}"][data-step="${step}"]`);
+            if (stepEl) stepEl.classList.toggle('on');
+        }
+
+        function selectTrack(trackIndex) {
+            selectedTrack = trackIndex;
+            document.querySelectorAll('.track-label').forEach((el, i) => {
+                el.style.background = i === trackIndex ? 'rgba(39, 174, 96, 0.3)' : 'transparent';
+            });
+            // Update source buttons to reflect selected track's source
+            updateSourceButtons();
+        }
+
+        function updateSourceButtons() {
+            const currentSrc = trackSources[selectedTrack];
+            document.querySelectorAll('.src-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.src === currentSrc);
+            });
+        }
+
+        function updateTrackLabels() {
+            document.querySelectorAll('.track-label').forEach((el, i) => {
+                el.className = `track-label ${trackSources[i]}`;
+            });
+        }
+
+        // ==========================================
+        // PLAYBACK
+        // ==========================================
+
+        function playStep() {
+            // Update visual step position
+            document.querySelectorAll('.step').forEach(el => el.classList.remove('playing'));
+            document.querySelectorAll(`.step[data-step="${currentStep}"]`).forEach(el => el.classList.add('playing'));
+
+            // Trigger sounds for active steps
+            trackLabels.forEach((_, ti) => {
+                if (patterns[currentPattern][ti][currentStep].active) {
+                    triggerSound(ti);
+                }
+            });
+
+            currentStep = (currentStep + 1) % 16;
+
+            // LED animation
+            document.querySelectorAll('.led').forEach((l, i) => {
+                l.className = 'led' + (i === currentStep % 4 ? ' on-green' : '');
+            });
+        }
+
+        async function startPlay() {
+            // Ensure audio is initialized
+            if (!window.audioEngine) {
+                await initAudioSystem();
+            }
+
+            isPlaying = true;
+            currentStep = 0;
+            document.querySelector('.transport-btn.play').classList.add('active');
+            updateStatusDisplay('PLAY');
+            stepInterval = setInterval(playStep, (60 / bpm) * 1000 / 4);
+        }
+
+        function stopPlay() {
+            isPlaying = false;
+            clearInterval(stepInterval);
+            document.querySelector('.transport-btn.play').classList.remove('active');
+            updateStatusDisplay('STOP');
+            document.querySelectorAll('.step').forEach(el => el.classList.remove('playing'));
+            document.querySelectorAll('.led').forEach((l, i) => l.className = 'led' + (i === 0 ? ' on-green' : ''));
+        }
+
+        function updateStatusDisplay(status) {
+            const el = document.getElementById('statusDisplay');
+            el.textContent = status;
+            el.classList.toggle('rec', status === 'REC');
+        }
+
+        // ==========================================
+        // PAD HANDLING
+        // ==========================================
+
+        document.querySelectorAll('.pad').forEach(pad => {
+            const trigger = async () => {
+                if (!window.audioEngine) await initAudioSystem();
+
+                pad.classList.add('active');
+                const padIndex = parseInt(pad.dataset.pad);
+                triggerSound(padIndex);
+
+                // Record to pattern if recording
+                if (isRecording && isPlaying) {
+                    patterns[currentPattern][padIndex][currentStep].active = true;
+                    const stepEl = document.querySelector(`.step[data-track="${padIndex}"][data-step="${currentStep}"]`);
+                    if (stepEl) stepEl.classList.add('on');
+                }
+            };
+
+            pad.onmousedown = trigger;
+            pad.ontouchstart = (e) => { e.preventDefault(); trigger(); };
+            pad.onmouseup = () => pad.classList.remove('active');
+            pad.onmouseleave = () => pad.classList.remove('active');
+            pad.ontouchend = () => pad.classList.remove('active');
+        });
+
+        // ==========================================
+        // KEYBOARD CONTROLS
+        // ==========================================
+
+        document.onkeydown = async (e) => {
+            const k = parseInt(e.key);
+            if (k >= 1 && k <= 8) {
+                const pad = document.querySelector(`.pad[data-pad="${k-1}"]`);
+                if (pad && !pad.classList.contains('active')) {
+                    if (!window.audioEngine) await initAudioSystem();
+                    pad.classList.add('active');
+                    triggerSound(k - 1);
+                }
+            }
+            if (e.code === 'Space') {
+                e.preventDefault();
+                isPlaying ? stopPlay() : startPlay();
+            }
+            // S for synth, D for sampler, R for radio, M for mic (track source)
+            if (e.key === 's' || e.key === 'S') setTrackSource('synth');
+            if (e.key === 'd' || e.key === 'D') setTrackSource('sampler');
+            if (e.key === 'r' || e.key === 'R') setTrackSource('radio');
+            if (e.key === 'm' || e.key === 'M') setTrackSource('mic');
+
+            // Module focus shortcuts (hold Shift + key)
+            if (e.shiftKey) {
+                if (e.key === 'S') { setModuleFocus('synth'); e.preventDefault(); }
+                if (e.key === 'F') { setModuleFocus('fx'); e.preventDefault(); }
+                if (e.key === 'R') { setModuleFocus('radio'); e.preventDefault(); }
+                if (e.key === 'A') { setModuleFocus('ai'); e.preventDefault(); }
+                if (e.key === 'D') { setModuleFocus('sampler'); e.preventDefault(); }
+            }
+
+            // O for AI Orchestration toggle
+            if (e.key === 'o' || e.key === 'O') {
+                toggleAIOrchestration();
+            }
+
+            // ESC to close menu or clear focus
+            if (e.key === 'Escape') {
+                if (document.getElementById('menuOverlay').classList.contains('active')) {
+                    closeMenu();
+                } else if (focusedModule) {
+                    clearModuleFocus();
+                }
+            }
+
+            // Tab to open menu
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                if (document.getElementById('menuOverlay').classList.contains('active')) {
+                    closeMenu();
+                } else {
+                    openMenu();
+                }
+            }
+        };
+
+        document.onkeyup = e => {
+            const k = parseInt(e.key);
+            if (k >= 1 && k <= 8) {
+                document.querySelector(`.pad[data-pad="${k-1}"]`)?.classList.remove('active');
+            }
+        };
+
+        // ==========================================
+        // SOURCE SELECTION
+        // ==========================================
+
+        function setTrackSource(source) {
+            trackSources[selectedTrack] = source;
+            updateSourceButtons();
+            updateTrackLabels();
+
+            // Special handling for radio
+            if (source === 'radio') {
+                document.getElementById('radioIndicator').classList.add('active');
+                if (window.radioPlayer && !window.radioPlayer.playing) {
+                    window.radioPlayer.autoTuneLocal();
+                }
+            }
+        }
+
+        document.querySelectorAll('.src-btn').forEach(btn => {
+            btn.onclick = () => setTrackSource(btn.dataset.src);
+        });
+
+        // ==========================================
+        // MODE BUTTONS (FX / AI)
+        // ==========================================
+
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.onclick = async () => {
+                const mode = btn.dataset.mode;
+                const wasActive = btn.classList.contains('active');
+
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+
+                if (!wasActive) {
+                    btn.classList.add('active');
+                    currentMode = mode;
+
+                    if (mode === 'fx' && window.mangleEngine) {
+                        // Enable FX - set delay mix to 30%
+                        window.mangleEngine.setDelayMix(30);
+                        window.mangleEngine.setGlitch(20, 100, 'stutter');
+                    }
+
+                    if (mode === 'ai' && window.aiComposer) {
+                        // Generate AI rhythm based on context
+                        if (!window.audioEngine) await initAudioSystem();
+                        // Get current context vibe or use 'groove'
+                        const vibe = window.aiComposer.getContext()?.vibe || 'calm';
+                        window.aiComposer.generateRhythm(vibe, 60, 50);
+                        // Also get suggestions
+                        const suggestions = window.aiComposer.generateSuggestions(vibe, 60, 50);
+                        console.log('AI suggestions:', suggestions);
+                    }
+                } else {
+                    currentMode = 'normal';
+                    if (window.mangleEngine) {
+                        // Disable FX
+                        window.mangleEngine.setDelayMix(0);
+                        window.mangleEngine.setGlitch(0, 100, 'stutter');
+                    }
+                }
+            };
+        });
+
+        // AI composer generates rhythm directly via sequencer
+        // No need for separate pattern application
+
+        // ==========================================
+        // TRANSPORT CONTROLS
+        // ==========================================
+
+        document.querySelector('.transport-btn.play').onclick = () => isPlaying ? stopPlay() : startPlay();
+        document.querySelector('.transport-btn.stop').onclick = stopPlay;
+        document.querySelector('.transport-btn.rec').onclick = () => {
+            isRecording = !isRecording;
+            document.querySelector('.transport-btn.rec').classList.toggle('active', isRecording);
+            updateStatusDisplay(isRecording ? 'REC' : (isPlaying ? 'PLAY' : 'STOP'));
+        };
+
+        // ==========================================
+        // PATTERN BUTTONS
+        // ==========================================
+
+        document.querySelectorAll('[data-ptn]').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('[data-ptn]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentPattern = parseInt(btn.dataset.ptn);
+                document.getElementById('ptnDisplay').textContent = btn.textContent;
+                initSeqGrid();
+            };
+        });
+
+        // ==========================================
+        // SCENE BUTTONS
+        // ==========================================
+
+        document.querySelectorAll('[data-scene]').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('[data-scene]').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll(`[data-scene="${btn.dataset.scene}"]`).forEach(b => b.classList.add('active'));
+            };
+        });
+
+        // ==========================================
+        // TOUCH MIXER FADERS
+        // ==========================================
+
+        const channelMap = { mic: 'mic', smp: 'samples', syn: 'synth', rad: 'radio', out: 'master' };
+
+        document.querySelectorAll('.touch-fader').forEach(fader => {
+            const track = fader.querySelector('.fader-track');
+            const channel = fader.dataset.ch;
+
+            const updateFader = (e) => {
+                const rect = track.getBoundingClientRect();
+                const pct = Math.max(0, Math.min(100, ((rect.bottom - e.clientY) / rect.height) * 100));
+                track.querySelector('.fader-level').style.height = pct + '%';
+
+                // Update audio engine
+                if (window.audioEngine) {
+                    const mappedChannel = channelMap[channel];
+                    if (mappedChannel === 'master') {
+                        window.audioEngine.setMasterLevel(pct / 100);
+                    } else if (mappedChannel) {
+                        window.audioEngine.setChannelLevel(mappedChannel, pct / 100);
+                    }
+                }
+            };
+
+            track.onclick = updateFader;
+            track.ontouchstart = (e) => { e.preventDefault(); updateFader(e.touches[0]); };
+        });
+
+        // ==========================================
+        // ENCODERS (Connected to synth/FX params)
+        // ==========================================
+
+        document.querySelectorAll('.encoder-knob').forEach(knob => {
+            let startY, startVal;
+
+            const handleMove = (clientY) => {
+                const v = Math.max(0, Math.min(100, startVal + (startY - clientY)));
+                knob.dataset.value = v;
+                const enc = knob.closest('.encoder');
+                const param = enc.dataset.param;
+                const valEl = enc.querySelector('.encoder-value');
+
+                // Update display
+                if (param === 'pan') {
+                    valEl.textContent = v < 45 ? 'L' : v > 55 ? 'R' : 'C';
+                } else {
+                    valEl.textContent = Math.round(v);
+                }
+
+                // Apply to audio system
+                applyEncoderValue(param, v);
+            };
+
+            knob.onmousedown = e => {
+                startY = e.clientY;
+                startVal = parseInt(knob.dataset.value) || 50;
+                const move = e => handleMove(e.clientY);
+                const up = () => {
+                    document.removeEventListener('mousemove', move);
+                    document.removeEventListener('mouseup', up);
+                };
+                document.addEventListener('mousemove', move);
+                document.addEventListener('mouseup', up);
+            };
+        });
+
+        function applyEncoderValue(param, value) {
+            // If a module is focused, route encoders to that module's params
+            if (focusedModule) {
+                applyModuleEncoderValue(focusedModule, param, value);
+                return;
+            }
+
+            // Default encoder behavior
+            switch (param) {
+                case 'volume':
+                    if (window.audioEngine) {
+                        window.audioEngine.setMasterLevel(value / 100);
+                    }
+                    break;
+
+                case 'pan':
+                    // Pan selected track/channel
+                    break;
+
+                case 'filter':
+                    if (window.synth) {
+                        window.synth.setFilterCutoff(value * 80); // 0-8000 Hz
+                    }
+                    break;
+
+                case 'fx':
+                    if (window.mangleEngine) {
+                        window.mangleEngine.setDelayMix(value);
+                    }
+                    break;
+            }
+        }
+
+        function applyModuleEncoderValue(module, param, value) {
+            const encoderIndex = ['volume', 'pan', 'filter', 'fx'].indexOf(param);
+
+            switch (module) {
+                case 'synth':
+                    // CUTOFF, RES, DETUNE, ATTACK
+                    if (encoderIndex === 0 && window.synth) {
+                        window.synth.setFilterCutoff(value * 80);
+                    } else if (encoderIndex === 1 && window.synth) {
+                        window.synth.setFilterResonance?.(value / 100);
+                    } else if (encoderIndex === 2 && window.synth) {
+                        window.synth.setDetune?.((value - 50) * 24);
+                    } else if (encoderIndex === 3 && window.synth) {
+                        window.synth.setAttack?.(value / 100);
+                    }
+                    break;
+
+                case 'fx':
+                    // DELAY, FDBK, GLITCH, GRAIN
+                    if (window.mangleEngine) {
+                        if (encoderIndex === 0) {
+                            window.mangleEngine.setDelayMix(value);
+                        } else if (encoderIndex === 1) {
+                            window.mangleEngine.setDelayFeedback(value);
+                        } else if (encoderIndex === 2) {
+                            window.mangleEngine.setGlitch(value, 100, 'stutter');
+                        } else if (encoderIndex === 3) {
+                            window.mangleEngine.setGrain(value, 50, 0);
+                        }
+                    }
+                    break;
+
+                case 'radio':
+                    // VOL, TUNE, SEARCH, GPS
+                    if (encoderIndex === 0 && window.radioPlayer) {
+                        window.radioPlayer.setVolume(value / 100);
+                    }
+                    // Other radio controls would need additional implementation
+                    break;
+
+                case 'ai':
+                    // DENSITY, COMPLEX, VIBE, TEMPO
+                    if (encoderIndex === 3) {
+                        // Tempo adjustment
+                        bpm = 60 + Math.floor(value * 1.2); // 60-180 BPM
+                        document.getElementById('bpmVal').textContent = bpm;
+                        if (isPlaying) {
+                            clearInterval(stepInterval);
+                            stepInterval = setInterval(playStep, (60 / bpm) * 1000 / 4);
+                        }
+                    }
+                    break;
+
+                case 'sampler':
+                    // VOL, PAN, PITCH, DECAY
+                    if (encoderIndex === 0 && window.audioEngine) {
+                        window.audioEngine.setChannelLevel('samples', value / 100);
+                    }
+                    break;
+            }
+        }
+
+        // ==========================================
+        // RADIO INTEGRATION
+        // ==========================================
+
+        // Listen for radio events
+        window.addEventListener('radio-playing', (e) => {
+            document.getElementById('radioIndicator').classList.add('active');
+            document.getElementById('stationName').textContent = e.detail?.name || 'Playing';
+        });
+
+        window.addEventListener('radio-stopped', () => {
+            document.getElementById('radioIndicator').classList.remove('active');
+            document.getElementById('stationName').textContent = '--';
+        });
+
+        // ==========================================
+        // TIME DISPLAY
+        // ==========================================
+
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('timeDisplay').textContent = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+        }, 1000);
+
+        // ==========================================
+        // LANDMARK FEATURE
+        // ==========================================
+
+        let gpsData = null;
+        let landmarkActive = false;
+
+        // Pre-fetch GPS in background
+        function acquireGPS() {
+            if (!navigator.geolocation) return;
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    gpsData = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy
+                    };
+                    console.log('GPS acquired:', gpsData);
+                },
+                (error) => {
+                    console.warn('GPS error:', error.message);
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+            );
+        }
+
+        async function triggerLandmark() {
+            if (landmarkActive) return;
+            landmarkActive = true;
+
+            const landmarkBtn = document.getElementById('landmarkBtn');
+            const recBtn = document.querySelector('.transport-btn.rec');
+
+            // Visual feedback
+            landmarkBtn.classList.add('active');
+
+            // Ensure audio is initialized
+            if (!window.audioEngine) {
+                await initAudioSystem();
+            }
+
+            // Update AI composer with GPS context
+            if (window.aiComposer) {
+                if (gpsData) {
+                    window.aiComposer.context.gps = gpsData;
+                }
+                window.aiComposer.updateContext();
+
+                // Generate patterns based on location/time
+                const vibe = window.aiComposer.getContext()?.vibe || 'calm';
+                window.aiComposer.generateRhythm(vibe, 70, 60);
+            }
+
+            // Refresh the grid
+            initSeqGrid();
+
+            // Start playback
+            if (!isPlaying) {
+                startPlay();
+            }
+
+            // Make record button blink - ready to capture
+            recBtn.classList.add('ready');
+
+            // Set LEDs to landmark color
+            document.querySelectorAll('.led').forEach(l => l.className = 'led on-red');
+
+            // Stop button pulse after a moment
+            setTimeout(() => {
+                landmarkBtn.classList.remove('active');
+                landmarkActive = false;
+            }, 2000);
+        }
+
+        // Attach landmark button handler
+        document.getElementById('landmarkBtn').onclick = triggerLandmark;
+
+        // ==========================================
+        // INITIALIZATION
+        // ==========================================
+
+        // Default pattern
+        patterns[0][0][0].active = patterns[0][0][4].active = patterns[0][0][8].active = patterns[0][0][12].active = true;
+        patterns[0][1][4].active = patterns[0][1][12].active = true;
+        for (let i = 0; i < 16; i += 2) patterns[0][2][i].active = true;
+
+        // Initialize grid
+        initSeqGrid();
+        selectTrack(0);
+
+        // Start GPS acquisition in background
+        acquireGPS();
+
+        // Auto-init audio on first user interaction
+        document.addEventListener('click', async () => {
+            if (!window.audioEngine) {
+                await initAudioSystem();
+            }
+        }, { once: true });
+
+        console.log('Hardware Interactive loaded - click LANDMARK (📍) to capture sonic snapshot');
+    </script>
+</body>
+</html>

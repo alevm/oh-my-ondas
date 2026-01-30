@@ -1,0 +1,455 @@
+{
+  "deviceName": "Oh My Ondas",
+  "testDate": "2026-01-11T17:31:11.741Z",
+  "categories": {
+    "sequencer": {
+      "tests": [
+        {
+          "name": "Parameter Locks Available",
+          "passed": true,
+          "data": {
+            "available": [
+              "PITCH",
+              "SLICE",
+              "FILT",
+              "DECAY",
+              "PAN"
+            ],
+            "count": 5,
+            "perStepEditing": false
+          },
+          "comparison": {
+            "octatrack": "Unlimited parameters",
+            "ohMyOndas": "5 parameter types",
+            "score": 0.8
+          }
+        },
+        {
+          "name": "Trig Conditions",
+          "passed": true,
+          "data": {
+            "available": [
+              "ALL",
+              "PROB",
+              "FILL",
+              "!FILL",
+              "NTH",
+              "NEIGH"
+            ],
+            "count": 6,
+            "probability": true,
+            "fill": true,
+            "neighbor": true
+          },
+          "comparison": {
+            "octatrack": "12 condition types",
+            "ohMyOndas": "6 condition types",
+            "score": 0.5
+          }
+        },
+        {
+          "name": "Pattern System",
+          "passed": false,
+          "data": {
+            "patternCount": 8,
+            "hasChaining": false,
+            "hasLength": false
+          },
+          "comparison": {
+            "octatrack": "256 patterns",
+            "ohMyOndas": "8 patterns",
+            "score": 0.03125
+          }
+        },
+        {
+          "name": "Scene System",
+          "passed": true,
+          "data": {
+            "sceneCount": 4,
+            "hasMorph": false,
+            "hasSave": false
+          },
+          "comparison": {
+            "octatrack": "16 scenes per pattern",
+            "ohMyOndas": "4 scenes",
+            "score": 0.25
+          }
+        },
+        {
+          "name": "Track System",
+          "passed": true,
+          "data": {
+            "trackCount": 9,
+            "hasMute": true,
+            "hasSolo": true,
+            "independentSteps": true
+          },
+          "comparison": {
+            "octatrack": "8 tracks",
+            "ohMyOndas": "9 tracks",
+            "score": 1
+          }
+        }
+      ],
+      "score": 4,
+      "maxScore": 5
+    },
+    "sampler": {
+      "tests": [
+        {
+          "name": "Pad Configuration",
+          "passed": true,
+          "data": {
+            "padCount": 16,
+            "pads": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16
+            ],
+            "bankCount": 1,
+            "totalPads": 16
+          },
+          "comparison": {
+            "sp404": "16 pads",
+            "ohMyOndas": "16 total pads (16 per bank)",
+            "score": 1
+          }
+        },
+        {
+          "name": "Pad Response Latency",
+          "passed": false,
+          "data": {
+            "avgLatency": "135.26",
+            "measurements": 5
+          },
+          "comparison": {
+            "sp404": "<5ms (hardware)",
+            "ohMyOndas": "135.26ms (software)",
+            "score": 0
+          }
+        },
+        {
+          "name": "Sample Bank System",
+          "passed": true,
+          "data": {
+            "kitCount": 3,
+            "hasKitSystem": true,
+            "kitNames": [
+              "1",
+              "2",
+              "3"
+            ]
+          },
+          "comparison": {
+            "sp404": "12 banks",
+            "ohMyOndas": "3 kits/banks",
+            "score": 0.25
+          }
+        },
+        {
+          "name": "Sample Editing Features",
+          "passed": true,
+          "data": {
+            "features": {
+              "reverse": true,
+              "pitchShift": true,
+              "slice": true,
+              "loop": false,
+              "trim": false,
+              "normalize": false
+            },
+            "count": 3
+          },
+          "comparison": {
+            "sp404": "6 main editing functions",
+            "ohMyOndas": "3 editing features",
+            "score": 0.5
+          }
+        }
+      ],
+      "score": 3,
+      "maxScore": 4
+    },
+    "performance": {
+      "tests": [
+        {
+          "name": "Punch Effects (Keyboard FX)",
+          "passed": false,
+          "data": {
+            "effectCount": 1,
+            "effects": [
+              "FILTER"
+            ],
+            "hasPunchSystem": true
+          },
+          "comparison": {
+            "opz": "4 punch effects",
+            "ohMyOndas": "1 punch-capable effects",
+            "score": 0.25
+          }
+        },
+        {
+          "name": "Live Recording/Looping",
+          "passed": false,
+          "data": {
+            "hasRecord": false,
+            "hasLoop": false,
+            "recordButtons": 0
+          },
+          "comparison": {
+            "opz": "Live recording + looping",
+            "ohMyOndas": "No recording detected",
+            "score": 0
+          }
+        },
+        {
+          "name": "Real-time Parameter Tweaking",
+          "passed": true,
+          "data": {
+            "sliders": 42,
+            "knobs": 26,
+            "totalParameters": 68,
+            "hasRealtime": true
+          },
+          "comparison": {
+            "opz": "10+ step components",
+            "ohMyOndas": "68 tweakable parameters",
+            "score": 1
+          }
+        },
+        {
+          "name": "Keyboard Shortcuts",
+          "passed": false,
+          "data": {
+            "tested": 5,
+            "working": 0,
+            "shortcuts": [
+              {
+                "key": " ",
+                "name": "Space (Play/Pause)",
+                "works": false
+              },
+              {
+                "key": "?",
+                "name": "? (Help)",
+                "works": false
+              },
+              {
+                "key": "1",
+                "name": "1 (Pad)",
+                "works": false
+              },
+              {
+                "key": "Q",
+                "name": "Q (Punch FX)",
+                "works": false
+              },
+              {
+                "key": "Escape",
+                "name": "Esc (Cancel)",
+                "works": false
+              }
+            ]
+          },
+          "comparison": {
+            "opz": "20+ shortcuts",
+            "ohMyOndas": "0/5 tested shortcuts work",
+            "score": 0
+          }
+        }
+      ],
+      "score": 1,
+      "maxScore": 4
+    },
+    "sync": {
+      "tests": [
+        {
+          "name": "BPM Range & Control",
+          "passed": true,
+          "data": {
+            "tested": [
+              60,
+              120,
+              180
+            ],
+            "results": [
+              {
+                "success": true,
+                "target": 60,
+                "actual": 60,
+                "accurate": true
+              },
+              {
+                "success": true,
+                "target": 120,
+                "actual": 120,
+                "accurate": true
+              },
+              {
+                "success": true,
+                "target": 180,
+                "actual": 180,
+                "accurate": true
+              }
+            ],
+            "accurate": 3
+          },
+          "comparison": {
+            "hardware": "40-300 BPM typical",
+            "ohMyOndas": "3/3 BPM changes accurate",
+            "score": 1
+          }
+        },
+        {
+          "name": "Clock Stability",
+          "passed": false,
+          "data": {
+            "measured": false,
+            "timeout": true
+          },
+          "comparison": {
+            "hardware": "<0.1% jitter",
+            "ohMyOndas": "Not measured",
+            "score": 0
+          }
+        }
+      ],
+      "score": 1,
+      "maxScore": 2
+    },
+    "ux": {
+      "tests": [
+        {
+          "name": "Trigger a sample",
+          "passed": true,
+          "data": {
+            "duration": 104,
+            "expectedClicks": 1
+          },
+          "comparison": {
+            "description": "Expected 1 click(s)",
+            "devices": {
+              "sp404": 1,
+              "octatrack": 1,
+              "opz": 1
+            },
+            "ohMyOndas": "1 clicks, 104ms",
+            "score": 1
+          }
+        },
+        {
+          "name": "Apply effect to sample",
+          "passed": true,
+          "data": {
+            "duration": 104,
+            "expectedClicks": 2
+          },
+          "comparison": {
+            "description": "Expected 2 click(s)",
+            "devices": {
+              "sp404": 2,
+              "octatrack": 3,
+              "opz": 1
+            },
+            "ohMyOndas": "2 clicks, 104ms",
+            "score": 0.7
+          }
+        },
+        {
+          "name": "Change scene",
+          "passed": true,
+          "data": {
+            "duration": 104,
+            "expectedClicks": 1
+          },
+          "comparison": {
+            "description": "Expected 1 click(s)",
+            "devices": {
+              "octatrack": 1,
+              "opz": 2
+            },
+            "ohMyOndas": "1 clicks, 104ms",
+            "score": 1
+          }
+        },
+        {
+          "name": "Mute a track",
+          "passed": true,
+          "data": {
+            "duration": 103,
+            "expectedClicks": 1
+          },
+          "comparison": {
+            "description": "Expected 1 click(s)",
+            "devices": {
+              "octatrack": 1,
+              "opz": 1
+            },
+            "ohMyOndas": "1 clicks, 103ms",
+            "score": 1
+          }
+        },
+        {
+          "name": "Menu Depth (Accessibility)",
+          "passed": true,
+          "data": {
+            "hasDeepMenus": 0,
+            "hasModal": 12,
+            "estimatedDepth": 2
+          },
+          "comparison": {
+            "tePhilosophy": "90% functions in <3 clicks",
+            "ohMyOndas": "2 levels deep",
+            "score": 1
+          }
+        }
+      ],
+      "score": 5,
+      "maxScore": 5
+    }
+  },
+  "benchmarks": {
+    "padLatency": {
+      "value": 135.25999999940396,
+      "unit": "ms",
+      "comparison": {
+        "sp404": 5,
+        "acceptable": 50,
+        "measured": 135.25999999940396
+      }
+    }
+  },
+  "comparisonMatrix": {
+    "octatrack": {
+      "overall": 0.8,
+      "categories": {
+        "sequencer": 0.8
+      }
+    },
+    "opz": {
+      "overall": 0.25,
+      "categories": {
+        "performance": 0.25
+      }
+    },
+    "sp404": {
+      "overall": 0.75,
+      "categories": {
+        "sampler": 0.75
+      }
+    }
+  }
+}

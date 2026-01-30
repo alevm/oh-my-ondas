@@ -1,0 +1,32 @@
+{
+  "name": "oh-my-ondas",
+  "version": "1.0.0",
+  "description": "Location-aware portable music instrument with web prototype",
+  "private": true,
+  "scripts": {
+    "start": "cd web && python3 -m http.server 8080",
+    "test": "cd tests && npm test",
+    "lint:js": "npx eslint web/js/",
+    "lint:py": "flake8 firmware/tools/",
+    "firmware:build": "cd firmware && pio run -e teensy41"
+  },
+  "keywords": [
+    "music",
+    "sequencer",
+    "sampler",
+    "synthesizer",
+    "web-audio",
+    "gps",
+    "teensy",
+    "esp32"
+  ],
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alevm/oh-my-ondas.git"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0"
+  }
+}

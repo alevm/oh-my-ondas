@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Test outputs
+test-screenshots/
+advanced-test-screenshots/
+workflow-test-screenshots/
+test-results.json
+test-results.md
+workflow-test-results.json
+test-output.txt
+demo-*-frames/
+demo-*-final.png
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Secrets
+.env
+.env.local
+*.key
+*.pem
+credentials.json
+
+# Audio files (user-generated)
+web/samples/*.wav
+web/samples/*.mp3
+web/samples/*.ogg
+web/samples/*.webm
+!web/samples/.gitkeep
+
+# Build artifacts
+*.o
+*.elf
+*.bin
+*.hex
+firmware/.pio/
+
+# LibreOffice lock files
+.~lock.*
+
+# Claude Code internal
+.claude/

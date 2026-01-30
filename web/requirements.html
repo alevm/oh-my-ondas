@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requirements - Oh My Ondas</title>
+    <link rel="stylesheet" href="css/style.css?v=137">
+    <style>
+        body {
+            overflow: auto;
+        }
+        .page-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            background: rgba(255,255,255,0.95);
+        }
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 16px;
+            background: linear-gradient(180deg, var(--cream) 0%, #e8e0d5 100%);
+            border-bottom: 3px solid var(--border);
+            height: 96px;
+        }
+        .page-header .logo {
+            font-weight: 800;
+            font-size: 22px;
+            color: var(--accent);
+            letter-spacing: 1px;
+            text-decoration: none;
+        }
+        .page-header .logo:hover {
+            opacity: 0.8;
+        }
+        .nav-links {
+            display: flex;
+            gap: 12px;
+            margin-left: 24px;
+        }
+        .nav-link {
+            padding: 10px 16px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            background: var(--cream);
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.15s ease;
+        }
+        .nav-link:hover {
+            background: var(--border);
+            color: #fff;
+        }
+        .nav-link.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+        .page-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 32px;
+            border-bottom: 3px solid var(--border);
+            padding-bottom: 16px;
+        }
+        .section {
+            margin-bottom: 32px;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--border);
+            margin-bottom: 16px;
+        }
+        .req-list {
+            list-style: none;
+            padding: 0;
+        }
+        .req-list li {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            background: var(--cream);
+            border-left: 4px solid var(--accent);
+            border-radius: 0 6px 6px 0;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        .req-list li strong {
+            color: var(--accent);
+        }
+        .priority-high {
+            border-left-color: #e74c3c;
+        }
+        .priority-medium {
+            border-left-color: #f39c12;
+        }
+        .priority-low {
+            border-left-color: #27ae60;
+        }
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+        .tag-hw { background: #3498db; color: #fff; }
+        .tag-sw { background: #9b59b6; color: #fff; }
+        .tag-audio { background: #e74c3c; color: #fff; }
+    </style>
+</head>
+<body>
+    <div id="mapBackground" class="map-bg"></div>
+
+    <div class="page-container">
+        <header class="page-header">
+            <a href="index.html" class="logo">OH MY ONDAS</a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">App</a>
+                <a href="requirements.html" class="nav-link active">Requirements</a>
+                <a href="hardware-mockup.html" class="nav-link">Hardware</a>
+                <a href="scope.html" class="nav-link">Scope</a>
+            </nav>
+        </header>
+
+        <main class="page-content">
+            <h1 class="page-title">Project Requirements</h1>
+
+            <section class="section">
+                <h2 class="section-title">Hardware Components</h2>
+                <ul class="req-list">
+                    <li class="priority-high">
+                        <strong>Raspberry Pi 4/5</strong> - Main processing unit with 4GB+ RAM
+                        <span class="tag tag-hw">Hardware</span>
+                    </li>
+                    <li class="priority-high">
+                        <strong>7" Touchscreen Display</strong> - 1024x600 or higher resolution, capacitive touch
+                        <span class="tag tag-hw">Hardware</span>
+                    </li>
+                    <li class="priority-high">
+                        <strong>USB Audio Interface</strong> - Low-latency audio I/O with at least 2 inputs/outputs
+                        <span class="tag tag-audio">Audio</span>
+                    </li>
+                    <li class="priority-medium">
+                        <strong>8x Silicon Pads</strong> - Velocity-sensitive drum pads for sample triggering
+                        <span class="tag tag-hw">Hardware</span>
+                    </li>
+                    <li class="priority-medium">
+                        <strong>Rotary Encoders</strong> - 4-8 endless rotary encoders for parameter control
+                        <span class="tag tag-hw">Hardware</span>
+                    </li>
+                    <li class="priority-medium">
+                        <strong>Transport Buttons</strong> - Play, Stop, Record physical buttons
+                        <span class="tag tag-hw">Hardware</span>
+                    </li>
+                    <li class="priority-low">
+                        <strong>GPS Module</strong> - For location-based features (optional)
+                        <span class="tag tag-hw">Hardware</span>
+                    </li>
+                    <li class="priority-low">
+                        <strong>Battery Pack</strong> - Portable power supply for mobile use
+                        <span class="tag tag-hw">Hardware</span>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Software Requirements</h2>
+                <ul class="req-list">
+                    <li class="priority-high">
+                        <strong>Web Audio API</strong> - Low-latency audio synthesis and processing
+                        <span class="tag tag-sw">Software</span>
+                    </li>
+                    <li class="priority-high">
+                        <strong>8-Track Sequencer</strong> - Pattern-based step sequencer with up to 64 steps
+                        <span class="tag tag-sw">Software</span>
+                    </li>
+                    <li class="priority-high">
+                        <strong>Sample Playback</strong> - Load and trigger WAV/MP3 samples with velocity
+                        <span class="tag tag-audio">Audio</span>
+                    </li>
+                    <li class="priority-medium">
+                        <strong>Synthesizer Engine</strong> - Subtractive synth with oscillators, filter, envelope
+                        <span class="tag tag-audio">Audio</span>
+                    </li>
+                    <li class="priority-medium">
+                        <strong>Effects Processing</strong> - Delay, reverb, distortion, filter FX
+                        <span class="tag tag-audio">Audio</span>
+                    </li>
+                    <li class="priority-medium">
+                        <strong>Scene Management</strong> - Save/recall performance scenes
+                        <span class="tag tag-sw">Software</span>
+                    </li>
+                    <li class="priority-low">
+                        <strong>AI Pattern Generation</strong> - Generate patterns using AI algorithms
+                        <span class="tag tag-sw">Software</span>
+                    </li>
+                    <li class="priority-low">
+                        <strong>Internet Radio</strong> - Stream and sample from online radio stations
+                        <span class="tag tag-audio">Audio</span>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Enclosure Specifications</h2>
+                <ul class="req-list">
+                    <li class="priority-medium">
+                        <strong>Dimensions</strong> - Approximately 250mm x 180mm x 50mm (W x D x H)
+                    </li>
+                    <li class="priority-medium">
+                        <strong>Material</strong> - CNC-machined aluminum or 3D-printed PLA/PETG
+                    </li>
+                    <li class="priority-low">
+                        <strong>Ports</strong> - USB-C power, 3.5mm audio out, MIDI in/out (optional)
+                    </li>
+                    <li class="priority-low">
+                        <strong>Ventilation</strong> - Passive cooling with vented design
+                    </li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Performance Targets</h2>
+                <ul class="req-list">
+                    <li class="priority-high">
+                        <strong>Audio Latency</strong> - &lt; 10ms round-trip latency
+                    </li>
+                    <li class="priority-high">
+                        <strong>Touch Response</strong> - &lt; 50ms touch-to-sound response
+                    </li>
+                    <li class="priority-medium">
+                        <strong>Battery Life</strong> - 4+ hours on battery power
+                    </li>
+                    <li class="priority-medium">
+                        <strong>Boot Time</strong> - &lt; 30 seconds to fully operational
+                    </li>
+                </ul>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

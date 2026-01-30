@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenger Presentation - Oh My Ondas</title>
+    <link rel="stylesheet" href="css/style.css?v=137">
+    <style>
+        body {
+            overflow: auto;
+        }
+        .page-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            background: rgba(255,255,255,0.95);
+        }
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 16px;
+            background: linear-gradient(180deg, var(--cream) 0%, #e8e0d5 100%);
+            border-bottom: 3px solid var(--border);
+            height: 96px;
+        }
+        .page-header .logo {
+            font-weight: 800;
+            font-size: 22px;
+            color: var(--accent);
+            letter-spacing: 1px;
+            text-decoration: none;
+        }
+        .page-header .logo:hover {
+            opacity: 0.8;
+        }
+        .nav-links {
+            display: flex;
+            gap: 12px;
+            margin-left: 24px;
+        }
+        .nav-link {
+            padding: 10px 16px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            background: var(--cream);
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.15s ease;
+        }
+        .nav-link:hover {
+            background: var(--border);
+            color: #fff;
+        }
+        .nav-link.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+        .page-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 12px;
+            border-bottom: 3px solid var(--border);
+            padding-bottom: 16px;
+        }
+        .page-subtitle {
+            color: var(--text-light);
+            margin-bottom: 32px;
+            font-size: 16px;
+        }
+
+        /* Section Headers */
+        .section-header {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--border);
+            margin: 48px 0 24px 0;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .section-header:first-of-type {
+            margin-top: 24px;
+        }
+
+        /* Pitch Cards */
+        .pitch-card {
+            background: var(--cream);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .pitch-card h3 {
+            color: var(--accent);
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        .pitch-time {
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .pitch-content {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 16px;
+            font-size: 14px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+        .copy-btn {
+            padding: 8px 16px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            margin-top: 12px;
+        }
+        .copy-btn:hover {
+            background: var(--accent-dark);
+        }
+        .copy-btn.copied {
+            background: var(--green);
+        }
+
+        /* Comparison Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            font-size: 14px;
+        }
+        .comparison-table th {
+            background: var(--border);
+            color: #fff;
+            padding: 12px 16px;
+            text-align: left;
+        }
+        .comparison-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #ddd;
+        }
+        .comparison-table tr:nth-child(even) {
+            background: var(--cream);
+        }
+        .comparison-table .check {
+            color: var(--green);
+            font-weight: 700;
+        }
+        .comparison-table .cross {
+            color: var(--accent);
+        }
+
+        /* Mode Cards */
+        .modes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .mode-card {
+            background: #fff;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .mode-card-header {
+            padding: 16px;
+            color: #fff;
+            text-align: center;
+        }
+        .mode-card-header.picture { background: linear-gradient(135deg, #3498db 0%, #2874a6 100%); }
+        .mode-card-header.soundscape { background: linear-gradient(135deg, #9b59b6 0%, #7d3c98 100%); }
+        .mode-card-header.interact { background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); }
+        .mode-card-header .mode-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .mode-card-header h3 {
+            font-size: 16px;
+            margin: 0;
+        }
+        .mode-card-body {
+            padding: 16px;
+        }
+        .mode-card-body p {
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: var(--text-light);
+        }
+        .mode-card-body strong {
+            color: var(--text);
+        }
+
+        /* Specs Grid */
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        .spec-item {
+            background: var(--cream);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        .spec-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+        .spec-label {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        /* Use Cases */
+        .use-case-card {
+            background: #fff;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .use-case-header {
+            background: var(--border);
+            color: #fff;
+            padding: 12px 20px;
+            font-weight: 700;
+        }
+        .use-case-body {
+            padding: 20px;
+        }
+        .use-case-concept {
+            background: var(--cream);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+        .use-case-steps {
+            counter-reset: step;
+            list-style: none;
+            padding: 0;
+            margin: 16px 0;
+        }
+        .use-case-steps li {
+            counter-increment: step;
+            padding: 8px 0 8px 36px;
+            position: relative;
+            font-size: 14px;
+        }
+        .use-case-steps li::before {
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 6px;
+            width: 24px;
+            height: 24px;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .use-case-value {
+            margin-top: 16px;
+        }
+        .use-case-value h4 {
+            color: var(--green);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .use-case-value ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        /* Pricing Table */
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+        }
+        .pricing-table th {
+            background: var(--accent);
+            color: #fff;
+            padding: 12px 16px;
+            text-align: left;
+        }
+        .pricing-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #ddd;
+        }
+        .pricing-table tr:nth-child(even) {
+            background: var(--cream);
+        }
+        .pricing-table .price {
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        /* FAQ Section */
+        .faq-item {
+            background: var(--cream);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .faq-question {
+            padding: 16px;
+            font-weight: 700;
+            color: var(--accent);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .faq-question::after {
+            content: '+';
+            font-size: 20px;
+            font-weight: 400;
+        }
+        .faq-item.open .faq-question::after {
+            content: '-';
+        }
+        .faq-answer {
+            padding: 0 16px 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            display: none;
+        }
+        .faq-item.open .faq-answer {
+            display: block;
+        }
+        .faq-answer-box {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            font-style: italic;
+        }
+
+        /* Quick Reference */
+        .quick-ref {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .quick-ref-card {
+            background: var(--cream);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .quick-ref-card h3 {
+            color: var(--accent);
+            font-size: 16px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border);
+        }
+        .quick-ref-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .quick-ref-card li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            font-size: 14px;
+        }
+        .quick-ref-card li:last-child {
+            border-bottom: none;
+        }
+        .quick-ref-card a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .quick-ref-card a:hover {
+            text-decoration: underline;
+        }
+        .quick-ref-card code {
+            background: rgba(233, 69, 96, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="mapBackground" class="map-bg"></div>
+
+    <div class="page-container">
+        <header class="page-header">
+            <a href="index.html" class="logo">OH MY ONDAS</a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">App</a>
+                <a href="ise-submission.html" class="nav-link">ISE 2026</a>
+                <a href="challenger-presentation.html" class="nav-link active">Presentation</a>
+                <a href="hardware-mockup.html" class="nav-link">Design</a>
+                <a href="scope.html" class="nav-link">Scope</a>
+            </nav>
+        </header>
+
+        <main class="page-content">
+            <h1 class="page-title">Challenger Presentation Materials</h1>
+            <p class="page-subtitle">Pitch scripts, differentiators, use cases, pricing, and FAQ for ISE 2026 meetings</p>
+
+            <!-- Core Messaging -->
+            <h2 class="section-header">2.1 Core Messaging</h2>
+
+            <div class="pitch-card">
+                <h3>One-Liner</h3>
+                <div class="pitch-content">Oh My Ondas is a sonic camera - it photographs the soundscape of a place and turns it into music you can remember and interact with.</div>
+                <button class="copy-btn" onclick="copyToClipboard(this, 'Oh My Ondas is a sonic camera - it photographs the soundscape of a place and turns it into music you can remember and interact with.')">Copy</button>
+            </div>
+
+            <div class="pitch-card">
+                <h3>30-Second Pitch</h3>
+                <span class="pitch-time">30 seconds</span>
+                <div class="pitch-content">Oh My Ondas is a sonic camera for places. It captures the sounds of a location - ambient noise, radio, environmental audio - and transforms them into music that remembers and represents that specific place. You can listen back and recall the place, or interact with it live. We have a working web demo you can try right now, and we're looking for partners in museums, media, and events.</div>
+                <button class="copy-btn" onclick="copyToClipboard(this, 'Oh My Ondas is a sonic camera for places. It captures the sounds of a location - ambient noise, radio, environmental audio - and transforms them into music that remembers and represents that specific place. You can listen back and recall the place, or interact with it live. We have a working web demo you can try right now, and we\\'re looking for partners in museums, media, and events.')">Copy</button>
+            </div>
+
+            <div class="pitch-card">
+                <h3>2-Minute Pitch</h3>
+                <span class="pitch-time">2 minutes</span>
+                <div class="pitch-content">Thank you for meeting. I'm [NAME], creator of Oh My Ondas.
+
+THE PROBLEM: Places have unique sounds, but there's no easy way to capture that sonic identity and turn it into something you can keep, share, or build on. Museums, events, and media producers want audio experiences that truly come from a place - not generic stock music.
+
+OUR SOLUTION: Oh My Ondas is a sonic camera. It photographs the soundscape of any location - ambient noise, radio signals, environmental audio - and transforms those sounds into music that remembers and represents that place.
+
+HOW IT WORKS: We combine 8 audio sources - microphones, radio, sensors - with a professional sequencer and AI that responds to what it hears. The music is derived from the place itself. GPS and timestamp give context.
+
+WORKING NOW: Unlike concepts, you can try Oh My Ondas right now at alevm.github.io/oh-my-ondas. Full 8-track sequencer, synthesizer, effects, AI patterns - all working.
+
+THE ASK: We're looking for pilot partners - museums wanting sonic experiences derived from their spaces, media producers who want music that sounds like the places they film, or event organizers creating unrepeatable sonic moments.
+
+Can I show you a quick demo?</div>
+                <button class="copy-btn" onclick="copyToClipboard(this, 'Thank you for meeting. I\\'m [NAME], creator of Oh My Ondas.\\n\\nTHE PROBLEM: Places have unique sounds, but there\\'s no easy way to capture that sonic identity and turn it into something you can keep, share, or build on. Museums, events, and media producers want audio experiences that truly come from a place - not generic stock music.\\n\\nOUR SOLUTION: Oh My Ondas is a sonic camera. It photographs the soundscape of any location - ambient noise, radio signals, environmental audio - and transforms those sounds into music that remembers and represents that place.\\n\\nHOW IT WORKS: We combine 8 audio sources - microphones, radio, sensors - with a professional sequencer and AI that responds to what it hears. The music is derived from the place itself. GPS and timestamp give context.\\n\\nWORKING NOW: Unlike concepts, you can try Oh My Ondas right now at alevm.github.io/oh-my-ondas. Full 8-track sequencer, synthesizer, effects, AI patterns - all working.\\n\\nTHE ASK: We\\'re looking for pilot partners - museums wanting sonic experiences derived from their spaces, media producers who want music that sounds like the places they film, or event organizers creating unrepeatable sonic moments.\\n\\nCan I show you a quick demo?')">Copy</button>
+            </div>
+
+            <!-- Key Differentiators -->
+            <h2 class="section-header">2.2 Key Differentiators</h2>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Traditional Audio</th>
+                        <th>Oh My Ondas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Sound source</td>
+                        <td class="cross">Stock / generic</td>
+                        <td class="check">Captured from the place</td>
+                    </tr>
+                    <tr>
+                        <td>Location awareness</td>
+                        <td class="cross">None</td>
+                        <td class="check">GPS + environmental context</td>
+                    </tr>
+                    <tr>
+                        <td>AI composition</td>
+                        <td class="cross">None</td>
+                        <td class="check">Responds to soundscape</td>
+                    </tr>
+                    <tr>
+                        <td>Real-time effects</td>
+                        <td class="cross">Post-production</td>
+                        <td class="check">8 live effects</td>
+                    </tr>
+                    <tr>
+                        <td>Multi-source capture</td>
+                        <td class="cross">Single input</td>
+                        <td class="check">8 simultaneous</td>
+                    </tr>
+                    <tr>
+                        <td>Browser-based</td>
+                        <td class="cross">Apps required</td>
+                        <td class="check">No install</td>
+                    </tr>
+                    <tr>
+                        <td>Interaction</td>
+                        <td class="cross">Passive recording</td>
+                        <td class="check">Play with the sounds of a place</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Three Operational Modes -->
+            <h2 class="section-header">2.3 Three Operational Modes</h2>
+
+            <div class="modes-grid">
+                <div class="mode-card">
+                    <div class="mode-card-header picture">
+                        <div class="mode-icon">&#128247;</div>
+                        <h3>PICTURE MODE</h3>
+                    </div>
+                    <div class="mode-card-body">
+                        <p><strong>What:</strong> 90-second environmental capture, unprocessed</p>
+                        <p><strong>Use:</strong> Documentation, archival, raw soundscapes</p>
+                        <p><strong>Output:</strong> Audio file with GPS/timestamp metadata</p>
+                    </div>
+                </div>
+
+                <div class="mode-card">
+                    <div class="mode-card-header soundscape">
+                        <div class="mode-icon">&#127912;</div>
+                        <h3>SOUNDSCAPE MODE</h3>
+                    </div>
+                    <div class="mode-card-body">
+                        <p><strong>What:</strong> AI analyzes location and creates composition</p>
+                        <p><strong>Use:</strong> Ambient installations, sonic postcards</p>
+                        <p><strong>Output:</strong> AI-generated piece reflecting place character</p>
+                    </div>
+                </div>
+
+                <div class="mode-card">
+                    <div class="mode-card-header interact">
+                        <div class="mode-icon">&#127929;</div>
+                        <h3>INTERACT MODE</h3>
+                    </div>
+                    <div class="mode-card-body">
+                        <p><strong>What:</strong> Live performance starting from captured base</p>
+                        <p><strong>Use:</strong> Performances, workshops, audience participation</p>
+                        <p><strong>Output:</strong> Collaborative composition with all contributions</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Specifications -->
+            <h2 class="section-header">2.4 Technical Specifications</h2>
+
+            <div class="specs-grid">
+                <div class="spec-item">
+                    <div class="spec-value">8</div>
+                    <div class="spec-label">Tracks</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-value">8</div>
+                    <div class="spec-label">Effects</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-value">8</div>
+                    <div class="spec-label">Audio Sources</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-value">5m</div>
+                    <div class="spec-label">GPS Accuracy</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-value">&lt;10ms</div>
+                    <div class="spec-label">Latency</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-value">24-bit</div>
+                    <div class="spec-label">Audio Quality</div>
+                </div>
+            </div>
+
+            <!-- Use Cases -->
+            <h2 class="section-header">2.5 Use Cases by Challenger Type</h2>
+
+            <div class="use-case-card">
+                <div class="use-case-header">FOR MUSEUMS (Moco, CaixaForum+)</div>
+                <div class="use-case-body">
+                    <div class="use-case-concept">"Sonic Souvenirs" - Each gallery room sounds different. Capture that.</div>
+                    <ol class="use-case-steps">
+                        <li>Visitor enters room with phone/device</li>
+                        <li>Oh My Ondas photographs the room's soundscape</li>
+                        <li>AI transforms those sounds into a musical composition</li>
+                        <li>Visitor takes home music that sounds like that room</li>
+                        <li>Listening back recalls the place - a sonic memory</li>
+                    </ol>
+                    <div class="use-case-value">
+                        <h4>VALUE:</h4>
+                        <ul>
+                            <li>Unique visitor experience</li>
+                            <li>Shareable content (social proof)</li>
+                            <li>Extended engagement post-visit</li>
+                            <li>Data on visitor flow</li>
+                            <li>Gift shop revenue (premium exports)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="use-case-card">
+                <div class="use-case-header">FOR BROADCAST/MEDIA (Gestmusic, Lavinia)</div>
+                <div class="use-case-body">
+                    <div class="use-case-concept">"Sound of the Story" - Music derived from the actual location you're filming.</div>
+                    <ol class="use-case-steps">
+                        <li>Capture the soundscape at the filming location</li>
+                        <li>Transform location sounds into production-ready music</li>
+                        <li>Audio beds and compositions that carry the feel of the place</li>
+                        <li>GPS/timestamp metadata for production context</li>
+                    </ol>
+                    <div class="use-case-value">
+                        <h4>VALUE:</h4>
+                        <ul>
+                            <li>Music that sounds like the location</li>
+                            <li>Authentic audio identity per production</li>
+                            <li>AI-assisted real-time composition</li>
+                            <li>Multi-source flexibility</li>
+                            <li>Competitive differentiation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="use-case-card">
+                <div class="use-case-header">FOR EVENTS (Festivals, Corporate)</div>
+                <div class="use-case-body">
+                    <div class="use-case-concept">"Crowd Sonic Portraits" - The event's sounds become its music.</div>
+                    <ol class="use-case-steps">
+                        <li>Capture the sounds of the crowd, venue, performances</li>
+                        <li>Transform those sounds into a musical composition</li>
+                        <li>AI creates music that sounds like THIS event</li>
+                        <li>Attendees take home music made from the sounds they were part of</li>
+                        <li>Different each event - unrepeatable by nature</li>
+                    </ol>
+                    <div class="use-case-value">
+                        <h4>VALUE:</h4>
+                        <ul>
+                            <li>Memorable takeaway</li>
+                            <li>Social sharing driver</li>
+                            <li>Brand differentiation</li>
+                            <li>Engagement metric</li>
+                            <li>Revenue opportunity</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing Framework -->
+            <h2 class="section-header">2.6 Pricing Framework</h2>
+
+            <table class="pricing-table">
+                <thead>
+                    <tr>
+                        <th>Offering</th>
+                        <th>Price Range</th>
+                        <th>Includes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Demo/Workshop</td>
+                        <td class="price">500-1,500 EUR</td>
+                        <td>Half-day demonstration</td>
+                    </tr>
+                    <tr>
+                        <td>2-Week Pilot</td>
+                        <td class="price">3,000-5,000 EUR</td>
+                        <td>Setup, customization, support</td>
+                    </tr>
+                    <tr>
+                        <td>1-Month Pilot</td>
+                        <td class="price">6,000-10,000 EUR</td>
+                        <td>Full deployment, iterations</td>
+                    </tr>
+                    <tr>
+                        <td>Custom Integration</td>
+                        <td class="price">15,000-30,000 EUR</td>
+                        <td>API development, training</td>
+                    </tr>
+                    <tr>
+                        <td>Annual License</td>
+                        <td class="price">5,000-15,000 EUR/yr</td>
+                        <td>Ongoing use, updates</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pitch-card">
+                <h3>Response to "How much?"</h3>
+                <div class="pitch-content">"It depends on scope. A pilot to test the concept is typically 3-5K EUR for two weeks. If it works, we discuss larger integration. I'm flexible for the right partner."</div>
+                <button class="copy-btn" onclick="copyToClipboard(this, 'It depends on scope. A pilot to test the concept is typically 3-5K EUR for two weeks. If it works, we discuss larger integration. I\\'m flexible for the right partner.')">Copy</button>
+            </div>
+
+            <!-- FAQ / Objection Handling -->
+            <h2 class="section-header">2.7 FAQ / Objection Handling</h2>
+
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-question">"Is this a real company?"</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-box">"I'm an independent developer based in Barcelona. For a pilot, I can invoice as freelance or set up a company quickly if needed. The technology is real and working - that's what matters for a proof of concept."</div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-question">"The hardware isn't ready?"</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-box">"The web version has full functionality - that's actually an advantage. No installation, works on any device, easier to deploy. Hardware version adds portability but isn't required for a pilot."</div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-question">"Why should we work with a solo developer?"</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-box">"You get direct access to the creator, fast iterations, and flexible terms. No corporate bureaucracy. For a pilot, that's ideal. If we scale, I'll build a team."</div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-question">"What about IP/ownership?"</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-box">"The core technology is mine. You'd get a license for your use case. Any custom features we develop together, we can discuss ownership - I'm open to fair arrangements."</div>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+                <div class="faq-question">"This seems niche..."</div>
+                <div class="faq-answer">
+                    <div class="faq-answer-box">"The more AI-generated generic content there is, the more valuable authentic place-based experiences become. Music made from real sounds of real places is inherently unique. We're early, which means partnership opportunity."</div>
+                </div>
+            </div>
+
+            <!-- Quick Reference -->
+            <h2 class="section-header">Part 4: Quick Reference</h2>
+
+            <div class="quick-ref">
+                <div class="quick-ref-card">
+                    <h3>Links to Include Everywhere</h3>
+                    <ul>
+                        <li><strong>Demo:</strong> <a href="https://alevm.github.io/oh-my-ondas/" target="_blank">alevm.github.io/oh-my-ondas/</a></li>
+                        <li><strong>GitHub:</strong> <a href="https://github.com/alevm/oh-my-ondas" target="_blank">github.com/alevm/oh-my-ondas</a></li>
+                        <li><strong>Hardware:</strong> <a href="hardware-mockup.html">Hardware Mockup</a></li>
+                    </ul>
+                </div>
+
+                <div class="quick-ref-card">
+                    <h3>Key Numbers</h3>
+                    <ul>
+                        <li><code>8</code> tracks</li>
+                        <li><code>8</code> effects</li>
+                        <li><code>8</code> audio sources</li>
+                        <li><code>5m</code> GPS accuracy</li>
+                        <li><code>&lt;10ms</code> latency</li>
+                        <li><code>24-bit</code> audio</li>
+                        <li><code>v2.4.6</code> current version</li>
+                    </ul>
+                </div>
+
+                <div class="quick-ref-card">
+                    <h3>ISE Dates</h3>
+                    <ul>
+                        <li><strong>Deadline:</strong> February 2, 2026</li>
+                        <li><strong>Physical:</strong> February 3-5, 2026 (Fira Barcelona)</li>
+                        <li><strong>Online:</strong> February 10-12, 2026</li>
+                    </ul>
+                </div>
+
+                <div class="quick-ref-card">
+                    <h3>Priority Targets</h3>
+                    <ul>
+                        <li>1. Moco Museum</li>
+                        <li>2. CaixaForum+</li>
+                        <li>3. Gestmusic (Banijay)</li>
+                        <li>4. Lavinia</li>
+                        <li>5. SEAT-Cupra</li>
+                    </ul>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        function copyToClipboard(btn, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+    </script>
+</body>
+</html>

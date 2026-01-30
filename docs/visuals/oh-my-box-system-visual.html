@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oh My Ondas - System Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header .subtitle {
+            font-size: 20px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .header .tagline {
+            font-size: 16px;
+            margin-top: 15px;
+            opacity: 0.7;
+            font-style: italic;
+        }
+        
+        .main-content {
+            padding: 40px;
+        }
+        
+        .paradigm-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        .paradigm-section h2 {
+            font-size: 32px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .paradigm-flow {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .paradigm-box {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            flex: 1;
+            min-width: 250px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .paradigm-box h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .paradigm-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .paradigm-box li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .paradigm-box li:before {
+            content: "â–¸";
+            position: absolute;
+            left: 0;
+            font-size: 18px;
+        }
+        
+        .arrow {
+            font-size: 48px;
+            color: rgba(255,255,255,0.8);
+            text-align: center;
+        }
+        
+        .system-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .system-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .system-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .system-card h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .system-card .icon {
+            font-size: 32px;
+        }
+        
+        .system-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .system-card li {
+            padding: 8px 0;
+            opacity: 0.95;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+        
+        .feature-box {
+            background: #f7fafc;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .feature-box h4 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .feature-box p {
+            color: #4a5568;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+        
+        .stat-box {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            color: white;
+        }
+        
+        .stat-box .number {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .stat-box .label {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 40px 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .comparison-table th {
+            background: #2d3748;
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-size: 16px;
+        }
+        
+        .comparison-table td {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .comparison-table tr:hover {
+            background: #f7fafc;
+        }
+        
+        .checkmark {
+            color: #48bb78;
+            font-size: 20px;
+        }
+        
+        .cross {
+            color: #f56565;
+            font-size: 20px;
+        }
+        
+        .signal-flow {
+            background: #2d3748;
+            padding: 40px;
+            border-radius: 15px;
+            margin: 40px 0;
+            color: white;
+        }
+        
+        .signal-flow h3 {
+            font-size: 28px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .flow-diagram {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .flow-box {
+            flex: 1;
+            min-width: 150px;
+            background: rgba(255,255,255,0.1);
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .flow-arrow {
+            font-size: 32px;
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .cta-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 50px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+        }
+        
+        .cta-section h3 {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        
+        .cta-section p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .price-box {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 30px 50px;
+            border-radius: 15px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .price-box .amount {
+            font-size: 56px;
+            font-weight: 700;
+        }
+        
+        .price-box .description {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ðŸŽµ OH MY ONDAS</h1>
+            <div class="subtitle">Professional Site-Specific Composition Instrument</div>
+            <div class="tagline">Where Octatrack meets Bastl meets Teenage Engineering â€” with AI intelligence and GPS soul</div>
+        </div>
+        
+        <div class="main-content">
+            
+            <!-- Core Paradigm -->
+            <div class="paradigm-section">
+                <h2>ðŸŽ­ The Core Innovation: ORCHESTRATE â†’ PERFORM</h2>
+                <div class="paradigm-flow">
+                    <div class="paradigm-box">
+                        <h3>1ï¸âƒ£ ORCHESTRATE</h3>
+                        <p style="text-align: center; margin-bottom: 15px; font-style: italic;">Before entropy</p>
+                        <ul>
+                            <li>Assign sources to tracks</li>
+                            <li>Build FX chains</li>
+                            <li>Design patterns</li>
+                            <li>Set trig conditions</li>
+                            <li>Prepare scenes</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="arrow">â†’</div>
+                    
+                    <div class="paradigm-box">
+                        <h3>2ï¸âƒ£ CAPTURE</h3>
+                        <p style="text-align: center; margin-bottom: 15px; font-style: italic;">Entropy happens</p>
+                        <ul>
+                            <li>Environment fills structure</li>
+                            <li>Radio captures culture</li>
+                            <li>Mics capture ambience</li>
+                            <li>GPS locks location</li>
+                            <li>Time stamps moment</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="arrow">â†’</div>
+                    
+                    <div class="paradigm-box">
+                        <h3>3ï¸âƒ£ PERFORM</h3>
+                        <p style="text-align: center; margin-bottom: 15px; font-style: italic;">Shape the chaos</p>
+                        <ul>
+                            <li>Add live drums</li>
+                            <li>Add live synth</li>
+                            <li>Mangle audio</li>
+                            <li>Dub & layer</li>
+                            <li>Mix live</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Section -->
+            <div class="stats-section">
+                <div class="stat-box">
+                    <div class="number">8</div>
+                    <div class="label">Audio Sources</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">8</div>
+                    <div class="label">Sequencer Tracks</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">8</div>
+                    <div class="label">Mangling Effects</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">$447</div>
+                    <div class="label">DIY Cost</div>
+                </div>
+            </div>
+            
+            <!-- System Components -->
+            <h2 style="font-size: 32px; margin: 40px 0 20px 0; color: #2d3748;">System Architecture</h2>
+            <div class="system-grid">
+                <div class="system-card">
+                    <h3><span class="icon">ðŸŽ¤</span> Audio Inputs</h3>
+                    <ul>
+                        <li>ðŸ“» FM/AM Radio (RTL-SDR)</li>
+                        <li>ðŸŽ™ï¸ MEMS Microphones x2</li>
+                        <li>ðŸ“¡ Contact Mics x6</li>
+                        <li>ðŸ”Œ Line In (3.5mm)</li>
+                        <li>ðŸŽ¹ Live instruments</li>
+                    </ul>
+                </div>
+                
+                <div class="system-card">
+                    <h3><span class="icon">ðŸŽ¼</span> Octatrack Sequencer</h3>
+                    <ul>
+                        <li>8 tracks Ã— 16 steps</li>
+                        <li>Parameter locks</li>
+                        <li>12 trig conditions</li>
+                        <li>16 scenes per pattern</li>
+                        <li>64 pattern banks</li>
+                    </ul>
+                </div>
+                
+                <div class="system-card">
+                    <h3><span class="icon">ðŸŒ€</span> Bastl Mangling</h3>
+                    <ul>
+                        <li>Bit Crusher</li>
+                        <li>Wavefolder</li>
+                        <li>Glitch Engine</li>
+                        <li>Grain Clouds</li>
+                        <li>Ring Modulation</li>
+                    </ul>
+                </div>
+                
+                <div class="system-card">
+                    <h3><span class="icon">ðŸŽ®</span> TE-Inspired UX</h3>
+                    <ul>
+                        <li>8 touch pads</li>
+                        <li>4 encoders (shift functions)</li>
+                        <li>OLED display</li>
+                        <li>Gesture controls</li>
+                        <li>Minimal menus</li>
+                    </ul>
+                </div>
+                
+                <div class="system-card">
+                    <h3><span class="icon">ðŸŒ</span> GPS & Context</h3>
+                    <ul>
+                        <li>GPS coordinates (5m accuracy)</li>
+                        <li>Precise timestamp</li>
+                        <li>Weather data (API)</li>
+                        <li>Moon phase</li>
+                        <li>Location metadata</li>
+                    </ul>
+                </div>
+                
+                <div class="system-card">
+                    <h3><span class="icon">ðŸ¤–</span> AI Intelligence</h3>
+                    <ul>
+                        <li>Claude API integration</li>
+                        <li>Context-aware composition</li>
+                        <li>Beat/pitch detection</li>
+                        <li>FX suggestions</li>
+                        <li>Pattern generation</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Signal Flow -->
+            <div class="signal-flow">
+                <h3>ðŸ“Š Signal Flow</h3>
+                <div class="flow-diagram">
+                    <div class="flow-box">
+                        <strong>INPUTS</strong><br>
+                        8 Sources
+                    </div>
+                    <div class="flow-arrow">â†’</div>
+                    <div class="flow-box">
+                        <strong>SAMPLING</strong><br>
+                        Touch Triggers
+                    </div>
+                    <div class="flow-arrow">â†’</div>
+                    <div class="flow-box">
+                        <strong>SEQUENCER</strong><br>
+                        8 Tracks
+                    </div>
+                    <div class="flow-arrow">â†’</div>
+                    <div class="flow-box">
+                        <strong>MANGLING</strong><br>
+                        8 FX Types
+                    </div>
+                    <div class="flow-arrow">â†’</div>
+                    <div class="flow-box">
+                        <strong>OUTPUT</strong><br>
+                        + Recording
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 30px; font-size: 18px;">
+                    â†“<br>
+                    <strong>GPS + AI</strong> add metadata & intelligence
+                </div>
+            </div>
+            
+            <!-- Competitive Comparison -->
+            <h2 style="font-size: 32px; margin: 40px 0 20px 0; color: #2d3748;">Competitive Positioning</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Octatrack<br>($1,499)</th>
+                        <th>Bastl MG<br>($149)</th>
+                        <th>TE OP-1<br>($1,299)</th>
+                        <th>Oh My Ondas<br>($447)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Sequencing</strong></td>
+                        <td><span class="checkmark">âœ“</span> Professional</td>
+                        <td><span class="cross">âœ—</span> None</td>
+                        <td><span class="cross">~</span> Limited</td>
+                        <td><span class="checkmark">âœ“</span> Professional</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Audio Mangling</strong></td>
+                        <td><span class="cross">~</span> Limited</td>
+                        <td><span class="checkmark">âœ“</span> Excellent</td>
+                        <td><span class="cross">~</span> Good</td>
+                        <td><span class="checkmark">âœ“</span> Bastl-level</td>
+                    </tr>
+                    <tr>
+                        <td><strong>GPS/Location</strong></td>
+                        <td><span class="cross">âœ—</span> None</td>
+                        <td><span class="cross">âœ—</span> None</td>
+                        <td><span class="cross">âœ—</span> None</td>
+                        <td><span class="checkmark">âœ“</span> Full</td>
+                    </tr>
+                    <tr>
+                        <td><strong>AI Composition</strong></td>
+                        <td><span class="cross">âœ—</span> None</td>
+                        <td><span class="cross">âœ—</span> None</td>
+                        <td><span class="cross">âœ—</span> None</td>
+                        <td><span class="checkmark">âœ“</span> Advanced</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Environmental Capture</strong></td>
+                        <td><span class="cross">âœ—</span> Line only</td>
+                        <td><span class="cross">âœ—</span> Line only</td>
+                        <td><span class="cross">âœ—</span> Line only</td>
+                        <td><span class="checkmark">âœ“</span> 8 sources</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Interface</strong></td>
+                        <td><span class="cross">~</span> Complex</td>
+                        <td><span class="cross">~</span> Basic</td>
+                        <td><span class="checkmark">âœ“</span> Excellent</td>
+                        <td><span class="checkmark">âœ“</span> TE-inspired</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- Key Features -->
+            <h2 style="font-size: 32px; margin: 40px 0 20px 0; color: #2d3748;">Unique Features</h2>
+            <div class="features-grid">
+                <div class="feature-box">
+                    <h4>ðŸŽ¯ Place-Time Binding</h4>
+                    <p>Every recording cryptographically tied to exact GPS coordinates, timestamp, weather, and environmental audio fingerprint.</p>
+                </div>
+                
+                <div class="feature-box">
+                    <h4>ðŸŽ­ Dual-Mode Interaction</h4>
+                    <p>ORCHESTRATE structure before entropy, then PERFORM with the chaos through 5 live interaction modes.</p>
+                </div>
+                
+                <div class="feature-box">
+                    <h4>ðŸŽ¼ Professional Sequencing</h4>
+                    <p>Octatrack-level features: parameter locks, trig conditions, scene system, pattern chaining.</p>
+                </div>
+                
+                <div class="feature-box">
+                    <h4>ðŸŒ€ Bastl Mangling</h4>
+                    <p>8 creative destruction effects: bit crushing, glitch, granular, wavefold, ring mod, tape effects.</p>
+                </div>
+                
+                <div class="feature-box">
+                    <h4>ðŸŽ® TE Usability</h4>
+                    <p>Shift functions, gesture controls, minimal menus. 90% of functions in <3 button presses.</p>
+                </div>
+                
+                <div class="feature-box">
+                    <h4>ðŸ¤– AI Collaboration</h4>
+                    <p>Context-aware composition suggestions based on location, time, audio features, and environmental data.</p>
+                </div>
+                
+                <div class="feature-box">
+                    <h4>ðŸ“» Multi-Source Capture</h4>
+                    <p>Simultaneously record from radio, mics, contact mics, and line inputs. Environment becomes instrument.</p>
+                </div>
+                
+                <div class="feature-box">
+                    <h4>ðŸŽ¸ Live Performance</h4>
+                    <p>Add drums, synth, vocals live. Touch pads, finger drumming, chromatic mode, dub layers.</p>
+                </div>
+            </div>
+            
+            <!-- CTA -->
+            <div class="cta-section">
+                <h3>Build Your Own Oh My Ondas</h3>
+                <p>Professional-grade instrument with unique capabilities found nowhere else</p>
+                <div class="price-box">
+                    <div class="amount">~$447</div>
+                    <div class="description">Complete DIY kit | 40-60 hours build time</div>
+                </div>
+                <p style="margin-top: 30px; font-size: 16px;">
+                    <strong>What you get:</strong><br>
+                    Professional sequencing ($1,499 value) + Bastl mangling ($300 value) +<br>
+                    TE usability ($1,299 value) + GPS/AI features (unique) = ~$3,000+ commercial value
+                </p>
+            </div>
+            
+        </div>
+    </div>
+</body>
+</html>

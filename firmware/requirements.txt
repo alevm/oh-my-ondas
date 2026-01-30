@@ -1,0 +1,39 @@
+# Oh My Ondas - Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Audio Processing
+librosa>=0.10.0
+soundfile>=0.12.0
+numpy>=1.24.0
+scipy>=1.11.0
+
+# Serial Communication
+pyserial>=3.5
+
+# GPS/Location
+gpxpy>=1.5.0
+
+# API Communication
+httpx>=0.24.0
+anthropic>=0.7.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# Development
+black>=23.0.0
+flake8>=6.1.0
+mypy>=1.5.0
+
+# Documentation
+mkdocs>=1.5.0
+mkdocs-material>=9.4.0
+
+# Metadata handling
+pillow>=10.0.0
+mutagen>=1.47.0
+
+# CLI tools
+click>=8.1.0
+rich>=13.5.0

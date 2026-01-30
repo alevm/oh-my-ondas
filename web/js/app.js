@@ -1,0 +1,2651 @@
+// Oh My Ondas v1.2.0 - Main Application Controller
+
+class App {
+    constructor() {
+        this.initialized = false;
+        this.meterInterval = null;
+        this.timeInterval = null;
+        this.selectedTrack = 0;
+        this.xfadeSceneA = 0;
+        this.xfadeSceneB = 1;
+        this.settings = this.loadSettings();
+
+        // P-Lock editor state
+        this.plockEditing = false;
+        this.plockTrack = 0;
+        this.plockStep = 0;
+
+        // Shift key state for P-Lock access
+        this.shiftHeld = false;
+
+        // Tap tempo state
+        this.tapTimes = [];
+        this.lastTapTime = 0;
+    }
+
+    loadSettings() {
+        const defaults = {
+            theme: 'mariani',
+            recFormat: 'webm',
+            recAutoSave: 'off',
+            recGpsEmbed: true,
+            seqTracks: 8,
+            seqSteps: 16,
+            selectedKit: 'kit1',
+            synthPreset: 'default',
+            columnWidths: null,  // Will store [mixer, seq, mid, right] in px
+            fxPresets: []
+        };
+        try {
+            const saved = localStorage.getItem('ohmyondas_settings');
+            return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
+        } catch (e) {
+            return defaults;
+        }
+    }
+
+    saveSettings() {
+        try {
+            localStorage.setItem('ohmyondas_settings', JSON.stringify(this.settings));
+        } catch (e) {
+            console.warn('Could not save settings:', e);
+        }
+    }
+
+    async init() {
+        // Initialize audio engine first
+        const audioOk = await window.audioEngine.init();
+        if (!audioOk) {
+            alert('Failed to initialize audio. Please check permissions.');
+            return;
+        }
+
+        // Initialize all modules
+        await Promise.all([
+            window.gpsTracker.init(),
+            window.micInput.init(),
+            window.sampler.init(),
+            window.synth.init(),
+            window.radioPlayer.init(),
+            window.sessionRecorder.init(),
+            window.sequencer.init(),
+            window.mangleEngine.init(),
+            window.sceneManager.init(),
+            window.arrangement.init(),
+            window.aiComposer.init()
+        ]);
+
+        // Setup UI
+        this.setupTransport();
+        this.setupTempo();
+        this.setupMixer();
+        this.setupEQ();
+        this.setupOctaTrackSequencer();
+        this.setupPLockEditor();
+        this.setupDubMode();
+        this.setupPads();
+        this.setupKnobs();
+        this.setupSynth();
+        this.setupSynthMatrix();
+        this.setupScenes();
+        this.setupFX();
+        this.setupAI();
+        this.setupRadio();
+        this.setupRecordings();
+        this.setupAdminModal();
+        this.setupKeyboardShortcuts();
+        this.setupResizableColumns();
+        this.setupVUMeters();
+        this.setupTapTempo();
+        this.setupHelpModal();
+        this.setupDemoModal();
+
+        // GPS display and map background
+        window.gpsTracker.addListener(() => this.updateGPS());
+        this.updateGPS();
+
+        // Recording handler
+        window.sessionRecorder.onRecordingComplete = (recording) => {
+            console.log('Recording saved');
+            this.updateRecordingsList();
+            this.updateRecCount();
+        };
+
+        // Apply saved settings
+        this.applySettings();
+
+        this.initialized = true;
+        console.log('App v1.2.0 initialized');
+    }
+
+    applySettings() {
+        // Apply theme
+        this.setTheme(this.settings.theme);
+
+        // Apply kit
+        if (window.sampler) {
+            window.sampler.setBank(this.settings.selectedKit);
+        }
+    }
+
+    setTheme(theme) {
+        const mapBg = document.getElementById('mapBackground');
+        this.settings.theme = theme;
+
+        // Always remove filter first, then apply per theme
+        mapBg.style.filter = '';
+
+        if (theme === 'mariani') {
+            mapBg.style.backgroundImage = "url('https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Mariani_wine_Laurens.jpg/800px-Mariani_wine_Laurens.jpg')";
+            mapBg.style.filter = 'brightness(0.7) sepia(0.2)';
+            mapBg.classList.remove('has-location');
+        } else if (theme === 'map') {
+            // Will be updated by GPS
+            const pos = window.gpsTracker?.getPosition();
+            if (pos) {
+                const mapUrl = window.gpsTracker.getMapImageUrl(16);
+                if (mapUrl) {
+                    mapBg.style.backgroundImage = `url("${mapUrl}")`;
+                    mapBg.classList.add('has-location');
+                }
+            }
+        } else if (theme === 'dark') {
+            mapBg.style.backgroundImage = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)';
+            mapBg.classList.remove('has-location');
+        }
+
+        this.saveSettings();
+    }
+
+    // Transport
+    setupTransport() {
+        const btnPlay = document.getElementById('btnPlay');
+        const btnPlay2 = document.getElementById('btnPlay2');
+        const btnStop = document.getElementById('btnStop');
+        const btnStop2 = document.getElementById('btnStop2');
+        const btnRecord = document.getElementById('btnRecord');
+        const btnRecord2 = document.getElementById('btnRecord2');
+
+        const playHandler = () => {
+            if (window.sequencer.isPlaying()) {
+                window.sequencer.stop();
+                btnPlay?.classList.remove('active');
+                btnPlay2?.classList.remove('active');
+            } else {
+                window.sequencer.play();
+                btnPlay?.classList.add('active');
+                btnPlay2?.classList.add('active');
+            }
+            // Update tempo display
+            this.updateTempoDisplay();
+        };
+
+        const stopHandler = () => {
+            window.sequencer.stop();
+            btnPlay?.classList.remove('active');
+            btnPlay2?.classList.remove('active');
+
+            if (window.sessionRecorder.isRecording()) {
+                window.sessionRecorder.stop();
+                btnRecord?.classList.remove('active');
+                btnRecord2?.classList.remove('active');
+                this.stopTimeDisplay();
+            }
+
+            window.synth.stop();
+            window.radioPlayer.stop();
+            window.sampler.stopAll();
+
+            document.getElementById('synthToggle').classList.remove('active');
+            document.getElementById('synthToggle').textContent = 'OFF';
+        };
+
+        const recordHandler = () => {
+            if (window.sessionRecorder.isRecording()) {
+                window.sessionRecorder.stop();
+                btnRecord?.classList.remove('active');
+                btnRecord2?.classList.remove('active');
+                this.stopTimeDisplay();
+            } else {
+                window.sessionRecorder.start();
+                btnRecord?.classList.add('active');
+                btnRecord2?.classList.add('active');
+                this.startTimeDisplay();
+            }
+        };
+
+        // Primary transport (header)
+        btnPlay?.addEventListener('click', playHandler);
+        btnStop?.addEventListener('click', stopHandler);
+        btnRecord?.addEventListener('click', recordHandler);
+
+        // Secondary transport (screen column)
+        btnPlay2?.addEventListener('click', playHandler);
+        btnStop2?.addEventListener('click', stopHandler);
+        btnRecord2?.addEventListener('click', recordHandler);
+    }
+
+    updateTempoDisplay() {
+        const tempo = window.sequencer?.getTempo() || 120;
+        const tempoDisplay = document.getElementById('tempoDisplay2');
+        if (tempoDisplay) tempoDisplay.textContent = tempo;
+    }
+
+    startTimeDisplay() {
+        const display = document.getElementById('timeDisplay');
+        this.timeInterval = setInterval(() => {
+            display.textContent = window.sessionRecorder.getFormattedTime();
+        }, 100);
+    }
+
+    stopTimeDisplay() {
+        if (this.timeInterval) {
+            clearInterval(this.timeInterval);
+            this.timeInterval = null;
+        }
+        document.getElementById('timeDisplay').textContent = '00:00';
+    }
+
+    // Tempo
+    setupTempo() {
+        const slider = document.getElementById('tempoSlider');
+        const display = document.getElementById('tempoVal');
+
+        slider.addEventListener('input', () => {
+            const tempo = parseInt(slider.value);
+            window.sequencer.setTempo(tempo);
+            display.textContent = tempo;
+        });
+    }
+
+    // Mixer
+    setupMixer() {
+        const channels = ['Mic', 'Samples', 'Synth', 'Radio'];
+        this.mixerSolos = {};  // Track solo state
+        this.meterMode = 'peak';  // 'peak' or 'rms'
+        this.peakHolds = {};  // Peak hold values
+
+        channels.forEach(name => {
+            const fader = document.getElementById(`fader${name}`);
+            const muteBtn = document.getElementById(`mute${name}`);
+            const soloBtn = document.getElementById(`solo${name}`);
+            const gainKnob = document.getElementById(`gain${name}`);
+            const panKnob = document.getElementById(`pan${name}`);
+            const channelKey = name.toLowerCase();
+
+            // Fader
+            if (fader) {
+                fader.addEventListener('input', () => {
+                    window.audioEngine.setChannelLevel(channelKey, fader.value / 100);
+                });
+            }
+
+            // Mute button
+            if (muteBtn) {
+                muteBtn.addEventListener('click', () => {
+                    const muted = window.audioEngine.toggleMute(channelKey);
+                    muteBtn.classList.toggle('active', muted);
+                });
+            }
+
+            // Solo button
+            if (soloBtn) {
+                this.mixerSolos[channelKey] = false;
+                soloBtn.addEventListener('click', () => {
+                    this.mixerSolos[channelKey] = !this.mixerSolos[channelKey];
+                    soloBtn.classList.toggle('active', this.mixerSolos[channelKey]);
+                    this.updateMixerSoloState();
+                });
+            }
+
+            // Gain knob (input gain)
+            if (gainKnob) {
+                gainKnob.addEventListener('input', () => {
+                    const gain = gainKnob.value / 100;  // 0-2 range
+                    window.audioEngine.setChannelGain?.(channelKey, gain);
+                });
+            }
+
+            // Pan knob
+            if (panKnob) {
+                panKnob.addEventListener('input', () => {
+                    const pan = panKnob.value / 100;  // -1 to 1
+                    window.audioEngine.setChannelPan?.(channelKey, pan);
+                });
+            }
+
+            // Initialize peak hold
+            this.peakHolds[channelKey] = 0;
+        });
+
+        // Master fader
+        const masterFader = document.getElementById('faderMaster');
+        if (masterFader) {
+            masterFader.addEventListener('input', () => {
+                window.audioEngine.setMasterLevel(masterFader.value / 100);
+            });
+        }
+
+        // Meter mode buttons
+        const meterBtns = document.querySelectorAll('.meter-btn');
+        meterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                meterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.meterMode = btn.dataset.mode;
+            });
+        });
+    }
+
+    // Update mixer solo state (mute non-soloed channels)
+    updateMixerSoloState() {
+        const hasSolo = Object.values(this.mixerSolos).some(s => s);
+        const channels = ['mic', 'samples', 'synth', 'radio'];
+
+        channels.forEach(ch => {
+            if (hasSolo) {
+                // If any channel is soloed, mute non-soloed channels
+                window.audioEngine.setSoloMute?.(ch, !this.mixerSolos[ch]);
+            } else {
+                // No solo active, unmute all
+                window.audioEngine.setSoloMute?.(ch, false);
+            }
+        });
+    }
+
+    // EQ with channel selector buttons
+    setupEQ() {
+        const chBtns = document.querySelectorAll('.ch-btn');
+        const eqLow = document.getElementById('eqLow');
+        const eqMid = document.getElementById('eqMid');
+        const eqHigh = document.getElementById('eqHigh');
+        const eqLowVal = document.getElementById('eqLowVal');
+        const eqMidVal = document.getElementById('eqMidVal');
+        const eqHighVal = document.getElementById('eqHighVal');
+
+        this.currentEqChannel = 'master';
+
+        // Update sliders when channel changes
+        const updateSliders = () => {
+            const eq = window.audioEngine.getEQ(this.currentEqChannel);
+            if (eqLow) eqLow.value = eq.low;
+            if (eqMid) eqMid.value = eq.mid;
+            if (eqHigh) eqHigh.value = eq.high;
+            if (eqLowVal) eqLowVal.textContent = Math.round(eq.low);
+            if (eqMidVal) eqMidVal.textContent = Math.round(eq.mid);
+            if (eqHighVal) eqHighVal.textContent = Math.round(eq.high);
+        };
+
+        // Channel selector buttons
+        chBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                chBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.currentEqChannel = btn.dataset.ch;
+                updateSliders();
+            });
+        });
+
+        // EQ slider handlers
+        if (eqLow) {
+            eqLow.addEventListener('input', () => {
+                const val = parseFloat(eqLow.value);
+                window.audioEngine.setEQ(this.currentEqChannel, 'low', val);
+                if (eqLowVal) eqLowVal.textContent = Math.round(val);
+            });
+        }
+
+        if (eqMid) {
+            eqMid.addEventListener('input', () => {
+                const val = parseFloat(eqMid.value);
+                window.audioEngine.setEQ(this.currentEqChannel, 'mid', val);
+                if (eqMidVal) eqMidVal.textContent = Math.round(val);
+            });
+        }
+
+        if (eqHigh) {
+            eqHigh.addEventListener('input', () => {
+                const val = parseFloat(eqHigh.value);
+                window.audioEngine.setEQ(this.currentEqChannel, 'high', val);
+                if (eqHighVal) eqHighVal.textContent = Math.round(val);
+            });
+        }
+    }
+
+    // Octatrack-style sequencer
+    setupOctaTrackSequencer() {
+        const octTracks = document.getElementById('octTracks');
+        const numTracks = this.settings.seqTracks;
+
+        // Register callback for pattern changes
+        window.sequencer.onPatternChange = () => {
+            this.rebuildSequencerUI();
+            this.updateOctSteps();
+            this.updatePatternButtons();
+        };
+
+        this.rebuildSequencerUI();
+
+        // Source buttons (instead of dropdown)
+        const srcBtns = document.querySelectorAll('.src-btn');
+        srcBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                srcBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                window.sequencer.setTrackSource(this.selectedTrack, btn.dataset.src);
+                this.updateTrackSourceDisplay();
+            });
+        });
+
+        // Random button
+        document.getElementById('seqRandom').addEventListener('click', () => {
+            window.sequencer.saveHistory();
+            window.sequencer.randomizeTrack(this.selectedTrack, 0.3);
+            this.updateOctSteps();
+        });
+
+        // Clear button
+        document.getElementById('seqClear').addEventListener('click', () => {
+            window.sequencer.saveHistory();
+            window.sequencer.clearTrack(this.selectedTrack);
+            this.updateOctSteps();
+        });
+
+        // Euclidean button - quick apply
+        document.getElementById('eucGen').addEventListener('click', () => {
+            window.sequencer.saveHistory();
+            const hits = Math.floor(Math.random() * 6) + 2; // 2-7 hits
+            const numSteps = window.sequencer.getPatternLength();
+            window.sequencer.applyEuclidean(this.selectedTrack, hits, numSteps, 0);
+            this.updateOctSteps();
+        });
+
+        // Pattern slot buttons (A-H)
+        this.setupPatternSlots();
+
+        // Copy/Paste/Undo/Redo buttons
+        this.setupSeqTools();
+
+        // Pattern length selector
+        this.setupPatternLength();
+
+        // Swing control
+        this.setupSwing();
+
+        // Step callback for playback visualization
+        window.sequencer.onStep((step) => {
+            const patternLength = window.sequencer.getPatternLength();
+            document.querySelectorAll('.oct-step').forEach(el => {
+                const stepIdx = parseInt(el.dataset.step);
+                el.classList.toggle('current', stepIdx === step && stepIdx < patternLength);
+            });
+        });
+
+        // Initial update
+        this.updateOctSteps();
+        this.updatePatternButtons();
+    }
+
+    // Build sequencer UI tracks
+    rebuildSequencerUI() {
+        const octTracks = document.getElementById('octTracks');
+        const numTracks = this.settings.seqTracks;
+        const numSteps = window.sequencer.getPatternLength();
+
+        // Generate track strips
+        octTracks.innerHTML = '';
+        for (let t = 0; t < numTracks; t++) {
+            const track = document.createElement('div');
+            track.className = 'oct-track' + (t === this.selectedTrack ? ' selected' : '');
+            if (window.sequencer.isMuted(t)) track.classList.add('muted');
+            track.dataset.track = t;
+
+            const num = document.createElement('div');
+            num.className = 'oct-track-num';
+            num.textContent = t + 1;
+            track.appendChild(num);
+
+            // Mute button
+            const muteBtn = document.createElement('button');
+            muteBtn.className = 'oct-track-mute' + (window.sequencer.isMuted(t) ? ' active' : '');
+            muteBtn.textContent = 'M';
+            muteBtn.title = 'Mute track';
+            muteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const muted = window.sequencer.toggleMute(t);
+                muteBtn.classList.toggle('active', muted);
+                track.classList.toggle('muted', muted);
+            });
+            track.appendChild(muteBtn);
+
+            // Solo button
+            const soloBtn = document.createElement('button');
+            soloBtn.className = 'oct-track-solo' + (window.sequencer.isSoloed(t) ? ' active' : '');
+            soloBtn.textContent = 'S';
+            soloBtn.title = 'Solo track';
+            soloBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const soloed = window.sequencer.toggleSolo(t);
+                soloBtn.classList.toggle('active', soloed);
+            });
+            track.appendChild(soloBtn);
+
+            const src = document.createElement('div');
+            src.className = 'oct-track-src';
+            src.textContent = this.getSourceAbbrev(window.sequencer.getTrackSource(t));
+            track.appendChild(src);
+
+            const steps = document.createElement('div');
+            steps.className = 'oct-steps';
+            for (let s = 0; s < numSteps; s++) {
+                const step = document.createElement('div');
+                step.className = 'oct-step' + (s % 4 === 0 ? ' beat' : '');
+                step.dataset.track = t;
+                step.dataset.step = s;
+
+                // Click to toggle step, SHIFT+click to edit P-Locks
+                step.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (this.shiftHeld || e.shiftKey) {
+                        // Open P-Lock editor for this step
+                        this.openPLockEditor(t, s);
+                    } else {
+                        window.sequencer.saveHistory();
+                        const active = window.sequencer.toggleStep(t, s);
+                        step.classList.toggle('active', active);
+                    }
+                });
+
+                // Long press for P-Lock editor (mobile)
+                let longPressTimer;
+                step.addEventListener('touchstart', (e) => {
+                    longPressTimer = setTimeout(() => {
+                        this.openPLockEditor(t, s);
+                    }, 500);
+                });
+                step.addEventListener('touchend', () => clearTimeout(longPressTimer));
+                step.addEventListener('touchmove', () => clearTimeout(longPressTimer));
+
+                steps.appendChild(step);
+            }
+            track.appendChild(steps);
+
+            // Click track to select
+            track.addEventListener('click', () => {
+                this.selectTrack(t);
+            });
+
+            octTracks.appendChild(track);
+        }
+    }
+
+    // Setup pattern slot buttons (A-H)
+    setupPatternSlots() {
+        const patternBtns = document.querySelectorAll('.pattern-btn');
+        patternBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const slotIdx = parseInt(btn.dataset.pattern);
+                window.sequencer.selectPattern(slotIdx);
+                patternBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.rebuildSequencerUI();
+                this.updateOctSteps();
+            });
+        });
+    }
+
+    // Update pattern button states (has-data indicator)
+    updatePatternButtons() {
+        const patternBtns = document.querySelectorAll('.pattern-btn');
+        patternBtns.forEach(btn => {
+            const slotIdx = parseInt(btn.dataset.pattern);
+            btn.classList.toggle('has-data', window.sequencer.patternHasData(slotIdx));
+            btn.classList.toggle('active', slotIdx === window.sequencer.getCurrentPatternSlot());
+        });
+    }
+
+    // Setup copy/paste/undo/redo buttons
+    setupSeqTools() {
+        const copyBtn = document.getElementById('seqCopy');
+        const pasteBtn = document.getElementById('seqPaste');
+        const undoBtn = document.getElementById('seqUndo');
+        const redoBtn = document.getElementById('seqRedo');
+
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                window.sequencer.copyTrack(this.selectedTrack);
+            });
+        }
+
+        if (pasteBtn) {
+            pasteBtn.addEventListener('click', () => {
+                window.sequencer.pasteTrack(this.selectedTrack);
+                this.updateOctSteps();
+            });
+        }
+
+        if (undoBtn) {
+            undoBtn.addEventListener('click', () => {
+                window.sequencer.undo();
+            });
+        }
+
+        if (redoBtn) {
+            redoBtn.addEventListener('click', () => {
+                window.sequencer.redo();
+            });
+        }
+    }
+
+    // Setup pattern length selector
+    setupPatternLength() {
+        const lengthSelect = document.getElementById('patternLength');
+        if (lengthSelect) {
+            lengthSelect.value = window.sequencer.getPatternLength();
+            lengthSelect.addEventListener('change', () => {
+                window.sequencer.setPatternLength(parseInt(lengthSelect.value));
+            });
+        }
+    }
+
+    // Setup swing control
+    setupSwing() {
+        const swingSlider = document.getElementById('swingAmount');
+        const swingVal = document.getElementById('swingVal');
+        if (swingSlider) {
+            swingSlider.addEventListener('input', () => {
+                const val = parseInt(swingSlider.value);
+                window.sequencer.setSwing(val);
+                if (swingVal) swingVal.textContent = val;
+            });
+        }
+    }
+
+    getSourceAbbrev(source) {
+        const abbrevs = { sampler: 'SMP', synth: 'SYN', radio: 'RAD', mic: 'MIC' };
+        return abbrevs[source] || 'SMP';
+    }
+
+    selectTrack(trackIndex) {
+        this.selectedTrack = trackIndex;
+        window.sequencer.setSelectedTrack(trackIndex);
+
+        // Update UI
+        document.querySelectorAll('.oct-track').forEach((el, i) => {
+            el.classList.toggle('selected', i === trackIndex);
+        });
+
+        // Update source buttons
+        const source = window.sequencer.getTrackSource(trackIndex);
+        document.querySelectorAll('.src-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.src === source);
+        });
+    }
+
+    updateOctSteps() {
+        const pattern = window.sequencer.getPattern();
+        document.querySelectorAll('.oct-step').forEach(el => {
+            const t = parseInt(el.dataset.track);
+            const s = parseInt(el.dataset.step);
+            const step = pattern[t]?.[s];
+
+            el.classList.toggle('active', step?.active || false);
+
+            // Show P-Lock indicator
+            const hasPLocks = window.sequencer.hasPLocks(t, s);
+            el.classList.toggle('has-plock', hasPLocks);
+
+            // Show trig condition indicator
+            const cond = step?.trigCondition;
+            el.classList.toggle('has-condition', cond && cond.type !== 'always');
+        });
+    }
+
+    updateTrackSourceDisplay() {
+        document.querySelectorAll('.oct-track').forEach((track, idx) => {
+            const srcEl = track.querySelector('.oct-track-src');
+            if (srcEl) {
+                srcEl.textContent = this.getSourceAbbrev(window.sequencer.getTrackSource(idx));
+            }
+        });
+    }
+
+    // Pads
+    setupPads() {
+        document.querySelectorAll('.pad').forEach(pad => {
+            const index = parseInt(pad.dataset.pad);
+
+            const trigger = () => {
+                pad.classList.add('active');
+                this.flashPad(index);
+                window.sampler.trigger(index);
+
+                // Record in dub mode if sequencer is playing
+                if (window.sequencer.getDubMode() !== 'off' && window.sequencer.isPlaying()) {
+                    window.sequencer.recordDubTrigger(index);
+                    this.updateOctSteps();
+                }
+            };
+
+            const release = () => {
+                pad.classList.remove('active');
+            };
+
+            pad.addEventListener('mousedown', trigger);
+            pad.addEventListener('mouseup', release);
+            pad.addEventListener('mouseleave', release);
+            pad.addEventListener('touchstart', (e) => { e.preventDefault(); trigger(); });
+            pad.addEventListener('touchend', release);
+        });
+
+        // Kit selector buttons
+        const kitBtns = document.querySelectorAll('.kit-btn');
+        kitBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                kitBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                window.sampler.setBank(btn.dataset.kit);
+                this.settings.selectedKit = btn.dataset.kit;
+                this.saveSettings();
+            });
+        });
+
+        // Register callback for sequencer-triggered pads
+        if (window.sequencer) {
+            window.sequencer.onPadTrigger = (padIndex) => {
+                this.flashPad(padIndex);
+            };
+        }
+    }
+
+    // Flash pad animation
+    flashPad(index) {
+        const pad = document.querySelector(`.pad[data-pad="${index}"]`);
+        if (pad) {
+            pad.classList.remove('flash');
+            // Force reflow to restart animation
+            void pad.offsetWidth;
+            pad.classList.add('flash');
+            setTimeout(() => pad.classList.remove('flash'), 150);
+        }
+    }
+
+    // P-Lock Editor
+    setupPLockEditor() {
+        const editor = document.getElementById('plockEditor');
+        const closeBtn = document.getElementById('plockClose');
+
+        // Close button
+        closeBtn.addEventListener('click', () => this.closePLockEditor());
+
+        // P-Lock parameter sliders
+        const params = ['Pitch', 'Slice', 'Filter', 'Decay'];
+        params.forEach(param => {
+            const slider = document.getElementById(`plock${param}`);
+            const display = document.getElementById(`plock${param}Val`);
+
+            if (slider) {
+                slider.addEventListener('input', () => {
+                    display.textContent = slider.value;
+                    if (this.plockEditing) {
+                        window.sequencer.setPLock(
+                            this.plockTrack,
+                            this.plockStep,
+                            param.toLowerCase(),
+                            parseInt(slider.value)
+                        );
+                        this.updateOctSteps();
+                    }
+                });
+            }
+        });
+
+        // Trig condition controls - now using buttons instead of dropdown
+        const trigBtns = document.querySelectorAll('#trigCondBtns .trig-btn');
+        const trigValue = document.getElementById('trigCondValue');
+
+        trigBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active state
+                trigBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                if (this.plockEditing) {
+                    window.sequencer.setTrigCondition(
+                        this.plockTrack,
+                        this.plockStep,
+                        btn.dataset.cond,
+                        parseInt(trigValue.value)
+                    );
+                    this.updateOctSteps();
+                }
+            });
+        });
+
+        trigValue.addEventListener('change', () => {
+            if (this.plockEditing) {
+                const activeBtn = document.querySelector('#trigCondBtns .trig-btn.active');
+                const condType = activeBtn ? activeBtn.dataset.cond : 'always';
+                window.sequencer.setTrigCondition(
+                    this.plockTrack,
+                    this.plockStep,
+                    condType,
+                    parseInt(trigValue.value)
+                );
+            }
+        });
+    }
+
+    openPLockEditor(trackIndex, stepIndex) {
+        const editor = document.getElementById('plockEditor');
+        this.plockEditing = true;
+        this.plockTrack = trackIndex;
+        this.plockStep = stepIndex;
+
+        // Update step number display
+        document.getElementById('plockStepNum').textContent = `${trackIndex + 1}.${stepIndex + 1}`;
+
+        // Load current P-Lock values
+        const pLocks = ['pitch', 'slice', 'filter', 'decay'];
+        pLocks.forEach(param => {
+            const value = window.sequencer.getPLock(trackIndex, stepIndex, param);
+            const slider = document.getElementById(`plock${param.charAt(0).toUpperCase() + param.slice(1)}`);
+            const display = document.getElementById(`plock${param.charAt(0).toUpperCase() + param.slice(1)}Val`);
+
+            if (slider) {
+                // Use default values if no P-Lock set
+                const defaultVal = param === 'pitch' ? 0 : (param === 'slice' ? 0 : 50);
+                slider.value = value !== null ? value : defaultVal;
+                display.textContent = slider.value;
+            }
+        });
+
+        // Load trig condition - update buttons instead of dropdown
+        const cond = window.sequencer.getTrigCondition(trackIndex, stepIndex);
+        const trigBtns = document.querySelectorAll('#trigCondBtns .trig-btn');
+        trigBtns.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.cond === cond.type);
+        });
+        document.getElementById('trigCondValue').value = cond.value;
+
+        // Show editor
+        editor.classList.remove('hidden');
+    }
+
+    closePLockEditor() {
+        const editor = document.getElementById('plockEditor');
+        this.plockEditing = false;
+        editor.classList.add('hidden');
+    }
+
+    // Dub Mode
+    setupDubMode() {
+        const dubToggle = document.getElementById('dubToggle');
+        const fillBtn = document.getElementById('fillBtn');
+
+        // Dub toggle: cycles through off -> dub -> overdub -> off
+        dubToggle.addEventListener('click', () => {
+            const currentMode = window.sequencer.getDubMode();
+            let newMode;
+
+            if (currentMode === 'off') {
+                newMode = 'dub';
+                dubToggle.classList.add('dub-active');
+                dubToggle.classList.remove('overdub-active');
+                dubToggle.textContent = 'DUB';
+            } else if (currentMode === 'dub') {
+                newMode = 'overdub';
+                dubToggle.classList.remove('dub-active');
+                dubToggle.classList.add('overdub-active');
+                dubToggle.textContent = 'OVR';
+            } else {
+                newMode = 'off';
+                dubToggle.classList.remove('dub-active', 'overdub-active');
+                dubToggle.textContent = 'DUB';
+            }
+
+            window.sequencer.setDubMode(newMode);
+        });
+
+        // Fill button: hold to activate fill mode
+        fillBtn.addEventListener('mousedown', () => {
+            window.sequencer.setFillMode(true);
+            fillBtn.classList.add('active');
+        });
+
+        fillBtn.addEventListener('mouseup', () => {
+            window.sequencer.setFillMode(false);
+            fillBtn.classList.remove('active');
+        });
+
+        fillBtn.addEventListener('mouseleave', () => {
+            window.sequencer.setFillMode(false);
+            fillBtn.classList.remove('active');
+        });
+
+        // Touch support for Fill
+        fillBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            window.sequencer.setFillMode(true);
+            fillBtn.classList.add('active');
+        });
+
+        fillBtn.addEventListener('touchend', () => {
+            window.sequencer.setFillMode(false);
+            fillBtn.classList.remove('active');
+        });
+    }
+
+    // Keyboard shortcuts
+    setupKeyboardShortcuts() {
+        // Key state tracking for hold-to-activate (Fill, Punch FX)
+        this.keysHeld = {};
+
+        document.addEventListener('keydown', (e) => {
+            // Ignore if typing in input
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            if (e.key === 'Shift') {
+                this.shiftHeld = true;
+            }
+
+            // Escape closes P-Lock editor or stops all
+            if (e.key === 'Escape') {
+                if (this.plockEditing) {
+                    this.closePLockEditor();
+                } else {
+                    // Stop all
+                    document.getElementById('btnStop')?.click();
+                }
+            }
+
+            // Space = Play/Pause
+            if (e.key === ' ' || e.code === 'Space') {
+                e.preventDefault();
+                document.getElementById('btnPlay')?.click();
+            }
+
+            // R = Record
+            if (e.key === 'r' || e.key === 'R') {
+                document.getElementById('btnRecord')?.click();
+            }
+
+            // Number keys 1-8 trigger pads
+            if (e.key >= '1' && e.key <= '8') {
+                const padIndex = parseInt(e.key) - 1;
+                const pad = document.querySelector(`.pad[data-pad="${padIndex}"]`);
+                if (pad) {
+                    pad.classList.add('active');
+                    this.flashPad(padIndex);
+                    window.sampler?.trigger(padIndex);
+                }
+            }
+
+            // Arrow keys for track selection
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                const newTrack = Math.max(0, this.selectedTrack - 1);
+                this.selectTrack(newTrack);
+            }
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const newTrack = Math.min(7, this.selectedTrack + 1);
+                this.selectTrack(newTrack);
+            }
+
+            // D = Dub mode toggle
+            if (e.key === 'd' || e.key === 'D') {
+                document.getElementById('dubToggle')?.click();
+            }
+
+            // Ctrl+C = Copy track
+            if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+                e.preventDefault();
+                window.sequencer?.copyTrack(this.selectedTrack);
+            }
+
+            // Ctrl+V = Paste track
+            if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+                e.preventDefault();
+                window.sequencer?.pasteTrack(this.selectedTrack);
+                this.updateOctSteps();
+            }
+
+            // Ctrl+Z = Undo
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                window.sequencer?.undo();
+            }
+
+            // Ctrl+Y or Ctrl+Shift+Z = Redo
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+                e.preventDefault();
+                window.sequencer?.redo();
+            }
+
+            // F = Fill (hold)
+            if ((e.key === 'f' || e.key === 'F') && !this.keysHeld['f']) {
+                this.keysHeld['f'] = true;
+                window.sequencer?.setFillMode(true);
+                document.getElementById('fillBtn')?.classList.add('active');
+            }
+
+            // Punch FX keys (hold)
+            if ((e.key === 'q' || e.key === 'Q') && !this.keysHeld['q']) {
+                this.keysHeld['q'] = true;
+                this.applyPunchFX('stutter', true);
+                document.querySelector('.punch-btn[data-fx="stutter"]')?.classList.add('active');
+            }
+            if ((e.key === 'w' || e.key === 'W') && !this.keysHeld['w']) {
+                this.keysHeld['w'] = true;
+                this.applyPunchFX('reverse', true);
+                document.querySelector('.punch-btn[data-fx="reverse"]')?.classList.add('active');
+            }
+            if ((e.key === 'e' || e.key === 'E') && !this.keysHeld['e']) {
+                this.keysHeld['e'] = true;
+                this.applyPunchFX('filter', true);
+                document.querySelector('.punch-btn[data-fx="filter"]')?.classList.add('active');
+            }
+            if ((e.key === 't' || e.key === 'T') && !this.keysHeld['t']) {
+                this.keysHeld['t'] = true;
+                this.applyPunchFX('tape', true);
+                document.querySelector('.punch-btn[data-fx="tape"]')?.classList.add('active');
+            }
+
+            // G = Generate AI pattern
+            if (e.key === 'g' || e.key === 'G') {
+                document.getElementById('aiGenerate')?.click();
+            }
+
+            // ? = Show help
+            if (e.key === '?') {
+                document.getElementById('helpModal')?.classList.remove('hidden');
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'Shift') {
+                this.shiftHeld = false;
+            }
+
+            // Release number keys for pads
+            if (e.key >= '1' && e.key <= '8') {
+                const padIndex = parseInt(e.key) - 1;
+                const pad = document.querySelector(`.pad[data-pad="${padIndex}"]`);
+                if (pad) pad.classList.remove('active');
+            }
+
+            // Release Fill
+            if (e.key === 'f' || e.key === 'F') {
+                this.keysHeld['f'] = false;
+                window.sequencer?.setFillMode(false);
+                document.getElementById('fillBtn')?.classList.remove('active');
+            }
+
+            // Release Punch FX
+            if (e.key === 'q' || e.key === 'Q') {
+                this.keysHeld['q'] = false;
+                this.applyPunchFX('stutter', false);
+                document.querySelector('.punch-btn[data-fx="stutter"]')?.classList.remove('active');
+            }
+            if (e.key === 'w' || e.key === 'W') {
+                this.keysHeld['w'] = false;
+                this.applyPunchFX('reverse', false);
+                document.querySelector('.punch-btn[data-fx="reverse"]')?.classList.remove('active');
+            }
+            if (e.key === 'e' || e.key === 'E') {
+                this.keysHeld['e'] = false;
+                this.applyPunchFX('filter', false);
+                document.querySelector('.punch-btn[data-fx="filter"]')?.classList.remove('active');
+            }
+            if (e.key === 't' || e.key === 'T') {
+                this.keysHeld['t'] = false;
+                this.applyPunchFX('tape', false);
+                document.querySelector('.punch-btn[data-fx="tape"]')?.classList.remove('active');
+            }
+        });
+    }
+
+    // Tap Tempo
+    setupTapTempo() {
+        const tapBtn = document.getElementById('btnTap');
+        const tapBtn2 = document.getElementById('btnTap2');
+
+        const handleTap = (btn) => {
+            const now = performance.now();
+
+            // Reset if more than 2 seconds since last tap
+            if (now - this.lastTapTime > 2000) {
+                this.tapTimes = [];
+            }
+
+            this.tapTimes.push(now);
+            this.lastTapTime = now;
+
+            // Visual feedback for all tap buttons
+            [tapBtn, tapBtn2].forEach(b => {
+                if (b) {
+                    b.classList.add('tap-active');
+                    setTimeout(() => b.classList.remove('tap-active'), 100);
+                }
+            });
+
+            // Calculate tempo from last 4 taps
+            if (this.tapTimes.length >= 2) {
+                const intervals = [];
+                for (let i = 1; i < Math.min(this.tapTimes.length, 5); i++) {
+                    intervals.push(this.tapTimes[i] - this.tapTimes[i - 1]);
+                }
+                const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+                const bpm = Math.round(60000 / avgInterval);
+
+                // Clamp to valid range
+                const clampedBpm = Math.max(60, Math.min(200, bpm));
+
+                // Apply tempo
+                window.sequencer?.setTempo(clampedBpm);
+                const tempoSlider = document.getElementById('tempoSlider');
+                const tempoVal = document.getElementById('tempoVal');
+                const tempoDisplay2 = document.getElementById('tempoDisplay2');
+                if (tempoSlider) tempoSlider.value = clampedBpm;
+                if (tempoVal) tempoVal.textContent = clampedBpm;
+                if (tempoDisplay2) tempoDisplay2.textContent = clampedBpm;
+            }
+
+            // Keep only last 5 taps
+            if (this.tapTimes.length > 5) {
+                this.tapTimes.shift();
+            }
+        };
+
+        if (tapBtn) {
+            tapBtn.addEventListener('click', () => handleTap(tapBtn));
+            tapBtn.addEventListener('touchstart', (e) => { e.preventDefault(); handleTap(tapBtn); });
+        }
+        if (tapBtn2) {
+            tapBtn2.addEventListener('click', () => handleTap(tapBtn2));
+            tapBtn2.addEventListener('touchstart', (e) => { e.preventDefault(); handleTap(tapBtn2); });
+        }
+    }
+
+    // Help Modal
+    setupHelpModal() {
+        const helpBtn = document.getElementById('btnHelp');
+        const modal = document.getElementById('helpModal');
+        const closeBtn = document.getElementById('closeHelp');
+
+        if (helpBtn && modal) {
+            helpBtn.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+            });
+        }
+
+        if (closeBtn && modal) {
+            closeBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+        }
+
+        // Close on backdrop click
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        }
+    }
+
+    // Demo Video Modal
+    setupDemoModal() {
+        const demoBtn = document.getElementById('btnDemo');
+        const modal = document.getElementById('demoModal');
+        const closeBtn = document.getElementById('closeDemo');
+        const closeDemoStart = document.getElementById('closeDemoStart');
+        const videoIframe = document.getElementById('demoVideo');
+
+        const openDemo = () => {
+            if (modal) {
+                modal.classList.remove('hidden');
+                // Load video when modal opens (lazy load)
+                if (videoIframe && videoIframe.dataset.src) {
+                    videoIframe.src = videoIframe.dataset.src;
+                }
+            }
+        };
+
+        const closeDemo = () => {
+            if (modal) {
+                modal.classList.add('hidden');
+                // Stop video when modal closes
+                if (videoIframe) {
+                    videoIframe.src = '';
+                }
+            }
+        };
+
+        if (demoBtn) {
+            demoBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                openDemo();
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeDemo);
+        }
+
+        if (closeDemoStart) {
+            closeDemoStart.addEventListener('click', closeDemo);
+        }
+
+        // Close on backdrop click
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeDemo();
+                }
+            });
+        }
+    }
+
+    // Resizable columns
+    setupResizableColumns() {
+        const device = document.querySelector('.device');
+        const cols = document.querySelectorAll('.col-mixer, .col-seq, .col-mid');
+
+        // Add resize handles to columns (except last)
+        cols.forEach((col, idx) => {
+            const handle = document.createElement('div');
+            handle.className = 'col-resize';
+            handle.dataset.col = idx;
+            col.appendChild(handle);
+        });
+
+        // Load saved widths
+        if (this.settings.columnWidths) {
+            this.applyColumnWidths(this.settings.columnWidths);
+        }
+
+        // Drag handling
+        let dragging = null;
+        let startX = 0;
+        let startWidths = [];
+
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('col-resize')) {
+                dragging = parseInt(e.target.dataset.col);
+                startX = e.clientX;
+                startWidths = this.getColumnWidths();
+                e.target.classList.add('active');
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (dragging !== null) {
+                const delta = e.clientX - startX;
+                const newWidths = [...startWidths];
+                newWidths[dragging] = Math.max(100, startWidths[dragging] + delta);
+                // Take from next column
+                if (dragging < 3) {
+                    newWidths[dragging + 1] = Math.max(100, startWidths[dragging + 1] - delta);
+                }
+                this.applyColumnWidths(newWidths);
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (dragging !== null) {
+                document.querySelectorAll('.col-resize').forEach(h => h.classList.remove('active'));
+                this.settings.columnWidths = this.getColumnWidths();
+                this.saveSettings();
+                dragging = null;
+            }
+        });
+    }
+
+    getColumnWidths() {
+        const cols = document.querySelectorAll('.col-mixer, .col-seq, .col-mid, .col-right');
+        return Array.from(cols).map(col => col.offsetWidth);
+    }
+
+    applyColumnWidths(widths) {
+        const device = document.querySelector('.device');
+        if (device && widths.length === 4) {
+            device.style.setProperty('--col-mixer', widths[0] + 'px');
+            device.style.setProperty('--col-seq', widths[1] + 'px');
+            device.style.setProperty('--col-mid', widths[2] + 'px');
+            device.style.setProperty('--col-right', widths[3] + 'px');
+        }
+    }
+
+    // VU Meters
+    setupVUMeters() {
+        // Add VU meter elements to each channel
+        const channels = ['Mic', 'Samples', 'Synth', 'Radio', 'Master'];
+        channels.forEach(name => {
+            const ch = document.querySelector(`.ch:has(#fader${name}), .ch:has(#mute${name})`);
+            if (!ch) return;
+
+            // Check if VU already exists
+            if (ch.querySelector('.vu-meter')) return;
+
+            const vu = document.createElement('div');
+            vu.className = 'vu-meter';
+            vu.id = `vu${name}`;
+            vu.innerHTML = '<div class="vu-fill"></div>';
+            ch.insertBefore(vu, ch.firstChild);
+        });
+
+        // Start meter animation
+        this.vuAnimationId = requestAnimationFrame(() => this.updateVUMeters());
+    }
+
+    updateVUMeters() {
+        const channels = [
+            { name: 'Mic', key: 'mic' },
+            { name: 'Samples', key: 'samples' },
+            { name: 'Synth', key: 'synth' },
+            { name: 'Radio', key: 'radio' },
+            { name: 'Master', key: 'master' }
+        ];
+
+        // Initialize peak holds if not exists
+        if (!this.peakHolds) {
+            this.peakHolds = {};
+            channels.forEach(({ key }) => this.peakHolds[key] = 0);
+        }
+
+        channels.forEach(({ name, key }) => {
+            const vu = document.getElementById(`vu${name}`);
+            if (vu) {
+                const level = window.audioEngine?.getMeterLevel(key) || 0;
+                const fill = vu.querySelector('.vu-fill');
+                const peak = document.getElementById(`peak${name}`);
+
+                if (fill) {
+                    fill.style.height = level + '%';
+                    // Color based on level
+                    if (level > 90) {
+                        fill.style.background = '#e74c3c';
+                    } else if (level > 70) {
+                        fill.style.background = '#f1c40f';
+                    } else {
+                        fill.style.background = '#27ae60';
+                    }
+                }
+
+                // Update peak hold
+                if (peak) {
+                    if (level > this.peakHolds[key]) {
+                        this.peakHolds[key] = level;
+                    } else {
+                        // Decay peak slowly
+                        this.peakHolds[key] = Math.max(0, this.peakHolds[key] - 1);
+                    }
+                    peak.style.bottom = this.peakHolds[key] + '%';
+                }
+            }
+        });
+
+        // Update limiter indicator
+        const limiter = document.getElementById('limiterIndicator');
+        if (limiter) {
+            const masterLevel = window.audioEngine?.getMeterLevel('master') || 0;
+            const isLimiting = masterLevel > 95;
+            limiter.classList.toggle('active', isLimiting);
+        }
+
+        this.vuAnimationId = requestAnimationFrame(() => this.updateVUMeters());
+    }
+
+    // Knobs
+    setupKnobs() {
+        // Target selector buttons (FX/SYN/SMP)
+        const targetBtns = document.querySelectorAll('.target-btn');
+        this.knobTarget = 'fx';  // Default target
+
+        targetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                targetBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.knobTarget = btn.dataset.target;
+            });
+        });
+
+        const knobs = document.querySelectorAll('.knob');
+
+        knobs.forEach(knob => {
+            const param = knob.dataset.param;
+            const min = parseFloat(knob.dataset.min);
+            const max = parseFloat(knob.dataset.max);
+            let value = parseFloat(knob.dataset.value);
+
+            // Add value tooltip element
+            let valueEl = knob.querySelector('.knob-value');
+            if (!valueEl) {
+                valueEl = document.createElement('div');
+                valueEl.className = 'knob-value';
+                knob.appendChild(valueEl);
+            }
+
+            // Set initial rotation
+            this.updateKnobRotation(knob, value, min, max);
+            valueEl.textContent = Math.round(value);
+
+            let isDragging = false;
+            let startY = 0;
+            let startValue = 0;
+
+            const onStart = (e) => {
+                isDragging = true;
+                knob.classList.add('dragging');
+                startY = e.clientY || e.touches?.[0]?.clientY || 0;
+                startValue = value;
+                e.preventDefault();
+            };
+
+            const onMove = (e) => {
+                if (!isDragging) return;
+                const clientY = e.clientY || e.touches?.[0]?.clientY || 0;
+                const delta = (startY - clientY) * 0.5;
+                value = Math.max(min, Math.min(max, startValue + delta * (max - min) / 100));
+
+                this.updateKnobRotation(knob, value, min, max);
+                this.applyKnobValue(param, value);
+                knob.dataset.value = value;
+                valueEl.textContent = Math.round(value);
+            };
+
+            const onEnd = () => {
+                isDragging = false;
+                knob.classList.remove('dragging');
+            };
+
+            knob.addEventListener('mousedown', onStart);
+            knob.addEventListener('touchstart', onStart);
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('touchmove', onMove);
+            document.addEventListener('mouseup', onEnd);
+            document.addEventListener('touchend', onEnd);
+        });
+    }
+
+    updateKnobRotation(knob, value, min, max) {
+        const percent = (value - min) / (max - min);
+        const rotation = -135 + percent * 270; // -135 to +135 degrees
+        knob.style.setProperty('--rotation', `${rotation}deg`);
+    }
+
+    applyKnobValue(param, value) {
+        switch (param) {
+            case 'freq':
+                window.synth?.setFrequency(value);
+                break;
+            case 'filter':
+                window.synth?.setFilterCutoff(value);
+                break;
+            case 'delay':
+                window.mangleEngine?.setDelayMix(value);
+                document.getElementById('fxDelay').value = value;
+                break;
+            case 'grain':
+                window.mangleEngine?.setGrain(value, 50, 0);
+                document.getElementById('fxGrain').value = value;
+                break;
+            case 'reso':
+                window.synth?.setResonance?.(value);
+                break;
+            case 'drive':
+                window.mangleEngine?.setDrive?.(value);
+                break;
+            case 'pan':
+                window.audioEngine?.setPan?.(this.knobTarget, value / 100);
+                break;
+            case 'vol':
+                window.audioEngine?.setChannelLevel?.(this.knobTarget, value / 100);
+                break;
+        }
+    }
+
+    // Synth
+    setupSynth() {
+        const toggle = document.getElementById('synthToggle');
+
+        toggle.addEventListener('click', () => {
+            const playing = window.synth.toggle();
+            toggle.classList.toggle('active', playing);
+            toggle.textContent = playing ? 'ON' : 'OFF';
+        });
+
+        // OSC1 Waveform buttons
+        document.querySelectorAll('.wave-btns[data-osc="1"] .wave-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                window.synth.setOsc1Waveform(btn.dataset.wave);
+                document.querySelectorAll('.wave-btns[data-osc="1"] .wave-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // OSC2 Waveform buttons
+        document.querySelectorAll('.wave-btns[data-osc="2"] .wave-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                window.synth.setOsc2Waveform(btn.dataset.wave);
+                document.querySelectorAll('.wave-btns[data-osc="2"] .wave-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // OSC2 Detune
+        const osc2Detune = document.getElementById('osc2Detune');
+        const osc2DetuneVal = document.getElementById('osc2DetuneVal');
+        if (osc2Detune) {
+            osc2Detune.addEventListener('input', () => {
+                const val = parseInt(osc2Detune.value);
+                window.synth.setOsc2Detune(val);
+                if (osc2DetuneVal) osc2DetuneVal.textContent = val;
+            });
+        }
+
+        // Pitch controls
+        const pitchControls = [
+            { id: 'synthOctave', valId: 'synthOctVal', setter: 'setOctave' },
+            { id: 'synthFine', valId: 'synthFineVal', setter: 'setFineTune' },
+            { id: 'synthGlide', valId: 'synthGlideVal', setter: 'setGlide' }
+        ];
+        pitchControls.forEach(({ id, valId, setter }) => {
+            const slider = document.getElementById(id);
+            const valDisplay = document.getElementById(valId);
+            if (slider) {
+                slider.addEventListener('input', () => {
+                    const val = parseInt(slider.value);
+                    window.synth[setter](val);
+                    if (valDisplay) valDisplay.textContent = val;
+                });
+            }
+        });
+
+        // Filter type buttons
+        document.querySelectorAll('.flt-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                window.synth.setFilterType(btn.dataset.flt);
+                document.querySelectorAll('.flt-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // Filter cutoff and resonance
+        const filterCutoff = document.getElementById('filterCutoff');
+        const filterCutVal = document.getElementById('filterCutVal');
+        if (filterCutoff) {
+            filterCutoff.addEventListener('input', () => {
+                const val = parseInt(filterCutoff.value);
+                window.synth.setFilterCutoff(val);
+                if (filterCutVal) filterCutVal.textContent = val >= 1000 ? (val/1000).toFixed(1) + 'k' : val;
+            });
+        }
+
+        const filterRes = document.getElementById('filterRes');
+        const filterResVal = document.getElementById('filterResVal');
+        if (filterRes) {
+            filterRes.addEventListener('input', () => {
+                const val = parseInt(filterRes.value);
+                window.synth.setFilterResonance(val);
+                if (filterResVal) filterResVal.textContent = val;
+            });
+        }
+
+        // LFO controls
+        const lfoRate = document.getElementById('lfoRate');
+        const lfoRateVal = document.getElementById('lfoRateVal');
+        if (lfoRate) {
+            lfoRate.addEventListener('input', () => {
+                const val = parseFloat(lfoRate.value);
+                window.synth.setLFORate(val);
+                if (lfoRateVal) lfoRateVal.textContent = val.toFixed(1);
+            });
+        }
+
+        const lfoDepth = document.getElementById('lfoDepth');
+        const lfoDepthVal = document.getElementById('lfoDepthVal');
+        if (lfoDepth) {
+            lfoDepth.addEventListener('input', () => {
+                const val = parseInt(lfoDepth.value);
+                window.synth.setLFODepth(val);
+                if (lfoDepthVal) lfoDepthVal.textContent = val;
+            });
+        }
+
+        // LFO target buttons
+        document.querySelectorAll('.lfo-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                window.synth.setLFOTarget(btn.dataset.target);
+                document.querySelectorAll('.lfo-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // Unison controls
+        const unisonVoices = document.getElementById('unisonVoices');
+        const unisonVoicesVal = document.getElementById('unisonVoicesVal');
+        if (unisonVoices) {
+            unisonVoices.addEventListener('input', () => {
+                const val = parseInt(unisonVoices.value);
+                window.synth.setUnisonVoices(val);
+                if (unisonVoicesVal) unisonVoicesVal.textContent = val;
+            });
+        }
+
+        const unisonSpread = document.getElementById('unisonSpread');
+        const unisonSpreadVal = document.getElementById('unisonSpreadVal');
+        if (unisonSpread) {
+            unisonSpread.addEventListener('input', () => {
+                const val = parseInt(unisonSpread.value);
+                window.synth.setUnisonSpread(val);
+                if (unisonSpreadVal) unisonSpreadVal.textContent = val;
+            });
+        }
+
+        // ADSR sliders
+        const adsrControls = [
+            { id: 'adsrAttack', valId: 'adsrAVal', setter: 'setAttack' },
+            { id: 'adsrDecay', valId: 'adsrDVal', setter: 'setDecay' },
+            { id: 'adsrSustain', valId: 'adsrSVal', setter: 'setSustain' },
+            { id: 'adsrRelease', valId: 'adsrRVal', setter: 'setRelease' }
+        ];
+
+        adsrControls.forEach(({ id, valId, setter }) => {
+            const slider = document.getElementById(id);
+            const valDisplay = document.getElementById(valId);
+            if (slider) {
+                slider.addEventListener('input', () => {
+                    const val = parseInt(slider.value);
+                    window.synth[setter](val);
+                    if (valDisplay) valDisplay.textContent = val;
+                });
+            }
+        });
+
+        // Preset buttons
+        const presetSave = document.getElementById('synthPresetSave');
+        const presetLoad = document.getElementById('synthPresetLoad');
+        if (presetSave) {
+            presetSave.addEventListener('click', () => {
+                const name = prompt('Preset name:', 'Preset ' + (window.synth.getPresets().length + 1));
+                if (name) {
+                    window.synth.savePreset(name);
+                    console.log('Saved preset:', name);
+                }
+            });
+        }
+        if (presetLoad) {
+            presetLoad.addEventListener('click', () => {
+                const presets = window.synth.getPresets();
+                if (presets.length === 0) {
+                    alert('No presets saved');
+                    return;
+                }
+                const list = presets.map((p, i) => `${i + 1}. ${p.name}`).join('\n');
+                const idx = prompt('Select preset:\n' + list, '1');
+                if (idx) {
+                    window.synth.loadPreset(parseInt(idx) - 1);
+                    this.updateSynthUI();
+                }
+            });
+        }
+
+        // Oscilloscope
+        this.setupOscilloscope();
+    }
+
+    // Oscilloscope visualization
+    setupOscilloscope() {
+        const canvas = document.getElementById('scopeCanvas');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        const drawScope = () => {
+            const analyser = window.synth?.getAnalyser();
+            if (!analyser) {
+                requestAnimationFrame(drawScope);
+                return;
+            }
+
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            analyser.getByteTimeDomainData(dataArray);
+
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#00ff88';
+            ctx.beginPath();
+
+            const sliceWidth = width / bufferLength;
+            let x = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+                const v = dataArray[i] / 128.0;
+                const y = v * height / 2;
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+
+                x += sliceWidth;
+            }
+
+            ctx.lineTo(width, height / 2);
+            ctx.stroke();
+
+            requestAnimationFrame(drawScope);
+        };
+
+        drawScope();
+    }
+
+    // Update synth UI from state
+    updateSynthUI() {
+        const state = window.synth?.getState();
+        if (!state) return;
+
+        // Update OSC1 waveform buttons
+        document.querySelectorAll('.wave-btns[data-osc="1"] .wave-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.wave === state.osc1.waveform);
+        });
+
+        // Update OSC2 waveform buttons
+        document.querySelectorAll('.wave-btns[data-osc="2"] .wave-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.wave === state.osc2.waveform);
+        });
+
+        // Update sliders and values
+        const updateSlider = (id, valId, value, formatter = v => v) => {
+            const slider = document.getElementById(id);
+            const valEl = document.getElementById(valId);
+            if (slider) slider.value = value;
+            if (valEl) valEl.textContent = formatter(value);
+        };
+
+        updateSlider('osc2Detune', 'osc2DetuneVal', state.osc2.detune);
+        updateSlider('synthOctave', 'synthOctVal', state.pitch.octave);
+        updateSlider('synthFine', 'synthFineVal', state.pitch.fine);
+        updateSlider('synthGlide', 'synthGlideVal', state.pitch.glide);
+        updateSlider('filterCutoff', 'filterCutVal', state.filter.cutoff, v => v >= 1000 ? (v/1000).toFixed(1) + 'k' : v);
+        updateSlider('filterRes', 'filterResVal', state.filter.resonance);
+        updateSlider('lfoRate', 'lfoRateVal', state.lfo.rate, v => v.toFixed(1));
+        updateSlider('lfoDepth', 'lfoDepthVal', state.lfo.depth);
+        updateSlider('unisonVoices', 'unisonVoicesVal', state.unison.voices);
+        updateSlider('unisonSpread', 'unisonSpreadVal', state.unison.spread);
+        updateSlider('adsrAttack', 'adsrAVal', state.adsr.attack);
+        updateSlider('adsrDecay', 'adsrDVal', state.adsr.decay);
+        updateSlider('adsrSustain', 'adsrSVal', state.adsr.sustain);
+        updateSlider('adsrRelease', 'adsrRVal', state.adsr.release);
+
+        // Update filter type buttons
+        document.querySelectorAll('.flt-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.flt === state.filter.type);
+        });
+
+        // Update LFO target buttons
+        document.querySelectorAll('.lfo-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.target === state.lfo.target);
+        });
+    }
+
+    // Synth Matrix routing
+    setupSynthMatrix() {
+        document.querySelectorAll('.matrix-cell').forEach(cell => {
+            cell.addEventListener('click', () => {
+                cell.classList.toggle('active');
+                // TODO: Implement actual routing changes in synth engine
+                console.log(`Matrix: ${cell.dataset.src} -> ${cell.dataset.dst}: ${cell.classList.contains('active')}`);
+            });
+        });
+    }
+
+    // Scenes with crossfader
+    setupScenes() {
+        const sceneBtns = document.querySelectorAll('.scenes-panel .scene-btn');
+        const saveBtn = document.getElementById('saveScene');
+        const crossfader = document.getElementById('sceneCrossfader');
+        const scopeSelect = document.getElementById('sceneScope');
+        const xfadeLeft = document.getElementById('xfadeLeft');
+        const xfadeRight = document.getElementById('xfadeRight');
+
+        // Scene selection
+        sceneBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.scene);
+
+                // If shift-clicking or already active, assign to crossfader
+                if (btn.classList.contains('active')) {
+                    // Assign to right side of crossfader
+                    this.xfadeSceneB = idx;
+                    xfadeRight.textContent = ['A', 'B', 'C', 'D'][idx];
+                } else {
+                    // Normal click: recall scene
+                    if (window.sceneManager.hasScene(idx)) {
+                        window.sceneManager.recallScene(idx);
+                        this.updateOctSteps();
+                    }
+
+                    // Update active state
+                    sceneBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    // Assign to left side of crossfader
+                    this.xfadeSceneA = idx;
+                    xfadeLeft.textContent = ['A', 'B', 'C', 'D'][idx];
+                }
+            });
+        });
+
+        // Save button
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                const activeBtn = document.querySelector('.scenes-panel .scene-btn.active');
+                if (activeBtn) {
+                    const idx = parseInt(activeBtn.dataset.scene);
+                    window.sceneManager.saveScene(idx);
+                    activeBtn.classList.add('has-data');
+                    console.log('Saved scene', ['A', 'B', 'C', 'D'][idx]);
+                }
+            });
+        }
+
+        // Crossfader - real-time scene morphing
+        if (crossfader) {
+            crossfader.addEventListener('input', () => {
+                const value = parseInt(crossfader.value);
+                this.morphScenes(value / 100);
+            });
+        }
+    }
+
+    // Real-time scene morphing based on crossfader position
+    morphScenes(t) {
+        // t = 0: fully scene A, t = 1: fully scene B
+        if (!window.sceneManager.hasScene(this.xfadeSceneA) ||
+            !window.sceneManager.hasScene(this.xfadeSceneB)) {
+            return;
+        }
+
+        const sceneA = window.sceneManager.getScene(this.xfadeSceneA);
+        const sceneB = window.sceneManager.getScene(this.xfadeSceneB);
+
+        // Get current scope
+        const scope = document.getElementById('sceneScope')?.value || 'all';
+
+        // Interpolate based on scope
+        const lerp = (a, b, t) => a + (b - a) * t;
+
+        if (scope === 'all' || scope === 'mixer') {
+            // Morph mixer levels
+            if (sceneA.mixer && sceneB.mixer) {
+                const channels = ['mic', 'samples', 'synth', 'radio'];
+                channels.forEach(ch => {
+                    const levelA = sceneA.mixer[ch]?.level ?? 0.8;
+                    const levelB = sceneB.mixer[ch]?.level ?? 0.8;
+                    const level = lerp(levelA, levelB, t);
+
+                    const fader = document.getElementById(`fader${ch.charAt(0).toUpperCase() + ch.slice(1)}`);
+                    if (fader) fader.value = level * 100;
+                    window.audioEngine?.setChannelLevel(ch, level);
+                });
+
+                // Master
+                const masterA = sceneA.mixer.master ?? 0.9;
+                const masterB = sceneB.mixer.master ?? 0.9;
+                const master = lerp(masterA, masterB, t);
+                const masterFader = document.getElementById('faderMaster');
+                if (masterFader) masterFader.value = master * 100;
+                window.audioEngine?.setMasterLevel(master);
+            }
+        }
+
+        if (scope === 'all' || scope === 'fx') {
+            // Morph FX parameters
+            if (sceneA.fx && sceneB.fx && window.mangleEngine) {
+                // Delay mix
+                const delayA = sceneA.fx.delay?.mix ?? 0;
+                const delayB = sceneB.fx.delay?.mix ?? 0;
+                const delayMix = lerp(delayA, delayB, t);
+                window.mangleEngine.setDelayMix(delayMix);
+
+                const delaySlider = document.getElementById('fxDelay');
+                if (delaySlider) delaySlider.value = delayMix;
+            }
+        }
+
+        if (scope === 'all') {
+            // Morph tempo
+            const tempoA = sceneA.tempo ?? 120;
+            const tempoB = sceneB.tempo ?? 120;
+            const tempo = Math.round(lerp(tempoA, tempoB, t));
+            window.sequencer?.setTempo(tempo);
+
+            const tempoSlider = document.getElementById('tempoSlider');
+            const tempoVal = document.getElementById('tempoVal');
+            if (tempoSlider) tempoSlider.value = tempo;
+            if (tempoVal) tempoVal.textContent = tempo;
+        }
+    }
+
+    // FX
+    setupFX() {
+        const delay = document.getElementById('fxDelay');
+        const crush = document.getElementById('fxCrush');
+        const glitch = document.getElementById('fxGlitch');
+        const grain = document.getElementById('fxGrain');
+        const saveFxBtn = document.getElementById('saveFx');
+
+        delay.addEventListener('input', () => {
+            window.mangleEngine.setDelayMix(parseInt(delay.value));
+            // Sync knob
+            const knob = document.getElementById('knobDelay');
+            if (knob) {
+                knob.dataset.value = delay.value;
+                this.updateKnobRotation(knob, parseInt(delay.value), 0, 100);
+            }
+        });
+
+        crush.addEventListener('input', () => {
+            window.mangleEngine.setBitDepth(parseInt(crush.value));
+        });
+
+        glitch.addEventListener('input', () => {
+            window.mangleEngine.setGlitch(parseInt(glitch.value), 100, 'stutter');
+        });
+
+        grain.addEventListener('input', () => {
+            window.mangleEngine.setGrain(parseInt(grain.value), 50, 0);
+            // Sync knob
+            const knob = document.getElementById('knobGrain');
+            if (knob) {
+                knob.dataset.value = grain.value;
+                this.updateKnobRotation(knob, parseInt(grain.value), 0, 100);
+            }
+        });
+
+        // FX presets - now using buttons instead of dropdown
+        const presetContainer = document.getElementById('fxPresetBtns');
+        if (presetContainer) {
+            presetContainer.addEventListener('click', (e) => {
+                const btn = e.target.closest('.fx-preset-btn');
+                if (!btn) return;
+
+                // Update active state
+                presetContainer.querySelectorAll('.fx-preset-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const idx = parseInt(btn.dataset.preset);
+                if (idx > 0 && this.settings.fxPresets[idx - 1]) {
+                    this.loadFxPreset(this.settings.fxPresets[idx - 1]);
+                }
+            });
+            this.updateFxPresetList();
+        }
+
+        if (saveFxBtn) {
+            saveFxBtn.addEventListener('click', () => {
+                this.saveFxPreset();
+            });
+        }
+
+        // Punch-in FX buttons
+        this.setupPunchFX();
+    }
+
+    // Save current FX settings as preset
+    saveFxPreset() {
+        const preset = {
+            delay: parseInt(document.getElementById('fxDelay')?.value || 0),
+            grain: parseInt(document.getElementById('fxGrain')?.value || 0),
+            glitch: parseInt(document.getElementById('fxGlitch')?.value || 0),
+            crush: parseInt(document.getElementById('fxCrush')?.value || 16),
+            name: `FX${this.settings.fxPresets.length + 1}`
+        };
+        this.settings.fxPresets.push(preset);
+        this.saveSettings();
+        this.updateFxPresetList();
+        console.log('Saved FX preset:', preset.name);
+    }
+
+    // Load FX preset
+    loadFxPreset(preset) {
+        if (!preset) return;
+
+        const delay = document.getElementById('fxDelay');
+        const grain = document.getElementById('fxGrain');
+        const glitch = document.getElementById('fxGlitch');
+        const crush = document.getElementById('fxCrush');
+
+        if (delay) { delay.value = preset.delay; window.mangleEngine?.setDelayMix(preset.delay); }
+        if (grain) { grain.value = preset.grain; window.mangleEngine?.setGrain(preset.grain, 50, 0); }
+        if (glitch) { glitch.value = preset.glitch; window.mangleEngine?.setGlitch(preset.glitch, 100, 'stutter'); }
+        if (crush) { crush.value = preset.crush; window.mangleEngine?.setBitDepth(preset.crush); }
+
+        console.log('Loaded FX preset:', preset.name);
+    }
+
+    // Update FX preset buttons
+    updateFxPresetList() {
+        const container = document.getElementById('fxPresetBtns');
+        if (!container) return;
+
+        container.innerHTML = '<button class="fx-preset-btn active" data-preset="0">--</button>';
+        this.settings.fxPresets.forEach((preset, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'fx-preset-btn';
+            btn.dataset.preset = idx + 1;
+            btn.textContent = preset.name;
+            container.appendChild(btn);
+        });
+    }
+
+    // Punch-in FX (hold for temporary effect)
+    setupPunchFX() {
+        // Store original values to restore after punch-out
+        this.punchFXStates = {};
+
+        document.querySelectorAll('.punch-btn').forEach(btn => {
+            const fxType = btn.dataset.fx;
+
+            const punchIn = () => {
+                btn.classList.add('active');
+                this.applyPunchFX(fxType, true);
+            };
+
+            const punchOut = () => {
+                btn.classList.remove('active');
+                this.applyPunchFX(fxType, false);
+            };
+
+            // Mouse events
+            btn.addEventListener('mousedown', punchIn);
+            btn.addEventListener('mouseup', punchOut);
+            btn.addEventListener('mouseleave', punchOut);
+
+            // Touch events
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                punchIn();
+            });
+            btn.addEventListener('touchend', punchOut);
+        });
+    }
+
+    applyPunchFX(fxType, active) {
+        if (!window.mangleEngine) return;
+
+        if (active) {
+            // Store current state before applying punch effect
+            switch (fxType) {
+                case 'stutter':
+                    // Apply heavy glitch/stutter effect
+                    this.punchFXStates.glitch = document.getElementById('fxGlitch')?.value || 0;
+                    window.mangleEngine.setGlitch(100, 50, 'stutter');
+                    break;
+
+                case 'reverse':
+                    // Apply reverse effect
+                    this.punchFXStates.reverse = false;
+                    window.mangleEngine.setReverse?.(true);
+                    break;
+
+                case 'filter':
+                    // Apply filter sweep (low pass filter down)
+                    this.punchFXStates.filter = window.synth?.getFilterCutoff?.() || 8000;
+                    window.synth?.setFilterCutoff(200);
+                    window.mangleEngine.setFilterSweep?.(true, 200, 8000);
+                    break;
+
+                case 'tape':
+                    // Apply tape stop effect (slow down)
+                    this.punchFXStates.tape = false;
+                    window.mangleEngine.setTapeStop?.(true);
+                    break;
+            }
+            console.log(`Punch-in: ${fxType}`);
+        } else {
+            // Restore original state
+            switch (fxType) {
+                case 'stutter':
+                    window.mangleEngine.setGlitch(this.punchFXStates.glitch || 0, 100, 'stutter');
+                    break;
+
+                case 'reverse':
+                    window.mangleEngine.setReverse?.(false);
+                    break;
+
+                case 'filter':
+                    window.synth?.setFilterCutoff(this.punchFXStates.filter || 8000);
+                    window.mangleEngine.setFilterSweep?.(false);
+                    break;
+
+                case 'tape':
+                    window.mangleEngine.setTapeStop?.(false);
+                    break;
+            }
+            console.log(`Punch-out: ${fxType}`);
+        }
+    }
+
+    // AI
+    setupAI() {
+        const vibeBtns = document.querySelectorAll('.vibe-btn');
+        const generateBtn = document.getElementById('aiGenerate');
+
+        vibeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                vibeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        if (generateBtn) {
+            generateBtn.addEventListener('click', () => {
+                const vibe = document.querySelector('.vibe-btn.active')?.dataset.vibe || 'calm';
+                this.generateFullComposition(vibe);
+            });
+        }
+    }
+
+    // Generate full composition based on vibe (patterns + FX + mixer + tempo)
+    generateFullComposition(vibe) {
+        console.log(`Generating full composition: ${vibe}`);
+
+        // Generate rhythm pattern
+        window.aiComposer?.generateRhythm(vibe, 70, 50);
+
+        // Generate vibe-appropriate settings
+        const vibeSettings = {
+            calm: {
+                tempo: 85 + Math.floor(Math.random() * 20),  // 85-105
+                delay: 30 + Math.floor(Math.random() * 30),   // 30-60
+                grain: 0,
+                glitch: 0,
+                crush: 16,
+                mixer: { mic: 50, samples: 70, synth: 60, radio: 20, master: 85 }
+            },
+            urban: {
+                tempo: 110 + Math.floor(Math.random() * 30), // 110-140
+                delay: 20 + Math.floor(Math.random() * 40),
+                grain: Math.floor(Math.random() * 30),
+                glitch: Math.floor(Math.random() * 20),
+                crush: 12 + Math.floor(Math.random() * 4),
+                mixer: { mic: 30, samples: 90, synth: 70, radio: 40, master: 90 }
+            },
+            nature: {
+                tempo: 70 + Math.floor(Math.random() * 30),  // 70-100
+                delay: 40 + Math.floor(Math.random() * 30),
+                grain: 20 + Math.floor(Math.random() * 40),
+                glitch: 0,
+                crush: 16,
+                mixer: { mic: 70, samples: 60, synth: 40, radio: 50, master: 80 }
+            },
+            chaos: {
+                tempo: 130 + Math.floor(Math.random() * 40), // 130-170
+                delay: Math.floor(Math.random() * 80),
+                grain: 30 + Math.floor(Math.random() * 50),
+                glitch: 30 + Math.floor(Math.random() * 50),
+                crush: 4 + Math.floor(Math.random() * 8),
+                mixer: { mic: Math.random() * 100, samples: Math.random() * 100, synth: Math.random() * 100, radio: Math.random() * 100, master: 95 }
+            }
+        };
+
+        const settings = vibeSettings[vibe] || vibeSettings.calm;
+
+        // Apply tempo
+        window.sequencer?.setTempo(settings.tempo);
+        const tempoSlider = document.getElementById('tempoSlider');
+        const tempoVal = document.getElementById('tempoVal');
+        if (tempoSlider) tempoSlider.value = settings.tempo;
+        if (tempoVal) tempoVal.textContent = settings.tempo;
+
+        // Apply FX
+        window.mangleEngine?.setDelayMix(settings.delay);
+        window.mangleEngine?.setGrain(settings.grain, 50, 0);
+        window.mangleEngine?.setGlitch(settings.glitch, 100, 'stutter');
+        window.mangleEngine?.setBitDepth(settings.crush);
+
+        // Update FX sliders
+        const fxDelay = document.getElementById('fxDelay');
+        const fxGrain = document.getElementById('fxGrain');
+        const fxGlitch = document.getElementById('fxGlitch');
+        const fxCrush = document.getElementById('fxCrush');
+        if (fxDelay) fxDelay.value = settings.delay;
+        if (fxGrain) fxGrain.value = settings.grain;
+        if (fxGlitch) fxGlitch.value = settings.glitch;
+        if (fxCrush) fxCrush.value = settings.crush;
+
+        // Apply mixer levels
+        const mixerChannels = ['Mic', 'Samples', 'Synth', 'Radio'];
+        mixerChannels.forEach(ch => {
+            const key = ch.toLowerCase();
+            const level = settings.mixer[key];
+            const fader = document.getElementById(`fader${ch}`);
+            if (fader) fader.value = level;
+            window.audioEngine?.setChannelLevel(key, level / 100);
+        });
+
+        const masterFader = document.getElementById('faderMaster');
+        if (masterFader) masterFader.value = settings.mixer.master;
+        window.audioEngine?.setMasterLevel(settings.mixer.master / 100);
+
+        // Update knobs to match
+        const knobDelay = document.getElementById('knobDelay');
+        const knobGrain = document.getElementById('knobGrain');
+        if (knobDelay) {
+            knobDelay.dataset.value = settings.delay;
+            this.updateKnobRotation(knobDelay, settings.delay, 0, 100);
+        }
+        if (knobGrain) {
+            knobGrain.dataset.value = settings.grain;
+            this.updateKnobRotation(knobGrain, settings.grain, 0, 100);
+        }
+
+        // Update sequencer display
+        this.updateOctSteps();
+
+        // Auto-tune to a local radio station
+        this.tuneLocalRadio();
+
+        console.log(`Generated ${vibe} composition: tempo=${settings.tempo}, delay=${settings.delay}, grain=${settings.grain}`);
+    }
+
+    // Tune to a local radio station based on GPS
+    async tuneLocalRadio() {
+        const station = await window.radioPlayer?.autoTuneLocal();
+        if (station) {
+            console.log('Auto-tuned to local station:', station.name);
+            // Update station list UI
+            const stationList = document.getElementById('stationList');
+            if (stationList) {
+                stationList.innerHTML = '';
+                const item = document.createElement('div');
+                item.className = 'station-item playing';
+                item.textContent = `📻 ${station.name}`;
+                item.title = station.genre || station.country;
+                stationList.appendChild(item);
+            }
+        }
+    }
+
+    // Radio
+    setupRadio() {
+        const searchInput = document.getElementById('radioSearch');
+        const scanBtn = document.getElementById('radioScan');
+        const goBtn = document.getElementById('radioGo');
+        const stopBtn = document.getElementById('radioStop');
+        const stationList = document.getElementById('stationList');
+
+        const doSearch = async () => {
+            const query = searchInput?.value?.trim();
+            if (!query) return;
+
+            stationList.innerHTML = '<div style="color:#888;font-size:9px;">Searching...</div>';
+
+            const stations = await window.radioPlayer.searchStations(query, '', '');
+
+            if (stations.length === 0) {
+                stationList.innerHTML = '<div style="color:#888;font-size:9px;">No stations</div>';
+                return;
+            }
+
+            stationList.innerHTML = stations.slice(0, 5).map(s => `
+                <div class="station-item" data-url="${s.url}" data-name="${s.name}">
+                    ${s.name}
+                </div>
+            `).join('');
+
+            stationList.querySelectorAll('.station-item').forEach(item => {
+                item.addEventListener('click', async () => {
+                    const success = await window.radioPlayer.play({
+                        name: item.dataset.name,
+                        url: item.dataset.url
+                    });
+                    if (success) {
+                        stationList.querySelectorAll('.station-item').forEach(i => i.classList.remove('playing'));
+                        item.classList.add('playing');
+                        stopBtn.disabled = false;
+                    }
+                });
+            });
+        };
+
+        goBtn.addEventListener('click', doSearch);
+        searchInput?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') doSearch();
+        });
+
+        // SCAN button - search for local stations
+        scanBtn?.addEventListener('click', async () => {
+            stationList.innerHTML = '<div style="color:#888;font-size:9px;">Scanning...</div>';
+            const stations = await window.radioPlayer.searchLocalStations();
+            if (stations.length === 0) {
+                stationList.innerHTML = '<div style="color:#888;font-size:9px;">No local stations</div>';
+                return;
+            }
+            stationList.innerHTML = stations.slice(0, 5).map(s => `
+                <div class="station-item" data-url="${s.url}" data-name="${s.name}">
+                    ${s.name}
+                </div>
+            `).join('');
+
+            stationList.querySelectorAll('.station-item').forEach(item => {
+                item.addEventListener('click', async () => {
+                    const success = await window.radioPlayer.play({
+                        name: item.dataset.name,
+                        url: item.dataset.url
+                    });
+                    if (success) {
+                        stationList.querySelectorAll('.station-item').forEach(i => i.classList.remove('playing'));
+                        item.classList.add('playing');
+                        stopBtn.disabled = false;
+                    }
+                });
+            });
+        });
+
+        stopBtn.addEventListener('click', () => {
+            window.radioPlayer.stop();
+            stopBtn.disabled = true;
+            stationList.querySelectorAll('.station-item').forEach(i => i.classList.remove('playing'));
+        });
+    }
+
+    // Recordings
+    setupRecordings() {
+        const listBtn = document.getElementById('recListBtn');
+
+        if (listBtn) {
+            listBtn.addEventListener('click', () => {
+                this.updateRecordingsList();
+            });
+        }
+
+        this.updateRecCount();
+    }
+
+    updateRecCount() {
+        const countEl = document.getElementById('recCount');
+        if (countEl) {
+            const recordings = window.sessionRecorder?.getRecordings() || [];
+            countEl.textContent = recordings.length;
+        }
+    }
+
+    updateRecordingsList() {
+        const recList = document.getElementById('recList');
+        if (!recList) return;
+
+        const recordings = window.sessionRecorder.getRecordings();
+
+        if (!recordings || recordings.length === 0) {
+            recList.innerHTML = '<div style="color:#888;font-size:8px;padding:2px;">No recordings</div>';
+            return;
+        }
+
+        recList.innerHTML = recordings.map((rec) => `
+            <div class="rec-item" data-id="${rec.id}">
+                <span class="rec-item-name" data-id="${rec.id}">${rec.name || 'Rec'}</span>
+                ${rec.url ? `<button class="rec-item-play" data-id="${rec.id}">▶</button>` : ''}
+                ${rec.blob ? `<button class="rec-item-dl" data-id="${rec.id}">↓</button>` : ''}
+                <button class="rec-item-del" data-id="${rec.id}">✕</button>
+            </div>
+        `).join('');
+
+        // Play buttons
+        recList.querySelectorAll('.rec-item-play').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = btn.dataset.id;
+                const rec = recordings.find(r => r.id === id);
+                if (rec && rec.url) {
+                    const audio = new Audio(rec.url);
+                    audio.play();
+                }
+            });
+        });
+
+        // Download buttons
+        recList.querySelectorAll('.rec-item-dl').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = btn.dataset.id;
+                window.sessionRecorder.downloadRecording(id);
+            });
+        });
+
+        // Delete buttons
+        recList.querySelectorAll('.rec-item-del').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = btn.dataset.id;
+                window.sessionRecorder.deleteRecording(id);
+                this.updateRecordingsList();
+                this.updateRecCount();
+            });
+        });
+
+        // Rename on double-click
+        recList.querySelectorAll('.rec-item-name').forEach(span => {
+            span.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                const id = span.dataset.id;
+                const newName = prompt('Rename recording:', span.textContent);
+                if (newName && newName.trim()) {
+                    window.sessionRecorder.renameRecording(id, newName.trim());
+                    this.updateRecordingsList();
+                }
+            });
+        });
+    }
+
+    // Admin Modal
+    setupAdminModal() {
+        const adminBtn = document.getElementById('btnAdmin');
+        const modal = document.getElementById('adminModal');
+        const closeBtn = document.getElementById('closeAdmin');
+
+        adminBtn.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+            this.populateAdminModal();
+        });
+
+        closeBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+
+        // Kit selection
+        document.getElementById('kitList').addEventListener('click', (e) => {
+            const item = e.target.closest('.kit-item');
+            if (item) {
+                document.querySelectorAll('.kit-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                const kit = item.dataset.kit;
+                window.sampler.setBank(kit);
+                this.settings.selectedKit = kit;
+                this.saveSettings();
+            }
+        });
+
+        // Synth presets
+        document.getElementById('synthPresets').addEventListener('click', (e) => {
+            const item = e.target.closest('.preset-item');
+            if (item) {
+                document.querySelectorAll('.preset-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                this.settings.synthPreset = item.dataset.preset;
+                this.saveSettings();
+                // TODO: Apply synth preset
+            }
+        });
+
+        // Theme buttons
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.setTheme(btn.dataset.theme);
+            });
+        });
+
+        // Settings selects
+        document.getElementById('recFormat')?.addEventListener('change', (e) => {
+            this.settings.recFormat = e.target.value;
+            this.saveSettings();
+        });
+
+        document.getElementById('recAutoSave')?.addEventListener('change', (e) => {
+            this.settings.recAutoSave = e.target.value;
+            this.saveSettings();
+        });
+
+        document.getElementById('recGpsEmbed')?.addEventListener('change', (e) => {
+            this.settings.recGpsEmbed = e.target.checked;
+            this.saveSettings();
+        });
+
+        document.getElementById('seqTracks')?.addEventListener('change', (e) => {
+            this.settings.seqTracks = parseInt(e.target.value);
+            this.saveSettings();
+            // Would need to rebuild sequencer UI
+        });
+
+        document.getElementById('seqSteps')?.addEventListener('change', (e) => {
+            this.settings.seqSteps = parseInt(e.target.value);
+            this.saveSettings();
+            // Would need to rebuild sequencer UI
+        });
+
+        // Upload kit button
+        const uploadKitBtn = document.getElementById('uploadKitBtn');
+        const uploadKit = document.getElementById('uploadKit');
+
+        uploadKitBtn?.addEventListener('click', () => {
+            uploadKit.click();
+        });
+
+        uploadKit?.addEventListener('change', (e) => {
+            const files = e.target.files;
+            if (files.length > 0) {
+                console.log('Upload kit files:', files);
+                // TODO: Process uploaded audio files
+            }
+        });
+    }
+
+    populateAdminModal() {
+        // Sync UI with current settings
+        document.querySelectorAll('.kit-item').forEach(item => {
+            item.classList.toggle('active', item.dataset.kit === this.settings.selectedKit);
+        });
+
+        document.querySelectorAll('.preset-item').forEach(item => {
+            item.classList.toggle('active', item.dataset.preset === this.settings.synthPreset);
+        });
+
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.theme === this.settings.theme);
+        });
+
+        const recFormat = document.getElementById('recFormat');
+        const recAutoSave = document.getElementById('recAutoSave');
+        const recGpsEmbed = document.getElementById('recGpsEmbed');
+        const seqTracks = document.getElementById('seqTracks');
+        const seqSteps = document.getElementById('seqSteps');
+
+        if (recFormat) recFormat.value = this.settings.recFormat;
+        if (recAutoSave) recAutoSave.value = this.settings.recAutoSave;
+        if (recGpsEmbed) recGpsEmbed.checked = this.settings.recGpsEmbed;
+        if (seqTracks) seqTracks.value = this.settings.seqTracks;
+        if (seqSteps) seqSteps.value = this.settings.seqSteps;
+    }
+
+    // GPS
+    updateGPS() {
+        const text = document.getElementById('gpsText');
+        const headerMapImg = document.getElementById('headerMapImg');
+        const miniMapImg = document.getElementById('miniMapImg');
+        const miniMapCoords = document.getElementById('miniMapCoords');
+
+        const pos = window.gpsTracker.getPosition();
+
+        if (pos) {
+            if (text) {
+                text.textContent = pos.formatted;
+            }
+
+            // Update header mini map
+            if (headerMapImg) {
+                const mapUrl = window.gpsTracker.getMapImageUrl(16);
+                if (mapUrl) {
+                    headerMapImg.style.backgroundImage = `url("${mapUrl}")`;
+                }
+            }
+
+            // Update panel mini map (if visible)
+            if (miniMapImg) {
+                const mapUrl = window.gpsTracker.getMapImageUrl(14);
+                if (mapUrl) {
+                    miniMapImg.style.backgroundImage = `url("${mapUrl}")`;
+                }
+            }
+            if (miniMapCoords) {
+                miniMapCoords.textContent = `${pos.latitude.toFixed(3)}, ${pos.longitude.toFixed(3)}`;
+            }
+
+            // ONLY update background if theme is explicitly 'map'
+            // Don't override other themes!
+            if (this.settings.theme === 'map') {
+                const mapBg = document.getElementById('mapBackground');
+                if (mapBg) {
+                    const mapUrl = window.gpsTracker.getMapImageUrl(15);
+                    if (mapUrl) {
+                        mapBg.style.backgroundImage = `url("${mapUrl}")`;
+                        mapBg.classList.add('has-location');
+                    }
+                }
+            }
+        } else {
+            if (text) {
+                const err = window.gpsTracker.getError();
+                text.textContent = err || '--';
+            }
+            if (miniMapCoords) {
+                miniMapCoords.textContent = '--';
+            }
+        }
+    }
+}
+
+// Initialize on first interaction
+document.addEventListener('DOMContentLoaded', () => {
+    window.app = new App();
+
+    const autoInit = () => {
+        window.app.init();
+        document.removeEventListener('click', autoInit);
+        document.removeEventListener('touchstart', autoInit);
+    };
+
+    document.addEventListener('click', autoInit);
+    document.addEventListener('touchstart', autoInit);
+});

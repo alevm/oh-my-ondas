@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="screen-orientation" content="landscape">
+    <title>Oh My Ondas</title>
+    <link rel="stylesheet" href="css/style.css?v=247">
+</head>
+<body>
+    <!-- Full-page map background -->
+    <div id="mapBackground" class="map-bg"></div>
+
+    <div id="app">
+        <!-- Top Bar: Transport + Info -->
+        <header class="top-bar">
+            <div class="logo">OH MY ONDAS</div>
+            <nav class="nav-links">
+                <a href="#" id="btnDemo" class="nav-link demo-link">Demo</a>
+                <a href="hardware-mockup.html" class="nav-link">Design</a>
+                <a href="scope.html" class="nav-link">Scope</a>
+            </nav>
+            <div class="transport">
+                <button id="btnPlay" class="tr-btn play" title="Play/Pause sequencer (Space)">▶</button>
+                <button id="btnStop" class="tr-btn stop" title="Stop sequencer">■</button>
+                <button id="btnRecord" class="tr-btn rec" title="Record audio to file">●</button>
+            </div>
+            <div class="tempo-box">
+                <input type="range" id="tempoSlider" min="60" max="200" value="120" title="Adjust tempo (BPM)">
+                <span id="tempoVal" title="Current BPM">120</span>
+                <button id="btnTap" class="tap-btn" title="Tap to set tempo">TAP</button>
+            </div>
+            <button id="btnHelp" class="help-btn" title="Show keyboard shortcuts">?</button>
+            <div class="gps-box" id="gpsBox" title="Current GPS location">
+                <div class="mini-map" id="headerMiniMap" title="Your location on map"><div class="mini-map-img" id="headerMapImg"></div></div>
+                <span id="gpsText">--</span>
+            </div>
+            <div class="time-box" id="timeDisplay" title="Current time">00:00</div>
+            <button id="btnAdmin" class="admin-btn" title="Open settings panel">⚙</button>
+            <div class="version">v2.4.6 <span class="build-time">2026-01-10 23:31</span></div>
+        </header>
+
+        <!-- Main Device Area - 12 Equal Tiles (4x3) -->
+        <main class="device">
+            <!-- Row 1: SEQ | MIXER | SYNTH | SCENES -->
+            <div class="panel seq-panel">
+                <div class="seq-header">
+                    <span class="panel-title">SEQ</span>
+                    <div class="seq-controls">
+                        <div class="src-btns">
+                            <button class="src-btn active" data-src="sampler" title="Sampler - trigger drum samples">SMP</button>
+                            <button class="src-btn" data-src="synth" title="Synth - trigger synthesizer notes">SYN</button>
+                            <button class="src-btn" data-src="radio" title="Radio - trigger radio samples">RAD</button>
+                            <button class="src-btn" data-src="mic" title="Mic - trigger mic recording">MIC</button>
+                        </div>
+                        <button id="seqRandom" class="seq-btn mini" title="Randomize selected track pattern">RND</button>
+                        <button id="seqClear" class="seq-btn mini" title="Clear selected track">CLR</button>
+                        <button id="eucGen" class="seq-btn mini" title="Generate euclidean rhythm">EUC</button>
+                        <button id="dubToggle" class="seq-btn mini dub-btn" title="Overdub mode - record live to pattern">DUB</button>
+                        <button id="fillBtn" class="seq-btn mini fill-btn" title="Fill mode - hold for fill pattern (F)">FILL</button>
+                    </div>
+                </div>
+                <div class="seq-row2">
+                    <div class="pattern-btns">
+                        <button class="pattern-btn active" data-pattern="0" title="Pattern A">A</button>
+                        <button class="pattern-btn" data-pattern="1" title="Pattern B">B</button>
+                        <button class="pattern-btn" data-pattern="2" title="Pattern C">C</button>
+                        <button class="pattern-btn" data-pattern="3" title="Pattern D">D</button>
+                        <button class="pattern-btn" data-pattern="4" title="Pattern E">E</button>
+                        <button class="pattern-btn" data-pattern="5" title="Pattern F">F</button>
+                        <button class="pattern-btn" data-pattern="6" title="Pattern G">G</button>
+                        <button class="pattern-btn" data-pattern="7" title="Pattern H">H</button>
+                    </div>
+                    <div class="seq-tools">
+                        <button id="seqCopy" class="seq-btn mini" title="Copy selected track (Ctrl+C)">CPY</button>
+                        <button id="seqPaste" class="seq-btn mini" title="Paste to selected track (Ctrl+V)">PST</button>
+                        <button id="seqUndo" class="seq-btn mini" title="Undo last change (Ctrl+Z)">UND</button>
+                        <button id="seqRedo" class="seq-btn mini" title="Redo (Ctrl+Y)">RED</button>
+                    </div>
+                    <div class="length-ctrl">
+                        <span title="Pattern length in steps">LEN</span>
+                        <select id="patternLength" title="Set pattern length (1-64 steps)">
+                            <option value="4">4</option>
+                            <option value="8">8</option>
+                            <option value="12">12</option>
+                            <option value="16" selected>16</option>
+                            <option value="24">24</option>
+                            <option value="32">32</option>
+                            <option value="48">48</option>
+                            <option value="64">64</option>
+                        </select>
+                    </div>
+                    <div class="swing-ctrl">
+                        <span title="Swing amount">SWG</span>
+                        <input type="range" id="swingAmount" min="0" max="100" value="0" title="Swing timing (0-100%)">
+                        <span id="swingVal">0</span>
+                    </div>
+                </div>
+                <div class="oct-tracks" id="octTracks"></div>
+                <div id="plockEditor" class="plock-editor hidden">
+                    <div class="plock-header"><span class="plock-title">STEP <span id="plockStepNum">1</span></span><button id="plockClose" class="plock-close">×</button></div>
+                    <div class="plock-params">
+                        <div class="plock-row"><span title="Pitch shift in semitones">PITCH</span><input type="range" id="plockPitch" min="-24" max="24" value="0" title="Pitch shift (-24 to +24 semitones)"><span id="plockPitchVal">0</span></div>
+                        <div class="plock-row"><span title="Sample slice selection">SLICE</span><input type="range" id="plockSlice" min="0" max="15" value="0" title="Select sample slice (0-15)"><span id="plockSliceVal">0</span></div>
+                        <div class="plock-row"><span title="Filter cutoff">FILT</span><input type="range" id="plockFilter" min="0" max="100" value="50" title="Filter cutoff frequency"><span id="plockFilterVal">50</span></div>
+                        <div class="plock-row"><span title="Sound decay time">DECAY</span><input type="range" id="plockDecay" min="0" max="100" value="50" title="Decay/release time"><span id="plockDecayVal">50</span></div>
+                    </div>
+                    <div class="trig-cond">
+                        <span title="Trigger condition - when step plays">TRIG</span>
+                        <div class="trig-btns" id="trigCondBtns">
+                            <button class="trig-btn active" data-cond="always" title="Always trigger">ALL</button>
+                            <button class="trig-btn" data-cond="probability" title="Probability - random chance to trigger">PROB</button>
+                            <button class="trig-btn" data-cond="fill" title="Only trigger during fill">FILL</button>
+                            <button class="trig-btn" data-cond="notFill" title="Only trigger when NOT fill">!FILL</button>
+                            <button class="trig-btn" data-cond="nth" title="Trigger every Nth bar">NTH</button>
+                            <button class="trig-btn" data-cond="neighbor" title="Trigger if neighbor step triggered">NEIGH</button>
+                        </div>
+                        <input type="number" id="trigCondValue" min="1" max="100" value="100" title="Condition value (probability % or Nth count)">
+                    </div>
+                </div>
+            </div>
+            <div class="panel mixer-panel">
+                <div class="panel-title">MIXER</div>
+                <div class="mixer-channels">
+                    <div class="ch" data-ch="mic">
+                        <span class="ch-name">MIC</span>
+                        <input type="range" class="gain-knob" id="gainMic" min="0" max="200" value="100" title="Input gain (0-200%)">
+                        <div class="vu-meter" title="Microphone level"><div class="vu-fill" id="vuMic"></div><div class="vu-peak" id="peakMic"></div></div>
+                        <input type="range" class="v-fader" id="faderMic" min="0" max="100" value="80" orient="vertical" title="Microphone volume">
+                        <input type="range" class="pan-knob" id="panMic" min="-100" max="100" value="0" title="Pan L/R">
+                        <div class="ch-btns">
+                            <button class="mute" id="muteMic" title="Mute microphone">M</button>
+                            <button class="solo" id="soloMic" title="Solo microphone">S</button>
+                        </div>
+                    </div>
+                    <div class="ch" data-ch="samples">
+                        <span class="ch-name">SMP</span>
+                        <input type="range" class="gain-knob" id="gainSamples" min="0" max="200" value="100" title="Input gain (0-200%)">
+                        <div class="vu-meter" title="Sampler level"><div class="vu-fill" id="vuSamples"></div><div class="vu-peak" id="peakSamples"></div></div>
+                        <input type="range" class="v-fader" id="faderSamples" min="0" max="100" value="80" orient="vertical" title="Sampler volume">
+                        <input type="range" class="pan-knob" id="panSamples" min="-100" max="100" value="0" title="Pan L/R">
+                        <div class="ch-btns">
+                            <button class="mute" id="muteSamples" title="Mute sampler">M</button>
+                            <button class="solo" id="soloSamples" title="Solo sampler">S</button>
+                        </div>
+                    </div>
+                    <div class="ch" data-ch="synth">
+                        <span class="ch-name">SYN</span>
+                        <input type="range" class="gain-knob" id="gainSynth" min="0" max="200" value="100" title="Input gain (0-200%)">
+                        <div class="vu-meter" title="Synth level"><div class="vu-fill" id="vuSynth"></div><div class="vu-peak" id="peakSynth"></div></div>
+                        <input type="range" class="v-fader" id="faderSynth" min="0" max="100" value="80" orient="vertical" title="Synth volume">
+                        <input type="range" class="pan-knob" id="panSynth" min="-100" max="100" value="0" title="Pan L/R">
+                        <div class="ch-btns">
+                            <button class="mute" id="muteSynth" title="Mute synth">M</button>
+                            <button class="solo" id="soloSynth" title="Solo synth">S</button>
+                        </div>
+                    </div>
+                    <div class="ch" data-ch="radio">
+                        <span class="ch-name">RAD</span>
+                        <input type="range" class="gain-knob" id="gainRadio" min="0" max="200" value="100" title="Input gain (0-200%)">
+                        <div class="vu-meter" title="Radio level"><div class="vu-fill" id="vuRadio"></div><div class="vu-peak" id="peakRadio"></div></div>
+                        <input type="range" class="v-fader" id="faderRadio" min="0" max="100" value="80" orient="vertical" title="Radio volume">
+                        <input type="range" class="pan-knob" id="panRadio" min="-100" max="100" value="0" title="Pan L/R">
+                        <div class="ch-btns">
+                            <button class="mute" id="muteRadio" title="Mute radio">M</button>
+                            <button class="solo" id="soloRadio" title="Solo radio">S</button>
+                        </div>
+                    </div>
+                    <div class="ch master" data-ch="master">
+                        <span class="ch-name">OUT</span>
+                        <div class="limiter-indicator" id="limiterIndicator" title="Limiter active when red"></div>
+                        <div class="vu-meter" title="Master output level"><div class="vu-fill" id="vuMaster"></div><div class="vu-peak" id="peakMaster"></div></div>
+                        <input type="range" class="v-fader" id="faderMaster" min="0" max="100" value="90" orient="vertical" title="Master volume">
+                        <div class="meter-mode">
+                            <button class="meter-btn active" data-mode="peak" title="Peak metering">PK</button>
+                            <button class="meter-btn" data-mode="rms" title="RMS metering">RM</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel synth-panel">
+                <div class="synth-header">
+                    <span class="panel-title">SYNTH</span>
+                    <div class="synth-header-ctrls">
+                        <button id="synthToggle" class="power-btn" title="Turn synth on/off">OFF</button>
+                        <button id="synthPresetSave" class="preset-btn" title="Save current synth preset">SAV</button>
+                        <button id="synthPresetLoad" class="preset-btn" title="Load synth preset">LOD</button>
+                    </div>
+                </div>
+                <div class="synth-scope" id="synthScope" title="Oscilloscope - visual waveform display">
+                    <canvas id="scopeCanvas" width="120" height="40"></canvas>
+                </div>
+                <div class="synth-section">
+                    <div class="synth-row">
+                        <div class="osc-group">
+                            <span class="osc-label">OSC1</span>
+                            <div class="wave-btns" data-osc="1">
+                                <button class="wave-btn active" data-wave="sine" title="Sine wave">SIN</button>
+                                <button class="wave-btn" data-wave="triangle" title="Triangle wave">TRI</button>
+                                <button class="wave-btn" data-wave="sawtooth" title="Sawtooth wave">SAW</button>
+                                <button class="wave-btn" data-wave="square" title="Square wave">SQR</button>
+                            </div>
+                        </div>
+                        <div class="osc-group">
+                            <span class="osc-label">OSC2</span>
+                            <div class="wave-btns" data-osc="2">
+                                <button class="wave-btn" data-wave="sine" title="Sine wave">SIN</button>
+                                <button class="wave-btn active" data-wave="triangle" title="Triangle wave">TRI</button>
+                                <button class="wave-btn" data-wave="sawtooth" title="Sawtooth wave">SAW</button>
+                                <button class="wave-btn" data-wave="square" title="Square wave">SQR</button>
+                            </div>
+                            <div class="osc2-params">
+                                <span title="Detune OSC2">DET</span>
+                                <input type="range" id="osc2Detune" min="-100" max="100" value="7" title="Detune OSC2 in cents (-100 to +100)">
+                                <span id="osc2DetuneVal">7</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="synth-row">
+                        <div class="pitch-group">
+                            <div class="pitch-param"><span title="Octave shift">OCT</span><input type="range" id="synthOctave" min="-2" max="2" value="0" title="Octave shift (-2 to +2)"><span id="synthOctVal">0</span></div>
+                            <div class="pitch-param"><span title="Fine tune">FINE</span><input type="range" id="synthFine" min="-50" max="50" value="0" title="Fine tune in cents"><span id="synthFineVal">0</span></div>
+                            <div class="pitch-param"><span title="Portamento/Glide">GLIDE</span><input type="range" id="synthGlide" min="0" max="500" value="0" title="Glide time (ms)"><span id="synthGlideVal">0</span></div>
+                        </div>
+                    </div>
+                    <div class="synth-row">
+                        <div class="filter-group">
+                            <span class="filter-label">FILTER</span>
+                            <div class="filter-type-btns">
+                                <button class="flt-btn active" data-flt="lowpass" title="Lowpass filter">LP</button>
+                                <button class="flt-btn" data-flt="highpass" title="Highpass filter">HP</button>
+                                <button class="flt-btn" data-flt="bandpass" title="Bandpass filter">BP</button>
+                            </div>
+                            <div class="filter-params">
+                                <div class="flt-param"><span>CUT</span><input type="range" id="filterCutoff" min="20" max="20000" value="2000" title="Filter cutoff frequency"><span id="filterCutVal">2k</span></div>
+                                <div class="flt-param"><span>RES</span><input type="range" id="filterRes" min="0" max="30" value="1" title="Filter resonance"><span id="filterResVal">1</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="synth-row">
+                        <div class="lfo-group">
+                            <span class="lfo-label">LFO</span>
+                            <div class="lfo-params">
+                                <div class="lfo-param"><span>RATE</span><input type="range" id="lfoRate" min="0" max="20" value="0" step="0.1" title="LFO rate (Hz)"><span id="lfoRateVal">0</span></div>
+                                <div class="lfo-param"><span>DEP</span><input type="range" id="lfoDepth" min="0" max="100" value="0" title="LFO depth"><span id="lfoDepthVal">0</span></div>
+                            </div>
+                            <div class="lfo-target-btns">
+                                <button class="lfo-btn active" data-target="pitch" title="Modulate pitch (vibrato)">PIT</button>
+                                <button class="lfo-btn" data-target="filter" title="Modulate filter (wah)">FLT</button>
+                                <button class="lfo-btn" data-target="amp" title="Modulate amplitude (tremolo)">AMP</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="synth-row">
+                        <div class="unison-group">
+                            <span class="unison-label">UNISON</span>
+                            <div class="unison-params">
+                                <div class="uni-param"><span>VOICES</span><input type="range" id="unisonVoices" min="1" max="8" value="1" title="Number of unison voices"><span id="unisonVoicesVal">1</span></div>
+                                <div class="uni-param"><span>SPREAD</span><input type="range" id="unisonSpread" min="0" max="50" value="10" title="Unison detune spread"><span id="unisonSpreadVal">10</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="adsr-row">
+                    <div class="adsr-param"><span title="Attack time">A</span><input type="range" id="adsrAttack" min="0" max="1000" value="10" title="Attack - time to reach full volume (ms)"><span id="adsrAVal">10</span></div>
+                    <div class="adsr-param"><span title="Decay time">D</span><input type="range" id="adsrDecay" min="0" max="1000" value="100" title="Decay - time to fall to sustain level (ms)"><span id="adsrDVal">100</span></div>
+                    <div class="adsr-param"><span title="Sustain level">S</span><input type="range" id="adsrSustain" min="0" max="100" value="70" title="Sustain - held volume level (%)"><span id="adsrSVal">70</span></div>
+                    <div class="adsr-param"><span title="Release time">R</span><input type="range" id="adsrRelease" min="0" max="2000" value="200" title="Release - fade out time after key release (ms)"><span id="adsrRVal">200</span></div>
+                </div>
+            </div>
+            <div class="panel scenes-panel">
+                <div class="scene-header">
+                    <span class="panel-title">SCENES</span>
+                    <div class="scene-tools">
+                        <button id="sceneCopy" class="scene-tool-btn" title="Copy selected scene">CPY</button>
+                        <button id="scenePaste" class="scene-tool-btn" title="Paste to selected scene">PST</button>
+                        <button id="sceneLock" class="scene-tool-btn" title="Lock scene (prevent changes)">🔓</button>
+                    </div>
+                </div>
+                <div class="scene-row">
+                    <div class="scene-slot" data-scene="0">
+                        <button class="scene-btn active" data-scene="0" title="Scene A">A</button>
+                        <div class="scene-preview" id="scenePreviewA"></div>
+                        <span class="scene-name" id="sceneNameA" title="Double-click to rename">---</span>
+                    </div>
+                    <div class="scene-slot" data-scene="1">
+                        <button class="scene-btn" data-scene="1" title="Scene B">B</button>
+                        <div class="scene-preview" id="scenePreviewB"></div>
+                        <span class="scene-name" id="sceneNameB" title="Double-click to rename">---</span>
+                    </div>
+                    <div class="scene-slot" data-scene="2">
+                        <button class="scene-btn" data-scene="2" title="Scene C">C</button>
+                        <div class="scene-preview" id="scenePreviewC"></div>
+                        <span class="scene-name" id="sceneNameC" title="Double-click to rename">---</span>
+                    </div>
+                    <div class="scene-slot" data-scene="3">
+                        <button class="scene-btn" data-scene="3" title="Scene D">D</button>
+                        <div class="scene-preview" id="scenePreviewD"></div>
+                        <span class="scene-name" id="sceneNameD" title="Double-click to rename">---</span>
+                    </div>
+                </div>
+                <div class="xfade-section">
+                    <div class="xfade-row">
+                        <span id="xfadeLeft" class="xfade-label">A</span>
+                        <input type="range" id="sceneCrossfader" class="xfader" min="0" max="100" value="0" title="Crossfade between two scenes">
+                        <span id="xfadeRight" class="xfade-label">B</span>
+                    </div>
+                    <div class="xfade-assign">
+                        <select id="xfadeLeftScene" title="Left scene for crossfader">
+                            <option value="0">A</option>
+                            <option value="1">B</option>
+                            <option value="2">C</option>
+                            <option value="3">D</option>
+                        </select>
+                        <span>↔</span>
+                        <select id="xfadeRightScene" title="Right scene for crossfader">
+                            <option value="0">A</option>
+                            <option value="1" selected>B</option>
+                            <option value="2">C</option>
+                            <option value="3">D</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="auto-scene">
+                    <span class="auto-label">AUTO</span>
+                    <input type="range" id="autoSceneTime" min="0" max="32" value="0" title="Auto-switch time (bars, 0=off)">
+                    <span id="autoSceneTimeVal">OFF</span>
+                    <button id="autoSceneToggle" class="auto-btn" title="Enable auto scene switching">▶</button>
+                </div>
+                <div class="scene-actions">
+                    <button id="saveScene" title="Save current settings to selected scene">SAVE</button>
+                    <button id="loadScene" title="Load settings from selected scene">LOAD</button>
+                </div>
+            </div>
+            <div class="panel ai-panel">
+                <div class="panel-title">AI GEN</div>
+                <div class="vibe-btns">
+                    <button class="vibe-btn active" data-vibe="calm" title="Calm vibe - relaxed, ambient patterns">C</button>
+                    <button class="vibe-btn" data-vibe="urban" title="Urban vibe - hip-hop, trap beats">U</button>
+                    <button class="vibe-btn" data-vibe="nature" title="Nature vibe - organic, flowing patterns">N</button>
+                    <button class="vibe-btn" data-vibe="chaos" title="Chaos vibe - experimental, random patterns">X</button>
+                </div>
+                <div class="ai-btn-row">
+                    <button id="aiGenerate" class="ai-btn" title="Generate a new pattern based on selected vibe">GENERATE</button>
+                    <button id="landmarkBtn" class="landmark-btn" title="Capture sonic snapshot of this location using GPS">LANDMARK</button>
+                </div>
+            </div>
+
+            <!-- Row 2: PADS | PADS2 | CTRL | FX -->
+            <div class="panel pads-panel">
+                <div class="pads-header">
+                    <span class="panel-title">PADS A</span>
+                    <div class="kit-btns">
+                        <button class="kit-btn active" data-kit="kit1" title="Drum Kit 1">1</button>
+                        <button class="kit-btn" data-kit="kit2" title="Drum Kit 2">2</button>
+                        <button class="kit-btn" data-kit="kit3" title="Drum Kit 3">3</button>
+                    </div>
+                </div>
+                <div class="pads-grid">
+                    <button class="pad" data-pad="0" title="Pad 1 - Kick (Key: 1)">1</button>
+                    <button class="pad" data-pad="1" title="Pad 2 - Snare (Key: 2)">2</button>
+                    <button class="pad" data-pad="2" title="Pad 3 - Hi-hat (Key: 3)">3</button>
+                    <button class="pad" data-pad="3" title="Pad 4 - Clap (Key: 4)">4</button>
+                    <button class="pad" data-pad="4" title="Pad 5 - Tom (Key: 5)">5</button>
+                    <button class="pad" data-pad="5" title="Pad 6 - Perc (Key: 6)">6</button>
+                    <button class="pad" data-pad="6" title="Pad 7 - FX (Key: 7)">7</button>
+                    <button class="pad" data-pad="7" title="Pad 8 - Cymbal (Key: 8)">8</button>
+                </div>
+            </div>
+            <div class="panel pads-panel pads2">
+                <div class="pads-header">
+                    <span class="panel-title">PADS B</span>
+                    <select id="sampleBank2"><option value="kit1">Kit1</option><option value="kit2">Kit2</option><option value="kit3">Kit3</option></select>
+                </div>
+                <div class="pads-grid">
+                    <button class="pad" data-pad="8">9</button>
+                    <button class="pad" data-pad="9">10</button>
+                    <button class="pad" data-pad="10">11</button>
+                    <button class="pad" data-pad="11">12</button>
+                    <button class="pad" data-pad="12">13</button>
+                    <button class="pad" data-pad="13">14</button>
+                    <button class="pad" data-pad="14">15</button>
+                    <button class="pad" data-pad="15">16</button>
+                </div>
+            </div>
+            <div class="panel knobs-panel">
+                <div class="ctrl-header">
+                    <span class="panel-title">CTRL</span>
+                    <div class="target-btns">
+                        <button class="target-btn active" data-target="fx" title="Control FX parameters">FX</button>
+                        <button class="target-btn" data-target="synth" title="Control Synth parameters">SYN</button>
+                        <button class="target-btn" data-target="sampler" title="Control Sampler parameters">SMP</button>
+                    </div>
+                </div>
+                <div class="knobs-grid">
+                    <div class="knob-group"><div class="knob" id="knobFreq" data-param="freq" data-min="20" data-max="2000" data-value="220" title="Frequency - synth base frequency (Hz)"></div><span>FREQ</span></div>
+                    <div class="knob-group"><div class="knob" id="knobFilter" data-param="filter" data-min="20" data-max="8000" data-value="4000" title="Filter - cutoff frequency (Hz)"></div><span>FILT</span></div>
+                    <div class="knob-group"><div class="knob" id="knobDelay" data-param="delay" data-min="0" data-max="100" data-value="0" title="Delay - echo effect amount"></div><span>DLY</span></div>
+                    <div class="knob-group"><div class="knob" id="knobGrain" data-param="grain" data-min="0" data-max="100" data-value="0" title="Grain - granular texture amount"></div><span>GRN</span></div>
+                    <div class="knob-group"><div class="knob" id="knobReso" data-param="reso" data-min="0" data-max="100" data-value="0" title="Resonance - filter emphasis"></div><span>RES</span></div>
+                    <div class="knob-group"><div class="knob" id="knobDrive" data-param="drive" data-min="0" data-max="100" data-value="0" title="Drive - distortion/saturation"></div><span>DRV</span></div>
+                    <div class="knob-group"><div class="knob" id="knobPan" data-param="pan" data-min="-100" data-max="100" data-value="0" title="Pan - stereo position (L/R)"></div><span>PAN</span></div>
+                    <div class="knob-group"><div class="knob" id="knobVol" data-param="vol" data-min="0" data-max="100" data-value="80" title="Volume - output level"></div><span>VOL</span></div>
+                </div>
+            </div>
+            <div class="panel fx-panel">
+                <div class="fx-header">
+                    <span class="panel-title">FX</span>
+                    <div class="fx-preset-btns" id="fxPresetBtns">
+                        <button class="fx-preset-btn active" data-preset="0" title="No preset - manual settings">--</button>
+                    </div>
+                    <button id="saveFx" title="Save current FX settings as preset">+</button>
+                </div>
+                <div class="fx-params">
+                    <div class="fx-row"><span title="Delay effect">DLY</span><input type="range" id="fxDelay" min="0" max="100" value="0" title="Delay - echo/repeat amount"></div>
+                    <div class="fx-row"><span title="Granular effect">GRN</span><input type="range" id="fxGrain" min="0" max="100" value="0" title="Grain - granular texture"></div>
+                    <div class="fx-row"><span title="Glitch effect">GLI</span><input type="range" id="fxGlitch" min="0" max="100" value="0" title="Glitch - stutter/repeat"></div>
+                    <div class="fx-row"><span title="Bit crusher">CRU</span><input type="range" id="fxCrush" min="1" max="16" value="16" title="Crush - bit depth reduction (lo-fi)"></div>
+                </div>
+                <div class="punch-fx">
+                    <button class="punch-btn" data-fx="stutter" title="Stutter - hold for beat repeat (Q)">STT</button>
+                    <button class="punch-btn" data-fx="reverse" title="Reverse - hold for reverse playback (W)">REV</button>
+                    <button class="punch-btn" data-fx="filter" title="Filter sweep - hold for filter effect (E)">FLT</button>
+                    <button class="punch-btn" data-fx="tape" title="Tape stop - hold for slow-down effect (T)">TPE</button>
+                </div>
+            </div>
+
+            <!-- Row 3: RADIO | LOCATION | AI GEN | REC -->
+            <div class="panel radio-panel">
+                <div class="panel-title">RADIO</div>
+                <div class="radio-search">
+                    <input type="text" id="radioSearch" placeholder="Search..." title="Search for radio stations by name">
+                </div>
+                <div class="radio-controls">
+                    <button id="radioScan" class="radio-btn" title="Scan for local radio stations based on GPS">SCAN</button>
+                    <button id="radioGo" class="radio-btn" title="Search/Play selected station">▶</button>
+                    <button id="radioStop" class="radio-btn" disabled title="Stop radio playback">■</button>
+                </div>
+                <div class="station-list" id="stationList" title="Click a station to play"></div>
+            </div>
+            <div class="panel map-panel">
+                <div class="panel-title">LOCATION</div>
+                <div class="map-box" id="miniMap"><div class="map-img" id="miniMapImg"></div></div>
+                <div class="map-coords" id="miniMapCoords">--</div>
+            </div>
+            <div class="panel eq-panel">
+                <div class="eq-header">
+                    <span class="panel-title">EQ</span>
+                    <div class="ch-btns">
+                        <button class="ch-btn active" data-ch="master" title="EQ Master output">OUT</button>
+                        <button class="ch-btn" data-ch="mic" title="EQ Microphone">MIC</button>
+                        <button class="ch-btn" data-ch="samples" title="EQ Sampler">SMP</button>
+                        <button class="ch-btn" data-ch="synth" title="EQ Synth">SYN</button>
+                        <button class="ch-btn" data-ch="radio" title="EQ Radio">RAD</button>
+                    </div>
+                </div>
+                <div class="eq-sliders">
+                    <div class="eq-band"><span title="Low frequencies (bass)">LO</span><input type="range" class="eq-slider" id="eqLow" min="-12" max="12" value="0" orient="vertical" title="Low EQ (-12 to +12 dB)"><span id="eqLowVal">0</span></div>
+                    <div class="eq-band"><span title="Mid frequencies">MID</span><input type="range" class="eq-slider" id="eqMid" min="-12" max="12" value="0" orient="vertical" title="Mid EQ (-12 to +12 dB)"><span id="eqMidVal">0</span></div>
+                    <div class="eq-band"><span title="High frequencies (treble)">HI</span><input type="range" class="eq-slider" id="eqHigh" min="-12" max="12" value="0" orient="vertical" title="High EQ (-12 to +12 dB)"><span id="eqHighVal">0</span></div>
+                </div>
+            </div>
+            <div class="panel rec-panel" title="Recordings panel - manage saved audio recordings">
+                <div class="rec-header">
+                    <span class="panel-title">REC</span>
+                    <span id="recCount" title="Total number of saved recordings">0</span>
+                </div>
+                <div class="rec-list" id="recList"></div>
+                <div class="rec-actions">
+                    <button id="recListBtn" class="rec-list-btn" title="View list of all saved recordings">LIST</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Debug Log Panel -->
+    <div id="debugPanel" class="debug-panel">
+        <div class="debug-header">
+            <span class="debug-title">DEBUG LOG</span>
+            <button id="debugClear" class="debug-btn" title="Clear log">CLR</button>
+            <button id="debugClose" class="debug-btn" title="Close panel">×</button>
+        </div>
+        <div id="debugLog" class="debug-log"></div>
+    </div>
+
+    <!-- Help Modal (Keyboard Shortcuts) -->
+    <div id="helpModal" class="modal help-modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">KEYBOARD SHORTCUTS</span>
+                <button id="closeHelp" class="modal-close" title="Close help modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <div class="help-section-title">Transport</div>
+                    <div class="shortcut-row"><span class="shortcut-key">SPACE</span><span class="shortcut-desc">Play / Pause</span></div>
+                    <div class="shortcut-row"><span class="shortcut-key">R</span><span class="shortcut-desc">Record</span></div>
+                    <div class="shortcut-row"><span class="shortcut-key">ESC</span><span class="shortcut-desc">Stop All</span></div>
+                </div>
+                <div class="help-section">
+                    <div class="help-section-title">Pads</div>
+                    <div class="shortcut-row"><span class="shortcut-key">1-8</span><span class="shortcut-desc">Trigger Pads 1-8</span></div>
+                </div>
+                <div class="help-section">
+                    <div class="help-section-title">Sequencer</div>
+                    <div class="shortcut-row"><span class="shortcut-key">↑/↓</span><span class="shortcut-desc">Select Track</span></div>
+                    <div class="shortcut-row"><span class="shortcut-key">SHIFT+Click</span><span class="shortcut-desc">Edit P-Locks</span></div>
+                    <div class="shortcut-row"><span class="shortcut-key">D</span><span class="shortcut-desc">Toggle Dub Mode</span></div>
+                    <div class="shortcut-row"><span class="shortcut-key">F</span><span class="shortcut-desc">Hold for Fill</span></div>
+                </div>
+                <div class="help-section">
+                    <div class="help-section-title">FX</div>
+                    <div class="shortcut-row"><span class="shortcut-key">Q</span><span class="shortcut-desc">Punch Stutter</span></div>
+                    <div class="shortcut-row"><span class="shortcut-key">W</span><span class="shortcut-desc">Punch Reverse</span></div>
+                    <div class="shortcut-row"><span class="shortcut-key">E</span><span class="shortcut-desc">Punch Filter</span></div>
+                    <div class="shortcut-row"><span class="shortcut-key">T</span><span class="shortcut-desc">Punch Tape</span></div>
+                </div>
+                <div class="help-section">
+                    <div class="help-section-title">Other</div>
+                    <div class="shortcut-row"><span class="shortcut-key">?</span><span class="shortcut-desc">Show This Help</span></div>
+                    <div class="shortcut-row"><span class="shortcut-key">G</span><span class="shortcut-desc">Generate AI Pattern</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Settings Modal -->
+    <div id="adminModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">SETTINGS</span>
+                <button id="closeAdmin" class="modal-close" title="Close settings modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <div class="settings-title">SAMPLE KITS</div>
+                    <div class="kit-list" id="kitList">
+                        <div class="kit-item active" data-kit="kit1" title="Default drum kit with standard sounds">Kit 1 (Default)</div>
+                        <div class="kit-item" data-kit="kit2" title="Electronic drum kit with synth sounds">Kit 2 (Electronic)</div>
+                        <div class="kit-item" data-kit="kit3" title="Acoustic drum kit with natural sounds">Kit 3 (Acoustic)</div>
+                    </div>
+                    <input type="file" id="uploadKit" accept="audio/*" multiple hidden>
+                    <button id="uploadKitBtn" class="settings-btn" title="Upload your own audio samples as a custom kit">Upload Kit</button>
+                </div>
+                <div class="settings-section">
+                    <div class="settings-title">SYNTH PRESETS</div>
+                    <div class="synth-presets" id="synthPresets">
+                        <div class="preset-item active" data-preset="default" title="Balanced default synth sound">Default</div>
+                        <div class="preset-item" data-preset="bass" title="Deep bass synth preset">Bass</div>
+                        <div class="preset-item" data-preset="lead" title="Bright lead synth preset">Lead</div>
+                        <div class="preset-item" data-preset="pad" title="Ambient pad synth preset">Pad</div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <div class="settings-title">THEME</div>
+                    <div class="theme-options">
+                        <button class="theme-btn active" data-theme="mariani" title="Classic Vin Mariani color theme">Vin Mariani</button>
+                        <button class="theme-btn" data-theme="map" title="Theme based on your GPS location map">Location Map</button>
+                        <button class="theme-btn" data-theme="dark" title="Dark mode theme">Dark</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Video Modal -->
+    <div id="demoModal" class="modal demo-modal hidden">
+        <div class="modal-content demo-modal-content">
+            <div class="modal-header">
+                <span class="modal-title">OH MY ONDAS DEMO</span>
+                <button id="closeDemo" class="modal-close" title="Close demo video">×</button>
+            </div>
+            <div class="modal-body demo-modal-body">
+                <div class="demo-video-container">
+                    <!-- Replace YOUR_VIDEO_ID with actual YouTube video ID once recorded -->
+                    <iframe id="demoVideo"
+                            src=""
+                            data-src="https://www.youtube.com/embed/YOUR_VIDEO_ID?autoplay=1&rel=0"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                    </iframe>
+                </div>
+                <div class="demo-info">
+                    <div class="demo-stats">
+                        <div class="demo-stat">
+                            <span class="stat-value">10x</span>
+                            <span class="stat-label">Faster than Octatrack</span>
+                        </div>
+                        <div class="demo-stat">
+                            <span class="stat-value">4.8s</span>
+                            <span class="stat-label">Create a beat</span>
+                        </div>
+                        <div class="demo-stat">
+                            <span class="stat-value">100%</span>
+                            <span class="stat-label">Workflow success</span>
+                        </div>
+                        <div class="demo-stat">
+                            <span class="stat-value">FREE</span>
+                            <span class="stat-label">vs $2,600 hardware</span>
+                        </div>
+                    </div>
+                    <div class="demo-features">
+                        <h4>Key Features</h4>
+                        <ul>
+                            <li>Professional 8-track sequencer with parameter locks</li>
+                            <li>16 sample pads with effects chain</li>
+                            <li>Punch effects (Q/W/E/T) for live performance</li>
+                            <li>Scene-based performance with instant switching</li>
+                            <li>Session recording with GPS metadata</li>
+                        </ul>
+                    </div>
+                    <div class="demo-cta">
+                        <button id="closeDemoStart" class="demo-start-btn">Start Making Music</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/gps.js"></script>
+    <script src="js/audio-engine.js"></script>
+    <script src="js/mic-input.js"></script>
+    <script src="js/sampler.js"></script>
+    <script src="js/synth.js"></script>
+    <script src="js/radio.js"></script>
+    <script src="js/recorder.js"></script>
+    <script src="js/sequencer.js"></script>
+    <script src="js/mangle.js"></script>
+    <script src="js/scenes.js"></script>
+    <script src="js/arrangement.js"></script>
+    <script src="js/ai-composer.js"></script>
+    <script src="js/landmark.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+================================================================================
+OH MY ONDAS - HARDWARE SPECIFICATION v3.0 (COMPROMISE)
+================================================================================
+Date: December 2025
+Status: ALIGNED with webapp, mockup, and BOM
+
+================================================================================
+DESIGN PHILOSOPHY
+================================================================================
+- Touch display handles: Mixer, Synth params, FX params, Scene/Pattern selection
+- Physical controls for: Performance pads, real-time knobs, transport
+- Similar to: Novation Circuit, OP-Z, Synthstrom Deluge approach
+- Cost target: ~$280-300
+
+================================================================================
+PHYSICAL SPECIFICATIONS
+================================================================================
+Enclosure:      200 x 140 x 45mm aluminum (realistic, portable)
+Weight:         ~600g with battery
+Display:        5" IPS Touch (800x480) - shows SEQ + touch mixer/menus
+Touch Pads:     8x capacitive (MPR121 + copper pads)
+Encoders:       4x rotary with push button (context-sensitive)
+Buttons:        3x transport (Play/Stop/Rec)
+LEDs:           4x RGB (status/feedback)
+Audio:          Stereo out (3.5mm), Mic in, Headphone out
+Power:          3500mAh LiPo, USB-C charging
+
+================================================================================
+CONTROL MAPPING
+================================================================================
+
+PHYSICAL CONTROLS:
+------------------
+8 PADS:         Trigger samples/drums, velocity sensitive
+4 ENCODERS:     Context-sensitive (changes based on display mode)
+                - Default: VOL / PAN / FILTER / FX-SEND
+                - Synth mode: ATK / DEC / SUS / REL
+                - FX mode: DLY / REV / CRUSH / PARAM
+3 TRANSPORT:    Play/Pause, Stop, Record
+
+TOUCH DISPLAY (5"):
+-------------------
+- Sequencer grid (tap to toggle steps)
+- Mixer faders (touch sliders for MIC/SMP/SYN/RAD/OUT)
+- Pattern select (A-H buttons)
+- Scene select (A-D buttons)
+- Synth controls (waveform, filter, envelope visualization)
+- FX parameters (sliders)
+- Settings menu
+- GPS/Location display
+
+================================================================================
+BILL OF MATERIALS (Aligned)
+================================================================================
+
+PROCESSORS & AUDIO:
+-------------------
+Teensy 4.1                  600MHz ARM Cortex-M7          1    $29.75
+Audio Shield                SGTL5000 codec                1    $13.75
+ESP32-WROOM                 WiFi/BT module                1    $8.00
+microSD 64GB                Sample storage                1    $12.00
+                                                    Subtotal: $63.50
+
+DISPLAY:
+--------
+5" IPS Touch Display        800x480 capacitive            1    $35.00
+Display Driver Board        SSD1963 or similar            1    $8.00
+                                                    Subtotal: $43.00
+
+USER INTERFACE:
+---------------
+MPR121 Breakout             12-ch capacitive touch        1    $7.95
+Copper Tape (conductive)    For 8 touch pads              1    $6.00
+Rotary Encoders             With push button              4    $11.80
+Encoder Knobs               Aluminum 18mm                 4    $6.00
+Tactile Buttons             Transport (6x6mm)             3    $1.50
+RGB LEDs (WS2812)           Status indicators             4    $2.00
+                                                    Subtotal: $35.25
+
+CONNECTIVITY:
+-------------
+GPS Module                  NEO-6M with antenna           1    $12.00
+3.5mm Audio Jack            Stereo output                 2    $3.00
+3.5mm Audio Jack            Mic input                     1    $1.50
+USB-C Connector             Power + data                  1    $2.00
+                                                    Subtotal: $18.50
+
+POWER:
+------
+LiPo Battery                3500mAh 3.7V                  1    $18.00
+TP4056 Charger              USB-C charging module         1    $2.00
+5V Boost Converter          Battery to 5V                 1    $3.00
+Power Switch                Latching                      1    $1.50
+                                                    Subtotal: $24.50
+
+ENCLOSURE & MISC:
+-----------------
+Aluminum Enclosure          200x140x45mm                  1    $28.00
+Acrylic Panel               Laser-cut top panel           1    $12.00
+Rubber Feet                 Anti-slip                     4    $2.00
+Screws, Standoffs           Hardware kit                  1    $5.00
+Wire, Connectors            Internal wiring               1    $8.00
+                                                    Subtotal: $55.00
+
+================================================================================
+TOTAL COST: ~$240 (parts) + ~$40 (shipping/tax) = ~$280
+================================================================================
+
+================================================================================
+WEBAPP ALIGNMENT
+================================================================================
+
+The webapp (index.html) shows all features. On hardware:
+- SEQ panel      -> Display (touch grid)
+- MIXER panel    -> Display (touch faders)
+- PADS panel     -> Physical 8 pads
+- KNOBS panel    -> Physical 4 encoders (context-sensitive)
+- SYNTH panel    -> Display (touch controls)
+- FX panel       -> Display + encoder control
+- SCENES panel   -> Display (touch buttons)
+- RADIO panel    -> Display menu
+- GPS/MAP        -> Display corner widget
+
+================================================================================
+MOCKUP ALIGNMENT
+================================================================================
+
+hardware-interactive.html should show:
+- 5" display (not 7") with touch UI
+- 8 touch pads (same)
+- 4 encoders (reduced from 8)
+- NO physical faders (moved to touch display)
+- 3 transport buttons
+- 4 RGB LED indicators
+- Realistic 200x140mm proportions
+
+================================================================================
+CHANGES FROM PREVIOUS VERSIONS
+================================================================================
+
+REMOVED:
+- 8 encoders -> reduced to 4 (cost saving, simpler)
+- 5 physical faders -> moved to touch display
+- 7" display -> 5" display (cost saving, more realistic size)
+- Physical pattern/scene buttons -> touch display
+
+ADDED:
+- Detailed copper tape for touch pads
+- Display driver board
+- USB-C connector spec
+- Boost converter for battery
+- 4 RGB LEDs for feedback
+
+================================================================================
+SUPPLIER RECOMMENDATIONS (EU)
+================================================================================
+
+Mouser.es        - Teensy, Audio Shield, ICs
+Bricogeek.com    - Arduino/Teensy accessories, displays
+Amazon.es        - Enclosure, batteries, generic parts
+AliExpress       - Bulk components (allow 2-3 weeks shipping)
+JLCPCB           - Custom PCB if needed
+
+================================================================================
+BUILD NOTES
+================================================================================
+
+1. Touch pads: Cut 8x copper tape squares (40x40mm), connect to MPR121
+2. Display: Use SPI connection to Teensy, touch via I2C
+3. Encoders: Use interrupts for smooth response
+4. Audio: I2S to Audio Shield, line out via op-amp buffer
+5. Power: TP4056 charges battery, boost to 5V, 3.3V regulator for logic
+
+================================================================================
