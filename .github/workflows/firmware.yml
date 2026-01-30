@@ -5,10 +5,13 @@ on:
     branches: [main]
     paths:
       - "firmware/**"
+      - ".github/workflows/firmware.yml"
   pull_request:
     branches: [main]
     paths:
       - "firmware/**"
+      - ".github/workflows/firmware.yml"
+  workflow_dispatch:
 
 jobs:
   build:
