@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oh My Ondas — Prototypes</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+            background: #0a0a0a;
+            color: #ccc;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .proto-nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            display: flex; align-items: center; gap: 16px;
+            padding: 12px 24px;
+            background: rgba(10,10,10,0.95);
+            border-bottom: 1px solid #222;
+            backdrop-filter: blur(12px);
+        }
+        .proto-nav .logo {
+            font-size: 11px; font-weight: 800; letter-spacing: 2px; color: #555;
+        }
+        .proto-nav .label {
+            font-size: 10px; font-weight: 600; letter-spacing: 1px;
+            color: #e94560; background: rgba(233,69,96,0.12);
+            padding: 3px 8px; border-radius: 3px;
+        }
+        .concept-switch {
+            margin-left: auto; display: flex; gap: 2px;
+        }
+        .concept-switch button {
+            background: #1a1a1a; border: 1px solid #333; color: #777;
+            padding: 6px 16px; font-size: 11px; font-weight: 700;
+            cursor: pointer; font-family: inherit; letter-spacing: 0.5px;
+        }
+        .concept-switch button:first-child { border-radius: 4px 0 0 4px; }
+        .concept-switch button:last-child { border-radius: 0 4px 4px 0; }
+        .concept-switch button.active {
+            background: #e94560; border-color: #e94560; color: #fff;
+        }
+
+        /* ===== CONCEPT SECTION ===== */
+        .concept { display: none; padding: 80px 24px 60px; min-height: 100vh; }
+        .concept.active { display: flex; flex-direction: column; align-items: center; }
+        .concept-title {
+            font-size: 14px; font-weight: 700; letter-spacing: 3px;
+            color: #555; text-transform: uppercase; margin-bottom: 8px;
+        }
+        .concept-sub {
+            font-size: 12px; color: #444; margin-bottom: 40px; text-align: center;
+            max-width: 500px; line-height: 1.6;
+        }
+        .concept-ref {
+            font-size: 10px; color: #333; letter-spacing: 0.5px; margin-bottom: 32px;
+        }
+        .concept-ref span { color: #555; }
+
+        /* ========================================
+           CONCEPT A — SONIC CAMERA
+           Inspired by Contax T2 / Ricoh GR1
+           ======================================== */
+        .camera-stage {
+        }
+        .camera-body {
+            position: relative;
+            width: 480px; height: 300px;
+            background: linear-gradient(180deg, #2a2a2a 0%, #1e1e1e 30%, #222 100%);
+            border-radius: 12px 12px 10px 10px;
+            box-shadow:
+                0 2px 0 #333,
+                0 4px 0 #1a1a1a,
+                0 8px 24px rgba(0,0,0,0.6),
+                inset 0 1px 0 rgba(255,255,255,0.06);
+        }
+
+        /* Top plate */
+        .camera-top {
+            position: absolute; top: -28px; left: 0; right: 0; height: 28px;
+            background: linear-gradient(180deg, #383838 0%, #2a2a2a 100%);
+            border-radius: 10px 10px 0 0;
+            display: flex; align-items: center; padding: 0 16px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+        .camera-brand {
+            font-size: 9px; font-weight: 800; letter-spacing: 3px; color: #888;
+            position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+        }
+        .camera-model {
+            font-size: 7px; letter-spacing: 1.5px; color: #555;
+            position: absolute; left: 16px; top: 18px;
+        }
+        .shutter-btn {
+            position: absolute; right: 60px; top: -4px;
+            width: 36px; height: 36px;
+            background: radial-gradient(circle at 40% 35%, #c0392b, #922b21);
+            border-radius: 50%;
+            border: 2px solid #444;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+            cursor: pointer;
+        }
+        .shutter-btn::after {
+            content: 'REC'; position: absolute; bottom: -14px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 6px; font-weight: 700; color: #c0392b; letter-spacing: 1px;
+        }
+        .mode-dial {
+            position: absolute; right: 12px; top: -6px;
+            width: 40px; height: 40px;
+            background: conic-gradient(from 0deg, #444, #555, #444, #333, #444);
+            border-radius: 50%;
+            border: 2px solid #555;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+        }
+        .mode-dial::before {
+            content: ''; position: absolute; top: 3px; left: 50%;
+            transform: translateX(-50%);
+            width: 2px; height: 8px; background: #e94560; border-radius: 1px;
+        }
+        .mode-dial::after {
+            content: 'MODE'; position: absolute; bottom: -14px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 6px; font-weight: 700; color: #555; letter-spacing: 1px;
+        }
+        .hot-shoe {
+            position: absolute; left: 50%; top: -4px; transform: translateX(-50%);
+            width: 40px; height: 6px;
+            background: #555; border-radius: 1px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        /* Front face — lens + viewfinder */
+        .camera-front {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            display: flex; align-items: center;
+        }
+
+        /* Lens assembly (left side) */
+        .lens-assembly {
+            position: absolute; left: 24px; top: 50%; transform: translateY(-50%);
+            width: 120px; height: 120px;
+        }
+        .lens-ring-outer {
+            width: 120px; height: 120px;
+            background: conic-gradient(from 0deg, #333, #444, #333, #2a2a2a, #333);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 0 3px #1a1a1a, 0 4px 12px rgba(0,0,0,0.4);
+        }
+        .lens-ring-inner {
+            width: 90px; height: 90px;
+            background: radial-gradient(circle at 35% 35%, #1a2a3a, #0a0f14 60%, #050a0f);
+            border-radius: 50%;
+            border: 2px solid #2a2a2a;
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .lens-ring-inner::before {
+            content: ''; position: absolute;
+            width: 60px; height: 60px;
+            background: radial-gradient(circle at 30% 30%, rgba(100,150,200,0.15), transparent 60%);
+            border-radius: 50%;
+        }
+        .lens-label {
+            position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
+            font-size: 7px; color: #444; letter-spacing: 1px;
+            white-space: nowrap;
+        }
+        .lens-icon {
+            font-size: 18px; color: rgba(100,180,255,0.3);
+        }
+        /* Aperture blades hint */
+        .aperture-blades {
+            position: absolute;
+            width: 50px; height: 50px;
+            border: 1px solid rgba(100,150,200,0.1);
+            border-radius: 50%;
+        }
+
+        /* Display (main screen — right side) */
+        .camera-display {
+            position: absolute; right: 16px; top: 16px;
+            width: 300px; height: 200px;
+            background: #0a0f0a;
+            border-radius: 4px;
+            border: 2px solid #111;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+        .camera-display iframe {
+            width: 100%; height: 100%; border: none;
+            transform-origin: top left;
+        }
+
+        /* Viewfinder (small window top-right) */
+        .viewfinder {
+            position: absolute; top: 10px; right: 20px;
+            width: 28px; height: 18px;
+            background: #111;
+            border: 1px solid #444;
+            border-radius: 2px;
+        }
+        .viewfinder::before {
+            content: ''; position: absolute;
+            top: 2px; left: 2px; right: 2px; bottom: 2px;
+            background: radial-gradient(circle, rgba(26,161,103,0.3), transparent);
+            border-radius: 1px;
+        }
+
+        /* Bottom plate */
+        .camera-bottom {
+            position: absolute; bottom: -6px; left: 4px; right: 4px; height: 6px;
+            background: #181818;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        .tripod-mount {
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 16px; height: 4px; background: #333; border-radius: 0 0 2px 2px;
+        }
+
+        /* Side controls */
+        .camera-side-left {
+            position: absolute; left: -8px; top: 40px;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .side-port {
+            width: 6px; height: 14px; background: #181818;
+            border-radius: 2px 0 0 2px; border: 1px solid #333; border-right: none;
+        }
+
+        /* Front details */
+        .camera-grip {
+            position: absolute; left: 154px; top: 8px; bottom: 8px; width: 18px;
+            background: repeating-linear-gradient(
+                180deg,
+                #2a2a2a 0px, #2a2a2a 2px,
+                #222 2px, #222 4px
+            );
+            border-radius: 3px;
+            box-shadow: inset 0 0 4px rgba(0,0,0,0.3);
+        }
+
+        /* GPS indicator (on top plate) */
+        .gps-led {
+            position: absolute; left: 140px; top: 50%; transform: translateY(-50%);
+            width: 5px; height: 5px; background: #1aa167;
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(26,161,103,0.5);
+            animation: gps-blink 2s ease-in-out infinite;
+        }
+        @keyframes gps-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .gps-led-label {
+            position: absolute; left: 150px; top: 50%; transform: translateY(-50%);
+            font-size: 6px; color: #555; letter-spacing: 1px;
+        }
+
+        /* Camera annotations */
+        .camera-annotations {
+            display: flex; gap: 40px; margin-top: 48px; flex-wrap: wrap;
+            justify-content: center;
+        }
+        .annotation {
+            font-size: 10px; color: #444; max-width: 140px;
+            text-align: center; line-height: 1.5;
+        }
+        .annotation strong { color: #777; display: block; margin-bottom: 4px; font-size: 9px; letter-spacing: 1px; }
+
+        /* ========================================
+           CONCEPT B — SONIC MAP
+           Inspired by old nautical/explorer maps
+           ======================================== */
+        .map-stage {
+        }
+        .map-body {
+            position: relative;
+            width: 560px; height: 400px;
+            background:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent 0px, transparent 24px,
+                    rgba(139,109,71,0.06) 24px, rgba(139,109,71,0.06) 25px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent 0px, transparent 24px,
+                    rgba(139,109,71,0.04) 24px, rgba(139,109,71,0.04) 25px
+                ),
+                linear-gradient(135deg,
+                    #f4e4c1 0%, #e8d5a3 20%, #f0deb5 40%,
+                    #e5d0a0 60%, #f2ddb0 80%, #e8d5a3 100%
+                );
+            border-radius: 3px;
+            box-shadow:
+                0 0 0 1px rgba(139,109,71,0.3),
+                0 4px 16px rgba(0,0,0,0.4),
+                0 12px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        /* Parchment texture overlay */
+        .map-body::before {
+            content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+            background:
+                radial-gradient(ellipse at 20% 80%, rgba(139,109,71,0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(139,109,71,0.08) 0%, transparent 40%),
+                radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(139,109,71,0.05) 100%);
+        }
+        /* Torn/aged edges */
+        .map-body::after {
+            content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+            box-shadow:
+                inset 0 0 30px rgba(139,109,71,0.2),
+                inset 0 0 60px rgba(139,109,71,0.1);
+        }
+
+        /* Fold lines */
+        .fold-h {
+            position: absolute; left: 0; right: 0; height: 1px; z-index: 3;
+            background: linear-gradient(90deg, transparent 5%, rgba(139,109,71,0.15) 20%, rgba(139,109,71,0.2) 50%, rgba(139,109,71,0.15) 80%, transparent 95%);
+            box-shadow: 0 1px 0 rgba(255,245,220,0.3);
+        }
+        .fold-v {
+            position: absolute; top: 0; bottom: 0; width: 1px; z-index: 3;
+            background: linear-gradient(180deg, transparent 5%, rgba(139,109,71,0.15) 20%, rgba(139,109,71,0.2) 50%, rgba(139,109,71,0.15) 80%, transparent 95%);
+            box-shadow: 1px 0 0 rgba(255,245,220,0.3);
+        }
+
+        /* Map title cartouche */
+        .map-cartouche {
+            position: absolute; top: 12px; left: 16px; z-index: 5;
+            padding: 8px 16px;
+            border: 2px solid rgba(139,109,71,0.4);
+            border-radius: 2px;
+            background: rgba(244,228,193,0.8);
+        }
+        .map-title-text {
+            font-size: 14px; font-weight: 800; color: #5a4228;
+            letter-spacing: 3px; font-variant: small-caps;
+        }
+        .map-subtitle-text {
+            font-size: 8px; color: #8b6d47; letter-spacing: 2px;
+            margin-top: 2px; font-style: italic;
+        }
+
+        /* Display window (center of map) */
+        .map-display {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 320px; height: 220px;
+            background: #0a0f0a;
+            border: 3px solid #8b6d47;
+            border-radius: 2px;
+            box-shadow:
+                0 0 0 1px rgba(139,109,71,0.3),
+                inset 0 0 20px rgba(0,0,0,0.5),
+                0 2px 8px rgba(0,0,0,0.3);
+            z-index: 5;
+            overflow: hidden;
+        }
+        .map-display iframe {
+            width: 100%; height: 100%; border: none;
+        }
+        .map-display-label {
+            position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
+            font-size: 7px; font-weight: 700; color: #8b6d47;
+            letter-spacing: 2px; white-space: nowrap;
+            font-style: italic;
+        }
+
+        /* Compass rose */
+        .compass {
+            position: absolute; bottom: 20px; right: 24px; z-index: 5;
+            width: 64px; height: 64px;
+        }
+        .compass-ring {
+            width: 64px; height: 64px;
+            border: 1.5px solid rgba(139,109,71,0.5);
+            border-radius: 50%;
+            position: relative;
+        }
+        .compass-needle {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            width: 0; height: 0;
+        }
+        .compass-needle::before {
+            content: ''; position: absolute;
+            left: -4px; bottom: 0;
+            width: 0; height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 24px solid #c0392b;
+        }
+        .compass-needle::after {
+            content: ''; position: absolute;
+            left: -4px; top: 0;
+            width: 0; height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 24px solid #5a4228;
+        }
+        .compass-n {
+            position: absolute; top: 2px; left: 50%; transform: translateX(-50%);
+            font-size: 8px; font-weight: 800; color: #8b6d47;
+        }
+        .compass-s {
+            position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+            font-size: 7px; color: #a08060;
+        }
+        .compass-e {
+            position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+            font-size: 7px; color: #a08060;
+        }
+        .compass-w {
+            position: absolute; left: 4px; top: 50%; transform: translateY(-50%);
+            font-size: 7px; color: #a08060;
+        }
+
+        /* Map legend */
+        .map-legend {
+            position: absolute; bottom: 16px; left: 16px; z-index: 5;
+            padding: 8px 12px;
+            border: 1.5px solid rgba(139,109,71,0.35);
+            background: rgba(244,228,193,0.75);
+            border-radius: 2px;
+        }
+        .legend-title {
+            font-size: 8px; font-weight: 700; color: #5a4228;
+            letter-spacing: 1.5px; margin-bottom: 6px;
+            border-bottom: 1px solid rgba(139,109,71,0.3);
+            padding-bottom: 4px;
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 8px; color: #6b5332; margin-bottom: 3px;
+        }
+        .legend-icon {
+            width: 10px; height: 10px; border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .legend-icon.mic { background: #c0392b; }
+        .legend-icon.gps { background: #1aa167; }
+        .legend-icon.radio { background: #2874a6; }
+        .legend-icon.synth { background: #8e44ad; }
+
+        /* Map coordinates */
+        .map-coords {
+            position: absolute; top: 14px; right: 16px; z-index: 5;
+            font-size: 9px; color: #8b6d47; text-align: right;
+            font-style: italic;
+        }
+        .map-coords-line {
+            margin-bottom: 2px;
+        }
+
+        /* Map decorative elements */
+        .map-wave-pattern {
+            position: absolute; z-index: 4;
+            font-size: 9px; color: rgba(139,109,71,0.2);
+            letter-spacing: 2px; font-style: italic;
+            white-space: nowrap;
+        }
+
+        /* Scale bar */
+        .map-scale {
+            position: absolute; bottom: 90px; right: 20px; z-index: 5;
+            display: flex; flex-direction: column; align-items: flex-end;
+        }
+        .scale-bar {
+            display: flex; height: 4px;
+        }
+        .scale-segment {
+            width: 20px; height: 4px;
+        }
+        .scale-segment:nth-child(odd) { background: #5a4228; }
+        .scale-segment:nth-child(even) { background: rgba(244,228,193,0.5); border: 0.5px solid #8b6d47; }
+        .scale-label {
+            font-size: 6px; color: #8b6d47; margin-top: 2px; letter-spacing: 0.5px;
+        }
+
+        /* Control buttons (edge of map) */
+        .map-controls {
+            position: absolute; top: 50%; right: 14px; z-index: 5;
+            transform: translateY(-50%);
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .map-ctrl-btn {
+            width: 24px; height: 24px;
+            background: rgba(244,228,193,0.8);
+            border: 1.5px solid rgba(139,109,71,0.5);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; color: #5a4228; cursor: pointer;
+            font-weight: 700; font-family: inherit;
+        }
+        .map-ctrl-btn:hover {
+            background: rgba(139,109,71,0.2);
+        }
+
+        /* Map annotations */
+        .map-annotations {
+            display: flex; gap: 40px; margin-top: 48px; flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 620px) {
+            .camera-body { width: 340px; height: 220px; }
+            .camera-display { width: 200px; height: 140px; right: 12px; top: 12px; }
+            .lens-assembly { width: 90px; height: 90px; left: 16px; }
+            .lens-ring-outer { width: 90px; height: 90px; }
+            .lens-ring-inner { width: 65px; height: 65px; }
+            .camera-grip { left: 114px; }
+
+            .map-body { width: 360px; height: 280px; }
+            .map-display { width: 220px; height: 160px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="proto-nav">
+    <span class="logo">OH MY ONDAS</span>
+    <span class="label">PROTOTYPE</span>
+    <div class="concept-switch">
+        <button class="active" onclick="showConcept('camera')">CAMERA</button>
+        <button onclick="showConcept('map')">MAP</button>
+    </div>
+</nav>
+
+<!-- ===== CONCEPT A: SONIC CAMERA ===== -->
+<section class="concept active" id="concept-camera">
+    <div class="concept-title">Concept A — Sonic Camera</div>
+    <div class="concept-sub">
+        A compact camera that captures sound instead of light.
+        Press the shutter, it records GPS, ambient audio, local radio — and composes a sonic photograph of the place.
+    </div>
+    <div class="concept-ref">
+        Form reference: <span>Contax T2</span> &middot; <span>Ricoh GR1</span> &middot; <span>Olympus XA</span>
+    </div>
+
+    <div class="camera-stage">
+        <div class="camera-body">
+            <!-- Top plate -->
+            <div class="camera-top">
+                <span class="camera-brand">OH MY ONDAS</span>
+                <span class="camera-model">SONIC CAPTURE SYSTEM</span>
+                <div class="gps-led"></div>
+                <span class="gps-led-label">GPS</span>
+                <div class="hot-shoe"></div>
+                <div class="shutter-btn" title="Record / Capture"></div>
+                <div class="mode-dial" title="Mode: Picture / Soundscape / Interact"></div>
+            </div>
+
+            <!-- Front face -->
+            <div class="camera-front">
+                <!-- Lens = microphone / sensor array -->
+                <div class="lens-assembly">
+                    <div class="lens-ring-outer">
+                        <div class="lens-ring-inner">
+                            <div class="aperture-blades"></div>
+                            <span class="lens-icon">&#9834;</span>
+                        </div>
+                    </div>
+                    <div class="lens-label">MIC &middot; 360&deg; CAPTURE</div>
+                </div>
+
+                <!-- Textured grip -->
+                <div class="camera-grip"></div>
+
+                <!-- Main display -->
+                <div class="camera-display" id="cameraDisplay">
+                    <iframe src="app.html?embedded=1" title="Oh My Ondas App"></iframe>
+                </div>
+            </div>
+
+            <!-- Bottom plate -->
+            <div class="camera-bottom">
+                <div class="tripod-mount"></div>
+            </div>
+
+            <!-- Side ports -->
+            <div class="camera-side-left">
+                <div class="side-port" title="USB-C"></div>
+                <div class="side-port" title="3.5mm Audio"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="camera-annotations">
+        <div class="annotation">
+            <strong>LENS = MIC</strong>
+            Omni-directional microphone array where the lens would be. Captures 360&deg; ambient sound.
+        </div>
+        <div class="annotation">
+            <strong>SHUTTER = REC</strong>
+            Press to start a sonic capture session. Hold for burst mode — rapid sampling.
+        </div>
+        <div class="annotation">
+            <strong>MODE DIAL</strong>
+            Picture (sequencer), Soundscape (AI gen), Interact (live mixing).
+        </div>
+        <div class="annotation">
+            <strong>DISPLAY</strong>
+            Full app interface on rear LCD. Touch-enabled. Tab navigation in compact mode.
+        </div>
+        <div class="annotation">
+            <strong>GPS</strong>
+            Green LED blinks while tracking. Coordinates embedded in every sonic photograph.
+        </div>
+        <div class="annotation">
+            <strong>FORM</strong>
+            ~140&times;90&times;35mm. Coat pocket size. Titanium or magnesium body. ~280g.
+        </div>
+    </div>
+</section>
+
+<!-- ===== CONCEPT B: SONIC MAP ===== -->
+<section class="concept" id="concept-map">
+    <div class="concept-title">Concept B — Sonic Map</div>
+    <div class="concept-sub">
+        An explorer's map that plays the sounds of every place you've been.
+        Unfold it, and the territory reveals itself through music.
+    </div>
+    <div class="concept-ref">
+        Form reference: <span>Nautical chart</span> &middot; <span>Explorer's journal</span> &middot; <span>Portolan map</span>
+    </div>
+
+    <div class="map-stage">
+        <div class="map-body">
+            <!-- Fold lines -->
+            <div class="fold-h" style="top: 50%;"></div>
+            <div class="fold-v" style="left: 33%;"></div>
+            <div class="fold-v" style="left: 66%;"></div>
+
+            <!-- Title cartouche -->
+            <div class="map-cartouche">
+                <div class="map-title-text">Oh My Ondas</div>
+                <div class="map-subtitle-text">Carta de los Sonidos del Mundo</div>
+            </div>
+
+            <!-- Coordinates -->
+            <div class="map-coords">
+                <div class="map-coords-line">41&deg;23'12"N</div>
+                <div class="map-coords-line">2&deg;10'26"E</div>
+                <div class="map-coords-line" style="margin-top: 4px; font-size: 7px; color: #a08060;">Barcelona</div>
+            </div>
+
+            <!-- Display window -->
+            <div class="map-display" id="mapDisplay">
+                <div class="map-display-label">SONIC TERRITORY</div>
+                <iframe src="app.html?embedded=1" title="Oh My Ondas App"></iframe>
+            </div>
+
+            <!-- Compass rose -->
+            <div class="compass">
+                <div class="compass-ring">
+                    <div class="compass-needle"></div>
+                    <span class="compass-n">N</span>
+                    <span class="compass-s">S</span>
+                    <span class="compass-e">E</span>
+                    <span class="compass-w">W</span>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="map-legend">
+                <div class="legend-title">LEGENDA</div>
+                <div class="legend-item"><div class="legend-icon mic"></div> Captured Sound</div>
+                <div class="legend-item"><div class="legend-icon gps"></div> GPS Position</div>
+                <div class="legend-item"><div class="legend-icon radio"></div> Radio Signal</div>
+                <div class="legend-item"><div class="legend-icon synth"></div> Synthesis</div>
+            </div>
+
+            <!-- Scale bar -->
+            <div class="map-scale">
+                <div class="scale-bar">
+                    <div class="scale-segment"></div>
+                    <div class="scale-segment"></div>
+                    <div class="scale-segment"></div>
+                    <div class="scale-segment"></div>
+                </div>
+                <div class="scale-label">0 ——— 50 ——— 100 m</div>
+            </div>
+
+            <!-- Side controls -->
+            <div class="map-controls">
+                <button class="map-ctrl-btn" title="Record">&#9679;</button>
+                <button class="map-ctrl-btn" title="Play">&#9654;</button>
+                <button class="map-ctrl-btn" title="Stop">&#9632;</button>
+                <button class="map-ctrl-btn" title="Pin Location">&#9733;</button>
+            </div>
+
+            <!-- Decorative wave patterns -->
+            <div class="map-wave-pattern" style="bottom: 60px; left: 20px; transform: rotate(-5deg);">~ ~ ~ ~ ~ ~ ~ ondas ~ ~ ~ ~ ~ ~ ~</div>
+            <div class="map-wave-pattern" style="top: 80px; right: 100px; transform: rotate(3deg); font-size: 7px;">~ ~ ~ ~ ~ ~</div>
+        </div>
+    </div>
+
+    <div class="map-annotations">
+        <div class="annotation">
+            <strong>PARCHMENT</strong>
+            Unfolds like a physical map. Each fold section holds a different sonic territory.
+        </div>
+        <div class="annotation">
+            <strong>DISPLAY</strong>
+            Center window shows the active composition. Touch-enabled, embedded app interface.
+        </div>
+        <div class="annotation">
+            <strong>COMPASS</strong>
+            GPS orientation. Points toward the location of your last sonic capture.
+        </div>
+        <div class="annotation">
+            <strong>LEGEND</strong>
+            Maps sound sources: captured audio, GPS pins, radio signals, synthesized layers.
+        </div>
+        <div class="annotation">
+            <strong>CONTROLS</strong>
+            Brass-finish buttons along the edge. Record, play, stop, pin location.
+        </div>
+        <div class="annotation">
+            <strong>FORM</strong>
+            Folded: 190&times;135mm (passport size). Unfolded: 560&times;400mm. Leather-bound edges.
+        </div>
+    </div>
+</section>
+
+<script>
+function showConcept(id) {
+    document.querySelectorAll('.concept').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.concept-switch button').forEach(b => b.classList.remove('active'));
+    document.getElementById('concept-' + id).classList.add('active');
+    event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>
