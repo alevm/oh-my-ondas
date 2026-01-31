@@ -1723,6 +1723,91 @@ body.embedded-mode .device > .radio-panel.panel-visible .station-list {
     color: rgba(255,255,255,0.8);
 }
 
+/* ===== ANALYSIS REPORT ===== */
+.analysis-report {
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(26, 26, 26, 0.05);
+    border: 1px solid rgba(26, 161, 103, 0.15);
+    border-radius: 6px;
+}
+.analysis-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-light);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.analysis-channels {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+.analysis-ch {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+}
+.signal-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.signal-on {
+    background: var(--green);
+    box-shadow: 0 0 4px rgba(26, 161, 103, 0.6);
+}
+.signal-off {
+    background: var(--red);
+    opacity: 0.7;
+}
+.analysis-ch-name {
+    width: 36px;
+    font-weight: 700;
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    font-size: 10px;
+    color: var(--text);
+}
+.analysis-level-bar {
+    flex: 1;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.analysis-level-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+.analysis-freq {
+    width: 48px;
+    text-align: right;
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    font-size: 10px;
+    color: var(--text-light);
+}
+.analysis-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(26, 161, 103, 0.15);
+}
+.analysis-item {
+    font-size: 10px;
+    color: var(--text-light);
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+}
+.analysis-item strong {
+    color: var(--text);
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
     .landmark-indicator {

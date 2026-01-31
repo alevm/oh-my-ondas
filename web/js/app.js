@@ -1341,7 +1341,7 @@ class App {
         const modePanelMap = {
             picture: 'seq-panel',
             soundscape: 'ai-panel',
-            interact: 'mixer-panel'
+            interact: 'synth-panel'
         };
 
         // Switch to the default panel for this mode
@@ -1378,14 +1378,73 @@ class App {
                 break;
 
             case 'interact':
-                // Live performance mode: stop auto-generation, user takes control
-                // Just ensure the app is in a ready state for manual pad/encoder use
+                // Live performance mode: synth + mic ready
+                // Enable synth if not already playing
+                if (!window.synth?.isPlaying()) {
+                    window.synth?.start();
+                    const synthBtn = document.getElementById('synthToggle');
+                    if (synthBtn) {
+                        synthBtn.classList.add('active');
+                        synthBtn.textContent = 'ON';
+                    }
+                }
+                // Init mic if not already active
+                if (!window.micInput?.isActive()) {
+                    window.micInput?.init();
+                }
+                // Update status
+                {
+                    const statusEl = document.getElementById('aiStatus');
+                    if (statusEl) statusEl.textContent = 'INTERACT: Synth + Mic live — use encoders';
+                }
                 break;
         }
     }
 
     // Handle encoder changes from mockup
     handleMockupEncoder(param, value) {
+        // INTERACT mode: remap encoders for live synth control
+        if (this._currentMode === 'interact') {
+            switch (param) {
+                case 'volume':
+                    window.audioEngine?.setMasterLevel(value / 100);
+                    break;
+                case 'pan':
+                    // Map to filter cutoff (0-100 → 20-8000 Hz)
+                    {
+                        const cutoff = 20 + (value / 100) * 7980;
+                        window.synth?.setFilterCutoff(cutoff);
+                        const cutEl = document.getElementById('filterCutoff');
+                        if (cutEl) cutEl.value = cutoff;
+                        const cutValEl = document.getElementById('filterCutVal');
+                        if (cutValEl) cutValEl.textContent = cutoff >= 1000 ? (cutoff / 1000).toFixed(1) + 'k' : Math.round(cutoff);
+                    }
+                    break;
+                case 'filter':
+                    // Map to LFO rate (0-100 → 0-20 Hz)
+                    {
+                        const rate = (value / 100) * 20;
+                        window.synth?.setLFORate(rate);
+                        const rateEl = document.getElementById('lfoRate');
+                        if (rateEl) rateEl.value = rate;
+                        const rateValEl = document.getElementById('lfoRateVal');
+                        if (rateValEl) rateValEl.textContent = rate.toFixed(1);
+                    }
+                    break;
+                case 'fx':
+                    // Map to LFO depth (0-100)
+                    {
+                        window.synth?.setLFODepth(value);
+                        const depEl = document.getElementById('lfoDepth');
+                        if (depEl) depEl.value = value;
+                        const depValEl = document.getElementById('lfoDepthVal');
+                        if (depValEl) depValEl.textContent = Math.round(value);
+                    }
+                    break;
+            }
+            return;
+        }
+
         const paramMap = {
             volume: { knobId: 'knobVol', engineParam: 'vol', min: 0, max: 100 },
             pan: { knobId: 'knobPan', engineParam: 'pan', min: -100, max: 100 },
@@ -2502,6 +2561,86 @@ class App {
         this.tuneLocalRadio();
 
         console.log(`Generated ${vibe} composition: tempo=${settings.tempo}, delay=${settings.delay}, grain=${settings.grain}`);
+
+        // Run audio analysis after audio has started flowing
+        setTimeout(() => this.runAnalysis(), 500);
+        setTimeout(() => this.runAnalysis(), 2000);
+    }
+
+    // Analyze audio output and display report
+    runAnalysis() {
+        if (!window.audioEngine?.analyzeOutput) return;
+
+        const master = window.audioEngine.analyzeOutput();
+        const channelNames = ['mic', 'samples', 'synth', 'radio'];
+        const channels = {};
+        channelNames.forEach(name => {
+            channels[name] = window.audioEngine.analyzeChannel(name);
+        });
+
+        // Log warnings for silent channels that should have signal
+        channelNames.forEach(name => {
+            const ch = channels[name];
+            if (!ch.hasSignal) {
+                console.warn(`Audio analysis: ${name} channel has no signal`);
+            }
+        });
+
+        // Build report
+        const activeCount = channelNames.filter(n => channels[n].hasSignal).length;
+        let levelAssessment;
+        if (master.rms < 5) levelAssessment = 'SILENT';
+        else if (master.rms < 20) levelAssessment = 'QUIET';
+        else if (master.rms < 70) levelAssessment = 'GOOD';
+        else if (master.rms < 90) levelAssessment = 'LOUD';
+        else levelAssessment = 'CLIPPING';
+
+        let spectralChar;
+        if (master.spectralCentroid < 500) spectralChar = 'Dark';
+        else if (master.spectralCentroid < 2000) spectralChar = 'Warm';
+        else if (master.spectralCentroid < 5000) spectralChar = 'Bright';
+        else spectralChar = 'Harsh';
+
+        this.displayAnalysisReport({
+            master,
+            channels,
+            channelNames,
+            activeCount,
+            levelAssessment,
+            spectralChar
+        });
+    }
+
+    // Render analysis report into AI panel
+    displayAnalysisReport(report) {
+        const channelsEl = document.getElementById('analysisChannels');
+        const summaryEl = document.getElementById('analysisSummary');
+        const reportEl = document.getElementById('analysisReport');
+        if (!channelsEl || !summaryEl || !reportEl) return;
+
+        reportEl.style.display = '';
+
+        // Channel rows
+        channelsEl.innerHTML = report.channelNames.map(name => {
+            const ch = report.channels[name];
+            const dot = ch.hasSignal ? '<span class="signal-dot signal-on"></span>' : '<span class="signal-dot signal-off"></span>';
+            const levelWidth = Math.min(100, ch.rms);
+            const freqLabel = ch.dominantFreq > 0 ? `${ch.dominantFreq}Hz` : '--';
+            return `<div class="analysis-ch">
+                ${dot}
+                <span class="analysis-ch-name">${name.toUpperCase()}</span>
+                <div class="analysis-level-bar"><div class="analysis-level-fill" style="width:${levelWidth}%"></div></div>
+                <span class="analysis-freq">${freqLabel}</span>
+            </div>`;
+        }).join('');
+
+        // Summary
+        summaryEl.innerHTML = `
+            <span class="analysis-item">Level: <strong>${report.levelAssessment}</strong></span>
+            <span class="analysis-item">Character: <strong>${report.spectralChar}</strong></span>
+            <span class="analysis-item">Sources: <strong>${report.activeCount}/${report.channelNames.length}</strong></span>
+            <span class="analysis-item">Dominant: <strong>${report.master.dominantFreq}Hz</strong></span>
+        `;
     }
 
     // Tune to a local radio station based on GPS

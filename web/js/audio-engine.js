@@ -234,6 +234,70 @@ class AudioEngine {
         gain.setValueAtTime(savedLevel, now + duration + 0.005);
     }
 
+    // Analyze master output: returns { rms, peak, dominantFreq, hasSignal, spectralCentroid }
+    analyzeOutput() {
+        return this._analyze(this.analyser);
+    }
+
+    // Analyze individual channel
+    analyzeChannel(channelName) {
+        const analyser = this.channels[channelName]?.analyser;
+        return this._analyze(analyser);
+    }
+
+    // Shared analysis logic
+    _analyze(analyser) {
+        if (!analyser || !this.ctx) {
+            return { rms: 0, peak: 0, dominantFreq: 0, hasSignal: false, spectralCentroid: 0 };
+        }
+
+        const freqData = new Uint8Array(analyser.frequencyBinCount);
+        const timeData = new Uint8Array(analyser.fftSize);
+        analyser.getByteFrequencyData(freqData);
+        analyser.getByteTimeDomainData(timeData);
+
+        // RMS from frequency data (matches getMeterLevel)
+        let sum = 0;
+        for (let i = 0; i < freqData.length; i++) {
+            sum += freqData[i] * freqData[i];
+        }
+        const rms = Math.min(100, (Math.sqrt(sum / freqData.length) / 255) * 100 * 1.5);
+
+        // Peak amplitude from time domain
+        let peak = 0;
+        for (let i = 0; i < timeData.length; i++) {
+            const amplitude = Math.abs(timeData[i] - 128);
+            if (amplitude > peak) peak = amplitude;
+        }
+        peak = (peak / 128) * 100;
+
+        // Dominant frequency bin
+        let maxBin = 0;
+        let maxVal = 0;
+        for (let i = 0; i < freqData.length; i++) {
+            if (freqData[i] > maxVal) {
+                maxVal = freqData[i];
+                maxBin = i;
+            }
+        }
+        const binHz = this.ctx.sampleRate / analyser.fftSize;
+        const dominantFreq = Math.round(maxBin * binHz);
+
+        // Spectral centroid: Σ(f[i] * mag[i]) / Σ(mag[i])
+        let weightedSum = 0;
+        let magSum = 0;
+        for (let i = 0; i < freqData.length; i++) {
+            const freq = i * binHz;
+            weightedSum += freq * freqData[i];
+            magSum += freqData[i];
+        }
+        const spectralCentroid = magSum > 0 ? Math.round(weightedSum / magSum) : 0;
+
+        const hasSignal = rms > 5;
+
+        return { rms: Math.round(rms * 10) / 10, peak: Math.round(peak * 10) / 10, dominantFreq, hasSignal, spectralCentroid };
+    }
+
     // Get current EQ values for a channel
     getEQ(target) {
         let eq;
