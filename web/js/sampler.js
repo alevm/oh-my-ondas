@@ -164,14 +164,19 @@ class Sampler {
     }
 
     generateShaker(ctx) {
-        const duration = 0.2;
+        const duration = 0.12;
         const buffer = ctx.createBuffer(1, ctx.sampleRate * duration, ctx.sampleRate);
         const data = buffer.getChannelData(0);
 
         for (let i = 0; i < data.length; i++) {
             const t = i / ctx.sampleRate;
-            const env = Math.sin(Math.PI * t / duration);
-            data[i] = (Math.random() * 2 - 1) * env * 0.8;
+            // Sharp attack, quick decay
+            const env = Math.exp(-t * 35) * (1 - Math.exp(-t * 800));
+            // Band-passed noise (subtract two filtered noises for metallic character)
+            const noise = Math.random() * 2 - 1;
+            const highContent = Math.sin(2 * Math.PI * 7500 * t + noise * 3);
+            const rattle = Math.sin(2 * Math.PI * 12000 * t + noise * 5) * 0.4;
+            data[i] = (noise * 0.5 + highContent * 0.3 + rattle * 0.2) * env * 0.85;
         }
         return buffer;
     }
