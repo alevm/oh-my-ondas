@@ -1399,6 +1399,8 @@ class App {
                 }
                 break;
         }
+
+        this.publishAnalysisState();
     }
 
     // Handle encoder changes from mockup
@@ -2155,6 +2157,7 @@ class App {
                     window.sceneManager.saveScene(idx);
                     activeBtn.classList.add('has-data');
                     console.log('Saved scene', ['A', 'B', 'C', 'D'][idx]);
+                    this.publishAnalysisState();
                 }
             });
         }
@@ -2609,6 +2612,8 @@ class App {
             levelAssessment,
             spectralChar
         });
+
+        this.publishAnalysisState();
     }
 
     // Render analysis report into AI panel
@@ -3134,6 +3139,54 @@ class App {
                 miniMapCoords.textContent = '--';
             }
         }
+    }
+
+    // Publish full session state to localStorage for the Analysis page
+    publishAnalysisState() {
+        const state = {
+            timestamp: Date.now(),
+            mode: this._currentMode,
+            context: window.aiComposer?.context,
+            tempo: window.sequencer?.getTempo(),
+            swing: window.sequencer?.swing,
+            patternLength: window.sequencer?.getPatternLength(),
+            pattern: window.sequencer?.getPattern(),
+            trackSources: window.sequencer?.getTrackSources(),
+            trackMutes: [...(window.sequencer?.trackMutes || [])],
+            trackSolos: [...(window.sequencer?.trackSolos || [])],
+            fx: window.mangleEngine?.getState(),
+            mixer: {
+                mic:     { level: +document.getElementById('faderMic')?.value || 80, muted: window.audioEngine?.isMuted('mic') },
+                samples: { level: +document.getElementById('faderSamples')?.value || 80, muted: window.audioEngine?.isMuted('samples') },
+                synth:   { level: +document.getElementById('faderSynth')?.value || 80, muted: window.audioEngine?.isMuted('synth') },
+                radio:   { level: +document.getElementById('faderRadio')?.value || 80, muted: window.audioEngine?.isMuted('radio') },
+                master:  +document.getElementById('faderMaster')?.value || 90
+            },
+            eq: {
+                master:  window.audioEngine?.getEQ('master'),
+                mic:     window.audioEngine?.getEQ('mic'),
+                samples: window.audioEngine?.getEQ('samples'),
+                synth:   window.audioEngine?.getEQ('synth'),
+                radio:   window.audioEngine?.getEQ('radio')
+            },
+            synth: window.synth?.getState(),
+            synthPlaying: window.synth?.isPlaying(),
+            pads: Array.from({length: 8}, (_, i) => window.sampler?.getPadMeta(i)),
+            currentKit: window.sampler?.currentBank,
+            micActive: window.micInput?.isActive(),
+            audio: {
+                master:   window.audioEngine?.analyzeOutput(),
+                channels: {
+                    mic:     window.audioEngine?.analyzeChannel('mic'),
+                    samples: window.audioEngine?.analyzeChannel('samples'),
+                    synth:   window.audioEngine?.analyzeChannel('synth'),
+                    radio:   window.audioEngine?.analyzeChannel('radio')
+                }
+            },
+            scenes: window.sceneManager?.scenes,
+            arrangement: window.arrangementEngine?.blocks
+        };
+        try { localStorage.setItem('ohmyondas_analysis', JSON.stringify(state)); } catch(e) {}
     }
 }
 

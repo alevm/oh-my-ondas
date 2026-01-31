@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis - Oh My Ondas</title>
+    <link rel="stylesheet" href="css/style.css?v=248">
+    <style>
+        body {
+            overflow: auto;
+        }
+        .page-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            background: rgba(255,255,255,0.95);
+            display: flex;
+            flex-direction: column;
+        }
+        .page-content {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            flex: 1;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 32px;
+            border-bottom: 3px solid var(--border);
+            padding-bottom: 16px;
+        }
+
+        /* Status bar */
+        .status-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 20px;
+            background: #1a1a1a;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #1aa167;
+            flex-shrink: 0;
+        }
+        .status-dot.frozen {
+            background: #888;
+        }
+        .status-label {
+            margin-right: auto;
+        }
+        .status-bar button {
+            padding: 5px 14px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: #333;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .status-bar button:hover {
+            background: #555;
+        }
+        .status-bar button.active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .status-time {
+            color: #888;
+            font-size: 12px;
+        }
+
+        /* Section headings */
+        .section-heading {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent);
+            margin: 36px 0 16px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        /* Overview grid */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* Cards */
+        .card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .card-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+        .card-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1.2;
+        }
+        .card-value.vibe-calm       { color: #1270b8; }
+        .card-value.vibe-energetic   { color: #ce2021; }
+        .card-value.vibe-mysterious  { color: #7b2d8e; }
+        .card-value.vibe-melancholic { color: #4a6741; }
+        .card-value.vibe-chaotic     { color: #e55a1b; }
+        .card-detail {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+
+        /* Canvas panels */
+        .canvas-panel {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+        .canvas-panel canvas {
+            display: block;
+            width: 100%;
+            border-radius: 4px;
+        }
+
+        /* Data tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .data-table th {
+            background: var(--accent);
+            color: #fff;
+            text-align: left;
+            padding: 8px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .data-table th:first-child {
+            border-radius: 6px 0 0 0;
+        }
+        .data-table th:last-child {
+            border-radius: 0 6px 0 0;
+        }
+        .data-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+        .data-table tr:nth-child(even) td {
+            background: #fafafa;
+        }
+        .data-table tr:hover td {
+            background: #f0f0f0;
+        }
+
+        /* Density bar */
+        .density-bar {
+            display: inline-block;
+            width: 60px;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+        .density-bar-fill {
+            height: 100%;
+            background: var(--green);
+            border-radius: 4px;
+        }
+
+        /* FX badge */
+        .fx-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .fx-badge.on {
+            background: #d4edda;
+            color: #155724;
+        }
+        .fx-badge.off {
+            background: #e0e0e0;
+            color: #888;
+        }
+
+        /* Channel meters */
+        .channel-meter {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 0;
+            font-size: 13px;
+        }
+        .signal-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .signal-dot.active  { background: var(--green); }
+        .signal-dot.silent  { background: #888; }
+        .channel-name {
+            width: 70px;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+        .level-bar {
+            flex: 1;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .level-bar-fill {
+            height: 100%;
+            background: var(--green);
+            border-radius: 5px;
+            transition: width 0.3s;
+        }
+        .channel-freq {
+            width: 70px;
+            text-align: right;
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* Summary line */
+        .summary-line {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: #fafafa;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent);
+        }
+
+        /* Scene comparison */
+        .scene-diff {
+            background: rgba(255,107,43,0.1);
+        }
+
+        /* Mixer level bars (horizontal) */
+        .mixer-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 0;
+            font-size: 13px;
+        }
+        .mixer-ch-name {
+            width: 70px;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+        .mixer-level-bar {
+            width: 120px;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .mixer-level-fill {
+            height: 100%;
+            background: var(--blue);
+            border-radius: 5px;
+        }
+        .mixer-indicators {
+            font-size: 11px;
+            color: var(--text-light);
+        }
+        .mute-indicator { color: var(--red); font-weight: 700; }
+        .solo-indicator { color: var(--yellow); font-weight: 700; }
+
+        /* Signal flow */
+        .signal-flow {
+            font-size: 12px;
+            font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
+            color: var(--text-light);
+            line-height: 1.8;
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        /* Rhythm notes */
+        .rhythm-notes {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: #fafafa;
+            border-radius: 6px;
+        }
+
+        /* No data state */
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+            font-size: 15px;
+        }
+        .no-data-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            opacity: 0.4;
+        }
+
+        /* FX params */
+        .fx-card {
+            margin-bottom: 12px;
+        }
+        .fx-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+        .fx-name {
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .fx-params {
+            font-size: 12px;
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        /* EQ values */
+        .eq-vals {
+            font-size: 11px;
+            color: var(--text-light);
+        }
+
+        @media (max-width: 700px) {
+            .overview-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="mapBackground" class="map-bg"></div>
+
+    <div class="page-container">
+        <header class="page-header">
+            <a href="index.html" class="logo">OH MY ONDAS</a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="app.html" class="nav-link">App</a>
+                <a href="design.html" class="nav-link">Design</a>
+                <a href="sdlc.html" class="nav-link">SDLC</a>
+                <a href="about.html" class="nav-link">About</a>
+                <a href="analysis.html" class="nav-link active">Analysis</a>
+            </nav>
+        </header>
+
+        <!-- Status bar -->
+        <div class="status-bar">
+            <div class="status-dot" id="statusDot"></div>
+            <span class="status-label" id="statusLabel">LIVE</span>
+            <button id="btnSnapshot">SNAPSHOT</button>
+            <button id="btnRefresh">REFRESH</button>
+            <span class="status-time" id="statusTime">--</span>
+        </div>
+
+        <main class="page-content">
+            <h1 class="page-title">Session Analysis</h1>
+
+            <div id="noData" class="no-data">
+                <div class="no-data-icon">~</div>
+                <div>No session data available.</div>
+                <div style="margin-top:8px;font-size:13px;">Open the <a href="app.html" style="color:var(--accent);font-weight:600;">App</a> and generate a composition to see live analysis.</div>
+            </div>
+
+            <div id="analysisContent" style="display:none;">
+
+                <!-- Section 1: Composition Overview -->
+                <h2 class="section-heading">Composition Overview</h2>
+                <div class="overview-grid" id="overviewGrid">
+                    <div class="card" id="cardContext">
+                        <div class="card-title">Context</div>
+                        <div class="card-value" id="ctxVibe">--</div>
+                        <div class="card-detail" id="ctxDetail">--</div>
+                    </div>
+                    <div class="card" id="cardTempo">
+                        <div class="card-title">Tempo</div>
+                        <div class="card-value" id="tempoValue">-- BPM</div>
+                        <div class="card-detail" id="tempoDetail">--</div>
+                    </div>
+                    <div class="card" id="cardMode">
+                        <div class="card-title">Mode</div>
+                        <div class="card-value" id="modeValue">--</div>
+                        <div class="card-detail" id="modeDetail">--</div>
+                    </div>
+                    <div class="card" id="cardArrangement">
+                        <div class="card-title">Arrangement</div>
+                        <div class="card-value" id="arrValue">--</div>
+                        <div class="card-detail" id="arrDetail">--</div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Audio Analysis -->
+                <h2 class="section-heading">Audio Analysis</h2>
+                <div class="canvas-panel">
+                    <canvas id="spectrumCanvas" width="600" height="120"></canvas>
+                </div>
+                <div id="channelMeters"></div>
+                <div class="summary-line" id="audioSummary">--</div>
+
+                <!-- Section 3: Pattern Analysis -->
+                <h2 class="section-heading">Pattern Analysis</h2>
+                <div class="canvas-panel">
+                    <canvas id="patternCanvas" width="600" height="200"></canvas>
+                </div>
+                <table class="data-table" id="trackTable">
+                    <thead>
+                        <tr>
+                            <th>Track</th>
+                            <th>Source</th>
+                            <th>Active / Total</th>
+                            <th>Density</th>
+                            <th>P-Locks</th>
+                            <th>Trig Cond.</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trackTableBody"></tbody>
+                </table>
+                <div class="rhythm-notes" id="rhythmNotes">--</div>
+
+                <!-- Section 4: Source Inventory -->
+                <h2 class="section-heading">Source Inventory</h2>
+                <table class="data-table" id="padsTable">
+                    <thead>
+                        <tr>
+                            <th>Pad</th>
+                            <th>Name</th>
+                            <th>Source</th>
+                            <th>GPS</th>
+                            <th>Captured</th>
+                            <th>Buffer</th>
+                        </tr>
+                    </thead>
+                    <tbody id="padsTableBody"></tbody>
+                </table>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                    <div class="card" id="synthCard">
+                        <div class="card-title">Synth</div>
+                        <div class="card-detail" id="synthDetail">--</div>
+                    </div>
+                    <div class="card" id="radioCard">
+                        <div class="card-title">Radio</div>
+                        <div class="card-detail" id="radioDetail">--</div>
+                    </div>
+                </div>
+
+                <!-- Section 5: Processing Chain -->
+                <h2 class="section-heading">Processing Chain</h2>
+                <div class="card" id="fxCard">
+                    <div class="card-title">Effects</div>
+                    <div id="fxContent">--</div>
+                </div>
+                <div class="card" style="margin-top:16px;" id="mixerCard">
+                    <div class="card-title">Mixer</div>
+                    <div id="mixerContent"></div>
+                </div>
+                <div class="signal-flow" style="margin-top:16px;" id="signalFlow">--</div>
+
+                <!-- Section 6: Scene Comparison -->
+                <h2 class="section-heading">Scene Comparison</h2>
+                <table class="data-table" id="sceneTable">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Scene A</th>
+                            <th>Scene B</th>
+                            <th>Scene C</th>
+                            <th>Scene D</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sceneTableBody"></tbody>
+                </table>
+
+            </div>
+        </main>
+
+        <footer class="page-footer">
+            <span>Oh My Ondas</span>
+            <span>GPL-3.0</span>
+            <a href="https://github.com/alevm/oh-my-ondas" target="_blank">GitHub</a>
+        </footer>
+    </div>
+
+    <script src="js/analysis.js"></script>
+</body>
+</html>
