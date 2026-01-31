@@ -1,4 +1,4 @@
-// Oh My Ondas v1.2.0 - Main Application Controller
+// Oh My Ondas v2.5.2 - Main Application Controller
 
 class App {
     constructor() {
@@ -122,7 +122,7 @@ class App {
         this.applySettings();
 
         this.initialized = true;
-        console.log('App v1.2.0 initialized');
+        console.log('App v2.5.2 initialized');
     }
 
     applySettings() {
