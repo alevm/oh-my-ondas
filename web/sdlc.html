@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDLC - Oh My Ondas</title>
+    <link rel="stylesheet" href="css/style.css?v=248">
+    <style>
+        body {
+            overflow: auto;
+        }
+        .page-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            background: rgba(255,255,255,0.95);
+            display: flex;
+            flex-direction: column;
+        }
+        .page-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            flex: 1;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 32px;
+            border-bottom: 3px solid var(--border);
+            padding-bottom: 16px;
+        }
+        .page-content h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 32px 0 12px 0;
+        }
+        .page-content p {
+            font-size: 15px;
+            line-height: 1.75;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+        .page-content ul {
+            font-size: 14px;
+            line-height: 1.75;
+            color: var(--text);
+            margin: 0 0 12px 20px;
+        }
+        .page-content li {
+            margin-bottom: 4px;
+        }
+        .page-content code {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 13px;
+            background: rgba(0,0,0,0.06);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        .sdlc-section {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 2px solid var(--border);
+        }
+        .sdlc-section h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0 0 16px 0;
+        }
+        .pipeline-list {
+            margin: 0;
+        }
+        .pipeline-list dt {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--accent);
+            margin-top: 12px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+        .pipeline-list dd {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text);
+            margin: 4px 0 0 0;
+        }
+        .score-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 14px;
+        }
+        .score-table th,
+        .score-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .score-table th {
+            font-weight: 700;
+            color: var(--text);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .score-table td:last-child {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .gate-list {
+            list-style: none;
+            margin: 12px 0;
+            padding: 0;
+        }
+        .gate-list li {
+            font-size: 14px;
+            line-height: 1.75;
+            color: var(--text);
+            padding-left: 24px;
+            position: relative;
+            margin-bottom: 4px;
+        }
+        .gate-list li::before {
+            content: '\2713';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div id="mapBackground" class="map-bg"></div>
+
+    <div class="page-container">
+        <header class="page-header">
+            <a href="index.html" class="logo">OH MY ONDAS</a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="app.html" class="nav-link">App</a>
+                <a href="design.html" class="nav-link">Design</a>
+                <a href="sdlc.html" class="nav-link active">SDLC</a>
+                <a href="about.html" class="nav-link">About</a>
+            </nav>
+        </header>
+
+        <main class="page-content">
+            <h1 class="page-title">Software Development Lifecycle</h1>
+
+            <p>Oh My Ondas follows an iterative development process, open-source under GPL-3.0. The project targets two platforms in parallel: a web prototype (HTML/CSS/JS) for rapid iteration and an embedded firmware (C++/PlatformIO) for the final hardware instrument built on Teensy 4.1 + ESP32.</p>
+
+            <div class="sdlc-section">
+                <h2>Development Workflow</h2>
+                <ul>
+                    <li>Feature branches &rarr; pull request &rarr; code review &rarr; merge to main</li>
+                    <li>Web prototype (HTML/CSS/JS) iterated in browser with live reload</li>
+                    <li>Firmware (C++/PlatformIO) built for Teensy 4.1 + ESP32</li>
+                    <li>Python utilities for audio processing tools</li>
+                </ul>
+            </div>
+
+            <div class="sdlc-section">
+                <h2>Versioning Policy</h2>
+                <p>Semantic versioning: <code>MAJOR.MINOR.PATCH</code></p>
+                <ul>
+                    <li><strong>Major</strong> &mdash; breaking changes or architecture shifts</li>
+                    <li><strong>Minor</strong> &mdash; new features, capability additions</li>
+                    <li><strong>Patch</strong> &mdash; bug fixes, tweaks, sound adjustments</li>
+                </ul>
+                <p>Current version: <strong>v2.5.2</strong></p>
+                <p>Version tracked in: <code>package.json</code>, <code>index.html</code>, <code>app.html</code>, <code>design.html</code>, <code>about.html</code>, <code>style.css</code>, <code>ise.html</code></p>
+            </div>
+
+            <div class="sdlc-section">
+                <h2>CI/CD Pipeline</h2>
+                <p>Automated workflows in <code>.github/workflows/</code>:</p>
+                <dl class="pipeline-list">
+                    <dt>lint.yml</dt>
+                    <dd>ESLint (JS) + flake8 (Python) on every push and pull request</dd>
+
+                    <dt>test.yml</dt>
+                    <dd>Puppeteer E2E tests with screenshot artifacts captured on failure</dd>
+
+                    <dt>firmware.yml</dt>
+                    <dd>PlatformIO matrix build targeting teensy41 and esp32</dd>
+
+                    <dt>deploy.yml</dt>
+                    <dd>GitHub Pages deployment from <code>web/</code> on push to main</dd>
+
+                    <dt>release.yml</dt>
+                    <dd>Tag-triggered release with firmware binaries and web zip archive</dd>
+                </dl>
+            </div>
+
+            <div class="sdlc-section">
+                <h2>Testing Strategy</h2>
+                <p>End-to-end tests run via Puppeteer in headless Chrome. Screenshots are captured on failure for debugging.</p>
+                <ul>
+                    <li>92 basic tests + 30 advanced tests + 8 workflow scenarios</li>
+                    <li>Test categories: sequencer, sampler, performance, sync, UX</li>
+                </ul>
+
+                <p><strong>Current scores:</strong></p>
+                <table class="score-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>UX</td>
+                            <td>5/5</td>
+                        </tr>
+                        <tr>
+                            <td>Sequencer</td>
+                            <td>4/5</td>
+                        </tr>
+                        <tr>
+                            <td>Sampler</td>
+                            <td>3/4</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p><strong>Known gaps:</strong> keyboard shortcuts, pad latency (web limitation vs hardware target)</p>
+            </div>
+
+            <div class="sdlc-section">
+                <h2>Security Testing</h2>
+                <ul>
+                    <li>Content Security Policy headers for GitHub Pages</li>
+                    <li>No user auth (client-side only app) &mdash; reduced attack surface</li>
+                    <li>Web Audio API sandboxed in browser</li>
+                    <li>GPS/mic permissions gated by browser permission model</li>
+                    <li>Radio streams via CORS-proxied HTTPS</li>
+                    <li>AI API calls (Claude) use ephemeral keys, no storage of credentials client-side</li>
+                    <li>Dependency audit: <code>npm audit</code> in CI</li>
+                    <li>No server-side code = no injection vectors (SQLi, command injection N/A)</li>
+                    <li>XSS prevention: no dynamic <code>innerHTML</code> from user input</li>
+                </ul>
+            </div>
+
+            <div class="sdlc-section">
+                <h2>Validation Gates</h2>
+                <ul class="gate-list">
+                    <li>Pre-merge: lint pass + E2E tests green</li>
+                    <li>Pre-release: firmware builds for both targets</li>
+                    <li>Audio latency &lt;10ms (firmware)</li>
+                    <li>Touch response &lt;50ms</li>
+                    <li>Boot time &lt;30s</li>
+                    <li>Web prototype: functional parity check against hardware spec</li>
+                    <li>Manual validation: sound quality spot-check on pad/synth changes</li>
+                </ul>
+            </div>
+
+            <div class="sdlc-section">
+                <h2>Release Process</h2>
+                <ul>
+                    <li>Version bump across all tracked files</li>
+                    <li>Git tag <code>v{MAJOR}.{MINOR}.{PATCH}</code></li>
+                    <li>CI auto-builds firmware + packages web</li>
+                    <li>GitHub Release created with changelog and binaries</li>
+                    <li>GitHub Pages auto-deploys latest <code>web/</code></li>
+                </ul>
+            </div>
+        </main>
+
+        <footer class="page-footer">
+            <span>Oh My Ondas</span>
+            <span>GPL-3.0</span>
+            <a href="https://github.com/alevm/oh-my-ondas" target="_blank">GitHub</a>
+        </footer>
+    </div>
+</body>
+</html>

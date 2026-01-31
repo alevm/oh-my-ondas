@@ -43,28 +43,16 @@
             color: var(--text);
             margin-bottom: 12px;
         }
-        .specs-section {
-            margin-top: 40px;
-            padding-top: 24px;
-            border-top: 2px solid var(--border);
-        }
-        .specs-section h2 {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text);
-            margin: 0 0 16px 0;
-        }
-        .specs-section dt {
-            font-weight: 700;
-            font-size: 14px;
+        .page-content a {
             color: var(--accent);
-            margin-top: 12px;
+            text-decoration: none;
+            font-weight: 600;
         }
-        .specs-section dd {
-            font-size: 14px;
-            line-height: 1.6;
-            color: var(--text);
-            margin: 4px 0 0 0;
+        .page-content a:hover {
+            text-decoration: underline;
+        }
+        .page-content em {
+            font-style: italic;
         }
         .timeline {
             margin-top: 40px;
@@ -106,6 +94,7 @@
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="app.html" class="nav-link">App</a>
                 <a href="design.html" class="nav-link">Design</a>
+                <a href="sdlc.html" class="nav-link">SDLC</a>
                 <a href="about.html" class="nav-link active">About</a>
             </nav>
         </header>
@@ -113,46 +102,27 @@
         <main class="page-content">
             <h1 class="page-title">About</h1>
 
-            <p>Oh My Ondas is a portable instrument that captures the sound of a place and turns it into music. It records GPS coordinates, ambient audio, and local radio frequencies, then layers everything with beats and synthesis. Each composition is tied to a specific location and moment &mdash; it can't be reproduced anywhere else because the source material only existed right there, right then.</p>
+            <p>Every place is saturated with waves. Radio broadcasts, WiFi handshakes, cellular pings, ambient vibrations, the hum of infrastructure, voices, wind, machines. Most of it is inaudible or ignored &mdash; electromagnetic noise, background radiation, the sonic residue of a location at a specific moment. Oh My Ondas captures all of it and turns it into music.</p>
 
-            <p>"Ondas" means waves in Spanish. Sound waves, radio waves, the waves of a place.</p>
+            <p>"Ondas" means waves in Spanish. Sound waves, radio waves, the waves of a place. The name is the concept.</p>
 
-            <h2>What it does</h2>
+            <h2>What it actually does</h2>
 
-            <p>8-track step sequencer, sampler with 8 pads, subtractive synth, effects chain (delay, granular, glitch, bitcrush). Every pattern gets tagged with GPS coordinates and a timestamp. An AI composition engine detects the environment &mdash; location type, time of day &mdash; and generates rhythms that fit the context. Internet radio sampling discovers local stations via GPS and lets you capture whatever's broadcasting nearby.</p>
+            <p>The instrument reads the full wave spectrum of a location: microphone input, piezo vibration sensors, FM radio, WiFi signal characteristics, GPS coordinates. An AI composition engine analyzes this material and uses it <em>as</em> the components of a composition &mdash; not layered sequentially on top of a beat, but structurally transformed. Workers drilling outside become the rhythmic backbone. A radio broadcast fragment becomes a melodic phrase. WiFi interference patterns become texture. The composition is <em>of</em> the place, not just <em>at</em> the place.</p>
 
-            <h2>Why it's built this way</h2>
+            <p>Three modes of operation: <strong>Picture</strong> takes a snapshot of the sonic environment at a moment. <strong>Soundscape</strong> generates an AI composition from the captured waves. <strong>Interact</strong> lets you perform live on top of either &mdash; an 8-track sequencer, sampler with 8 pads, subtractive synth, effects chain (delay, granular, glitch, bitcrush). Every pattern is tagged with GPS coordinates and a timestamp. Take the instrument to a different corner and you get a different piece. The composition is unrepeatable because the source material only existed right there, right then.</p>
 
-            <p>The interface maps directly to physical controls &mdash; no menus, no dropdowns, everything is a button you can hit with your thumb. Fill effects use hold-to-activate like hardware drum machines. The location binding isn't a feature added on top; it's the core concept. Take the instrument to a different corner and you get a different piece.</p>
+            <h2>Why it matters</h2>
 
-            <div class="specs-section">
-                <h2>Specs</h2>
-                <dl>
-                    <dt>Processor</dt>
-                    <dd>Teensy 4.1 (600MHz ARM Cortex-M7) + ESP32-WROOM (WiFi/BT/GPS comms)</dd>
+            <p>Marc Aug&eacute; described the proliferation of <em>non-places</em> &mdash; airports, highways, shopping malls &mdash; spaces of transience that supposedly lack identity, relation, and history. But every non-place is actually dense with waves. The electromagnetic spectrum of a motorway rest stop is as unique as a fingerprint: the specific combination of radio stations, cellular towers, WiFi networks, mechanical vibrations, ambient acoustics. Oh My Ondas reveals that no place is truly anonymous. Even the most generic space has a sonic identity waiting to be heard.</p>
 
-                    <dt>Audio</dt>
-                    <dd>SGTL5000 codec (Teensy Audio Shield), Web Audio API, 3.5mm stereo out + mic in</dd>
+            <p>The Italian architecture collective <a href="https://stalkerlab.wixsite.com/spontaneamente" target="_blank">Stalker</a> (Lorenzo Romito, Francesco Careri, and others) spent decades walking through Rome's <em>Territori Attuali</em> &mdash; abandoned, marginal, interstitial urban spaces that fall between the cracks of planned development. Ignasi de Sol&agrave;-Morales called these spaces <em>terrain vague</em>, noting that the French word <em>vague</em> means not only "void" and "uncertain" but also "wave." The terrain vague is literally a terrain of waves. Stalker's practice of transurbance &mdash; crossing these territories on foot, listening, attending to what is overlooked &mdash; extends naturally to the electromagnetic dimension. Oh My Ondas is an instrument for sonic transurbance.</p>
 
-                    <dt>Interface</dt>
-                    <dd>5" IPS capacitive touchscreen (800&times;480), 8 copper-tape touch pads (MPR121), 4 rotary encoders, transport buttons, WS2812B RGB LEDs</dd>
+            <p>R. Murray Schafer's acoustic ecology gave us the concept of the <em>soundmark</em> &mdash; a community sound unique enough to deserve protection, the sonic equivalent of a landmark. Christina Kubisch's <em>Electrical Walks</em> proved that every city has an equally unique electromagnetic soundscape. This instrument combines both: it reads the full spectrum of a place and composes from it, creating a soundmark that is simultaneously acoustic and electromagnetic, natural and artificial, found and generated.</p>
 
-                    <dt>Connectivity</dt>
-                    <dd>WiFi, Bluetooth, GPS (NEO-6M), RTL-SDR radio input, USB-C, MIDI</dd>
+            <h2>How it's built</h2>
 
-                    <dt>Software</dt>
-                    <dd>8-track sequencer, sample playback, subtractive synth, FX processing, scene management, AI pattern generation, internet radio</dd>
-
-                    <dt>Power</dt>
-                    <dd>3500mAh LiPo, USB-C charging, 5&ndash;7 hours runtime</dd>
-
-                    <dt>Enclosure</dt>
-                    <dd>200&times;140&times;45mm, CNC aluminum, ~600g with battery</dd>
-
-                    <dt>Targets</dt>
-                    <dd>Audio latency &lt;10ms, touch response &lt;50ms, boot &lt;30s</dd>
-                </dl>
-            </div>
+            <p>The interface maps directly to physical controls &mdash; no menus, no dropdowns, everything is a button you can hit with your thumb. Fill effects use hold-to-activate like hardware drum machines. The location binding isn't a feature added on top; it's the core architecture. Hardware specs, BOM, and pin assignments are documented on the <a href="design.html">Design</a> page. Development process, CI/CD, and testing strategy are on the <a href="sdlc.html">SDLC</a> page.</p>
 
             <div class="timeline">
                 <h2>Timeline</h2>
