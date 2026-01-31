@@ -8,9 +8,9 @@
     <style>
         :root {
             --bg: #f5f5f5;
-            --accent: #ff6b2b;
+            --accent: #FFD600;
             --green: #1aa167;
-            --blue: #1270b8;
+            --blue: #1E88E5;
             --yellow: #ffc003;
             --pastel-gray: #ffffff;
             --gray-text: #555;
@@ -124,14 +124,14 @@
             user-select: none;
             position: relative;
         }
-        .pad:nth-child(1) { border-color: #ff6b2b; }
-        .pad:nth-child(2) { border-color: #1270b8; }
+        .pad:nth-child(1) { border-color: #FFD600; }
+        .pad:nth-child(2) { border-color: #1E88E5; }
         .pad:nth-child(3) { border-color: #1aa167; }
         .pad:nth-child(4) { border-color: #ffc003; }
-        .pad:nth-child(5) { border-color: #ce2021; }
-        .pad:nth-child(6) { border-color: #9b59b6; }
-        .pad:nth-child(7) { border-color: #1270b8; }
-        .pad:nth-child(8) { border-color: #ff6b2b; }
+        .pad:nth-child(5) { border-color: #E53935; }
+        .pad:nth-child(6) { border-color: #1E88E5; }
+        .pad:nth-child(7) { border-color: #1E88E5; }
+        .pad:nth-child(8) { border-color: #FFD600; }
 
         .pad:hover { background: linear-gradient(145deg, #fff 0%, #eee 100%); }
         .pad:active, .pad.active {
@@ -233,7 +233,7 @@
 
         .transport-btn:hover { background: linear-gradient(145deg, #fff 0%, #eee 100%); }
         .transport-btn.play.active { background: #1aa167; color: #fff; border-color: #1aa167; }
-        .transport-btn.rec.active, .transport-btn.rec.rec-active { background: #ce2021; color: #fff; border-color: #ce2021; }
+        .transport-btn.rec.active, .transport-btn.rec.rec-active { background: #E53935; color: #fff; border-color: #E53935; }
 
         /* (Scenes removed — lives on touchscreen) */
 
@@ -290,7 +290,7 @@
         .menu-title { color: #1aa167; font-size: 18px; font-weight: 700; }
         .menu-close {
             width: 40px; height: 40px;
-            background: #ff6b2b;
+            background: #FFD600;
             border: none;
             border-radius: 50%;
             color: #fff;
@@ -346,12 +346,12 @@
             transition: all 0.15s;
         }
         .mode-btn[data-mode="picture"] {
-            border-color: #ff6b2b;
+            border-color: #FFD600;
             background: transparent;
-            color: #ff6b2b;
+            color: #FFD600;
         }
         .mode-btn[data-mode="picture"].active {
-            background: #ff6b2b;
+            background: #FFD600;
             color: #fff;
         }
         .mode-btn[data-mode="soundscape"] {
@@ -364,12 +364,12 @@
             color: #fff;
         }
         .mode-btn[data-mode="interact"] {
-            border-color: #1270b8;
+            border-color: #1E88E5;
             background: transparent;
-            color: #1270b8;
+            color: #1E88E5;
         }
         .mode-btn[data-mode="interact"].active {
-            background: #1270b8;
+            background: #1E88E5;
             color: #fff;
         }
         .mode-btn:hover { opacity: 0.85; }
@@ -453,7 +453,7 @@
         }
         .sensor-icon {
             width: 32px; height: 32px;
-            border: 2px solid #1270b8;
+            border: 2px solid #1E88E5;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -473,7 +473,7 @@
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #1270b8;
+            color: #1E88E5;
         }
         .sensor-desc {
             font-size: 8px;
@@ -483,11 +483,11 @@
         /* Wire lines — solid colored */
         .sensor-line {
             position: absolute;
-            border-top: 2px solid #1270b8;
+            border-top: 2px solid #1E88E5;
         }
         .sensor-line-v {
             position: absolute;
-            border-left: 2px solid #1270b8;
+            border-left: 2px solid #1E88E5;
         }
 
         /* Junction dots — where wires meet the device */
@@ -507,9 +507,9 @@
         }
 
         /* Per-sensor wire colors */
-        .sensor-piezo .sensor-icon { border-color: #ff6b2b; }
-        .sensor-piezo .sensor-name { color: #ff6b2b; }
-        .sensor-piezo .sensor-line { border-color: #ff6b2b; color: #ff6b2b; }
+        .sensor-piezo .sensor-icon { border-color: #FFD600; }
+        .sensor-piezo .sensor-name { color: #FFD600; }
+        .sensor-piezo .sensor-line { border-color: #FFD600; color: #FFD600; }
 
         .sensor-mic .sensor-icon { border-color: #1aa167; }
         .sensor-mic .sensor-name { color: #1aa167; }
@@ -519,9 +519,9 @@
         .sensor-wifi .sensor-name { color: #ffc003; }
         .sensor-wifi .sensor-line-v { border-color: #ffc003; color: #ffc003; }
 
-        .sensor-radio .sensor-icon { border-color: #1270b8; }
-        .sensor-radio .sensor-name { color: #1270b8; }
-        .sensor-radio .sensor-line-v { border-color: #1270b8; color: #1270b8; }
+        .sensor-radio .sensor-icon { border-color: #1E88E5; }
+        .sensor-radio .sensor-name { color: #1E88E5; }
+        .sensor-radio .sensor-line-v { border-color: #1E88E5; color: #1E88E5; }
 
         /* Sensor positions */
         .sensor-piezo { top: 200px; left: -190px; }
@@ -545,7 +545,7 @@
             width: 0; height: 12px;
             border-left: 2px solid;
         }
-        .sensor-piezo .sensor-line::before { border-color: #ff6b2b; }
+        .sensor-piezo .sensor-line::before { border-color: #FFD600; }
         .sensor-mic .sensor-line::before { border-color: #1aa167; }
 
         /* I/O port labels — electric blueprint style */
@@ -554,7 +554,7 @@
             right: -160px;
             font-size: 9px;
             font-weight: 800;
-            color: #ce2021;
+            color: #E53935;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             white-space: nowrap;
@@ -563,7 +563,7 @@
             position: absolute;
             right: -25px;
             width: 25px;
-            border-top: 2px solid #ce2021;
+            border-top: 2px solid #E53935;
         }
         /* Terminal markers on I/O lines */
         .io-label-line::after {
@@ -571,10 +571,10 @@
             position: absolute;
             right: -1px; top: -4px;
             width: 6px; height: 6px;
-            background: #ce2021;
+            background: #E53935;
         }
         .io-port {
-            border-color: #ce2021;
+            border-color: #E53935;
         }
     </style>
 </head>

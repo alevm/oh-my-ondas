@@ -420,7 +420,7 @@ class AnalysisPage {
         const cellH = (h - padY * 2) / rows;
 
         const sourceColors = {
-            sampler: '#ff6b2b',
+            sampler: '#5ba8d4',
             synth: '#9b59b6',
             radio: '#ffc003',
             mic: '#1270b8'

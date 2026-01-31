@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palette A: Yellow / Red / Blue - Oh My Ondas</title>
+    <style>
+        :root {
+            --accent: #e6b800;
+            --accent-dark: #cca300;
+            --red: #d42b2b;
+            --blue: #2255cc;
+            --green: #1aa167;
+            --yellow: #e6b800;
+            --text: #1a1a1a;
+            --text-light: #888;
+            --bg: #f5f5f5;
+            --border: #e0e0e0;
+            --panel: #ffffff;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 10px 16px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            height: 60px;
+        }
+        .logo { font-weight: 800; font-size: 22px; color: var(--text); letter-spacing: 1px; text-decoration: none; }
+        .nav-links { display: flex; gap: 8px; }
+        .nav-link {
+            padding: 8px 14px; border: 2px solid var(--border); border-radius: 6px;
+            background: #fafafa; color: var(--text); text-decoration: none; font-weight: 600; font-size: 13px;
+        }
+        .nav-link.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .palette-label {
+            position: fixed; top: 70px; right: 20px; z-index: 200;
+            background: var(--accent); color: #fff; padding: 10px 18px; border-radius: 8px;
+            font-weight: 800; font-size: 14px; letter-spacing: 1px;
+        }
+        .swatch-row { display: flex; gap: 8px; margin: 20px 24px; }
+        .swatch { width: 60px; height: 60px; border-radius: 8px; display: flex; align-items: flex-end; padding: 4px; font-size: 10px; font-weight: 700; color: #fff; }
+        .page-content { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+        .page-title {
+            font-size: 32px; font-weight: 800; color: var(--accent);
+            margin-bottom: 32px; border-bottom: 3px solid var(--border); padding-bottom: 16px;
+        }
+        .status-bar {
+            position: sticky; top: 0; z-index: 100;
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 20px; background: #1a1a1a; color: #fff;
+            font-size: 13px; font-weight: 600;
+        }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); }
+        .status-bar button {
+            padding: 5px 14px; border: 1px solid #555; border-radius: 4px;
+            background: #333; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer;
+        }
+        .section-heading {
+            font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+            color: var(--accent); margin: 36px 0 16px 0; padding-bottom: 8px; border-bottom: 2px solid var(--border);
+        }
+        .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+        .card-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--accent); margin-bottom: 8px; }
+        .card-value { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1.2; }
+        .card-detail { font-size: 13px; color: var(--text-light); margin-top: 4px; }
+        .canvas-panel { background: #1a1a1a; border-radius: 8px; padding: 12px; margin-bottom: 16px; }
+        .canvas-panel canvas { display: block; width: 100%; border-radius: 4px; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .data-table th {
+            background: var(--accent); color: #fff; text-align: left; padding: 8px 12px;
+            font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .data-table th:first-child { border-radius: 6px 0 0 0; }
+        .data-table th:last-child { border-radius: 0 6px 0 0; }
+        .data-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+        .data-table tr:nth-child(even) td { background: #fafafa; }
+        .density-bar { display: inline-block; width: 60px; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; vertical-align: middle; margin-right: 6px; }
+        .density-bar-fill { height: 100%; background: var(--green); border-radius: 4px; }
+        .fx-badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .fx-badge.on { background: #d4edda; color: #155724; }
+        .fx-badge.off { background: #e0e0e0; color: #888; }
+        .channel-meter { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 13px; }
+        .signal-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .signal-dot.active { background: var(--green); }
+        .signal-dot.silent { background: #888; }
+        .channel-name { width: 70px; font-weight: 600; text-transform: uppercase; font-size: 12px; }
+        .level-bar { flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden; }
+        .level-bar-fill { height: 100%; border-radius: 5px; }
+        .summary-line { font-size: 13px; color: var(--text-light); margin-top: 12px; padding: 10px 14px; background: #fafafa; border-radius: 6px; border-left: 3px solid var(--accent); }
+        .mixer-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 13px; }
+        .mixer-ch-name { width: 70px; font-weight: 600; text-transform: uppercase; font-size: 12px; }
+        .mixer-level-bar { width: 120px; height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden; }
+        .mixer-level-fill { height: 100%; border-radius: 5px; }
+        .scene-diff { background: rgba(230,184,0,0.12); }
+        .signal-flow { font-size: 12px; font-family: 'SF Mono','Menlo',monospace; color: var(--text-light); line-height: 1.8; padding: 12px; background: #fafafa; border-radius: 6px; border: 1px solid var(--border); margin-top: 16px; }
+        footer { display: flex; align-items: center; gap: 16px; padding: 12px 16px; background: #fff; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-light); }
+        footer a { color: var(--accent); text-decoration: none; }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <a href="#" class="logo">OH MY ONDAS</a>
+        <nav class="nav-links">
+            <a href="#" class="nav-link">Home</a>
+            <a href="#" class="nav-link">App</a>
+            <a href="#" class="nav-link">Design</a>
+            <a href="#" class="nav-link">SDLC</a>
+            <a href="#" class="nav-link">About</a>
+            <a href="#" class="nav-link active">Analysis</a>
+        </nav>
+    </header>
+    <div class="palette-label">PALETTE A: YELLOW / RED / BLUE</div>
+
+    <div class="swatch-row">
+        <div class="swatch" style="background:#e6b800;">Yellow<br>#e6b800</div>
+        <div class="swatch" style="background:#d42b2b;">Red<br>#d42b2b</div>
+        <div class="swatch" style="background:#2255cc;">Blue<br>#2255cc</div>
+        <div class="swatch" style="background:#1aa167;">Green<br>#1aa167</div>
+        <div class="swatch" style="background:#1a1a1a;">Dark<br>#1a1a1a</div>
+        <div class="swatch" style="background:#f5f5f5;color:#1a1a1a;border:1px solid #e0e0e0;">BG<br>#f5f5f5</div>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-dot"></div>
+        <span style="margin-right:auto;">LIVE</span>
+        <button>SNAPSHOT</button>
+        <button>REFRESH</button>
+        <span style="color:#888;font-size:12px;">Updated: 14:32:08</span>
+    </div>
+
+    <main class="page-content">
+        <h1 class="page-title">Session Analysis</h1>
+
+        <h2 class="section-heading">Composition Overview</h2>
+        <div class="overview-grid">
+            <div class="card">
+                <div class="card-title">Context</div>
+                <div class="card-value" style="color:var(--blue);">CALM</div>
+                <div class="card-detail">Location: park | Time: afternoon | GPS: 41.3851, 2.1734</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Tempo</div>
+                <div class="card-value">92 BPM</div>
+                <div class="card-detail">Swing: 55% | Length: 16 steps</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Mode</div>
+                <div class="card-value">SOUNDSCAPE</div>
+                <div class="card-detail">Synth: playing | Mic: active</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Arrangement</div>
+                <div class="card-value">3 blocks</div>
+                <div class="card-detail">2 scenes saved</div>
+            </div>
+        </div>
+
+        <h2 class="section-heading">Audio Analysis</h2>
+        <div class="canvas-panel">
+            <canvas id="spectrumCanvas" width="600" height="120"></canvas>
+        </div>
+        <div>
+            <div class="channel-meter">
+                <div class="signal-dot active"></div><span class="channel-name">MIC</span>
+                <div class="level-bar"><div class="level-bar-fill" style="width:35%;background:var(--red);"></div></div>
+                <span style="width:70px;text-align:right;font-size:12px;color:var(--text-light);">440Hz</span>
+            </div>
+            <div class="channel-meter">
+                <div class="signal-dot active"></div><span class="channel-name">SAMPLES</span>
+                <div class="level-bar"><div class="level-bar-fill" style="width:62%;background:var(--accent);"></div></div>
+                <span style="width:70px;text-align:right;font-size:12px;color:var(--text-light);">1.2kHz</span>
+            </div>
+            <div class="channel-meter">
+                <div class="signal-dot active"></div><span class="channel-name">SYNTH</span>
+                <div class="level-bar"><div class="level-bar-fill" style="width:48%;background:var(--blue);"></div></div>
+                <span style="width:70px;text-align:right;font-size:12px;color:var(--text-light);">880Hz</span>
+            </div>
+            <div class="channel-meter">
+                <div class="signal-dot silent"></div><span class="channel-name">RADIO</span>
+                <div class="level-bar"><div class="level-bar-fill" style="width:0%;"></div></div>
+                <span style="width:70px;text-align:right;font-size:12px;color:var(--text-light);">--</span>
+            </div>
+        </div>
+        <div class="summary-line">Level: GOOD | Character: Warm | Active: mic, samples, synth | Dominant: 1.2kHz</div>
+
+        <h2 class="section-heading">Pattern Analysis</h2>
+        <div class="canvas-panel">
+            <canvas id="patternCanvas" width="600" height="200"></canvas>
+        </div>
+        <table class="data-table">
+            <thead><tr><th>Track</th><th>Source</th><th>Active / Total</th><th>Density</th><th>P-Locks</th><th>Trig Cond.</th></tr></thead>
+            <tbody>
+                <tr><td>1</td><td>sampler</td><td>6 / 16</td><td><span class="density-bar"><span class="density-bar-fill" style="width:37%"></span></span> 37%</td><td>2</td><td>0</td></tr>
+                <tr><td>2</td><td>sampler</td><td>4 / 16</td><td><span class="density-bar"><span class="density-bar-fill" style="width:25%"></span></span> 25%</td><td>0</td><td>1</td></tr>
+                <tr><td>3</td><td>synth</td><td>8 / 16</td><td><span class="density-bar"><span class="density-bar-fill" style="width:50%"></span></span> 50%</td><td>4</td><td>0</td></tr>
+                <tr><td>4</td><td>sampler</td><td>3 / 16</td><td><span class="density-bar"><span class="density-bar-fill" style="width:19%"></span></span> 19%</td><td>0</td><td>0</td></tr>
+                <tr><td>5</td><td>radio</td><td>2 / 16</td><td><span class="density-bar"><span class="density-bar-fill" style="width:12%"></span></span> 12%</td><td>0</td><td>0</td></tr>
+                <tr><td>6</td><td>sampler</td><td>5 / 16</td><td><span class="density-bar"><span class="density-bar-fill" style="width:31%"></span></span> 31%</td><td>1</td><td>0</td></tr>
+                <tr><td>7</td><td>mic</td><td>1 / 16</td><td><span class="density-bar"><span class="density-bar-fill" style="width:6%"></span></span> 6%</td><td>0</td><td>0</td></tr>
+                <tr><td>8</td><td>sampler</td><td>4 / 16</td><td><span class="density-bar"><span class="density-bar-fill" style="width:25%"></span></span> 25%</td><td>0</td><td>2</td></tr>
+            </tbody>
+        </table>
+
+        <h2 class="section-heading">Processing Chain</h2>
+        <div class="card">
+            <div class="card-title">Effects</div>
+            <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;">
+                <div><span style="font-weight:700;">Crusher</span> <span class="fx-badge off">OFF</span></div>
+                <div><span style="font-weight:700;">Glitch</span> <span class="fx-badge off">OFF</span></div>
+                <div><span style="font-weight:700;">Grain</span> <span class="fx-badge on">ON</span> <span style="font-size:12px;color:var(--text-light);">density: 0.6, size: 80ms</span></div>
+                <div><span style="font-weight:700;">Delay</span> <span class="fx-badge on">ON</span> <span style="font-size:12px;color:var(--text-light);">time: 375ms, mix: 0.3, feedback: 0.4</span></div>
+            </div>
+        </div>
+        <div class="card" style="margin-top:16px;">
+            <div class="card-title">Mixer</div>
+            <div class="mixer-row"><span class="mixer-ch-name">MIC</span><div class="mixer-level-bar"><div class="mixer-level-fill" style="width:65%;background:var(--red);"></div></div><span style="font-size:11px;color:var(--text-light);">Lo:0 Mid:2 Hi:-1</span></div>
+            <div class="mixer-row"><span class="mixer-ch-name">SAMPLES</span><div class="mixer-level-bar"><div class="mixer-level-fill" style="width:80%;background:var(--accent);"></div></div><span style="font-size:11px;color:var(--text-light);">Lo:0 Mid:0 Hi:0</span></div>
+            <div class="mixer-row"><span class="mixer-ch-name">SYNTH</span><div class="mixer-level-bar"><div class="mixer-level-fill" style="width:55%;background:var(--blue);"></div></div><span style="font-size:11px;color:var(--text-light);">Lo:1 Mid:0 Hi:-2</span></div>
+            <div class="mixer-row"><span class="mixer-ch-name">RADIO</span><div class="mixer-level-bar"><div class="mixer-level-fill" style="width:0%;background:#888;"></div></div><span style="font-size:11px;color:var(--text-light);">--</span></div>
+            <div class="mixer-row" style="border-top:1px solid var(--border);padding-top:10px;margin-top:6px;"><span class="mixer-ch-name">MASTER</span><div class="mixer-level-bar"><div class="mixer-level-fill" style="width:90%;background:var(--accent);"></div></div><span style="font-size:11px;color:var(--text-light);">Lo:0 Mid:0 Hi:0</span></div>
+        </div>
+        <div class="signal-flow">
+            MIC → gain 2.4x → EQ (lo:0 mid:2 hi:-1) → master EQ → out<br>
+            SAMPLES → gain 3.0x → EQ (lo:0 mid:0 hi:0) → master EQ → out<br>
+            SYNTH → gain 2.1x → EQ (lo:1 mid:0 hi:-2) → master EQ → out<br>
+            RADIO → gain 0.0x → EQ (flat) → master EQ → out
+        </div>
+
+        <h2 class="section-heading">Scene Comparison</h2>
+        <table class="data-table">
+            <thead><tr><th>Metric</th><th>Scene A</th><th>Scene B</th><th>Scene C</th><th>Scene D</th></tr></thead>
+            <tbody>
+                <tr><td>Tempo</td><td>92</td><td class="scene-diff">110</td><td>92</td><td>--</td></tr>
+                <tr><td>Active Steps</td><td>33</td><td>33</td><td class="scene-diff">24</td><td>--</td></tr>
+                <tr><td>Vibe</td><td>calm</td><td class="scene-diff">energetic</td><td>calm</td><td>--</td></tr>
+                <tr><td>Mic Level</td><td>65</td><td>65</td><td class="scene-diff">40</td><td>--</td></tr>
+                <tr><td>Samples Level</td><td>80</td><td class="scene-diff">90</td><td>80</td><td>--</td></tr>
+                <tr><td>Delay Mix</td><td>0.3</td><td>0.3</td><td class="scene-diff">0.6</td><td>--</td></tr>
+            </tbody>
+        </table>
+    </main>
+    <footer>
+        <span>Oh My Ondas</span><span>GPL-3.0</span><a href="#">GitHub</a>
+    </footer>
+
+    <script>
+        // Draw mock spectrum
+        const sc = document.getElementById('spectrumCanvas');
+        const sctx = sc.getContext('2d');
+        sctx.fillStyle = '#1a1a1a'; sctx.fillRect(0, 0, 600, 120);
+        for (let i = 0; i < 64; i++) {
+            const h = Math.random() * 80 + (i < 20 ? 30 : 5);
+            const r = Math.floor(180 + Math.random()*75);
+            const g = Math.floor(140 + Math.random()*60);
+            sctx.fillStyle = `rgb(${r}, ${g}, 0)`;
+            sctx.fillRect(10 + i * 9, 120 - h, 7, h);
+        }
+        // Draw mock pattern grid
+        const pc = document.getElementById('patternCanvas');
+        const pctx = pc.getContext('2d');
+        pctx.fillStyle = '#1a1a1a'; pctx.fillRect(0, 0, 600, 200);
+        const colors = ['#e6b800','#e6b800','#2255cc','#e6b800','#e6b800','#e6b800','#d42b2b','#e6b800'];
+        const labels = ['T1','T2','T3','T4','T5','T6','T7','T8'];
+        const active = [[0,0,1,0,1,0,0,1,0,0,1,0,1,0,0,1],[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],[0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],[0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1],[0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0],[1,0,1,0,0,1,0,0,1,0,1,0,0,0,0,0],[0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],[0,1,0,0,1,0,0,1,0,1,0,0,0,0,0,0]];
+        const cw = 34, ch = 22, px = 40, py = 5;
+        pctx.font = '10px sans-serif'; pctx.fillStyle = '#666'; pctx.textAlign = 'right';
+        for (let t = 0; t < 8; t++) { pctx.fillText(labels[t], px - 6, py + t * ch + ch / 2 + 3); }
+        for (let t = 0; t < 8; t++) {
+            for (let s = 0; s < 16; s++) {
+                const x = px + s * cw, y = py + t * ch;
+                pctx.fillStyle = '#222'; pctx.fillRect(x+1, y+1, cw-2, ch-2);
+                if (active[t][s]) { pctx.fillStyle = colors[t]; pctx.globalAlpha = 0.85; pctx.fillRect(x+2, y+2, cw-4, ch-4); pctx.globalAlpha = 1; }
+            }
+        }
+    </script>
+</body>
+</html>

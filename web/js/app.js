@@ -3184,7 +3184,7 @@ class App {
                 }
             },
             scenes: window.sceneManager?.scenes,
-            arrangement: window.arrangementEngine?.blocks
+            arrangement: window.arrangement?.blocks
         };
         try { localStorage.setItem('ohmyondas_analysis', JSON.stringify(state)); } catch(e) {}
     }

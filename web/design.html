@@ -8,9 +8,9 @@
     <style>
         :root {
             --bg: #f5f5f5;
-            --accent: #ff6b2b;
+            --accent: #FFD600;
             --green: #1aa167;
-            --blue: #1270b8;
+            --blue: #1E88E5;
             --yellow: #ffc003;
             --pastel-gray: #ffffff;
             --gray-text: #555;
@@ -266,13 +266,13 @@
             pointer-events: none;
         }
         .mode-btn[data-mode="picture"] {
-            border-color: #ff6b2b; background: #ff6b2b; color: #fff;
+            border-color: #FFD600; background: #FFD600; color: #fff;
         }
         .mode-btn[data-mode="soundscape"] {
             border-color: #1aa167; background: transparent; color: #1aa167;
         }
         .mode-btn[data-mode="interact"] {
-            border-color: #1270b8; background: transparent; color: #1270b8;
+            border-color: #1E88E5; background: transparent; color: #1E88E5;
         }
 
         /* 8 Touch Pads — identical to index.html */
@@ -300,14 +300,14 @@
             font-weight: 700;
             position: relative;
         }
-        .pad:nth-child(1) { border-color: #ff6b2b; }
-        .pad:nth-child(2) { border-color: #1270b8; }
+        .pad:nth-child(1) { border-color: #FFD600; }
+        .pad:nth-child(2) { border-color: #1E88E5; }
         .pad:nth-child(3) { border-color: #1aa167; }
         .pad:nth-child(4) { border-color: #ffc003; }
-        .pad:nth-child(5) { border-color: #ce2021; }
-        .pad:nth-child(6) { border-color: #9b59b6; }
-        .pad:nth-child(7) { border-color: #1270b8; }
-        .pad:nth-child(8) { border-color: #ff6b2b; }
+        .pad:nth-child(5) { border-color: #E53935; }
+        .pad:nth-child(6) { border-color: #1E88E5; }
+        .pad:nth-child(7) { border-color: #1E88E5; }
+        .pad:nth-child(8) { border-color: #FFD600; }
 
         .pad::before {
             content: '';
@@ -421,27 +421,27 @@
             width: 16px; height: 16px;
             background: #999;
             border-radius: 50%;
-            border: 2px solid #ce2021;
+            border: 2px solid #E53935;
         }
         .io-label {
             position: absolute;
             right: -160px;
             font-size: 9px; font-weight: 800;
-            color: #ce2021; text-transform: uppercase;
+            color: #E53935; text-transform: uppercase;
             letter-spacing: 0.5px; white-space: nowrap;
         }
         .io-label-line {
             position: absolute;
             right: -25px;
             width: 25px;
-            border-top: 2px solid #ce2021;
+            border-top: 2px solid #E53935;
         }
         .io-label-line::after {
             content: '';
             position: absolute;
             right: -1px; top: -4px;
             width: 6px; height: 6px;
-            background: #ce2021;
+            background: #E53935;
         }
 
         /* Sensor diagrams — identical to index.html */
@@ -454,17 +454,17 @@
         }
         .sensor-icon {
             width: 32px; height: 32px;
-            border: 2px solid #1270b8;
+            border: 2px solid #1E88E5;
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-size: 14px; background: #1a1a1a; color: #fff;
             flex-shrink: 0;
         }
         .sensor-info { display: flex; flex-direction: column; gap: 1px; }
-        .sensor-name { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #1270b8; }
+        .sensor-name { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #1E88E5; }
         .sensor-desc { font-size: 8px; color: #666; }
-        .sensor-line { position: absolute; border-top: 2px solid #1270b8; }
-        .sensor-line-v { position: absolute; border-left: 2px solid #1270b8; }
+        .sensor-line { position: absolute; border-top: 2px solid #1E88E5; }
+        .sensor-line-v { position: absolute; border-left: 2px solid #1E88E5; }
 
         .sensor-line::after, .sensor-line-v::after {
             content: '';
@@ -476,18 +476,18 @@
         .sensor-line::after { right: -4px; top: -5px; }
         .sensor-line-v::after { bottom: -4px; left: -5px; }
 
-        .sensor-piezo .sensor-icon { border-color: #ff6b2b; }
-        .sensor-piezo .sensor-name { color: #ff6b2b; }
-        .sensor-piezo .sensor-line { border-color: #ff6b2b; color: #ff6b2b; }
+        .sensor-piezo .sensor-icon { border-color: #FFD600; }
+        .sensor-piezo .sensor-name { color: #FFD600; }
+        .sensor-piezo .sensor-line { border-color: #FFD600; color: #FFD600; }
         .sensor-mic .sensor-icon { border-color: #1aa167; }
         .sensor-mic .sensor-name { color: #1aa167; }
         .sensor-mic .sensor-line { border-color: #1aa167; color: #1aa167; }
         .sensor-wifi .sensor-icon { border-color: #ffc003; }
         .sensor-wifi .sensor-name { color: #ffc003; }
         .sensor-wifi .sensor-line-v { border-color: #ffc003; color: #ffc003; }
-        .sensor-radio .sensor-icon { border-color: #1270b8; }
-        .sensor-radio .sensor-name { color: #1270b8; }
-        .sensor-radio .sensor-line-v { border-color: #1270b8; color: #1270b8; }
+        .sensor-radio .sensor-icon { border-color: #1E88E5; }
+        .sensor-radio .sensor-name { color: #1E88E5; }
+        .sensor-radio .sensor-line-v { border-color: #1E88E5; color: #1E88E5; }
 
         .sensor-piezo { top: 200px; left: -190px; }
         .sensor-piezo .sensor-line { top: 16px; left: 145px; width: 35px; }
@@ -506,7 +506,7 @@
             width: 0; height: 12px;
             border-left: 2px solid;
         }
-        .sensor-piezo .sensor-line::before { border-color: #ff6b2b; }
+        .sensor-piezo .sensor-line::before { border-color: #FFD600; }
         .sensor-mic .sensor-line::before { border-color: #1aa167; }
 
         /* Info bar */
@@ -885,7 +885,7 @@
                     <tr><td colspan="4" style="background:#1a1a1a;color:#3498db;font-weight:700;">DISPLAY</td></tr>
                     <tr><td>5" IPS Display</td><td>800x480 Capacitive Touch</td><td>1</td><td class="price">$35.00</td></tr>
                     <tr><td>Display Driver</td><td>SSD1963 board</td><td>1</td><td class="price">$8.00</td></tr>
-                    <tr><td colspan="4" style="background:#1a1a1a;color:#9b59b6;font-weight:700;">USER INTERFACE</td></tr>
+                    <tr><td colspan="4" style="background:#1a1a1a;color:#1E88E5;font-weight:700;">USER INTERFACE</td></tr>
                     <tr><td>MPR121 Breakout</td><td>12-ch touch sensor</td><td>1</td><td class="price">$7.95</td></tr>
                     <tr><td>Copper Tape</td><td>Conductive, for pads</td><td>1</td><td class="price">$6.00</td></tr>
                     <tr><td>Rotary Encoders</td><td>With push button</td><td>4</td><td class="price">$11.80</td></tr>
