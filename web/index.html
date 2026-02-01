@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Oh My Ondas - Interactive Hardware</title>
-    <link rel="stylesheet" href="css/style.css?v=251">
+    <link rel="stylesheet" href="css/style.css?v=253">
     <style>
         :root {
             --bg: #f5f5f5;
@@ -26,13 +26,12 @@
             flex-direction: column;
         }
 
-        /* Main */
         .main-content {
             flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 30px 20px;
             background: #e8e8e8;
         }
 
@@ -62,7 +61,7 @@
         .enclosure::after {
             content: '';
             position: absolute;
-            top: 342px; left: 15px; right: 15px;
+            top: 295px; left: 15px; right: 15px;
             height: 1px;
             background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.3) 15%, rgba(0,0,0,0.3) 85%, transparent 100%);
             box-shadow: 0 1px 0 rgba(255,255,255,0.03);
@@ -72,113 +71,45 @@
 
         .artwork {
             position: absolute;
-            top: 342px; left: 10px; right: 10px; bottom: 10px;
-            opacity: 0.03;
+            top: 296px; left: 10px; right: 10px; bottom: 10px;
+            opacity: 0.07;
             background-image: url('https://media.rhizome.org/blog/8979/Chombart-de-Lauwe.jpg');
             background-size: cover;
-            border-radius: 8px;
+            border-radius: 0 0 8px 8px;
             z-index: 0;
             pointer-events: none;
         }
 
-        /* 5" Display */
-        .display {
-            position: absolute;
-            top: 10px; left: 10px; right: 10px;
-            height: 330px;
-            background: #0a0a0a;
-            border-radius: 6px;
-            border: 3px solid #111;
-            box-shadow: inset 0 0 0 1px #444, 0 4px 12px rgba(0,0,0,0.3);
-            overflow: hidden;
-            z-index: 2;
-        }
+        /* ===== TOP: Encoders | Display | Modes ===== */
 
-        /* Section labels */
-        .section-label {
+        .encoder-column {
             position: absolute;
-            font-size: 8px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            color: rgba(255,255,255,0.25);
-            z-index: 3;
-        }
-        .label-pads { top: 476px; left: 28px; }
-        .label-ctrl { top: 400px; left: 28px; width: auto; text-align: left; }
-
-        /* 3 Mode Buttons — large pills */
-        .modes-bar {
-            position: absolute;
-            top: 348px; left: 25px; right: 25px;
-            height: 42px;
+            left: 18px; top: 18px;
+            width: 76px;
             display: flex;
-            justify-content: center;
-            gap: 10px;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
             z-index: 2;
         }
-        .mode-btn {
-            flex: none;
-            height: 36px;
-            padding: 0 28px;
-            border-radius: 18px;
-            border: 2px solid;
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.15s;
-            background: rgba(0,0,0,0.2);
-        }
-        .mode-btn[data-mode="picture"] { border-color: #278789; color: #278789; }
-        .mode-btn[data-mode="picture"].active {
-            background: #278789; color: #fff;
-            box-shadow: 0 0 14px rgba(39,135,137,0.4), 0 2px 8px rgba(39,135,137,0.2);
-        }
-        .mode-btn[data-mode="soundscape"] { border-color: #1aa167; color: #1aa167; }
-        .mode-btn[data-mode="soundscape"].active {
-            background: #1aa167; color: #fff;
-            box-shadow: 0 0 14px rgba(26,161,103,0.4), 0 2px 8px rgba(26,161,103,0.2);
-        }
-        .mode-btn[data-mode="interact"] { border-color: #1270b8; color: #1270b8; }
-        .mode-btn[data-mode="interact"].active {
-            background: #1270b8; color: #fff;
-            box-shadow: 0 0 14px rgba(18,112,184,0.4), 0 2px 8px rgba(18,112,184,0.2);
-        }
-        .mode-btn:hover { opacity: 0.85; transform: scale(1.03); }
 
-        /* 5 Encoders + Crossfader — horizontal row */
-        .encoders-container {
-            position: absolute;
-            top: 410px; left: 18px; right: 18px;
-            display: grid;
-            grid-template-columns: repeat(5, 1fr) 2.5fr;
-            gap: 6px;
-            height: 62px;
-            z-index: 2;
-            background: rgba(0,0,0,0.15);
-            border: 1px solid rgba(255,255,255,0.04);
-            border-radius: 10px;
-            padding: 6px 10px;
-        }
-
-        .encoder { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .encoder { display: flex; flex-direction: column; align-items: center; gap: 1px; }
 
         .encoder-knob {
-            width: 34px; height: 34px;
+            width: 30px; height: 30px;
             background: linear-gradient(145deg, var(--petrol-raised) 0%, #2a4545 50%, #305050 100%);
             border-radius: 50%;
             border: 2px solid var(--petrol-highlight);
             position: relative;
             cursor: pointer;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
         }
 
         .encoder-knob::before {
             content: '';
             position: absolute;
             top: 50%; left: 50%;
-            width: 12px; height: 12px;
+            width: 10px; height: 10px;
             background: linear-gradient(145deg, var(--petrol-highlight) 0%, var(--petrol-raised) 100%);
             border: 1px solid #5a7a7a;
             border-radius: 50%;
@@ -188,20 +119,11 @@
         .encoder-knob::after {
             content: '';
             position: absolute;
-            top: 3px; left: 50%;
-            width: 3px; height: 7px;
+            top: 2px; left: 50%;
+            width: 2px; height: 6px;
             background: #278789;
-            border-radius: 2px;
+            border-radius: 1px;
             transform: translateX(-50%);
-        }
-
-        .encoder-indicator {
-            position: absolute;
-            top: 3px; left: 50%;
-            width: 3px; height: 7px;
-            background: #278789;
-            border-radius: 2px;
-            transform-origin: center 13px;
         }
 
         .encoder[data-param="volume"] .encoder-knob::after { background: #1aa167; }
@@ -210,112 +132,128 @@
         .encoder[data-param="fx"] .encoder-knob::after { background: #c0392b; }
         .encoder[data-param="decay"] .encoder-knob::after { background: #278789; }
 
-        .encoder-label { font-size: 8px; color: rgba(255,255,255,0.5); font-weight: 700; letter-spacing: 0.5px; }
-        .encoder-value { font-size: 8px; color: rgba(255,255,255,0.35); font-family: monospace; }
+        .encoder-label { font-size: 7px; color: rgba(255,255,255,0.5); font-weight: 700; letter-spacing: 0.5px; }
+        .encoder-value { font-size: 7px; color: rgba(255,255,255,0.35); font-family: monospace; }
 
-        /* Crossfader */
-        .crossfader {
+        /* Display */
+        .display {
+            position: absolute;
+            left: 102px; top: 16px;
+            width: 620px; height: 265px;
+            background: #0a0a0a;
+            border-radius: 6px;
+            border: 3px solid #111;
+            box-shadow: inset 0 0 0 1px #444, 0 4px 12px rgba(0,0,0,0.3);
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        /* Mode column — right */
+        .mode-column {
+            position: absolute;
+            right: 18px; top: 18px;
+            width: 320px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            padding: 0 8px;
-        }
-        .crossfader-label {
-            font-size: 8px;
-            font-weight: 700;
-            color: rgba(255,255,255,0.5);
-            letter-spacing: 1px;
-        }
-        .crossfader-track {
-            width: 100%;
-            height: 6px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 3px;
-            position: relative;
-            border: 1px solid rgba(255,255,255,0.06);
-        }
-        .crossfader-thumb {
-            position: absolute;
-            top: -9px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 18px;
-            height: 22px;
-            background: linear-gradient(180deg, var(--petrol-highlight) 0%, var(--petrol-raised) 100%);
-            border-radius: 3px;
-            border: 1px solid #5a7a7a;
-            cursor: ew-resize;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-        }
-        .crossfader-thumb::after {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 10px; height: 2px;
-            background: rgba(255,255,255,0.3);
-            border-radius: 1px;
-        }
-        .crossfader-ends {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            font-size: 7px;
-            font-weight: 700;
-            color: rgba(255,255,255,0.3);
-            letter-spacing: 0.5px;
+            gap: 8px;
+            z-index: 2;
         }
 
-        /* 8 Touch Pads */
+        .mode-btn {
+            height: 56px;
+            width: 100%;
+            border-radius: 8px;
+            border: 2px solid;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 2.5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.15s;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .mode-btn[data-mode="picture"] { border-color: #278789; color: #278789; }
+        .mode-btn[data-mode="picture"].active { background: #278789; color: #fff; box-shadow: 0 0 14px rgba(39,135,137,0.4); }
+        .mode-btn[data-mode="soundscape"] { border-color: #1aa167; color: #1aa167; }
+        .mode-btn[data-mode="soundscape"].active { background: #1aa167; color: #fff; box-shadow: 0 0 14px rgba(26,161,103,0.4); }
+        .mode-btn[data-mode="interact"] { border-color: #1270b8; color: #1270b8; }
+        .mode-btn[data-mode="interact"].active { background: #1270b8; color: #fff; box-shadow: 0 0 14px rgba(18,112,184,0.4); }
+        .mode-btn[data-mode="journey"] { border-color: #d4783a; color: #d4783a; }
+        .mode-btn[data-mode="journey"].active { background: #d4783a; color: #fff; box-shadow: 0 0 14px rgba(212,120,58,0.4); }
+        .mode-btn:hover { opacity: 0.85; transform: scale(1.02); }
+
+        /* ===== BOTTOM: Transport | Pads | Crossfader ===== */
+
+        .transport-bar {
+            position: absolute;
+            left: 25px; top: 325px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 2;
+        }
+
+        .transport-btn {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--petrol-border);
+            background: rgba(0,0,0,0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            transition: all 0.1s;
+        }
+        .transport-btn.play { color: #1aa167; border-color: #1aa167; }
+        .transport-btn.rec { color: #c0392b; border-color: #c0392b; }
+        .transport-btn:hover { background: rgba(255,255,255,0.05); }
+        .transport-btn.play.active { background: #1aa167; color: #fff; }
+        .transport-btn.rec.active, .transport-btn.rec.rec-active { background: #c0392b; color: #fff; }
+
+        /* Pads — smaller */
         .pads-container {
             position: absolute;
-            top: 486px; left: 18px; right: 18px;
+            left: 100px; top: 315px;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(2, 1fr);
-            gap: 8px;
-            height: 140px;
+            grid-template-columns: repeat(4, 62px);
+            grid-template-rows: repeat(2, 46px);
+            gap: 5px;
             z-index: 2;
-            background: rgba(0,0,0,0.15);
+            background: rgba(0,0,0,0.12);
             border: 1px solid rgba(255,255,255,0.04);
-            border-radius: 10px;
-            padding: 10px;
+            border-radius: 8px;
+            padding: 8px;
         }
 
         .pad {
             background: linear-gradient(180deg, var(--petrol-light) 0%, var(--petrol-dark) 100%);
-            border-radius: 6px;
+            border-radius: 5px;
             border: 1px solid var(--petrol-border);
             display: flex;
             align-items: center;
             justify-content: center;
             color: rgba(255,255,255,0.3);
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 700;
             cursor: pointer;
             user-select: none;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 -1px 0 rgba(255,255,255,0.03);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
             transition: all 0.08s;
         }
 
         .pad:hover { background: linear-gradient(180deg, #254545 0%, var(--petrol-light) 100%); color: rgba(255,255,255,0.5); }
         .pad:active, .pad.active {
             background: linear-gradient(145deg, #1aa167 0%, #148f57 100%);
-            border-color: #1aa167;
-            color: #fff;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 0 16px rgba(26,161,103,0.2);
+            border-color: #1aa167; color: #fff;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 0 12px rgba(26,161,103,0.2);
         }
 
-        .pad::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 3px;
-        }
+        .pad::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
         .pad:nth-child(1)::before { background: #278789; }
         .pad:nth-child(2)::before { background: #1270b8; }
         .pad:nth-child(3)::before { background: #1aa167; }
@@ -326,62 +264,86 @@
         .pad:nth-child(8)::before { background: #278789; }
         .pad.active::before { background: rgba(255,255,255,0.6); }
 
+        /* Crossfader — below pads */
+        .crossfader-section {
+            position: absolute;
+            left: 108px; top: 440px;
+            width: 264px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .crossfader-label { font-size: 8px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 1px; }
+        .crossfader-track {
+            width: 100%; height: 6px;
+            background: rgba(0,0,0,0.3); border-radius: 3px;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .crossfader-thumb {
+            position: absolute; top: -9px; left: 50%;
+            transform: translateX(-50%);
+            width: 18px; height: 22px;
+            background: linear-gradient(180deg, var(--petrol-highlight) 0%, var(--petrol-raised) 100%);
+            border-radius: 3px;
+            border: 1px solid #5a7a7a;
+            cursor: ew-resize;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        .crossfader-thumb::after {
+            content: ''; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 10px; height: 2px;
+            background: rgba(255,255,255,0.3); border-radius: 1px;
+        }
+        .crossfader-ends {
+            display: flex; justify-content: space-between; width: 100%;
+            font-size: 7px; font-weight: 700; color: rgba(255,255,255,0.3);
+        }
+
+        /* Labels */
+        .section-label {
+            position: absolute; font-size: 7px; font-weight: 700;
+            letter-spacing: 2px; color: rgba(255,255,255,0.2); z-index: 3;
+        }
+        .label-enc { top: 278px; left: 28px; }
+        .label-pads { top: 303px; left: 106px; }
+
         /* I/O */
         .io-ports {
             position: absolute;
-            right: -25px;
-            top: 50%;
+            right: -25px; top: 50%;
             transform: translateY(-50%);
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
-
         .io-port {
             width: 16px; height: 16px;
             background: var(--petrol-border);
             border-radius: 50%;
-            border: 2px solid var(--petrol-raised);
+            border: 2px solid #c0392b;
         }
-
-        /* Info bar */
-        .info-bar {
-            background: #fff;
-            padding: 8px 16px;
-            display: flex;
-            justify-content: center;
-            gap: 24px;
-            color: #888;
-            font-size: 11px;
-            border-top: 1px solid #e0e0e0;
+        .io-label {
+            position: absolute; right: -160px;
+            font-size: 9px; font-weight: 800;
+            color: #c0392b; text-transform: uppercase;
+            letter-spacing: 0.5px; white-space: nowrap;
         }
-        .info-bar span { color: #1aa167; font-weight: 600; }
-
-        /* Header transport */
-        .header-transport {
-            display: flex;
-            gap: 6px;
-            margin-left: auto;
+        .io-label-line {
+            position: absolute; right: -25px; width: 25px;
+            border-top: 2px solid #c0392b;
         }
-        .header-transport .tr-btn {
-            width: 36px; height: 36px;
-            border-radius: 50%;
-            border: 2px solid #ddd;
-            background: #fff;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            color: #999;
-            transition: all 0.1s;
+        .io-label-line::after {
+            content: '';
+            position: absolute;
+            right: -1px; top: -4px;
+            width: 6px; height: 6px;
+            background: #c0392b;
         }
-        .header-transport .tr-btn.play { color: #1aa167; border-color: #1aa167; }
-        .header-transport .tr-btn.rec { color: #c0392b; border-color: #c0392b; }
-        .header-transport .tr-btn:hover { background: #f5f5f5; }
-        .header-transport .tr-btn.play.active { background: #1aa167; color: #fff; }
-        .header-transport .tr-btn.rec.active,
-        .header-transport .tr-btn.rec.rec-active { background: #c0392b; color: #fff; }
 
         /* External Sensor Diagrams */
         .sensor {
@@ -403,39 +365,16 @@
             color: #333;
             flex-shrink: 0;
         }
-        .sensor-info {
-            display: flex;
-            flex-direction: column;
-            gap: 1px;
-        }
-        .sensor-name {
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #1270b8;
-        }
-        .sensor-desc {
-            font-size: 8px;
-            color: #666;
-        }
+        .sensor-info { display: flex; flex-direction: column; gap: 1px; }
+        .sensor-name { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #1270b8; }
+        .sensor-desc { font-size: 8px; color: #666; }
 
-        .sensor-line {
-            position: absolute;
-            border-top: 2px solid #1270b8;
-        }
-        .sensor-line-v {
-            position: absolute;
-            border-left: 2px solid #1270b8;
-        }
-
-        .sensor-line::after,
-        .sensor-line-v::after {
-            content: '';
-            position: absolute;
+        .sensor-line { position: absolute; border-top: 2px solid #1270b8; }
+        .sensor-line-v { position: absolute; border-left: 2px solid #1270b8; }
+        .sensor-line::after, .sensor-line-v::after {
+            content: ''; position: absolute;
             width: 8px; height: 8px;
-            background: currentColor;
-            border-radius: 50%;
+            background: currentColor; border-radius: 50%;
         }
         .sensor-line::after { right: -4px; top: -5px; }
         .sensor-line-v::after { bottom: -4px; left: -5px; }
@@ -456,11 +395,11 @@
         .sensor-radio .sensor-name { color: #1270b8; }
         .sensor-radio .sensor-line-v { border-color: #1270b8; color: #1270b8; }
 
-        .sensor-piezo { top: 200px; left: -190px; }
-        .sensor-piezo .sensor-line { top: 16px; left: 145px; width: 35px; }
+        .sensor-piezo { top: 180px; left: -170px; }
+        .sensor-piezo .sensor-line { top: 16px; left: 130px; width: 50px; }
 
-        .sensor-mic { top: 320px; left: -190px; }
-        .sensor-mic .sensor-line { top: 16px; left: 145px; width: 35px; }
+        .sensor-mic { top: 300px; left: -170px; }
+        .sensor-mic .sensor-line { top: 16px; left: 130px; width: 50px; }
 
         .sensor-wifi { top: -55px; left: 200px; flex-direction: column; }
         .sensor-wifi .sensor-line-v { top: 42px; left: 15px; height: 23px; }
@@ -479,31 +418,6 @@
         .sensor-piezo .sensor-line::before { border-color: #278789; }
         .sensor-mic .sensor-line::before { border-color: #1aa167; }
 
-        .io-label {
-            position: absolute;
-            right: -160px;
-            font-size: 9px;
-            font-weight: 800;
-            color: #c0392b;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-        .io-label-line {
-            position: absolute;
-            right: -25px;
-            width: 25px;
-            border-top: 2px solid #c0392b;
-        }
-        .io-label-line::after {
-            content: '';
-            position: absolute;
-            right: -1px; top: -4px;
-            width: 6px; height: 6px;
-            background: #c0392b;
-        }
-        .io-port { border-color: #c0392b; }
-
         /* Corner screws */
         .corner-screw {
             position: absolute;
@@ -515,9 +429,7 @@
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 1px 2px rgba(0,0,0,0.3);
         }
         .corner-screw::before, .corner-screw::after {
-            content: '';
-            position: absolute;
-            background: rgba(0,0,0,0.3);
+            content: ''; position: absolute; background: rgba(0,0,0,0.3);
         }
         .corner-screw::before { top: 4px; left: 2px; width: 6px; height: 1px; }
         .corner-screw::after { top: 2px; left: 4px; width: 1px; height: 6px; }
@@ -526,14 +438,11 @@
         .screw-bl { bottom: 12px; left: 12px; }
         .screw-br { bottom: 12px; right: 12px; }
 
-        /* Brand silk-screen */
         .brand-silkscreen {
             position: absolute;
-            bottom: 8px;
-            left: 50%;
+            bottom: 8px; left: 50%;
             transform: translateX(-50%);
-            font-size: 10px;
-            font-weight: 800;
+            font-size: 10px; font-weight: 800;
             letter-spacing: 4px;
             color: rgba(255,255,255,0.08);
             text-transform: uppercase;
@@ -542,22 +451,62 @@
             pointer-events: none;
         }
 
-        /* Status LEDs */
         .status-leds {
             position: absolute;
-            top: 345px;
-            right: 30px;
-            display: flex;
-            gap: 8px;
+            top: 292px; right: 30px;
+            display: flex; gap: 8px;
             z-index: 4;
         }
-        .status-led {
-            width: 5px; height: 5px;
-            border-radius: 50%;
-        }
+        .status-led { width: 5px; height: 5px; border-radius: 50%; }
         .status-led.led-teal { background: #278789; box-shadow: 0 0 4px rgba(39,135,137,0.6); }
         .status-led.led-green { background: #1aa167; box-shadow: 0 0 4px rgba(26,161,103,0.6); }
         .status-led.led-red { background: #c0392b; box-shadow: 0 0 4px rgba(192,57,43,0.6); }
+
+        /* Info bar */
+        .info-bar {
+            background: #fff;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            color: #888;
+            font-size: 11px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .info-bar span { color: #1aa167; font-weight: 600; }
+
+        /* DIY panel */
+        .diy-panel {
+            background: #fff;
+            padding: 20px 40px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .diy-panel h3 {
+            font-size: 13px; font-weight: 800;
+            letter-spacing: 1px; text-transform: uppercase;
+            color: #333; margin-bottom: 12px;
+        }
+        .diy-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        .diy-col h4 {
+            font-size: 11px; font-weight: 700;
+            color: #1aa167; text-transform: uppercase;
+            letter-spacing: 0.5px; margin-bottom: 6px;
+        }
+        .diy-col ul { list-style: none; font-size: 11px; color: #555; line-height: 1.7; }
+        .diy-col .cost { color: #d4783a; font-weight: 600; float: right; }
+        .diy-total { font-weight: 700; border-top: 1px solid #eee; padding-top: 4px; margin-top: 4px; }
+        .diy-badge {
+            display: inline-block; margin-top: 8px;
+            padding: 4px 12px; border-radius: 4px;
+            font-size: 11px; font-weight: 800;
+            background: #1aa167; color: #fff;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 <body>
@@ -571,35 +520,53 @@
             <a href="about.html" class="nav-link">About</a>
             <a href="analysis.html" class="nav-link">Analysis</a>
         </nav>
-        <div class="header-transport">
-            <button class="tr-btn play" data-action="play">&#9654;</button>
-            <button class="tr-btn stop" data-action="stop">&#9632;</button>
-            <button class="tr-btn rec" data-action="rec">&#9679;</button>
-        </div>
     </header>
 
     <main class="main-content">
         <div class="device-container">
             <div class="enclosure">
-                <!-- Corner screws -->
                 <div class="corner-screw screw-tl"></div>
                 <div class="corner-screw screw-tr"></div>
                 <div class="corner-screw screw-bl"></div>
                 <div class="corner-screw screw-br"></div>
-
-                <!-- Brand silk-screen -->
                 <div class="brand-silkscreen">OH MY ONDAS</div>
-
-                <!-- Status LEDs -->
                 <div class="status-leds">
                     <div class="status-led led-teal"></div>
                     <div class="status-led led-green"></div>
                     <div class="status-led led-red"></div>
                 </div>
-
                 <div class="artwork"></div>
 
-                <!-- 5" Touch Display (iframe) -->
+                <!-- 5 Encoders — left column -->
+                <div class="encoder-column">
+                    <div class="encoder" data-param="volume">
+                        <div class="encoder-knob" data-value="80"></div>
+                        <span class="encoder-label">VOL</span>
+                        <span class="encoder-value">80</span>
+                    </div>
+                    <div class="encoder" data-param="pan">
+                        <div class="encoder-knob" data-value="50"></div>
+                        <span class="encoder-label">PAN</span>
+                        <span class="encoder-value">C</span>
+                    </div>
+                    <div class="encoder" data-param="filter">
+                        <div class="encoder-knob" data-value="100"></div>
+                        <span class="encoder-label">FILT</span>
+                        <span class="encoder-value">100</span>
+                    </div>
+                    <div class="encoder" data-param="fx">
+                        <div class="encoder-knob" data-value="0"></div>
+                        <span class="encoder-label">FX</span>
+                        <span class="encoder-value">0</span>
+                    </div>
+                    <div class="encoder" data-param="decay">
+                        <div class="encoder-knob" data-value="50"></div>
+                        <span class="encoder-label">DECAY</span>
+                        <span class="encoder-value">50</span>
+                    </div>
+                </div>
+
+                <!-- 5" Touch Display -->
                 <div class="display">
                     <iframe id="appDisplay"
                             src="app.html?embedded=1&mockup=1"
@@ -608,67 +575,26 @@
                     </iframe>
                 </div>
 
-                <!-- 3 Mode Buttons -->
-                <div class="modes-bar">
+                <!-- 4 Mode Buttons — right column -->
+                <div class="mode-column">
                     <button class="mode-btn active" data-mode="picture">PICTURE</button>
                     <button class="mode-btn" data-mode="soundscape">SOUNDSCAPE</button>
                     <button class="mode-btn" data-mode="interact">INTERACT</button>
+                    <button class="mode-btn" data-mode="journey">JOURNEY</button>
                 </div>
 
                 <!-- Labels -->
-                <span class="section-label label-ctrl">CTRL</span>
+                <span class="section-label label-enc">CTRL</span>
                 <span class="section-label label-pads">PADS</span>
 
-                <!-- 5 Encoders + Crossfader -->
-                <div class="encoders-container">
-                    <div class="encoder" data-param="volume">
-                        <div class="encoder-knob" data-value="80">
-                            <div class="encoder-indicator"></div>
-                        </div>
-                        <span class="encoder-label">VOL</span>
-                        <span class="encoder-value">80</span>
-                    </div>
-                    <div class="encoder" data-param="pan">
-                        <div class="encoder-knob" data-value="50">
-                            <div class="encoder-indicator"></div>
-                        </div>
-                        <span class="encoder-label">PAN</span>
-                        <span class="encoder-value">C</span>
-                    </div>
-                    <div class="encoder" data-param="filter">
-                        <div class="encoder-knob" data-value="100">
-                            <div class="encoder-indicator"></div>
-                        </div>
-                        <span class="encoder-label">FILT</span>
-                        <span class="encoder-value">100</span>
-                    </div>
-                    <div class="encoder" data-param="fx">
-                        <div class="encoder-knob" data-value="0">
-                            <div class="encoder-indicator"></div>
-                        </div>
-                        <span class="encoder-label">FX</span>
-                        <span class="encoder-value">0</span>
-                    </div>
-                    <div class="encoder" data-param="decay">
-                        <div class="encoder-knob" data-value="50">
-                            <div class="encoder-indicator"></div>
-                        </div>
-                        <span class="encoder-label">DECAY</span>
-                        <span class="encoder-value">50</span>
-                    </div>
-                    <div class="crossfader" id="crossfader">
-                        <span class="crossfader-label">X-FADE</span>
-                        <div class="crossfader-track">
-                            <div class="crossfader-thumb" id="xfadeThumb" data-value="50"></div>
-                        </div>
-                        <div class="crossfader-ends">
-                            <span>A</span>
-                            <span>B</span>
-                        </div>
-                    </div>
+                <!-- Transport — bottom left -->
+                <div class="transport-bar">
+                    <button class="transport-btn play" data-action="play">&#9654;</button>
+                    <button class="transport-btn stop" data-action="stop">&#9632;</button>
+                    <button class="transport-btn rec" data-action="rec">&#9679;</button>
                 </div>
 
-                <!-- 8 Touch Pads -->
+                <!-- 8 Touch Pads — smaller -->
                 <div class="pads-container" id="padsContainer">
                     <div class="pad" data-pad="0">1</div>
                     <div class="pad" data-pad="1">2</div>
@@ -679,9 +605,21 @@
                     <div class="pad" data-pad="6">7</div>
                     <div class="pad" data-pad="7">8</div>
                 </div>
+
+                <!-- Crossfader — below pads -->
+                <div class="crossfader-section" id="crossfader">
+                    <span class="crossfader-label">X-FADE</span>
+                    <div class="crossfader-track">
+                        <div class="crossfader-thumb" id="xfadeThumb" data-value="50"></div>
+                    </div>
+                    <div class="crossfader-ends">
+                        <span>A</span>
+                        <span>B</span>
+                    </div>
+                </div>
             </div>
 
-            <!-- I/O Ports with labels -->
+            <!-- I/O Ports -->
             <div class="io-ports">
                 <div style="position: relative;">
                     <div class="io-port" title="Audio Out"></div>
@@ -700,7 +638,7 @@
                 </div>
             </div>
 
-            <!-- External Sensor Diagrams -->
+            <!-- External Sensors -->
             <div class="sensor sensor-piezo">
                 <div class="sensor-icon">&#9676;</div>
                 <div class="sensor-info">
@@ -741,7 +679,49 @@
         <div>Display: <span>5" Touch</span></div>
         <div>Pads: <span>8x MPR121</span></div>
         <div>Encoders: <span>5x Rotary + X-Fade</span></div>
+        <div>Modes: <span>4 (incl. Journey)</span></div>
         <div>Time: <span id="timeVal">--:--</span></div>
+    </div>
+
+    <div class="diy-panel">
+        <h3>DIY Build Assessment</h3>
+        <div class="diy-grid">
+            <div class="diy-col">
+                <h4>Brain + Display</h4>
+                <ul>
+                    <li>Raspberry Pi 4 (4GB) <span class="cost">~$55</span></li>
+                    <li>5" HDMI Capacitive Touch <span class="cost">~$40</span></li>
+                    <li>I2S DAC (PCM5102A) <span class="cost">~$8</span></li>
+                    <li>USB/MEMS Microphone <span class="cost">~$10</span></li>
+                    <li>Piezo Contact Mic <span class="cost">~$5</span></li>
+                </ul>
+            </div>
+            <div class="diy-col">
+                <h4>Controls + Connectivity</h4>
+                <ul>
+                    <li>5x KY-040 Rotary Encoders <span class="cost">~$8</span></li>
+                    <li>1x 45mm DJ Crossfader <span class="cost">~$12</span></li>
+                    <li>MPR121 + 8 Copper Pads <span class="cost">~$15</span></li>
+                    <li>3x Momentary Buttons <span class="cost">~$3</span></li>
+                    <li>FM Receiver (TEA5767) <span class="cost">~$4</span></li>
+                </ul>
+            </div>
+            <div class="diy-col">
+                <h4>Enclosure + Assembly</h4>
+                <ul>
+                    <li>3D Printed Case (PLA) <span class="cost">~$15</span></li>
+                    <li>Wires, Headers, Standoffs <span class="cost">~$10</span></li>
+                    <li class="diy-total">Estimated Total <span class="cost">~$185</span></li>
+                </ul>
+                <div class="diy-badge">FEASIBILITY: HIGH</div>
+                <ul style="margin-top: 8px;">
+                    <li>No custom PCB required</li>
+                    <li>Through-hole soldering only</li>
+                    <li>Pi GPIO handles all I/O</li>
+                    <li>Chromium kiosk for the UI</li>
+                </ul>
+            </div>
+        </div>
     </div>
 
     <footer class="page-footer">
@@ -753,7 +733,6 @@
     <script>
     (function() {
         const appFrame = document.getElementById('appDisplay');
-        let appState = {};
 
         function sendToApp(action, data) {
             if (appFrame && appFrame.contentWindow) {
@@ -761,18 +740,10 @@
             }
         }
 
-        // Receive messages from embedded app
         window.addEventListener('message', (event) => {
             if (!event.data) return;
-
-            if (event.data.type === 'app-state') {
-                appState = event.data.data;
-                updateMockupFromState(appState);
-            }
-
-            if (event.data.type === 'encoder-context') {
-                updateEncoderLabels(event.data.data);
-            }
+            if (event.data.type === 'app-state') updateMockupFromState(event.data.data);
+            if (event.data.type === 'encoder-context') updateEncoderLabels(event.data.data);
         });
 
         function updateEncoderLabels(ctx) {
@@ -787,12 +758,10 @@
         }
 
         function updateMockupFromState(state) {
-            const playBtn = document.querySelector('.header-transport .tr-btn.play');
+            const playBtn = document.querySelector('.transport-btn.play');
             if (playBtn) playBtn.classList.toggle('active', state.isPlaying);
-
-            const recBtn = document.querySelector('.header-transport .tr-btn.rec');
+            const recBtn = document.querySelector('.transport-btn.rec');
             if (recBtn) recBtn.classList.toggle('rec-active', state.isRecording);
-
             if (state.mode) {
                 document.querySelectorAll('.mode-btn').forEach(btn => {
                     btn.classList.toggle('active', btn.dataset.mode === state.mode);
@@ -800,8 +769,8 @@
             }
         }
 
-        // Transport buttons (in header)
-        document.querySelectorAll('.header-transport .tr-btn').forEach(btn => {
+        // Transport
+        document.querySelectorAll('.transport-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const action = btn.classList.contains('play') ? 'play' :
                               btn.classList.contains('stop') ? 'stop' : 'record';
@@ -813,10 +782,7 @@
 
         // Pads
         document.querySelectorAll('.pad').forEach(pad => {
-            const trigger = () => {
-                pad.classList.add('active');
-                sendToApp('pad', { index: parseInt(pad.dataset.pad) });
-            };
+            const trigger = () => { pad.classList.add('active'); sendToApp('pad', { index: parseInt(pad.dataset.pad) }); };
             const release = () => pad.classList.remove('active');
             pad.addEventListener('mousedown', trigger);
             pad.addEventListener('touchstart', (e) => { e.preventDefault(); trigger(); });
@@ -825,7 +791,7 @@
             pad.addEventListener('touchend', release);
         });
 
-        // Encoders — drag vertically to change value
+        // Encoders
         document.querySelectorAll('.encoder').forEach(enc => {
             let startY = 0, startVal = 50;
             const param = enc.dataset.param;
@@ -835,12 +801,6 @@
                 const delta = (startY - clientY) * 0.5;
                 const val = Math.max(0, Math.min(100, startVal + delta));
                 const rounded = Math.round(val);
-
-                const indicator = enc.querySelector('.encoder-indicator');
-                if (indicator) {
-                    indicator.style.transform = 'rotate(' + (val * 2.7 - 135) + 'deg)';
-                }
-
                 const valEl = enc.querySelector('.encoder-value');
                 if (valEl) {
                     if (param === 'pan') {
@@ -849,7 +809,6 @@
                         valEl.textContent = rounded;
                     }
                 }
-
                 if (knob) knob.dataset.value = rounded;
                 sendToApp('encoder', { param, value: rounded });
             };
@@ -864,37 +823,31 @@
             });
         });
 
-        // Crossfader — drag horizontally
+        // Crossfader
         const xfadeThumb = document.getElementById('xfadeThumb');
         const xfadeTrack = xfadeThumb?.parentElement;
         if (xfadeThumb && xfadeTrack) {
             let dragging = false, startX = 0, startPct = 50;
-
             xfadeThumb.addEventListener('mousedown', (e) => {
                 e.preventDefault();
                 dragging = true;
                 startX = e.clientX;
                 startPct = parseInt(xfadeThumb.dataset.value || 50);
-
                 const move = (e2) => {
                     if (!dragging) return;
                     const trackW = xfadeTrack.offsetWidth;
                     const deltaPx = e2.clientX - startX;
                     const deltaPct = (deltaPx / trackW) * 100;
                     const val = Math.max(0, Math.min(100, startPct + deltaPct));
-                    const rounded = Math.round(val);
-
-                    xfadeThumb.style.left = val + '%';
-                    xfadeThumb.dataset.value = rounded;
-                    sendToApp('crossfade', { value: rounded });
+                    xfadeThumb.style.left = Math.round(val) + '%';
+                    xfadeThumb.dataset.value = Math.round(val);
+                    sendToApp('crossfade', { value: Math.round(val) });
                 };
-
                 const up = () => {
                     dragging = false;
                     document.removeEventListener('mousemove', move);
                     document.removeEventListener('mouseup', up);
                 };
-
                 document.addEventListener('mousemove', move);
                 document.addEventListener('mouseup', up);
             });
@@ -916,12 +869,11 @@
             if (e.key === 'Escape') { sendToApp('transport', { action: 'stop' }); }
         });
 
-        // Time display
+        // Time
         function updateTime() {
             const now = new Date();
-            const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
             const el = document.getElementById('timeVal');
-            if (el) el.textContent = timeStr;
+            if (el) el.textContent = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
         }
         setInterval(updateTime, 1000);
         updateTime();

@@ -1,0 +1,981 @@
+{
+  "timestamp": "2026-02-01T13:27:31.568Z",
+  "summary": {
+    "total": 194,
+    "passed": 191,
+    "failed": 1,
+    "warnings": 2
+  },
+  "tests": [
+    {
+      "name": "App container exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Page header exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Page footer exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Sidebar exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Device container exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "SEQ panel exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Mixer panel exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pads panel exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Knobs panel exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Synth panel exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Scenes panel exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "FX panel exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "AI panel exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Radio panel exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "EQ panel exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Nav link: Home",
+      "status": "PASS",
+      "detail": "index.html"
+    },
+    {
+      "name": "Nav link: App",
+      "status": "PASS",
+      "detail": "app.html"
+    },
+    {
+      "name": "Nav link: Design",
+      "status": "PASS",
+      "detail": "design.html"
+    },
+    {
+      "name": "Nav link: SDLC",
+      "status": "PASS",
+      "detail": "sdlc.html"
+    },
+    {
+      "name": "Nav link: About",
+      "status": "PASS",
+      "detail": "about.html"
+    },
+    {
+      "name": "Nav link: Analysis",
+      "status": "PASS",
+      "detail": "analysis.html"
+    },
+    {
+      "name": "Play button exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Stop button exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Record button exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Play button activates",
+      "status": "FAIL",
+      "detail": "Expected class \"active\" not found after click"
+    },
+    {
+      "name": "Sequencer is playing after Play click",
+      "status": "WARN",
+      "detail": "Sequencer may not be initialized"
+    },
+    {
+      "name": "Sequencer stopped after Stop click",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Record button toggles recording",
+      "status": "PASS",
+      "detail": "Recording"
+    },
+    {
+      "name": "Tap tempo button exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Tap tempo clickable",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Tempo display shows value",
+      "status": "PASS",
+      "detail": "200 BPM"
+    },
+    {
+      "name": "Source button: SAMPLER",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Source button: SYNTH",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Source button: RADIO",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Source button: MIC",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pattern slot A",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pattern slot B",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pattern slot C",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pattern slot D",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pattern slot E",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pattern slot F",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pattern slot G",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pattern slot H",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "SEQ tool: seqRandom",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "SEQ tool: seqClear",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "SEQ tool: eucGen",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "SEQ tool: dubToggle",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "SEQ tool: fillBtn",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Randomize creates active steps",
+      "status": "PASS",
+      "detail": "4 active steps"
+    },
+    {
+      "name": "SEQ tool: seqCopy",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "SEQ tool: seqPaste",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "SEQ tool: seqUndo",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "SEQ tool: seqRedo",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pattern length selector exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pattern length change to 32",
+      "status": "PASS",
+      "detail": "Got: 32"
+    },
+    {
+      "name": "Swing slider exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pad 1 exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pad 2 exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pad 3 exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pad 4 exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pad 5 exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pad 6 exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pad 7 exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pad 8 exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pad 1 clickable",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Kit button: kit1",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Kit button: kit2",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Kit button: kit3",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Mic capture button exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Fader: mic",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Gain knob: mic",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pan knob: mic",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Fader: samples",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Gain knob: samples",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pan knob: samples",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Fader: synth",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Gain knob: synth",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pan knob: synth",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Fader: radio",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Gain knob: radio",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pan knob: radio",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Master fader exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Mute button: mic",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Solo button: mic",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Mute button: samples",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Solo button: samples",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Mute button: synth",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Solo button: synth",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Mute button: radio",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Solo button: radio",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Mute MIC toggles active",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Peak meter mode button",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "RMS meter mode button",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Knob: knobFreq",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Knob: knobFilter",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Knob: knobDelay",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Knob: knobGrain",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Knob: knobReso",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Knob: knobDrive",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Knob: knobPan",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Knob: knobVol",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Target button: fx",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Target button: synth",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Target button: sampler",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Synth power button exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "OSC1 wave: sine",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "OSC2 wave: sine",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "OSC1 wave: triangle",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "OSC2 wave: triangle",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "OSC1 wave: sawtooth",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "OSC2 wave: sawtooth",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "OSC1 wave: square",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "OSC2 wave: square",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "OSC1 SAW select",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Filter button: lowpass",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Filter button: highpass",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Filter button: bandpass",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Filter HP select",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "LFO target: pitch",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "LFO target: filter",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "LFO target: amp",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "ADSR: adsrAttack",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "ADSR: adsrDecay",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "ADSR: adsrSustain",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "ADSR: adsrRelease",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Synth preset save",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Synth preset load",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Scene button A",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Scene button B",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Scene button C",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Scene button D",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Scene B select",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Save scene button",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Load scene button",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Crossfader exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Scene copy button",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Scene paste button",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Scene lock button",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Auto scene toggle",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Save scene clickable",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "FX slider: fxDelay",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "FX slider: fxGrain",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "FX slider: fxGlitch",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "FX slider: fxCrush",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Punch FX: stutter",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Punch FX: reverse",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Punch FX: filter",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Punch FX: tape",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Punch STT press/release",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "FX preset save button",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Radio search input",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Radio scan button",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Radio play button",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Radio stop button",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Radio sample button",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Station list container",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Radio scan clickable",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "EQ Low slider",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "EQ Mid slider",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "EQ High slider",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "EQ channel: master",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "EQ channel: mic",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "EQ channel: samples",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "EQ channel: synth",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "EQ channel: radio",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "EQ channel select: synth",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Generate button exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Landmark button exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "AI location display",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "AI time display",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "AI vibe display",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Generation produces active steps",
+      "status": "PASS",
+      "detail": "20/128 steps active"
+    },
+    {
+      "name": "Sequencer playing after generate",
+      "status": "WARN",
+      "detail": "Not playing (may need user gesture)"
+    },
+    {
+      "name": "Tempo set",
+      "status": "PASS",
+      "detail": "132 BPM"
+    },
+    {
+      "name": "AI vibe detected",
+      "status": "PASS",
+      "detail": "urban"
+    },
+    {
+      "name": "AI context available",
+      "status": "PASS",
+      "detail": "unknown, afternoon"
+    },
+    {
+      "name": "Pattern density reasonable (5-60%)",
+      "status": "PASS",
+      "detail": "15.6%"
+    },
+    {
+      "name": "Track sources assigned",
+      "status": "PASS",
+      "detail": "sampler, sampler, sampler, sampler, sampler, sampler, synth, sampler"
+    },
+    {
+      "name": "Analysis report visible after generate",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Space key toggles play",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pad keys 1-8 pressable",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Help modal opens",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Settings modal opens",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "P-Lock editor element exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "P-Lock pitch slider",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "P-Lock slice slider",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "P-Lock filter slider",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "P-Lock decay slider",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Trig condition: always",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Trig condition: probability",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Trig condition: fill",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Trig condition: notFill",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Trig condition: nth",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Trig condition: neighbor",
+      "status": "PASS",
+      "detail": ""
+    }
+  ]
+}
