@@ -8,13 +8,6 @@
     <style>
         :root {
             --bg: #f5f5f5;
-            --accent: #278789;
-            --accent-dark: #1d6b6d;
-            --green: #1aa167;
-            --red: #c0392b;
-            --blue: #1270b8;
-            --yellow: #d4a857;
-            --gold: #d4a857;
             --pastel-gray: #ffffff;
             --gray-text: #555;
         }
@@ -193,7 +186,7 @@
             position: absolute;
             top: 4px; left: 50%;
             width: 3px; height: 8px;
-            background: var(--accent);
+            background: #278789;
             border-radius: 2px;
             transform: translateX(-50%);
         }
@@ -202,10 +195,16 @@
             position: absolute;
             top: 4px; left: 50%;
             width: 3px; height: 8px;
-            background: var(--accent);
+            background: #278789;
             border-radius: 2px;
             transform-origin: center 14px;
         }
+
+        /* Per-encoder color indicators */
+        .encoder[data-param="volume"] .encoder-knob::after { background: #1aa167; }
+        .encoder[data-param="pan"] .encoder-knob::after { background: #1270b8; }
+        .encoder[data-param="filter"] .encoder-knob::after { background: #d4a857; }
+        .encoder[data-param="fx"] .encoder-knob::after { background: #c0392b; }
 
         .encoder-label { font-size: 9px; color: var(--gray-text); font-weight: 600; }
         .encoder-value { font-size: 8px; color: #666; font-family: monospace; }
@@ -234,6 +233,8 @@
             cursor: pointer;
         }
 
+        .transport-btn.play { color: #1aa167; border-color: #1aa167; }
+        .transport-btn.rec { color: #c0392b; border-color: #c0392b; }
         .transport-btn:hover { background: linear-gradient(145deg, #fff 0%, #eee 100%); }
         .transport-btn.play.active { background: #1aa167; color: #fff; border-color: #1aa167; }
         .transport-btn.rec.active, .transport-btn.rec.rec-active { background: #c0392b; color: #fff; border-color: #c0392b; }
@@ -380,38 +381,56 @@
         /* GPS Strip (compact, bottom-right) */
         .gps-strip {
             position: absolute;
-            bottom: 18px; right: 25px;
-            width: 200px; height: 45px;
+            bottom: 12px; right: 25px;
+            width: 280px; height: 70px;
             background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 6px;
+            border: 2px solid #278789;
+            border-radius: 8px;
             z-index: 2;
             display: flex;
             align-items: center;
             padding: 0 10px;
             gap: 8px;
+            overflow: hidden;
+        }
+        .gps-map-thumb {
+            width: 50px; height: 50px;
+            border-radius: 4px;
+            background: #e8e8e8;
+            background-image: url('https://media.rhizome.org/blog/8979/Chombart-de-Lauwe.jpg');
+            background-size: cover;
+            background-position: center;
+            flex-shrink: 0;
+            border: 1px solid #ddd;
         }
         .gps-strip .gps-icon {
-            font-size: 16px;
-            color: var(--accent);
+            font-size: 18px;
+            color: #278789;
             flex-shrink: 0;
         }
         .gps-strip .gps-info {
             display: flex;
             flex-direction: column;
-            gap: 1px;
+            gap: 2px;
             overflow: hidden;
         }
         .gps-strip .gps-label {
-            font-size: 8px;
-            font-weight: 700;
-            color: var(--gray-text);
+            font-size: 9px;
+            font-weight: 800;
+            color: #278789;
             letter-spacing: 1px;
         }
         .gps-strip .gps-coords {
+            font-size: 10px;
+            color: #555;
+            font-family: monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .gps-strip .gps-city {
             font-size: 9px;
             color: #888;
-            font-family: monospace;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -646,7 +665,7 @@
                         <span></span><span></span><span></span>
                     </div>
                     <iframe id="appDisplay"
-                            src="app.html?embedded=1"
+                            src="app.html?embedded=1&mockup=1"
                             allow="autoplay; microphone"
                             style="width: 100%; height: 100%; border: none; border-radius: 4px; background: #111;">
                     </iframe>
@@ -716,10 +735,12 @@
 
                 <!-- GPS Strip (compact, bottom-right) -->
                 <div class="gps-strip" id="gpsStrip">
+                    <div class="gps-map-thumb"></div>
                     <div class="gps-icon">+</div>
                     <div class="gps-info">
                         <span class="gps-label">GPS</span>
-                        <span class="gps-coords" id="gpsCoords">--</span>
+                        <span class="gps-coords" id="gpsCoords">40.4168, -3.7038</span>
+                        <span class="gps-city">Madrid, ES</span>
                     </div>
                 </div>
             </div>

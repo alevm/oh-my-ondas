@@ -165,6 +165,16 @@ html, body {
 
 /* ===== GRID LAYOUT - Matches Hardware: Display top, 3-column controls ===== */
 .device {
+    /* Product palette (Aztec-inspired) — scoped to device context */
+    /* Page framework inherits website palette from :root */
+    --accent: #278789;
+    --accent-dark: #1d6b6d;
+    --green: #1aa167;
+    --red: #c0392b;
+    --blue: #1270b8;
+    --yellow: #d4a857;
+    --gold: #d4a857;
+
     display: grid;
     grid-template-columns: 140px 1fr 1fr 1fr;
     grid-template-rows: auto 1fr 1fr auto;

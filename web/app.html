@@ -7,23 +7,23 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="screen-orientation" content="landscape">
     <title>App - Oh My Ondas</title>
-    <link rel="stylesheet" href="css/style.css?v=248">
+    <link rel="stylesheet" href="css/style.css?v=249">
     <style>
-        :root {
-            --accent: #278789;
-            --accent-dark: #1d6b6d;
-            --green: #1aa167;
-            --red: #c0392b;
-            --blue: #1270b8;
-            --yellow: #d4a857;
-            --gold: #d4a857;
-        }
+        /* Hide transport buttons when inside mockup (physical buttons handle transport) */
+        body.mockup-mode .transport-panel .transport-inline { display: none !important; }
+        body.mockup-mode .transport-panel .tempo-inline .tap-btn { display: none !important; }
+        body.mockup-mode .transport-panel .help-btn,
+        body.mockup-mode .transport-panel .admin-btn { display: none !important; }
     </style>
 </head>
 <body>
     <script>
-        if (new URLSearchParams(window.location.search).get('embedded') === '1') {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('embedded') === '1') {
             document.body.classList.add('embedded-mode');
+        }
+        if (params.get('mockup') === '1') {
+            document.body.classList.add('mockup-mode');
         }
     </script>
 
