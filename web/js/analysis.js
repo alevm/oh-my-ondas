@@ -420,10 +420,10 @@ class AnalysisPage {
         const cellH = (h - padY * 2) / rows;
 
         const sourceColors = {
-            sampler: '#5ba8d4',
-            synth: '#9b59b6',
-            radio: '#ffc003',
-            mic: '#1270b8'
+            sampler: '#d4c56a',
+            synth: '#5ba8d4',
+            radio: '#d48ba0',
+            mic: '#a388bf'
         };
 
         // Track labels
@@ -470,7 +470,7 @@ class AnalysisPage {
                     // Trig condition marker
                     const hasCond = step?.condition || step?.trigCondition;
                     if (hasCond) {
-                        ctx.fillStyle = '#ffc003';
+                        ctx.fillStyle = '#d4c56a';
                         ctx.fillRect(x + 2, y + cellH - 4, 4, 2);
                     }
                 }

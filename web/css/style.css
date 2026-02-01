@@ -15,13 +15,13 @@
     --border: #e0e0e0;
     --accent: #5ba8d4;
     --accent-dark: #4891bb;
-    --green: #1aa167;
-    --red: #ce2021;
-    --blue: #1270b8;
-    --yellow: #ffc003;
+    --green: #6abf8a;
+    --red: #c47070;
+    --blue: #d48ba0;
+    --yellow: #d4c56a;
     --text: #1a1a1a;
     --text-light: #888;
-    --gold: #ffc003;
+    --gold: #d4c56a;
     --cream: #fafafa;
 }
 
@@ -293,7 +293,7 @@ html, body {
 .device > .fx-panel {
     background: #ffffff !important;
     border-color: #e0e0e0 !important;
-    border-left: 3px solid #9b59b6 !important;
+    border-left: 3px solid #1a6b6b !important;
     color: var(--text);
 }
 
@@ -315,7 +315,7 @@ html, body {
 
 .synth-panel .panel-title,
 .fx-panel .panel-title {
-    color: #9b59b6 !important;
+    color: #1a6b6b !important;
 }
 
 .ai-panel .panel-title {
@@ -334,7 +334,7 @@ html, body {
 }
 
 .synth-panel .wave-btn.active {
-    background: #9b59b6 !important;
+    background: #1a6b6b !important;
     color: #fff !important;
 }
 
@@ -686,7 +686,7 @@ body.embedded-mode .device > .ai-panel.panel-visible .ai-btn {
 .pads-header select { height: 30px; font-size: 13px; border: 2px solid var(--border); border-radius: 4px; }
 .pads-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 1fr); gap: 6px; }
 .pad { width: 100%; aspect-ratio: 1; max-height: 55px; border: none; border-radius: 6px; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.05s, box-shadow 0.1s; }
-.pad:nth-child(odd) { background: linear-gradient(135deg, #9b59b6 0%, #7d3c98 100%); }
+.pad:nth-child(odd) { background: linear-gradient(135deg, #1a6b6b 0%, #145555 100%); }
 .pad:active, .pad.active { transform: scale(0.95); }
 .pad.flash {
     animation: pad-flash 0.15s ease-out;
