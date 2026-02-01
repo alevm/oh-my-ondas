@@ -4,12 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Oh My Ondas - Interactive Hardware</title>
-    <link rel="stylesheet" href="css/style.css?v=249">
+    <link rel="stylesheet" href="css/style.css?v=251">
     <style>
         :root {
             --bg: #f5f5f5;
-            --pastel-gray: #ffffff;
-            --gray-text: #555;
+            --petrol: #1a3535;
+            --petrol-light: #1e3d3d;
+            --petrol-dark: #162e2e;
+            --petrol-border: #2a5050;
+            --petrol-raised: #3a5a5a;
+            --petrol-highlight: #4a6a6a;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,51 +33,47 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
-            background: linear-gradient(180deg, #1a1a1a 0%, #111 100%);
+            background: #e8e8e8;
         }
 
-        /* Device - larger dimensions */
+        /* Device */
         .device-container { position: relative; width: 1100px; height: 700px; overflow: visible; }
 
         .enclosure {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            width: 1080px;
-            height: 670px;
-            background: linear-gradient(165deg, #454545 0%, #3a3a3a 40%, #323232 100%);
+            top: 10px; left: 10px;
+            width: 1080px; height: 670px;
+            background: linear-gradient(165deg, var(--petrol-light) 0%, var(--petrol) 40%, var(--petrol-dark) 100%);
             border-radius: 14px;
-            border: 1px solid #5a5a5a;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3),
-                        inset 0 1px 0 rgba(255,255,255,0.1);
+            border: 1px solid var(--petrol-border);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35), 0 4px 16px rgba(0,0,0,0.25),
+                        inset 0 1px 0 rgba(255,255,255,0.06);
         }
 
         .enclosure::before {
             content: '';
             position: absolute;
             top: 5px; left: 5px; right: 5px; bottom: 5px;
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.04);
             border-radius: 10px;
             pointer-events: none;
         }
 
-        /* Groove divider between display and controls */
         .enclosure::after {
             content: '';
             position: absolute;
-            top: 352px; left: 15px; right: 15px;
+            top: 342px; left: 15px; right: 15px;
             height: 1px;
-            background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.4) 15%, rgba(0,0,0,0.4) 85%, transparent 100%);
-            box-shadow: 0 1px 0 rgba(255,255,255,0.04);
+            background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.3) 15%, rgba(0,0,0,0.3) 85%, transparent 100%);
+            box-shadow: 0 1px 0 rgba(255,255,255,0.03);
             pointer-events: none;
             z-index: 1;
         }
 
-        /* Artwork */
         .artwork {
             position: absolute;
-            top: 350px; left: 10px; right: 10px; bottom: 10px;
-            opacity: 0.05;
+            top: 342px; left: 10px; right: 10px; bottom: 10px;
+            opacity: 0.03;
             background-image: url('https://media.rhizome.org/blog/8979/Chombart-de-Lauwe.jpg');
             background-size: cover;
             border-radius: 8px;
@@ -81,17 +81,15 @@
             pointer-events: none;
         }
 
-        /* (panel backgrounds removed — simplified layout) */
-
-        /* 5" Display (now iframe) */
+        /* 5" Display */
         .display {
             position: absolute;
             top: 10px; left: 10px; right: 10px;
-            height: 340px;
+            height: 330px;
             background: #0a0a0a;
             border-radius: 6px;
-            border: 3px solid #1a1a1a;
-            box-shadow: inset 0 0 0 1px #555, 0 4px 16px rgba(0,0,0,0.5);
+            border: 3px solid #111;
+            box-shadow: inset 0 0 0 1px #444, 0 4px 12px rgba(0,0,0,0.3);
             overflow: hidden;
             z-index: 2;
         }
@@ -101,56 +99,217 @@
             position: absolute;
             font-size: 8px;
             font-weight: 700;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.25);
             z-index: 3;
         }
-        .label-pads { top: 408px; left: 28px; color: rgba(255,255,255,0.3); font-size: 8px; letter-spacing: 2px; }
-        .label-ctrl { top: 408px; right: 28px; color: rgba(255,255,255,0.3); width: 210px; text-align: center; font-size: 8px; letter-spacing: 2px; }
+        .label-pads { top: 476px; left: 28px; }
+        .label-ctrl { top: 400px; left: 28px; width: auto; text-align: left; }
+
+        /* 3 Mode Buttons — large pills */
+        .modes-bar {
+            position: absolute;
+            top: 348px; left: 25px; right: 25px;
+            height: 42px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            z-index: 2;
+        }
+        .mode-btn {
+            flex: none;
+            height: 36px;
+            padding: 0 28px;
+            border-radius: 18px;
+            border: 2px solid;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.15s;
+            background: rgba(0,0,0,0.2);
+        }
+        .mode-btn[data-mode="picture"] { border-color: #278789; color: #278789; }
+        .mode-btn[data-mode="picture"].active {
+            background: #278789; color: #fff;
+            box-shadow: 0 0 14px rgba(39,135,137,0.4), 0 2px 8px rgba(39,135,137,0.2);
+        }
+        .mode-btn[data-mode="soundscape"] { border-color: #1aa167; color: #1aa167; }
+        .mode-btn[data-mode="soundscape"].active {
+            background: #1aa167; color: #fff;
+            box-shadow: 0 0 14px rgba(26,161,103,0.4), 0 2px 8px rgba(26,161,103,0.2);
+        }
+        .mode-btn[data-mode="interact"] { border-color: #1270b8; color: #1270b8; }
+        .mode-btn[data-mode="interact"].active {
+            background: #1270b8; color: #fff;
+            box-shadow: 0 0 14px rgba(18,112,184,0.4), 0 2px 8px rgba(18,112,184,0.2);
+        }
+        .mode-btn:hover { opacity: 0.85; transform: scale(1.03); }
+
+        /* 5 Encoders + Crossfader — horizontal row */
+        .encoders-container {
+            position: absolute;
+            top: 410px; left: 18px; right: 18px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr) 2.5fr;
+            gap: 6px;
+            height: 62px;
+            z-index: 2;
+            background: rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 10px;
+            padding: 6px 10px;
+        }
+
+        .encoder { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+
+        .encoder-knob {
+            width: 34px; height: 34px;
+            background: linear-gradient(145deg, var(--petrol-raised) 0%, #2a4545 50%, #305050 100%);
+            border-radius: 50%;
+            border: 2px solid var(--petrol-highlight);
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+
+        .encoder-knob::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 12px; height: 12px;
+            background: linear-gradient(145deg, var(--petrol-highlight) 0%, var(--petrol-raised) 100%);
+            border: 1px solid #5a7a7a;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .encoder-knob::after {
+            content: '';
+            position: absolute;
+            top: 3px; left: 50%;
+            width: 3px; height: 7px;
+            background: #278789;
+            border-radius: 2px;
+            transform: translateX(-50%);
+        }
+
+        .encoder-indicator {
+            position: absolute;
+            top: 3px; left: 50%;
+            width: 3px; height: 7px;
+            background: #278789;
+            border-radius: 2px;
+            transform-origin: center 13px;
+        }
+
+        .encoder[data-param="volume"] .encoder-knob::after { background: #1aa167; }
+        .encoder[data-param="pan"] .encoder-knob::after { background: #1270b8; }
+        .encoder[data-param="filter"] .encoder-knob::after { background: #d4a857; }
+        .encoder[data-param="fx"] .encoder-knob::after { background: #c0392b; }
+        .encoder[data-param="decay"] .encoder-knob::after { background: #278789; }
+
+        .encoder-label { font-size: 8px; color: rgba(255,255,255,0.5); font-weight: 700; letter-spacing: 0.5px; }
+        .encoder-value { font-size: 8px; color: rgba(255,255,255,0.35); font-family: monospace; }
+
+        /* Crossfader */
+        .crossfader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 0 8px;
+        }
+        .crossfader-label {
+            font-size: 8px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 1px;
+        }
+        .crossfader-track {
+            width: 100%;
+            height: 6px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 3px;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .crossfader-thumb {
+            position: absolute;
+            top: -9px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 22px;
+            background: linear-gradient(180deg, var(--petrol-highlight) 0%, var(--petrol-raised) 100%);
+            border-radius: 3px;
+            border: 1px solid #5a7a7a;
+            cursor: ew-resize;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        .crossfader-thumb::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px; height: 2px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 1px;
+        }
+        .crossfader-ends {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 7px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 0.5px;
+        }
 
         /* 8 Touch Pads */
         .pads-container {
             position: absolute;
-            top: 422px; left: 18px;
+            top: 486px; left: 18px; right: 18px;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(2, 1fr);
             gap: 8px;
-            width: 500px;
-            height: 150px;
+            height: 140px;
             z-index: 2;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.04);
             border-radius: 10px;
             padding: 10px;
         }
 
         .pad {
-            background: linear-gradient(180deg, #2c2c2c 0%, #1c1c1c 100%);
+            background: linear-gradient(180deg, var(--petrol-light) 0%, var(--petrol-dark) 100%);
             border-radius: 6px;
-            border: 1px solid #3a3a3a;
+            border: 1px solid var(--petrol-border);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: rgba(255,255,255,0.35);
+            color: rgba(255,255,255,0.3);
             font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             user-select: none;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(255,255,255,0.03);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 -1px 0 rgba(255,255,255,0.03);
             transition: all 0.08s;
         }
 
-        .pad:hover { background: linear-gradient(180deg, #333 0%, #242424 100%); color: rgba(255,255,255,0.5); }
+        .pad:hover { background: linear-gradient(180deg, #254545 0%, var(--petrol-light) 100%); color: rgba(255,255,255,0.5); }
         .pad:active, .pad.active {
             background: linear-gradient(145deg, #1aa167 0%, #148f57 100%);
             border-color: #1aa167;
             color: #fff;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 0 16px rgba(26,161,103,0.3);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 0 16px rgba(26,161,103,0.2);
         }
 
-        /* Colored top accent bars */
         .pad::before {
             content: '';
             position: absolute;
@@ -167,108 +326,6 @@
         .pad:nth-child(8)::before { background: #278789; }
         .pad.active::before { background: rgba(255,255,255,0.6); }
 
-        /* 4 Encoders */
-        .encoders-container {
-            position: absolute;
-            top: 422px; right: 18px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(2, 1fr);
-            gap: 10px;
-            width: 210px;
-            height: 150px;
-            z-index: 2;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 10px;
-            padding: 10px;
-        }
-
-        .encoder { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-
-        .encoder-knob {
-            width: 46px; height: 46px;
-            background: linear-gradient(145deg, #5a5a5a 0%, #3a3a3a 50%, #404040 100%);
-            border-radius: 50%;
-            border: 2px solid #6a6a6a;
-            position: relative;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
-        }
-
-        .encoder-knob::before {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 16px; height: 16px;
-            background: linear-gradient(145deg, #666 0%, #444 100%);
-            border: 1px solid #555;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .encoder-knob::after {
-            content: '';
-            position: absolute;
-            top: 4px; left: 50%;
-            width: 3px; height: 9px;
-            background: #278789;
-            border-radius: 2px;
-            transform: translateX(-50%);
-        }
-
-        .encoder-indicator {
-            position: absolute;
-            top: 4px; left: 50%;
-            width: 3px; height: 8px;
-            background: #278789;
-            border-radius: 2px;
-            transform-origin: center 14px;
-        }
-
-        /* Per-encoder color indicators */
-        .encoder[data-param="volume"] .encoder-knob::after { background: #1aa167; box-shadow: 0 0 4px rgba(26,161,103,0.4); }
-        .encoder[data-param="pan"] .encoder-knob::after { background: #1270b8; box-shadow: 0 0 4px rgba(18,112,184,0.4); }
-        .encoder[data-param="filter"] .encoder-knob::after { background: #d4a857; box-shadow: 0 0 4px rgba(212,168,87,0.4); }
-        .encoder[data-param="fx"] .encoder-knob::after { background: #c0392b; box-shadow: 0 0 4px rgba(192,57,43,0.4); }
-
-        .encoder-label { font-size: 9px; color: #bbb; font-weight: 700; letter-spacing: 0.5px; }
-        .encoder-value { font-size: 9px; color: #888; font-family: monospace; }
-
-        /* (LEDs removed — simplified layout) */
-
-        /* Transport */
-        .transport-container {
-            position: absolute;
-            bottom: 18px; left: 25px;
-            display: flex;
-            gap: 10px;
-            z-index: 2;
-        }
-
-        .transport-btn {
-            width: 44px; height: 44px;
-            background: linear-gradient(145deg, #4a4a4a 0%, #2e2e2e 100%);
-            border-radius: 50%;
-            border: 2px solid #5a5a5a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #999;
-            font-size: 16px;
-            cursor: pointer;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12);
-            transition: all 0.1s;
-        }
-
-        .transport-btn.play { color: #1aa167; border-color: #1aa167; box-shadow: 0 3px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 6px rgba(26,161,103,0.2); }
-        .transport-btn.rec { color: #c0392b; border-color: #c0392b; box-shadow: 0 3px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 6px rgba(192,57,43,0.2); }
-        .transport-btn:hover { background: linear-gradient(145deg, #555 0%, #333 100%); }
-        .transport-btn.play.active { background: #1aa167; color: #fff; border-color: #1aa167; box-shadow: 0 0 12px rgba(26,161,103,0.4); }
-        .transport-btn.rec.active, .transport-btn.rec.rec-active { background: #c0392b; color: #fff; border-color: #c0392b; box-shadow: 0 0 12px rgba(192,57,43,0.4); }
-
-        /* (Scenes removed — lives on touchscreen) */
-
         /* I/O */
         .io-ports {
             position: absolute;
@@ -282,9 +339,9 @@
 
         .io-port {
             width: 16px; height: 16px;
-            background: #333;
+            background: var(--petrol-border);
             border-radius: 50%;
-            border: 2px solid #555;
+            border: 2px solid var(--petrol-raised);
         }
 
         /* Info bar */
@@ -300,207 +357,33 @@
         }
         .info-bar span { color: #1aa167; font-weight: 600; }
 
-        /* Menu overlay */
-        .menu-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-            padding: 20px;
-        }
-        .menu-overlay.open { display: flex; }
-
-        .menu-header {
+        /* Header transport */
+        .header-transport {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #333;
+            gap: 6px;
+            margin-left: auto;
         }
-        .menu-title { color: #1aa167; font-size: 18px; font-weight: 700; }
-        .menu-close {
-            width: 40px; height: 40px;
-            background: #278789;
-            border: none;
+        .header-transport .tr-btn {
+            width: 36px; height: 36px;
             border-radius: 50%;
-            color: #fff;
-            font-size: 20px;
+            border: 2px solid #ddd;
+            background: #fff;
             cursor: pointer;
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            padding: 20px 0;
-            flex: 1;
-            align-content: start;
-        }
-
-        .menu-item {
-            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-            border: 2px solid #333;
-            border-radius: 12px;
-            padding: 20px 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .menu-item:hover { border-color: #1aa167; transform: scale(1.02); }
-
-        .menu-icon { font-size: 32px; margin-bottom: 8px; }
-        .menu-label { color: #fff; font-size: 14px; font-weight: 600; }
-        .menu-sublabel { color: #666; font-size: 10px; margin-top: 4px; }
-
-        /* (Source panel, mode panel, focus indicator, AI orchestration, mic meter removed — simplified layout) */
-
-        /* 3 Mode Buttons */
-        .modes-bar {
-            position: absolute;
-            top: 358px; left: 25px; right: 25px;
-            height: 36px;
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            z-index: 2;
-        }
-        .mode-btn {
-            flex: none;
-            height: 30px;
-            padding: 0 22px;
-            border-radius: 15px;
-            border: 2px solid;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.15s;
-        }
-        .mode-btn[data-mode="picture"] {
-            border-color: #278789;
-            background: rgba(39,135,137,0.08);
-            color: #278789;
-        }
-        .mode-btn[data-mode="picture"].active {
-            background: #278789;
-            color: #fff;
-            box-shadow: 0 0 14px rgba(39,135,137,0.4), 0 2px 8px rgba(39,135,137,0.2);
-        }
-        .mode-btn[data-mode="soundscape"] {
-            border-color: #1aa167;
-            background: rgba(26,161,103,0.08);
-            color: #1aa167;
-        }
-        .mode-btn[data-mode="soundscape"].active {
-            background: #1aa167;
-            color: #fff;
-            box-shadow: 0 0 14px rgba(26,161,103,0.4), 0 2px 8px rgba(26,161,103,0.2);
-        }
-        .mode-btn[data-mode="interact"] {
-            border-color: #1270b8;
-            background: rgba(18,112,184,0.08);
-            color: #1270b8;
-        }
-        .mode-btn[data-mode="interact"].active {
-            background: #1270b8;
-            color: #fff;
-            box-shadow: 0 0 14px rgba(18,112,184,0.4), 0 2px 8px rgba(18,112,184,0.2);
-        }
-        .mode-btn:hover { opacity: 0.85; transform: scale(1.03); }
-
-        /* GPS Strip (compact, bottom-right) */
-        .gps-strip {
-            position: absolute;
-            bottom: 12px; right: 18px;
-            width: 280px; height: 70px;
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(39,135,137,0.4);
-            border-radius: 8px;
-            z-index: 2;
             display: flex;
             align-items: center;
-            padding: 0 10px;
-            gap: 8px;
-            overflow: hidden;
-            box-shadow: inset 0 1px 4px rgba(0,0,0,0.3);
-        }
-        .gps-map-thumb {
-            width: 50px; height: 50px;
-            border-radius: 4px;
-            background: #222;
-            background-image: url('https://media.rhizome.org/blog/8979/Chombart-de-Lauwe.jpg');
-            background-size: cover;
-            background-position: center;
-            flex-shrink: 0;
-            border: 1px solid #444;
-        }
-        .gps-strip .gps-icon {
-            font-size: 18px;
-            color: #278789;
-            flex-shrink: 0;
-        }
-        .gps-strip .gps-info {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            overflow: hidden;
-        }
-        .gps-strip .gps-label {
-            font-size: 9px;
-            font-weight: 800;
-            color: #278789;
-            letter-spacing: 1px;
-            text-shadow: 0 0 6px rgba(39,135,137,0.3);
-        }
-        .gps-strip .gps-coords {
-            font-size: 10px;
-            color: #aaa;
-            font-family: monospace;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .gps-strip .gps-city {
-            font-size: 9px;
-            color: #777;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* Menu button on display */
-        .menu-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 24px;
-            height: 24px;
-            background: #333;
-            border: 1px solid #555;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
             justify-content: center;
-            align-items: center;
-            gap: 3px;
-            z-index: 5;
+            font-size: 14px;
+            color: #999;
+            transition: all 0.1s;
         }
-        .menu-btn span {
-            width: 12px;
-            height: 2px;
-            background: #888;
-            border-radius: 1px;
-        }
-        .menu-btn:hover { background: #444; }
-        .menu-btn:hover span { background: #1aa167; }
+        .header-transport .tr-btn.play { color: #1aa167; border-color: #1aa167; }
+        .header-transport .tr-btn.rec { color: #c0392b; border-color: #c0392b; }
+        .header-transport .tr-btn:hover { background: #f5f5f5; }
+        .header-transport .tr-btn.play.active { background: #1aa167; color: #fff; }
+        .header-transport .tr-btn.rec.active,
+        .header-transport .tr-btn.rec.rec-active { background: #c0392b; color: #fff; }
 
-        /* (Radio indicator, map-display removed — simplified layout) */
-
-        /* External Sensor Diagrams — Electric Blueprint Style */
+        /* External Sensor Diagrams */
         .sensor {
             position: absolute;
             display: flex;
@@ -516,8 +399,8 @@
             align-items: center;
             justify-content: center;
             font-size: 14px;
-            background: #1a1a1a;
-            color: #fff;
+            background: #e8e8e8;
+            color: #333;
             flex-shrink: 0;
         }
         .sensor-info {
@@ -537,7 +420,6 @@
             color: #666;
         }
 
-        /* Wire lines — solid colored */
         .sensor-line {
             position: absolute;
             border-top: 2px solid #1270b8;
@@ -547,7 +429,6 @@
             border-left: 2px solid #1270b8;
         }
 
-        /* Junction dots — where wires meet the device */
         .sensor-line::after,
         .sensor-line-v::after {
             content: '';
@@ -556,14 +437,9 @@
             background: currentColor;
             border-radius: 50%;
         }
-        .sensor-line::after {
-            right: -4px; top: -5px;
-        }
-        .sensor-line-v::after {
-            bottom: -4px; left: -5px;
-        }
+        .sensor-line::after { right: -4px; top: -5px; }
+        .sensor-line-v::after { bottom: -4px; left: -5px; }
 
-        /* Per-sensor wire colors */
         .sensor-piezo .sensor-icon { border-color: #278789; }
         .sensor-piezo .sensor-name { color: #278789; }
         .sensor-piezo .sensor-line { border-color: #278789; color: #278789; }
@@ -580,7 +456,6 @@
         .sensor-radio .sensor-name { color: #1270b8; }
         .sensor-radio .sensor-line-v { border-color: #1270b8; color: #1270b8; }
 
-        /* Sensor positions */
         .sensor-piezo { top: 200px; left: -190px; }
         .sensor-piezo .sensor-line { top: 16px; left: 145px; width: 35px; }
 
@@ -593,7 +468,6 @@
         .sensor-radio { top: -55px; right: 200px; left: auto; flex-direction: column; }
         .sensor-radio .sensor-line-v { top: 42px; left: 15px; height: 23px; }
 
-        /* Corner bend pieces — L-shaped wire segments */
         .sensor-piezo .sensor-line::before,
         .sensor-mic .sensor-line::before {
             content: '';
@@ -605,7 +479,6 @@
         .sensor-piezo .sensor-line::before { border-color: #278789; }
         .sensor-mic .sensor-line::before { border-color: #1aa167; }
 
-        /* I/O port labels — electric blueprint style */
         .io-label {
             position: absolute;
             right: -160px;
@@ -622,7 +495,6 @@
             width: 25px;
             border-top: 2px solid #c0392b;
         }
-        /* Terminal markers on I/O lines */
         .io-label-line::after {
             content: '';
             position: absolute;
@@ -630,33 +502,25 @@
             width: 6px; height: 6px;
             background: #c0392b;
         }
-        .io-port {
-            border-color: #c0392b;
-        }
+        .io-port { border-color: #c0392b; }
 
         /* Corner screws */
         .corner-screw {
             position: absolute;
             width: 10px; height: 10px;
             border-radius: 50%;
-            background: linear-gradient(145deg, #707070 0%, #4a4a4a 100%);
-            border: 1px solid #5a5a5a;
+            background: linear-gradient(145deg, var(--petrol-raised) 0%, #2a4545 100%);
+            border: 1px solid var(--petrol-highlight);
             z-index: 4;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 1px 3px rgba(0,0,0,0.4);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 1px 2px rgba(0,0,0,0.3);
         }
         .corner-screw::before, .corner-screw::after {
             content: '';
             position: absolute;
-            background: #333;
+            background: rgba(0,0,0,0.3);
         }
-        .corner-screw::before {
-            top: 4px; left: 2px;
-            width: 6px; height: 1px;
-        }
-        .corner-screw::after {
-            top: 2px; left: 4px;
-            width: 1px; height: 6px;
-        }
+        .corner-screw::before { top: 4px; left: 2px; width: 6px; height: 1px; }
+        .corner-screw::after { top: 2px; left: 4px; width: 1px; height: 6px; }
         .screw-tl { top: 12px; left: 12px; }
         .screw-tr { top: 12px; right: 12px; }
         .screw-bl { bottom: 12px; left: 12px; }
@@ -665,13 +529,13 @@
         /* Brand silk-screen */
         .brand-silkscreen {
             position: absolute;
-            top: 398px;
+            bottom: 8px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 10px;
             font-weight: 800;
             letter-spacing: 4px;
-            color: rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.08);
             text-transform: uppercase;
             z-index: 3;
             white-space: nowrap;
@@ -681,7 +545,7 @@
         /* Status LEDs */
         .status-leds {
             position: absolute;
-            top: 355px;
+            top: 345px;
             right: 30px;
             display: flex;
             gap: 8px;
@@ -707,47 +571,12 @@
             <a href="about.html" class="nav-link">About</a>
             <a href="analysis.html" class="nav-link">Analysis</a>
         </nav>
+        <div class="header-transport">
+            <button class="tr-btn play" data-action="play">&#9654;</button>
+            <button class="tr-btn stop" data-action="stop">&#9632;</button>
+            <button class="tr-btn rec" data-action="rec">&#9679;</button>
+        </div>
     </header>
-
-    <!-- Menu Overlay -->
-    <div class="menu-overlay" id="menuOverlay">
-        <div class="menu-header">
-            <div class="menu-title">MODULE SELECT</div>
-            <button class="menu-close" id="menuClose">&times;</button>
-        </div>
-        <div class="menu-grid">
-            <div class="menu-item" data-module="sampler">
-                <div class="menu-icon">&#x1F941;</div>
-                <div class="menu-label">SAMPLER</div>
-                <div class="menu-sublabel">8 Pads</div>
-            </div>
-            <div class="menu-item" data-module="synth">
-                <div class="menu-icon">&#x1F3B9;</div>
-                <div class="menu-label">SYNTH</div>
-                <div class="menu-sublabel">Dual OSC</div>
-            </div>
-            <div class="menu-item" data-module="radio">
-                <div class="menu-icon">&#x1F4FB;</div>
-                <div class="menu-label">RADIO</div>
-                <div class="menu-sublabel">GPS Stations</div>
-            </div>
-            <div class="menu-item" data-module="fx">
-                <div class="menu-icon">&#x2728;</div>
-                <div class="menu-label">FX</div>
-                <div class="menu-sublabel">Delay / Glitch / Grain</div>
-            </div>
-            <div class="menu-item" data-module="ai">
-                <div class="menu-icon">&#x1F916;</div>
-                <div class="menu-label">AI COMPOSER</div>
-                <div class="menu-sublabel">Soundscape Aware</div>
-            </div>
-            <div class="menu-item" data-module="orchestrate">
-                <div class="menu-icon">&#x1F3AD;</div>
-                <div class="menu-label">AI ORCHESTRATE</div>
-                <div class="menu-sublabel">Full Auto Mode</div>
-            </div>
-        </div>
-    </div>
 
     <main class="main-content">
         <div class="device-container">
@@ -772,10 +601,6 @@
 
                 <!-- 5" Touch Display (iframe) -->
                 <div class="display">
-                    <!-- Menu Button -->
-                    <div class="menu-btn" id="menuBtn">
-                        <span></span><span></span><span></span>
-                    </div>
                     <iframe id="appDisplay"
                             src="app.html?embedded=1&mockup=1"
                             allow="autoplay; microphone"
@@ -791,22 +616,10 @@
                 </div>
 
                 <!-- Labels -->
-                <span class="section-label label-pads">PADS</span>
                 <span class="section-label label-ctrl">CTRL</span>
+                <span class="section-label label-pads">PADS</span>
 
-                <!-- 8 Touch Pads -->
-                <div class="pads-container" id="padsContainer">
-                    <div class="pad" data-pad="0">1</div>
-                    <div class="pad" data-pad="1">2</div>
-                    <div class="pad" data-pad="2">3</div>
-                    <div class="pad" data-pad="3">4</div>
-                    <div class="pad" data-pad="4">5</div>
-                    <div class="pad" data-pad="5">6</div>
-                    <div class="pad" data-pad="6">7</div>
-                    <div class="pad" data-pad="7">8</div>
-                </div>
-
-                <!-- 4 Encoders -->
+                <!-- 5 Encoders + Crossfader -->
                 <div class="encoders-container">
                     <div class="encoder" data-param="volume">
                         <div class="encoder-knob" data-value="80">
@@ -836,24 +649,35 @@
                         <span class="encoder-label">FX</span>
                         <span class="encoder-value">0</span>
                     </div>
-                </div>
-
-                <!-- Transport (3 buttons) -->
-                <div class="transport-container">
-                    <div class="transport-btn play" data-action="play">&#9654;</div>
-                    <div class="transport-btn stop" data-action="stop">&#9632;</div>
-                    <div class="transport-btn rec" data-action="rec">&#9679;</div>
-                </div>
-
-                <!-- GPS Strip (compact, bottom-right) -->
-                <div class="gps-strip" id="gpsStrip">
-                    <div class="gps-map-thumb"></div>
-                    <div class="gps-icon">+</div>
-                    <div class="gps-info">
-                        <span class="gps-label">GPS</span>
-                        <span class="gps-coords" id="gpsCoords">40.4168, -3.7038</span>
-                        <span class="gps-city">Madrid, ES</span>
+                    <div class="encoder" data-param="decay">
+                        <div class="encoder-knob" data-value="50">
+                            <div class="encoder-indicator"></div>
+                        </div>
+                        <span class="encoder-label">DECAY</span>
+                        <span class="encoder-value">50</span>
                     </div>
+                    <div class="crossfader" id="crossfader">
+                        <span class="crossfader-label">X-FADE</span>
+                        <div class="crossfader-track">
+                            <div class="crossfader-thumb" id="xfadeThumb" data-value="50"></div>
+                        </div>
+                        <div class="crossfader-ends">
+                            <span>A</span>
+                            <span>B</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8 Touch Pads -->
+                <div class="pads-container" id="padsContainer">
+                    <div class="pad" data-pad="0">1</div>
+                    <div class="pad" data-pad="1">2</div>
+                    <div class="pad" data-pad="2">3</div>
+                    <div class="pad" data-pad="3">4</div>
+                    <div class="pad" data-pad="4">5</div>
+                    <div class="pad" data-pad="5">6</div>
+                    <div class="pad" data-pad="6">7</div>
+                    <div class="pad" data-pad="7">8</div>
                 </div>
             </div>
 
@@ -916,7 +740,7 @@
         <div>Enclosure: <span>200x140x45mm</span></div>
         <div>Display: <span>5" Touch</span></div>
         <div>Pads: <span>8x MPR121</span></div>
-        <div>Encoders: <span>4x Rotary</span></div>
+        <div>Encoders: <span>5x Rotary + X-Fade</span></div>
         <div>Time: <span id="timeVal">--:--</span></div>
     </div>
 
@@ -963,18 +787,12 @@
         }
 
         function updateMockupFromState(state) {
-            // Update transport button states
-            const playBtn = document.querySelector('.transport-btn.play');
+            const playBtn = document.querySelector('.header-transport .tr-btn.play');
             if (playBtn) playBtn.classList.toggle('active', state.isPlaying);
 
-            const recBtn = document.querySelector('.transport-btn.rec');
+            const recBtn = document.querySelector('.header-transport .tr-btn.rec');
             if (recBtn) recBtn.classList.toggle('rec-active', state.isRecording);
 
-            // Update GPS coords
-            const gpsCoords = document.getElementById('gpsCoords');
-            if (gpsCoords && state.gps) gpsCoords.textContent = state.gps;
-
-            // Sync mode buttons with app state
             if (state.mode) {
                 document.querySelectorAll('.mode-btn').forEach(btn => {
                     btn.classList.toggle('active', btn.dataset.mode === state.mode);
@@ -982,8 +800,8 @@
             }
         }
 
-        // Transport buttons
-        document.querySelectorAll('.transport-btn').forEach(btn => {
+        // Transport buttons (in header)
+        document.querySelectorAll('.header-transport .tr-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const action = btn.classList.contains('play') ? 'play' :
                               btn.classList.contains('stop') ? 'stop' : 'record';
@@ -1007,7 +825,7 @@
             pad.addEventListener('touchend', release);
         });
 
-        // Encoders — drag vertically to change value, forwards to app
+        // Encoders — drag vertically to change value
         document.querySelectorAll('.encoder').forEach(enc => {
             let startY = 0, startVal = 50;
             const param = enc.dataset.param;
@@ -1018,19 +836,21 @@
                 const val = Math.max(0, Math.min(100, startVal + delta));
                 const rounded = Math.round(val);
 
-                // Update visual indicator
                 const indicator = enc.querySelector('.encoder-indicator');
                 if (indicator) {
                     indicator.style.transform = 'rotate(' + (val * 2.7 - 135) + 'deg)';
                 }
 
-                // Update displayed value
                 const valEl = enc.querySelector('.encoder-value');
-                if (valEl) valEl.textContent = rounded;
+                if (valEl) {
+                    if (param === 'pan') {
+                        valEl.textContent = rounded === 50 ? 'C' : (rounded < 50 ? 'L' + (50 - rounded) : 'R' + (rounded - 50));
+                    } else {
+                        valEl.textContent = rounded;
+                    }
+                }
 
-                // Store current value
                 if (knob) knob.dataset.value = rounded;
-
                 sendToApp('encoder', { param, value: rounded });
             };
 
@@ -1044,7 +864,43 @@
             });
         });
 
-        // Mode buttons (PICTURE, SOUNDSCAPE, INTERACT)
+        // Crossfader — drag horizontally
+        const xfadeThumb = document.getElementById('xfadeThumb');
+        const xfadeTrack = xfadeThumb?.parentElement;
+        if (xfadeThumb && xfadeTrack) {
+            let dragging = false, startX = 0, startPct = 50;
+
+            xfadeThumb.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                dragging = true;
+                startX = e.clientX;
+                startPct = parseInt(xfadeThumb.dataset.value || 50);
+
+                const move = (e2) => {
+                    if (!dragging) return;
+                    const trackW = xfadeTrack.offsetWidth;
+                    const deltaPx = e2.clientX - startX;
+                    const deltaPct = (deltaPx / trackW) * 100;
+                    const val = Math.max(0, Math.min(100, startPct + deltaPct));
+                    const rounded = Math.round(val);
+
+                    xfadeThumb.style.left = val + '%';
+                    xfadeThumb.dataset.value = rounded;
+                    sendToApp('crossfade', { value: rounded });
+                };
+
+                const up = () => {
+                    dragging = false;
+                    document.removeEventListener('mousemove', move);
+                    document.removeEventListener('mouseup', up);
+                };
+
+                document.addEventListener('mousemove', move);
+                document.addEventListener('mouseup', up);
+            });
+        }
+
+        // Mode buttons
         document.querySelectorAll('.mode-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -1053,7 +909,7 @@
             });
         });
 
-        // Keyboard shortcuts forwarding
+        // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (e.key === ' ') { e.preventDefault(); sendToApp('transport', { action: 'play' }); }
             if (e.key >= '1' && e.key <= '8') { sendToApp('pad', { index: parseInt(e.key) - 1 }); }
@@ -1069,20 +925,6 @@
         }
         setInterval(updateTime, 1000);
         updateTime();
-
-        // Menu overlay toggle (keep from prototype.html)
-        const menuOverlay = document.getElementById('menuOverlay');
-        const menuBtn = document.getElementById('menuBtn');
-        const menuClose = document.getElementById('menuClose');
-        if (menuBtn && menuOverlay) {
-            menuBtn.addEventListener('click', () => menuOverlay.classList.toggle('open'));
-        }
-        if (menuClose && menuOverlay) {
-            menuClose.addEventListener('click', () => menuOverlay.classList.remove('open'));
-        }
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Tab' && menuOverlay) { e.preventDefault(); menuOverlay.classList.toggle('open'); }
-        });
     })();
     </script>
 </body>
