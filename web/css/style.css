@@ -1824,3 +1824,134 @@ body.embedded-mode .device > .radio-panel.panel-visible .station-list {
         padding: 10px 16px;
     }
 }
+
+/* ===== JOURNEY PANEL ===== */
+.device > .journey-panel {
+    background: #ffffff !important;
+    border-color: #e0e0e0 !important;
+    border-left: 3px solid #d4783a !important;
+    color: var(--text);
+}
+
+.journey-panel .panel-title {
+    color: #d4783a !important;
+}
+
+.journey-controls {
+    display: flex;
+    gap: 6px;
+    margin: 6px 0;
+}
+
+.journey-btn {
+    flex: 1;
+    padding: 6px 8px;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    color: var(--text);
+}
+
+.journey-btn:hover:not(:disabled) {
+    background: #d4783a;
+    color: #fff;
+    border-color: #d4783a;
+}
+
+.journey-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.journey-waypoints {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 40px;
+    max-height: 120px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 4px;
+    background: #fafafa;
+}
+
+.journey-wp-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 4px;
+    font-size: 11px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.journey-wp-item:last-child {
+    border-bottom: none;
+}
+
+.wp-letter {
+    font-weight: 700;
+    color: #d4783a;
+    width: 14px;
+}
+
+.wp-time {
+    color: var(--text-light);
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    font-size: 10px;
+}
+
+.wp-location {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wp-audio-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    flex-shrink: 0;
+}
+
+.journey-stats {
+    font-size: 11px;
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    color: var(--text);
+    padding: 4px 0;
+    text-align: center;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 4px;
+}
+
+.journey-status {
+    font-size: 10px;
+    color: var(--text-light);
+    text-align: center;
+    padding: 2px 0;
+}
+
+/* Leaflet marker labels */
+.journey-marker-label {
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 2px;
+}
+
+/* Embedded mode journey panel */
+body.embedded-mode .device > .journey-panel.panel-visible #journeyMap {
+    flex-shrink: 0;
+}
+
+body.embedded-mode .device > .journey-panel.panel-visible .journey-waypoints {
+    flex: 1;
+    max-height: none;
+}

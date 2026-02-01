@@ -196,6 +196,27 @@ class GPSTracker {
             }
         }
     }
+
+    // Haversine distance in meters between two positions {latitude, longitude}
+    static getDistanceBetween(pos1, pos2) {
+        const R = 6371000; // Earth radius in meters
+        const toRad = deg => deg * Math.PI / 180;
+        const dLat = toRad(pos2.latitude - pos1.latitude);
+        const dLon = toRad(pos2.longitude - pos1.longitude);
+        const a = Math.sin(dLat / 2) ** 2 +
+                  Math.cos(toRad(pos1.latitude)) * Math.cos(toRad(pos2.latitude)) *
+                  Math.sin(dLon / 2) ** 2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    // Sum of consecutive Haversine distances for an array of {latitude, longitude}
+    static getTotalDistance(positions) {
+        let total = 0;
+        for (let i = 1; i < positions.length; i++) {
+            total += GPSTracker.getDistanceBetween(positions[i - 1], positions[i]);
+        }
+        return total;
+    }
 }
 
 // Global instance

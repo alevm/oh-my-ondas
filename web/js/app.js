@@ -1310,6 +1310,9 @@ class App {
                         this.switchToPanel(msg.data.panelId);
                     }
                     break;
+                case 'joystick':
+                    this.handleJoystick(msg.data.direction);
+                    break;
             }
         });
 
@@ -1341,7 +1344,8 @@ class App {
         const modePanelMap = {
             picture: 'seq-panel',
             soundscape: 'ai-panel',
-            interact: 'synth-panel'
+            interact: 'synth-panel',
+            journey: 'journey-panel'
         };
 
         // Switch to the default panel for this mode
@@ -1398,6 +1402,21 @@ class App {
                     if (statusEl) statusEl.textContent = 'INTERACT: Synth + Mic live — use encoders';
                 }
                 break;
+
+            case 'journey':
+                // Init GPS if not running
+                if (window.gpsTracker && !window.gpsTracker.watchId) {
+                    window.gpsTracker.init();
+                }
+                // Notify journey panel it's visible
+                if (window.journey) {
+                    window.journey.onPanelShow();
+                    // Auto-start if not already active
+                    if (!window.journey.active) {
+                        window.journey.startJourney();
+                    }
+                }
+                break;
         }
 
         this.publishAnalysisState();
@@ -1405,6 +1424,23 @@ class App {
 
     // Handle encoder changes from mockup
     handleMockupEncoder(param, value) {
+        // JOURNEY mode: remap encoders for map/waypoint control
+        if (this._currentMode === 'journey') {
+            switch (param) {
+                case 'volume':
+                    window.audioEngine?.setMasterLevel(value / 100);
+                    break;
+                case 'pan':
+                    // ZOOM: map zoom level 10-18
+                    if (window.journey) {
+                        const zoom = Math.round(10 + (value / 100) * 8);
+                        window.journey.setMapZoom(zoom);
+                    }
+                    break;
+            }
+            return;
+        }
+
         // INTERACT mode: remap encoders for live synth control
         if (this._currentMode === 'interact') {
             switch (param) {
@@ -1484,6 +1520,71 @@ class App {
         }
     }
 
+    // Handle 5-way joystick input from mockup
+    handleJoystick(direction) {
+        // In journey mode: up/down = zoom, left/right = waypoint nav, select = add waypoint
+        if (this._currentMode === 'journey' && window.journey) {
+            switch (direction) {
+                case 'up':
+                    window.journey.setMapZoom((window.journey.map?.getZoom() || 14) + 1);
+                    break;
+                case 'down':
+                    window.journey.setMapZoom((window.journey.map?.getZoom() || 14) - 1);
+                    break;
+                case 'select':
+                    if (window.journey.active) {
+                        window.journey.addWaypoint();
+                    } else {
+                        window.journey.startJourney();
+                    }
+                    break;
+                case 'left':
+                case 'right':
+                    // Pan map slightly in the given direction
+                    if (window.journey.map) {
+                        const c = window.journey.map.getCenter();
+                        const offset = direction === 'left' ? -0.001 : 0.001;
+                        window.journey.map.panTo([c.lat, c.lng + offset]);
+                    }
+                    break;
+            }
+            return;
+        }
+
+        // Default: left/right = switch panel tabs, up/down = select track, select = trigger
+        const tabs = Array.from(document.querySelectorAll('.panel-tab'));
+        const activeIdx = tabs.findIndex(t => t.classList.contains('active'));
+
+        switch (direction) {
+            case 'left':
+                if (activeIdx > 0) tabs[activeIdx - 1].click();
+                break;
+            case 'right':
+                if (activeIdx < tabs.length - 1) tabs[activeIdx + 1].click();
+                break;
+            case 'up':
+                if (this.selectedTrack > 0) {
+                    this.selectedTrack--;
+                    this.updateOctSteps?.();
+                }
+                break;
+            case 'down':
+                if (this.selectedTrack < 7) {
+                    this.selectedTrack++;
+                    this.updateOctSteps?.();
+                }
+                break;
+            case 'select':
+                // Trigger the first pad
+                const pad = document.querySelector('.pad[data-pad="0"]');
+                if (pad) {
+                    pad.dispatchEvent(new MouseEvent('mousedown'));
+                    setTimeout(() => pad.dispatchEvent(new MouseEvent('mouseup')), 100);
+                }
+                break;
+        }
+    }
+
     // Panel tab navigation (embedded mode only)
     setupPanelTabs() {
         if (!this.isEmbedded()) return;
@@ -1532,7 +1633,8 @@ class App {
             'ai-panel':     ['VOL', 'VIBE', 'FILT', 'FX'],
             'scenes-panel': ['VOL', 'XFAD', 'FILT', 'AUTO'],
             'radio-panel':  ['VOL', 'PAN', 'FILT', 'SCAN'],
-            'eq-panel':     ['LO', 'MID', 'HI', 'VOL']
+            'eq-panel':     ['LO', 'MID', 'HI', 'VOL'],
+            'journey-panel': ['VOL', 'ZOOM', 'WPT', 'REC']
         };
 
         this._encoderContext = encoderMappings[panelId] || ['VOL', 'PAN', 'FILT', 'FX'];
