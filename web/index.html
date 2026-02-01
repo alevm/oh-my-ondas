@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Oh My Ondas - Interactive Hardware</title>
-    <link rel="stylesheet" href="css/style.css?v=248">
+    <link rel="stylesheet" href="css/style.css?v=249">
     <style>
         :root {
             --bg: #f5f5f5;
@@ -29,7 +29,7 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
-            background: linear-gradient(180deg, #f0f0f0 0%, #e8e8e8 100%);
+            background: linear-gradient(180deg, #1a1a1a 0%, #111 100%);
         }
 
         /* Device - larger dimensions */
@@ -41,26 +41,39 @@
             left: 10px;
             width: 1080px;
             height: 670px;
-            background: linear-gradient(165deg, #e8e8e8 0%, #d5d5d5 40%, #c8c8c8 100%);
+            background: linear-gradient(165deg, #454545 0%, #3a3a3a 40%, #323232 100%);
             border-radius: 14px;
-            border: 2px solid #bbb;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
+            border: 1px solid #5a5a5a;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3),
+                        inset 0 1px 0 rgba(255,255,255,0.1);
         }
 
         .enclosure::before {
             content: '';
             position: absolute;
             top: 5px; left: 5px; right: 5px; bottom: 5px;
-            border: 1px solid rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(255,255,255,0.08);
             border-radius: 10px;
             pointer-events: none;
+        }
+
+        /* Groove divider between display and controls */
+        .enclosure::after {
+            content: '';
+            position: absolute;
+            top: 352px; left: 15px; right: 15px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.4) 15%, rgba(0,0,0,0.4) 85%, transparent 100%);
+            box-shadow: 0 1px 0 rgba(255,255,255,0.04);
+            pointer-events: none;
+            z-index: 1;
         }
 
         /* Artwork */
         .artwork {
             position: absolute;
-            top: 390px; left: 10px; right: 10px; bottom: 10px;
-            opacity: 0.08;
+            top: 350px; left: 10px; right: 10px; bottom: 10px;
+            opacity: 0.05;
             background-image: url('https://media.rhizome.org/blog/8979/Chombart-de-Lauwe.jpg');
             background-size: cover;
             border-radius: 8px;
@@ -74,10 +87,11 @@
         .display {
             position: absolute;
             top: 10px; left: 10px; right: 10px;
-            height: 380px;
+            height: 340px;
             background: #0a0a0a;
             border-radius: 6px;
-            border: 2px solid #333;
+            border: 3px solid #1a1a1a;
+            box-shadow: inset 0 0 0 1px #555, 0 4px 16px rgba(0,0,0,0.5);
             overflow: hidden;
             z-index: 2;
         }
@@ -90,93 +104,105 @@
             letter-spacing: 1px;
             z-index: 3;
         }
-        .label-pads { top: 450px; left: 25px; color: var(--gray-text); }
-        .label-ctrl { top: 450px; right: 25px; color: var(--gray-text); width: 200px; text-align: center; }
+        .label-pads { top: 408px; left: 28px; color: rgba(255,255,255,0.3); font-size: 8px; letter-spacing: 2px; }
+        .label-ctrl { top: 408px; right: 28px; color: rgba(255,255,255,0.3); width: 210px; text-align: center; font-size: 8px; letter-spacing: 2px; }
 
         /* 8 Touch Pads */
         .pads-container {
             position: absolute;
-            top: 460px; left: 25px;
+            top: 422px; left: 18px;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(2, 1fr);
             gap: 8px;
-            width: 480px;
-            height: 110px;
+            width: 500px;
+            height: 150px;
             z-index: 2;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 10px;
         }
 
         .pad {
-            background: linear-gradient(145deg, #f5f5f5 0%, #e0e0e0 100%);
-            border-radius: 8px;
-            border: 2px solid #ccc;
+            background: linear-gradient(180deg, #2c2c2c 0%, #1c1c1c 100%);
+            border-radius: 6px;
+            border: 1px solid #3a3a3a;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #666;
-            font-size: 14px;
+            color: rgba(255,255,255,0.35);
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             user-select: none;
             position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(255,255,255,0.03);
+            transition: all 0.08s;
         }
-        .pad:nth-child(1) { border-color: #278789; }
-        .pad:nth-child(2) { border-color: #1270b8; }
-        .pad:nth-child(3) { border-color: #1aa167; }
-        .pad:nth-child(4) { border-color: #d4a857; }
-        .pad:nth-child(5) { border-color: #c0392b; }
-        .pad:nth-child(6) { border-color: #1270b8; }
-        .pad:nth-child(7) { border-color: #1270b8; }
-        .pad:nth-child(8) { border-color: #278789; }
 
-        .pad:hover { background: linear-gradient(145deg, #fff 0%, #eee 100%); }
+        .pad:hover { background: linear-gradient(180deg, #333 0%, #242424 100%); color: rgba(255,255,255,0.5); }
         .pad:active, .pad.active {
             background: linear-gradient(145deg, #1aa167 0%, #148f57 100%);
             border-color: #1aa167;
             color: #fff;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 0 16px rgba(26,161,103,0.3);
         }
 
+        /* Colored top accent bars */
         .pad::before {
             content: '';
             position: absolute;
-            top: 4px; right: 4px;
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            background: #ccc;
+            top: 0; left: 0; right: 0;
+            height: 3px;
         }
-        .pad.active::before { background: #fff; box-shadow: 0 0 6px #fff; }
+        .pad:nth-child(1)::before { background: #278789; }
+        .pad:nth-child(2)::before { background: #1270b8; }
+        .pad:nth-child(3)::before { background: #1aa167; }
+        .pad:nth-child(4)::before { background: #d4a857; }
+        .pad:nth-child(5)::before { background: #c0392b; }
+        .pad:nth-child(6)::before { background: #1270b8; }
+        .pad:nth-child(7)::before { background: #1270b8; }
+        .pad:nth-child(8)::before { background: #278789; }
+        .pad.active::before { background: rgba(255,255,255,0.6); }
 
         /* 4 Encoders */
         .encoders-container {
             position: absolute;
-            top: 460px; right: 25px;
+            top: 422px; right: 18px;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             grid-template-rows: repeat(2, 1fr);
             gap: 10px;
-            width: 200px;
-            height: 110px;
+            width: 210px;
+            height: 150px;
             z-index: 2;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 10px;
         }
 
         .encoder { display: flex; flex-direction: column; align-items: center; gap: 3px; }
 
         .encoder-knob {
-            width: 36px; height: 36px;
-            background: linear-gradient(145deg, #f5f5f5 0%, #ddd 100%);
+            width: 46px; height: 46px;
+            background: linear-gradient(145deg, #5a5a5a 0%, #3a3a3a 50%, #404040 100%);
             border-radius: 50%;
-            border: 2px solid #bbb;
+            border: 2px solid #6a6a6a;
             position: relative;
             cursor: pointer;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
         }
 
         .encoder-knob::before {
             content: '';
             position: absolute;
             top: 50%; left: 50%;
-            width: 14px; height: 14px;
-            background: linear-gradient(145deg, #eee 0%, #ccc 100%);
+            width: 16px; height: 16px;
+            background: linear-gradient(145deg, #666 0%, #444 100%);
+            border: 1px solid #555;
             border-radius: 50%;
             transform: translate(-50%, -50%);
         }
@@ -185,7 +211,7 @@
             content: '';
             position: absolute;
             top: 4px; left: 50%;
-            width: 3px; height: 8px;
+            width: 3px; height: 9px;
             background: #278789;
             border-radius: 2px;
             transform: translateX(-50%);
@@ -201,13 +227,13 @@
         }
 
         /* Per-encoder color indicators */
-        .encoder[data-param="volume"] .encoder-knob::after { background: #1aa167; }
-        .encoder[data-param="pan"] .encoder-knob::after { background: #1270b8; }
-        .encoder[data-param="filter"] .encoder-knob::after { background: #d4a857; }
-        .encoder[data-param="fx"] .encoder-knob::after { background: #c0392b; }
+        .encoder[data-param="volume"] .encoder-knob::after { background: #1aa167; box-shadow: 0 0 4px rgba(26,161,103,0.4); }
+        .encoder[data-param="pan"] .encoder-knob::after { background: #1270b8; box-shadow: 0 0 4px rgba(18,112,184,0.4); }
+        .encoder[data-param="filter"] .encoder-knob::after { background: #d4a857; box-shadow: 0 0 4px rgba(212,168,87,0.4); }
+        .encoder[data-param="fx"] .encoder-knob::after { background: #c0392b; box-shadow: 0 0 4px rgba(192,57,43,0.4); }
 
-        .encoder-label { font-size: 9px; color: var(--gray-text); font-weight: 600; }
-        .encoder-value { font-size: 8px; color: #666; font-family: monospace; }
+        .encoder-label { font-size: 9px; color: #bbb; font-weight: 700; letter-spacing: 0.5px; }
+        .encoder-value { font-size: 9px; color: #888; font-family: monospace; }
 
         /* (LEDs removed — simplified layout) */
 
@@ -221,23 +247,25 @@
         }
 
         .transport-btn {
-            width: 38px; height: 38px;
-            background: linear-gradient(145deg, #f5f5f5 0%, #ddd 100%);
+            width: 44px; height: 44px;
+            background: linear-gradient(145deg, #4a4a4a 0%, #2e2e2e 100%);
             border-radius: 50%;
-            border: 2px solid #bbb;
+            border: 2px solid #5a5a5a;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #666;
-            font-size: 14px;
+            color: #999;
+            font-size: 16px;
             cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12);
+            transition: all 0.1s;
         }
 
-        .transport-btn.play { color: #1aa167; border-color: #1aa167; }
-        .transport-btn.rec { color: #c0392b; border-color: #c0392b; }
-        .transport-btn:hover { background: linear-gradient(145deg, #fff 0%, #eee 100%); }
-        .transport-btn.play.active { background: #1aa167; color: #fff; border-color: #1aa167; }
-        .transport-btn.rec.active, .transport-btn.rec.rec-active { background: #c0392b; color: #fff; border-color: #c0392b; }
+        .transport-btn.play { color: #1aa167; border-color: #1aa167; box-shadow: 0 3px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 6px rgba(26,161,103,0.2); }
+        .transport-btn.rec { color: #c0392b; border-color: #c0392b; box-shadow: 0 3px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 6px rgba(192,57,43,0.2); }
+        .transport-btn:hover { background: linear-gradient(145deg, #555 0%, #333 100%); }
+        .transport-btn.play.active { background: #1aa167; color: #fff; border-color: #1aa167; box-shadow: 0 0 12px rgba(26,161,103,0.4); }
+        .transport-btn.rec.active, .transport-btn.rec.rec-active { background: #c0392b; color: #fff; border-color: #c0392b; box-shadow: 0 0 12px rgba(192,57,43,0.4); }
 
         /* (Scenes removed — lives on touchscreen) */
 
@@ -254,9 +282,9 @@
 
         .io-port {
             width: 16px; height: 16px;
-            background: #999;
+            background: #333;
             border-radius: 50%;
-            border: 2px solid #777;
+            border: 2px solid #555;
         }
 
         /* Info bar */
@@ -328,21 +356,23 @@
 
         /* (Source panel, mode panel, focus indicator, AI orchestration, mic meter removed — simplified layout) */
 
-        /* 3 Mode Buttons Bar */
+        /* 3 Mode Buttons */
         .modes-bar {
             position: absolute;
-            top: 400px; left: 25px; right: 25px;
-            height: 46px;
+            top: 358px; left: 25px; right: 25px;
+            height: 36px;
             display: flex;
-            gap: 10px;
+            justify-content: center;
+            gap: 8px;
             z-index: 2;
         }
         .mode-btn {
-            flex: 1;
-            height: 40px;
-            border-radius: 6px;
+            flex: none;
+            height: 30px;
+            padding: 0 22px;
+            border-radius: 15px;
             border: 2px solid;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 800;
             letter-spacing: 1.5px;
             cursor: pointer;
@@ -351,40 +381,43 @@
         }
         .mode-btn[data-mode="picture"] {
             border-color: #278789;
-            background: transparent;
+            background: rgba(39,135,137,0.08);
             color: #278789;
         }
         .mode-btn[data-mode="picture"].active {
             background: #278789;
             color: #fff;
+            box-shadow: 0 0 14px rgba(39,135,137,0.4), 0 2px 8px rgba(39,135,137,0.2);
         }
         .mode-btn[data-mode="soundscape"] {
             border-color: #1aa167;
-            background: transparent;
+            background: rgba(26,161,103,0.08);
             color: #1aa167;
         }
         .mode-btn[data-mode="soundscape"].active {
             background: #1aa167;
             color: #fff;
+            box-shadow: 0 0 14px rgba(26,161,103,0.4), 0 2px 8px rgba(26,161,103,0.2);
         }
         .mode-btn[data-mode="interact"] {
             border-color: #1270b8;
-            background: transparent;
+            background: rgba(18,112,184,0.08);
             color: #1270b8;
         }
         .mode-btn[data-mode="interact"].active {
             background: #1270b8;
             color: #fff;
+            box-shadow: 0 0 14px rgba(18,112,184,0.4), 0 2px 8px rgba(18,112,184,0.2);
         }
-        .mode-btn:hover { opacity: 0.85; }
+        .mode-btn:hover { opacity: 0.85; transform: scale(1.03); }
 
         /* GPS Strip (compact, bottom-right) */
         .gps-strip {
             position: absolute;
-            bottom: 12px; right: 25px;
+            bottom: 12px; right: 18px;
             width: 280px; height: 70px;
-            background: #fff;
-            border: 2px solid #278789;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(39,135,137,0.4);
             border-radius: 8px;
             z-index: 2;
             display: flex;
@@ -392,16 +425,17 @@
             padding: 0 10px;
             gap: 8px;
             overflow: hidden;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.3);
         }
         .gps-map-thumb {
             width: 50px; height: 50px;
             border-radius: 4px;
-            background: #e8e8e8;
+            background: #222;
             background-image: url('https://media.rhizome.org/blog/8979/Chombart-de-Lauwe.jpg');
             background-size: cover;
             background-position: center;
             flex-shrink: 0;
-            border: 1px solid #ddd;
+            border: 1px solid #444;
         }
         .gps-strip .gps-icon {
             font-size: 18px;
@@ -419,10 +453,11 @@
             font-weight: 800;
             color: #278789;
             letter-spacing: 1px;
+            text-shadow: 0 0 6px rgba(39,135,137,0.3);
         }
         .gps-strip .gps-coords {
             font-size: 10px;
-            color: #555;
+            color: #aaa;
             font-family: monospace;
             white-space: nowrap;
             overflow: hidden;
@@ -430,7 +465,7 @@
         }
         .gps-strip .gps-city {
             font-size: 9px;
-            color: #888;
+            color: #777;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -598,6 +633,67 @@
         .io-port {
             border-color: #c0392b;
         }
+
+        /* Corner screws */
+        .corner-screw {
+            position: absolute;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #707070 0%, #4a4a4a 100%);
+            border: 1px solid #5a5a5a;
+            z-index: 4;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 1px 3px rgba(0,0,0,0.4);
+        }
+        .corner-screw::before, .corner-screw::after {
+            content: '';
+            position: absolute;
+            background: #333;
+        }
+        .corner-screw::before {
+            top: 4px; left: 2px;
+            width: 6px; height: 1px;
+        }
+        .corner-screw::after {
+            top: 2px; left: 4px;
+            width: 1px; height: 6px;
+        }
+        .screw-tl { top: 12px; left: 12px; }
+        .screw-tr { top: 12px; right: 12px; }
+        .screw-bl { bottom: 12px; left: 12px; }
+        .screw-br { bottom: 12px; right: 12px; }
+
+        /* Brand silk-screen */
+        .brand-silkscreen {
+            position: absolute;
+            top: 398px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            color: rgba(255,255,255,0.12);
+            text-transform: uppercase;
+            z-index: 3;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        /* Status LEDs */
+        .status-leds {
+            position: absolute;
+            top: 355px;
+            right: 30px;
+            display: flex;
+            gap: 8px;
+            z-index: 4;
+        }
+        .status-led {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+        }
+        .status-led.led-teal { background: #278789; box-shadow: 0 0 4px rgba(39,135,137,0.6); }
+        .status-led.led-green { background: #1aa167; box-shadow: 0 0 4px rgba(26,161,103,0.6); }
+        .status-led.led-red { background: #c0392b; box-shadow: 0 0 4px rgba(192,57,43,0.6); }
     </style>
 </head>
 <body>
@@ -656,6 +752,22 @@
     <main class="main-content">
         <div class="device-container">
             <div class="enclosure">
+                <!-- Corner screws -->
+                <div class="corner-screw screw-tl"></div>
+                <div class="corner-screw screw-tr"></div>
+                <div class="corner-screw screw-bl"></div>
+                <div class="corner-screw screw-br"></div>
+
+                <!-- Brand silk-screen -->
+                <div class="brand-silkscreen">OH MY ONDAS</div>
+
+                <!-- Status LEDs -->
+                <div class="status-leds">
+                    <div class="status-led led-teal"></div>
+                    <div class="status-led led-green"></div>
+                    <div class="status-led led-red"></div>
+                </div>
+
                 <div class="artwork"></div>
 
                 <!-- 5" Touch Display (iframe) -->
