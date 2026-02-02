@@ -183,35 +183,44 @@
         .mode-btn[data-mode="journey"].active { background: #d4783a; color: #fff; box-shadow: 0 0 14px rgba(212,120,58,0.4); }
         .mode-btn:hover { opacity: 0.85; transform: scale(1.02); }
 
-        /* ===== BOTTOM: Transport | Pads | Crossfader ===== */
+        /* ===== TOP EDGE: Transport (ridge buttons) ===== */
 
         .transport-bar {
             position: absolute;
-            left: 25px; top: 325px;
+            left: 30px; top: -12px;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
-            z-index: 2;
+            flex-direction: row;
+            gap: 8px;
+            z-index: 5;
         }
 
         .transport-btn {
-            width: 36px; height: 36px;
-            border-radius: 50%;
-            border: 2px solid var(--petrol-border);
-            background: rgba(0,0,0,0.2);
+            width: 32px; height: 16px;
+            border-radius: 5px 5px 3px 3px;
+            border: 1px solid var(--petrol-border);
+            background: linear-gradient(180deg, var(--petrol-highlight) 0%, var(--petrol-raised) 40%, var(--petrol-dark) 100%);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 8px;
             color: rgba(255,255,255,0.5);
             transition: all 0.1s;
+            box-shadow: 0 -2px 6px rgba(0,0,0,0.2), 0 2px 3px rgba(0,0,0,0.25),
+                        inset 0 1px 0 rgba(255,255,255,0.08);
         }
         .transport-btn.play { color: #1aa167; border-color: #1aa167; }
         .transport-btn.rec { color: #c0392b; border-color: #c0392b; }
-        .transport-btn:hover { background: rgba(255,255,255,0.05); }
-        .transport-btn.play.active { background: #1aa167; color: #fff; }
-        .transport-btn.rec.active, .transport-btn.rec.rec-active { background: #c0392b; color: #fff; }
+        .transport-btn:hover { background: linear-gradient(180deg, #5a7a7a 0%, var(--petrol-raised) 100%); }
+        .transport-btn.play.active { background: #1aa167; color: #fff; box-shadow: 0 0 8px rgba(26,161,103,0.4); }
+        .transport-btn.rec.active, .transport-btn.rec.rec-active { background: #c0392b; color: #fff; box-shadow: 0 0 8px rgba(192,57,43,0.4); }
+        .transport-label {
+            font-size: 6px; font-weight: 700; letter-spacing: 1px;
+            color: rgba(255,255,255,0.25); margin-top: 2px;
+            text-align: center;
+        }
+
+        /* ===== BOTTOM: Pads | Crossfader ===== */
 
         /* Pads — smaller */
         .pads-container {
@@ -302,6 +311,103 @@
         .crossfader-ends {
             display: flex; justify-content: space-between; width: 100%;
             font-size: 7px; font-weight: 700; color: rgba(255,255,255,0.3);
+        }
+
+        /* ===== Side Grips — ergonomic handheld contours ===== */
+        .grip {
+            position: absolute;
+            width: 28px;
+            height: 220px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(165deg, var(--petrol-light) 0%, var(--petrol) 50%, var(--petrol-dark) 100%);
+            border: 1px solid var(--petrol-border);
+            z-index: 0;
+        }
+        .grip::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 100px;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(255,255,255,0.05) 0px,
+                rgba(255,255,255,0.05) 2px,
+                transparent 2px,
+                transparent 8px
+            );
+            border-radius: 2px;
+        }
+        .grip-left {
+            left: -18px;
+            border-radius: 12px 0 0 12px;
+            box-shadow: -4px 4px 12px rgba(0,0,0,0.25), inset 1px 0 0 rgba(255,255,255,0.04);
+        }
+        .grip-left::after { right: 5px; }
+        .grip-right {
+            right: -18px;
+            border-radius: 0 12px 12px 0;
+            box-shadow: 4px 4px 12px rgba(0,0,0,0.25), inset -1px 0 0 rgba(255,255,255,0.04);
+        }
+        .grip-right::after { left: 5px; }
+
+        /* ===== 5-Way Joystick Navigation ===== */
+        .joystick-module {
+            position: absolute;
+            left: 460px; top: 345px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            z-index: 2;
+        }
+        .joystick-base {
+            width: 58px; height: 58px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, var(--petrol-raised) 0%, var(--petrol-dark) 100%);
+            border: 2px solid var(--petrol-border);
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            align-items: center;
+            justify-items: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+            overflow: hidden;
+        }
+        .joystick-dir {
+            font-size: 7px;
+            color: rgba(255,255,255,0.25);
+            cursor: pointer;
+            width: 100%; height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s;
+        }
+        .joystick-dir:hover { color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.04); }
+        .joystick-dir:active { color: #278789; background: rgba(39,135,137,0.15); }
+        .joystick-up { grid-column: 2; grid-row: 1; border-radius: 50% 50% 0 0; }
+        .joystick-left { grid-column: 1; grid-row: 2; border-radius: 50% 0 0 50%; }
+        .joystick-right { grid-column: 3; grid-row: 2; border-radius: 0 50% 50% 0; }
+        .joystick-down { grid-column: 2; grid-row: 3; border-radius: 0 0 50% 50%; }
+        .joystick-center {
+            grid-column: 2; grid-row: 2;
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, var(--petrol-highlight), var(--petrol-raised));
+            border: 1px solid #5a7a7a;
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+            transition: all 0.1s;
+        }
+        .joystick-center:hover { background: linear-gradient(145deg, #5a7a7a, var(--petrol-highlight)); }
+        .joystick-center:active { background: #278789; box-shadow: 0 0 8px rgba(39,135,137,0.4); }
+        .joystick-label {
+            font-size: 7px; font-weight: 700;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 0.5px;
         }
 
         /* Labels */
@@ -525,6 +631,8 @@
     <main class="main-content">
         <div class="device-container">
             <div class="enclosure">
+                <div class="grip grip-left"></div>
+                <div class="grip grip-right"></div>
                 <div class="corner-screw screw-tl"></div>
                 <div class="corner-screw screw-tr"></div>
                 <div class="corner-screw screw-bl"></div>
@@ -587,11 +695,11 @@
                 <span class="section-label label-enc">CTRL</span>
                 <span class="section-label label-pads">PADS</span>
 
-                <!-- Transport — bottom left -->
+                <!-- Transport — top edge (ridge buttons) -->
                 <div class="transport-bar">
-                    <button class="transport-btn play" data-action="play">&#9654;</button>
-                    <button class="transport-btn stop" data-action="stop">&#9632;</button>
-                    <button class="transport-btn rec" data-action="rec">&#9679;</button>
+                    <button class="transport-btn play" data-action="play" title="Play">&#9654;</button>
+                    <button class="transport-btn stop" data-action="stop" title="Stop">&#9632;</button>
+                    <button class="transport-btn rec" data-action="rec" title="Record">&#9679;</button>
                 </div>
 
                 <!-- 8 Touch Pads — smaller -->
@@ -604,6 +712,18 @@
                     <div class="pad" data-pad="5">6</div>
                     <div class="pad" data-pad="6">7</div>
                     <div class="pad" data-pad="7">8</div>
+                </div>
+
+                <!-- 5-Way Joystick Navigation -->
+                <div class="joystick-module" id="joystickModule">
+                    <div class="joystick-base">
+                        <div class="joystick-dir joystick-up" data-dir="up">&#9650;</div>
+                        <div class="joystick-dir joystick-left" data-dir="left">&#9664;</div>
+                        <div class="joystick-center" data-dir="select"></div>
+                        <div class="joystick-dir joystick-right" data-dir="right">&#9654;</div>
+                        <div class="joystick-dir joystick-down" data-dir="down">&#9660;</div>
+                    </div>
+                    <span class="joystick-label">NAV</span>
                 </div>
 
                 <!-- Crossfader — below pads -->
@@ -679,6 +799,7 @@
         <div>Display: <span>5" Touch</span></div>
         <div>Pads: <span>8x MPR121</span></div>
         <div>Encoders: <span>5x Rotary + X-Fade</span></div>
+        <div>Nav: <span>5-Way Joystick</span></div>
         <div>Modes: <span>4 (incl. Journey)</span></div>
         <div>Time: <span id="timeVal">--:--</span></div>
     </div>
@@ -703,6 +824,7 @@
                     <li>1x 45mm DJ Crossfader <span class="cost">~$12</span></li>
                     <li>MPR121 + 8 Copper Pads <span class="cost">~$15</span></li>
                     <li>3x Momentary Buttons <span class="cost">~$3</span></li>
+                    <li>5-Way Joystick Module <span class="cost">~$2</span></li>
                     <li>FM Receiver (TEA5767) <span class="cost">~$4</span></li>
                 </ul>
             </div>
@@ -711,7 +833,7 @@
                 <ul>
                     <li>3D Printed Case (PLA) <span class="cost">~$15</span></li>
                     <li>Wires, Headers, Standoffs <span class="cost">~$10</span></li>
-                    <li class="diy-total">Estimated Total <span class="cost">~$185</span></li>
+                    <li class="diy-total">Estimated Total <span class="cost">~$187</span></li>
                 </ul>
                 <div class="diy-badge">FEASIBILITY: HIGH</div>
                 <ul style="margin-top: 8px;">
@@ -859,6 +981,13 @@
                 document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 sendToApp('mode', { mode: btn.dataset.mode });
+            });
+        });
+
+        // 5-Way Joystick
+        document.querySelectorAll('.joystick-dir, .joystick-center').forEach(el => {
+            el.addEventListener('click', () => {
+                sendToApp('joystick', { direction: el.dataset.dir });
             });
         });
 
