@@ -85,7 +85,8 @@ class Sequencer {
                 pan: null,        // -100 to +100
                 delay: null,      // 0-100 delay send
                 reverb: null,     // 0-100 reverb send
-                grain: null       // 0-100 grain amount
+                grain: null,      // 0-100 grain amount
+                fxRoute: null     // channel name for FX target (null = use track source or master)
             },
             // Trig Conditions
             trigCondition: {
@@ -249,6 +250,11 @@ class Sequencer {
             }
         }
 
+        // Process real-time modulation routing
+        if (window.sourceRoleManager) {
+            window.sourceRoleManager.processModulation();
+        }
+
         // Record in dub mode
         if (this.dubMode !== 'off') {
             this.processDubRecording();
@@ -317,7 +323,7 @@ class Sequencer {
 
     triggerSource(source, trackIndex, pLocks = {}, velocity = 100) {
         // Apply P-Locks to the audio engine before triggering
-        this.applyPLocks(pLocks);
+        this.applyPLocks(pLocks, source);
 
         switch (source) {
             case 'sampler':
@@ -359,20 +365,27 @@ class Sequencer {
     }
 
     // Apply P-Lock values to audio engines
-    applyPLocks(pLocks) {
+    // trackSource: the channel name this track routes to (for per-channel FX targeting)
+    applyPLocks(pLocks, trackSource) {
         if (!pLocks) return;
 
+        // Determine FX target: explicit fxRoute > trackSource channel > master
+        const fxTarget = pLocks.fxRoute || trackSource || 'master';
+        // Map source names to channel names
+        const channelMap = { sampler: 'samples', mic: 'mic', synth: 'synth', radio: 'radio' };
+        const channelName = channelMap[fxTarget] || fxTarget;
+
         if (pLocks.filter !== null && window.synth) {
-            window.synth.setFilterCutoff(pLocks.filter * 80); // Scale to Hz
+            window.synth.setFilterCutoff(pLocks.filter * 80);
         }
         if (pLocks.delay !== null && window.mangleEngine) {
-            window.mangleEngine.setDelayMix(pLocks.delay);
+            window.mangleEngine.setChannelDelayMix(channelName, pLocks.delay);
         }
         if (pLocks.reverb !== null && window.mangleEngine) {
             window.mangleEngine.setReverbMix?.(pLocks.reverb);
         }
         if (pLocks.grain !== null && window.mangleEngine) {
-            window.mangleEngine.setGrain(pLocks.grain, 50, 0);
+            window.mangleEngine.setChannelGrain(channelName, pLocks.grain, 50, 0);
         }
     }
 

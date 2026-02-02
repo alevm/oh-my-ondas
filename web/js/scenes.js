@@ -38,6 +38,8 @@ class SceneManager {
                 master: parseFloat(document.getElementById('faderMaster')?.value || 90) / 100
             },
             fx: window.mangleEngine?.getState() || {},
+            channelFx: window.mangleEngine?.getAllChannelStates?.() || {},
+            roleAssignments: window.sourceRoleManager?.getAssignments?.() || null,
             tempo: window.sequencer?.getTempo() || 120,
             // NEW: Store sequencer pattern (deep copy)
             pattern: JSON.parse(JSON.stringify(window.sequencer?.getPattern() || [])),
@@ -118,8 +120,11 @@ class SceneManager {
             }
         }
 
-        // Apply FX
-        if (state.fx && window.mangleEngine) {
+        // Apply per-channel FX (new format)
+        if (state.channelFx && window.mangleEngine?.setAllChannelStates) {
+            window.mangleEngine.setAllChannelStates(state.channelFx);
+        } else if (state.fx && window.mangleEngine) {
+            // Legacy fallback: apply global FX to master
             if (state.fx.delay) {
                 window.mangleEngine.setDelayTime(state.fx.delay.time);
                 window.mangleEngine.setDelayFeedback(state.fx.delay.feedback);
@@ -132,6 +137,11 @@ class SceneManager {
                     state.fx.glitch.mode
                 );
             }
+        }
+
+        // Restore role assignments
+        if (state.roleAssignments && window.sourceRoleManager?.setAssignments) {
+            window.sourceRoleManager.setAssignments(state.roleAssignments);
         }
 
         // Apply tempo
@@ -251,7 +261,7 @@ class SceneManager {
     interpolateScenes(start, end, t) {
         const lerp = (a, b, t) => a + (b - a) * t;
 
-        return {
+        const result = {
             mixer: {
                 mic: {
                     level: lerp(start.mixer.mic.level, end.mixer.mic.level, t),
@@ -280,6 +290,32 @@ class SceneManager {
             },
             tempo: Math.round(lerp(start.tempo || 120, end.tempo || 120, t))
         };
+
+        // Interpolate per-channel FX states
+        if (start.channelFx && end.channelFx) {
+            result.channelFx = {};
+            const channels = new Set([...Object.keys(start.channelFx), ...Object.keys(end.channelFx)]);
+            for (const ch of channels) {
+                const s = start.channelFx[ch] || {};
+                const e = end.channelFx[ch] || {};
+                result.channelFx[ch] = {
+                    delay: {
+                        time: lerp(s.delay?.time || 250, e.delay?.time || 250, t),
+                        feedback: lerp(s.delay?.feedback || 30, e.delay?.feedback || 30, t),
+                        mix: lerp(s.delay?.mix || 0, e.delay?.mix || 0, t)
+                    },
+                    glitch: t < 0.5 ? (s.glitch || {}) : (e.glitch || {}),
+                    grain: {
+                        density: lerp(s.grain?.density || 0, e.grain?.density || 0, t),
+                        size: lerp(s.grain?.size || 50, e.grain?.size || 50, t),
+                        pitch: lerp(s.grain?.pitch || 0, e.grain?.pitch || 0, t),
+                        frozen: t < 0.5 ? (s.grain?.frozen || false) : (e.grain?.frozen || false)
+                    }
+                };
+            }
+        }
+
+        return result;
     }
 
     getCurrentScene() {

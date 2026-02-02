@@ -18,6 +18,9 @@ class AudioEngine {
         // Master EQ
         this.masterEq = null;
 
+        // Per-channel and master FX
+        this.masterFx = null;
+
         // Destination for recording
         this.recordingDestination = null;
 
@@ -65,7 +68,15 @@ class AudioEngine {
 
             // Create master EQ (before master gain)
             this.masterEq = this.createEQ();
-            this.masterEq.output.connect(this.masterGain);
+
+            // Master FX between masterEq and masterGain
+            if (window.ChannelFX) {
+                this.masterFx = new ChannelFX(this.ctx, 'master');
+                this.masterEq.output.connect(this.masterFx.inputNode);
+                this.masterFx.outputNode.connect(this.masterGain);
+            } else {
+                this.masterEq.output.connect(this.masterGain);
+            }
 
             // Create channel gains with per-channel EQ
             for (const name of Object.keys(this.channels)) {
@@ -76,7 +87,15 @@ class AudioEngine {
                 // Create per-channel EQ
                 channel.eq = this.createEQ();
                 channel.gain.connect(channel.eq.input);
-                channel.eq.output.connect(this.masterEq.input);
+
+                // Per-channel FX between channel EQ and master EQ
+                if (window.ChannelFX) {
+                    channel.fx = new ChannelFX(this.ctx, name);
+                    channel.eq.output.connect(channel.fx.inputNode);
+                    channel.fx.outputNode.connect(this.masterEq.input);
+                } else {
+                    channel.eq.output.connect(this.masterEq.input);
+                }
 
                 // Create analyser for each channel
                 channel.analyser = this.ctx.createAnalyser();
@@ -296,6 +315,16 @@ class AudioEngine {
         const hasSignal = rms > 5;
 
         return { rms: Math.round(rms * 10) / 10, peak: Math.round(peak * 10) / 10, dominantFreq, hasSignal, spectralCentroid };
+    }
+
+    // Get per-channel FX instance
+    getChannelFX(channelName) {
+        return this.channels[channelName]?.fx || null;
+    }
+
+    // Get master FX instance
+    getMasterFX() {
+        return this.masterFx || null;
     }
 
     // Get current EQ values for a channel

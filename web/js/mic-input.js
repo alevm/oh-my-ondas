@@ -90,6 +90,11 @@ class MicInput {
         }
     }
 
+    async ensureActive() {
+        if (!this.active) return this.init();
+        return true;
+    }
+
     isActive() {
         return this.active;
     }

@@ -7,7 +7,8 @@ class AIComposer {
             locationType: 'unknown',
             timeOfDay: 'day',
             vibe: 'calm',
-            gps: null
+            gps: null,
+            soundscape: null
         };
     }
 
@@ -64,9 +65,23 @@ class AIComposer {
     }
 
     suggestVibe() {
-        const { locationType, timeOfDay } = this.context;
+        const { locationType, timeOfDay, soundscape } = this.context;
 
-        // Vibe matrix
+        // If soundscape data is present with meaningful amplitude, use it
+        if (soundscape && soundscape.avgAmplitude > 0.05) {
+            const classificationMap = {
+                rhythmic: 'urban',
+                tonal: 'nature',
+                ambient: 'calm',
+                noisy: 'chaos',
+                chaotic: 'chaos'
+            };
+            if (classificationMap[soundscape.classification]) {
+                return classificationMap[soundscape.classification];
+            }
+        }
+
+        // Vibe matrix (GPS/time fallback)
         const vibeMatrix = {
             urban: {
                 morning: 'urban',
@@ -113,6 +128,56 @@ class AIComposer {
         if (vibeEl) {
             vibeEl.textContent = this.context.vibe.charAt(0).toUpperCase() +
                                 this.context.vibe.slice(1);
+        }
+    }
+
+    // Listen to environment via mic and update soundscape context
+    async listenToEnvironment(durationMs = 3000) {
+        if (!window.soundscapeAnalyzer) return null;
+
+        // Ensure mic is active
+        if (window.micInput) {
+            await window.micInput.ensureActive();
+        }
+
+        const result = await window.soundscapeAnalyzer.analyze(durationMs);
+        this.context.soundscape = result;
+        console.log('Soundscape analysis:', result.classification, result);
+        return result;
+    }
+
+    // Convert dominant frequencies from soundscape to semitone offsets
+    _tunePitchesToEnvironment(melodicTracks) {
+        if (!this.context.soundscape || !window.sequencer) return;
+        const { dominantFreqs } = this.context.soundscape;
+        if (!dominantFreqs || dominantFreqs.length === 0) return;
+
+        // Convert frequencies to semitone offsets from A4 (440Hz)
+        const envSemitones = dominantFreqs
+            .filter(f => f.freq > 50 && f.freq < 4000)
+            .map(f => Math.round(12 * Math.log2(f.freq / 440)));
+
+        if (envSemitones.length === 0) return;
+
+        const seq = window.sequencer;
+        for (const t of melodicTracks) {
+            for (let s = 0; s < seq.steps; s++) {
+                const step = seq.pattern[t][s];
+                if (step.active && step.pLocks.pitch !== null) {
+                    // Snap to nearest environment-derived semitone
+                    const current = step.pLocks.pitch;
+                    let closest = envSemitones[0];
+                    let minDist = Math.abs(current - closest);
+                    for (const semi of envSemitones) {
+                        const dist = Math.abs(current - semi);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            closest = semi;
+                        }
+                    }
+                    seq.setPLock(t, s, 'pitch', closest);
+                }
+            }
         }
     }
 
@@ -189,6 +254,26 @@ class AIComposer {
     async generateFull(vibe, density = 70, complexity = 50) {
         if (!window.sequencer) return null;
 
+        // 0. Listen to environment for soundscape-aware composition
+        await this.listenToEnvironment(2000);
+
+        // Adjust density/complexity from soundscape metrics
+        if (this.context.soundscape && this.context.soundscape.avgAmplitude > 0.05) {
+            const sc = this.context.soundscape;
+            if (sc.transientDensity > 2) density = Math.min(100, density + 15);
+            if (sc.brightness > 40) complexity = Math.min(100, complexity + 10);
+            // Use dominant frequency as tempo hint if it suggests a pulse (< 10Hz)
+            if (sc.dominantFreqs.length > 0) {
+                const lowFreq = sc.dominantFreqs.find(f => f.freq < 10);
+                if (lowFreq) {
+                    const hintBpm = Math.round(lowFreq.freq * 60);
+                    if (hintBpm >= 60 && hintBpm <= 200) {
+                        window.sequencer.setTempo(hintBpm);
+                    }
+                }
+            }
+        }
+
         // 1. Auto-capture from active sources if no captured pads yet
         const capturedPads = [];
         for (let i = 0; i < 8; i++) {
@@ -196,7 +281,6 @@ class AIComposer {
         }
 
         if (capturedPads.length === 0) {
-            // Try to auto-capture from radio, then mic
             const radioPad = await this.autoCaptureRadio(2000);
             if (radioPad !== null) capturedPads.push(radioPad);
             const micPad = await this.autoCaptureMic(2000);
@@ -206,42 +290,53 @@ class AIComposer {
         // 2. Generate base rhythm pattern
         window.sequencer.generateVibePattern(vibe, density, complexity);
 
-        // 3. Auto-assign track sources
-        // Tracks 0-3: keep as sampler (drums)
-        // Tracks 4-5: assign to captured pads if available (melodic)
-        // Track 6: synth
-        // Track 7: radio gate or mic gate if active
-        const melodicTracks = [];
-        if (capturedPads.length > 0) {
-            // Assign captured pads to tracks 4+
-            for (let i = 0; i < Math.min(capturedPads.length, 2); i++) {
-                const trackIdx = 4 + i;
-                window.sequencer.setTrackSource(trackIdx, 'sampler');
-                // Remap: this track triggers the captured pad
-                // We swap pattern data so track index matches pad index
-                // Copy active pattern from trackIdx to capturedPads[i] track
-                this.remapTrackToPad(trackIdx, capturedPads[i]);
-                melodicTracks.push(trackIdx);
+        // 3. Assign track sources via SourceRoleManager if available
+        let melodicTracks = [];
+        if (window.sourceRoleManager) {
+            const availableSources = ['sampler', 'synth'];
+            if (window.radioPlayer?.isPlaying()) availableSources.push('radio');
+            if (window.micInput?.isActive()) availableSources.push('mic');
+
+            const assignments = window.sourceRoleManager.generateRoleAssignment({
+                vibe,
+                soundscape: this.context.soundscape,
+                availableSources
+            });
+
+            // Apply assignments
+            for (const assignment of assignments) {
+                window.sequencer.setTrackSource(assignment.track, assignment.source);
+                window.sourceRoleManager.assignRole(assignment.track, assignment.role, assignment.source);
+                if (assignment.role === 'melody') melodicTracks.push(assignment.track);
             }
-        }
-
-        // Assign synth to track 6 if not already melodic
-        if (!melodicTracks.includes(6)) {
-            window.sequencer.setTrackSource(6, 'synth');
-            melodicTracks.push(6);
-        }
-
-        // Assign radio/mic gate to track 7 if active
-        if (window.radioPlayer?.isPlaying()) {
-            window.sequencer.setTrackSource(7, 'radio');
-        } else if (window.micInput?.isActive()) {
-            window.sequencer.setTrackSource(7, 'mic');
+        } else {
+            // Legacy fallback
+            if (capturedPads.length > 0) {
+                for (let i = 0; i < Math.min(capturedPads.length, 2); i++) {
+                    const trackIdx = 4 + i;
+                    window.sequencer.setTrackSource(trackIdx, 'sampler');
+                    this.remapTrackToPad(trackIdx, capturedPads[i]);
+                    melodicTracks.push(trackIdx);
+                }
+            }
+            if (!melodicTracks.includes(6)) {
+                window.sequencer.setTrackSource(6, 'synth');
+                melodicTracks.push(6);
+            }
+            if (window.radioPlayer?.isPlaying()) {
+                window.sequencer.setTrackSource(7, 'radio');
+            } else if (window.micInput?.isActive()) {
+                window.sequencer.setTrackSource(7, 'mic');
+            }
         }
 
         // 4. Add pitch P-Locks to melodic tracks
         this.addPitchPLocks(melodicTracks, vibe, complexity);
 
-        // 5. Generate suggestions
+        // 5. Tune pitches to environment if soundscape available
+        this._tunePitchesToEnvironment(melodicTracks);
+
+        // 6. Generate suggestions
         return this.generateSuggestions(vibe, density, complexity);
     }
 

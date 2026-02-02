@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture - Oh My Ondas</title>
+    <link rel="stylesheet" href="css/style.css?v=248">
+    <style>
+        body {
+            overflow: auto;
+        }
+        .page-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            background: rgba(255,255,255,0.95);
+            display: flex;
+            flex-direction: column;
+        }
+        .page-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            flex: 1;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 32px;
+            border-bottom: 3px solid var(--border);
+            padding-bottom: 16px;
+        }
+        .page-content h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 32px 0 12px 0;
+        }
+        .page-content h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 20px 0 8px 0;
+        }
+        .page-content p {
+            font-size: 15px;
+            line-height: 1.75;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+        .page-content ul {
+            font-size: 14px;
+            line-height: 1.75;
+            color: var(--text);
+            margin: 0 0 12px 20px;
+        }
+        .page-content code {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 13px;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        /* Signal flow diagram */
+        .signal-flow {
+            background: #1a2a2a;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        .sf-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .sf-row:last-child { margin-bottom: 0; }
+        .sf-block {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .sf-source { background: #2a5050; color: #8fd; }
+        .sf-gain { background: #3a4a3a; color: #afc; }
+        .sf-eq { background: #3a3a5a; color: #aaf; }
+        .sf-fx { background: #5a3a3a; color: #faa; }
+        .sf-master { background: #5a5a3a; color: #ffa; }
+        .sf-output { background: #4a4a4a; color: #fff; }
+        .sf-arrow {
+            color: #6a8a8a;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .sf-label {
+            color: #6a8a8a;
+            font-size: 10px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* File reference table */
+        .file-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 13px;
+        }
+        .file-table th {
+            text-align: left;
+            padding: 8px 12px;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 700;
+        }
+        .file-table td {
+            padding: 6px 12px;
+            border-bottom: 1px solid #e0e0e0;
+            color: var(--text);
+        }
+        .file-table tr:nth-child(even) td {
+            background: #f8f8f8;
+        }
+    </style>
+</head>
+<body>
+    <div id="mapBackground" class="map-bg"></div>
+
+    <div class="page-container">
+        <header class="page-header">
+            <a href="index.html" class="logo">OH MY ONDAS</a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="app.html" class="nav-link">App</a>
+                <a href="design.html" class="nav-link">Design</a>
+                <a href="sdlc.html" class="nav-link">SDLC</a>
+                <a href="about.html" class="nav-link">About</a>
+                <a href="analysis.html" class="nav-link">Analysis</a>
+                <a href="architecture.html" class="nav-link active">Arch</a>
+            </nav>
+        </header>
+
+        <main class="page-content">
+            <h1 class="page-title">Audio Architecture</h1>
+
+            <h2>1. Overview</h2>
+            <p>Oh My Ondas is a 4-source, 4-channel mixer with per-channel FX processing. The four sources &mdash; microphone, sampler, synthesizer, and internet radio &mdash; each feed into a dedicated mixer channel with independent gain, 3-band EQ, and a full FX chain (delay, glitch, grain). All channels merge through a master EQ, master FX stage, and master gain before reaching the audio output and analyser.</p>
+
+            <h2>2. Signal Flow</h2>
+            <p>Each source follows an identical path through its channel strip. The per-channel FX sit between the channel EQ and the master bus, allowing independent effects processing without affecting other sources.</p>
+
+            <div class="signal-flow">
+                <span class="sf-label">Per-channel path (x4: mic, samples, synth, radio):</span>
+                <div class="sf-row">
+                    <span class="sf-block sf-source">Source</span>
+                    <span class="sf-arrow">&rarr;</span>
+                    <span class="sf-block sf-gain">Channel Gain</span>
+                    <span class="sf-arrow">&rarr;</span>
+                    <span class="sf-block sf-eq">Channel EQ (Lo/Mid/Hi)</span>
+                    <span class="sf-arrow">&rarr;</span>
+                    <span class="sf-block sf-fx">Channel FX (Delay/Glitch/Grain)</span>
+                    <span class="sf-arrow">&rarr;</span>
+                    <span class="sf-block sf-master">Master EQ</span>
+                </div>
+                <span class="sf-label" style="margin-top:12px">Master bus:</span>
+                <div class="sf-row">
+                    <span class="sf-block sf-master">Master EQ</span>
+                    <span class="sf-arrow">&rarr;</span>
+                    <span class="sf-block sf-fx">Master FX (Delay/Glitch/Grain)</span>
+                    <span class="sf-arrow">&rarr;</span>
+                    <span class="sf-block sf-gain">Master Gain</span>
+                    <span class="sf-arrow">&rarr;</span>
+                    <span class="sf-block sf-output">Analyser</span>
+                    <span class="sf-arrow">&rarr;</span>
+                    <span class="sf-block sf-output">Audio Output</span>
+                </div>
+            </div>
+
+            <h2>3. Per-Channel FX</h2>
+            <p>The <code>ChannelFX</code> class provides three effect types per instance. Five instances are created: one per channel (mic, samples, synth, radio) and one master.</p>
+
+            <h3>Delay</h3>
+            <p>Variable-time delay (0&ndash;2s) with feedback loop and dry/wet crossfade. At 100% mix, the dry signal is attenuated to 50% rather than muted, preserving transient definition.</p>
+
+            <h3>Glitch</h3>
+            <p>Probability-based slice effects running on a 100ms check interval. Three modes: <strong>stutter</strong> (rapid volume chops), <strong>reverse</strong> (feedback burst simulating reversal), and <strong>jump</strong> (random amplitude spikes).</p>
+
+            <h3>Grain</h3>
+            <p>Simplified granular texture using the delay line. Grain density maps to delay feedback, grain size maps to delay time. Freeze mode sets feedback to 0.98 for near-infinite sustain of the delay buffer.</p>
+
+            <h3>Routing via MangleEngine</h3>
+            <p>The <code>MangleEngine</code> acts as a routing manager. Its <code>currentRoute</code> property (default: <code>'master'</code>) determines which <code>ChannelFX</code> instance receives effect parameter changes. Direct per-channel control is available via <code>setChannelDelayMix(channelName, percent)</code> and similar methods.</p>
+
+            <h2>4. Soundscape Analysis</h2>
+            <p>The <code>SoundscapeAnalyzer</code> taps a high-resolution <code>AnalyserNode</code> (FFT size 2048) into the mic channel gain node in parallel. The tap is non-destructive &mdash; it doesn't alter the mic audio path.</p>
+
+            <h3>Analysis Pipeline</h3>
+            <ul>
+                <li>Spectral frames collected every 50ms over a configurable duration (default 3s)</li>
+                <li>RMS amplitude computed per frame from time-domain data</li>
+                <li>Transient detection via amplitude spike ratio (1.8x threshold)</li>
+                <li>Average spectrum computed across all frames for peak and centroid analysis</li>
+            </ul>
+
+            <h3>Metrics</h3>
+            <ul>
+                <li><strong>dominantFreqs</strong> &mdash; top 5 frequency peaks by magnitude</li>
+                <li><strong>spectralCentroid</strong> &mdash; brightness center frequency (Hz)</li>
+                <li><strong>brightness</strong> &mdash; energy ratio above 2kHz (0&ndash;100%)</li>
+                <li><strong>transientDensity</strong> &mdash; amplitude spikes per second</li>
+                <li><strong>avgAmplitude</strong> &mdash; mean RMS level</li>
+                <li><strong>envelope</strong> &mdash; level over time array</li>
+            </ul>
+
+            <h3>Classification</h3>
+            <ul>
+                <li>amplitude &lt; 0.01 &rarr; <strong>quiet</strong></li>
+                <li>transients &gt; 4 AND brightness &gt; 50 &rarr; <strong>chaotic</strong></li>
+                <li>transients &gt; 2 &rarr; <strong>rhythmic</strong></li>
+                <li>brightness &gt; 40 &rarr; <strong>noisy</strong></li>
+                <li>centroid &gt; 500 &rarr; <strong>tonal</strong></li>
+                <li>otherwise &rarr; <strong>ambient</strong></li>
+            </ul>
+
+            <h3>AI Integration</h3>
+            <p>When <code>generateFull()</code> runs, it calls <code>listenToEnvironment(2000)</code> first. If the soundscape has meaningful amplitude (&gt; 0.05), the classification overrides GPS-based vibe selection: rhythmic&rarr;urban, tonal&rarr;nature, ambient&rarr;calm, noisy/chaotic&rarr;chaos. Transient density and brightness also adjust the density and complexity parameters (+15 and +10 respectively). Dominant frequencies below 10Hz are used as tempo hints.</p>
+
+            <h2>5. Creative Source Roles</h2>
+            <p>The <code>SourceRoleManager</code> breaks from the assumption that samples = drums, radio = plays straight, synth = notes. Any source can serve any of four roles:</p>
+
+            <ul>
+                <li><strong>RHYTHM</strong> &mdash; percussive, pattern-driving elements</li>
+                <li><strong>TEXTURE</strong> &mdash; ambient, atmospheric layers</li>
+                <li><strong>MELODY</strong> &mdash; pitched, melodic phrases</li>
+                <li><strong>MODULATION</strong> &mdash; real-time parameter modulation from source amplitude</li>
+            </ul>
+
+            <h3>Role Distribution by Vibe</h3>
+            <ul>
+                <li><strong>calm</strong> &mdash; 2 rhythm / 3 texture / 2 melody / 1 modulation</li>
+                <li><strong>urban</strong> &mdash; 4 rhythm / 1 texture / 2 melody / 1 modulation</li>
+                <li><strong>nature</strong> &mdash; 1 rhythm / 4 texture / 2 melody / 1 modulation</li>
+                <li><strong>chaos</strong> &mdash; 3 rhythm / 2 texture / 1 melody / 2 modulation</li>
+            </ul>
+
+            <h3>Strategy Pattern</h3>
+            <p>Each role+source combination has a strategy function that configures the track. Examples:</p>
+            <ul>
+                <li><code>_rhythmFromSynth</code> &mdash; short decay + filter P-Locks for percussive character</li>
+                <li><code>_textureFromRadio</code> &mdash; delay + grain P-Locks for ambient layer</li>
+                <li><code>_textureFromMic</code> &mdash; heavy grain P-Locks for processed ambient</li>
+                <li><code>_melodyFromSampler</code> &mdash; pitch P-Locks on pitched kits</li>
+                <li><code>_modulationFromMic</code> &mdash; amplitude-to-parameter modulation route</li>
+            </ul>
+
+            <h3>Modulation Routing</h3>
+            <p>Modulation-role tracks set up real-time parameter routes. Each sequencer tick, <code>processModulation()</code> reads the source channel's RMS amplitude and maps it (scaled) to a target channel's FX parameter. For example: mic amplitude &rarr; synth delay mix.</p>
+
+            <h2>6. P-Lock Integration</h2>
+            <p>Per-step parameter locks now include an <code>fxRoute</code> field that determines which channel's FX receives the P-Lock values. The resolution order is:</p>
+            <ul>
+                <li>Explicit <code>pLocks.fxRoute</code> (set by role strategies or manually)</li>
+                <li>Track's source channel (sampler&rarr;samples, synth&rarr;synth, etc.)</li>
+                <li>Master (fallback)</li>
+            </ul>
+            <p>This allows a single pattern to apply delay to the radio channel on step 3, grain to the synth on step 7, and leave all other steps targeting master &mdash; per-step, per-channel FX automation.</p>
+
+            <h2>7. File Reference</h2>
+            <table class="file-table">
+                <thead>
+                    <tr><th>File</th><th>Responsibility</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>audio-engine.js</td><td>AudioContext, channel routing, gain, EQ, metering, per-channel FX wiring</td></tr>
+                    <tr><td>channel-fx.js</td><td>ChannelFX class: delay, glitch, grain per instance</td></tr>
+                    <tr><td>mangle.js</td><td>MangleEngine: FX routing manager, delegates to ChannelFX instances</td></tr>
+                    <tr><td>soundscape-analyzer.js</td><td>SoundscapeAnalyzer: mic spectral analysis, classification</td></tr>
+                    <tr><td>source-roles.js</td><td>SourceRoleManager: creative role assignment, modulation routing</td></tr>
+                    <tr><td>sequencer.js</td><td>Step sequencer, P-Locks with per-channel FX targeting, trig conditions</td></tr>
+                    <tr><td>scenes.js</td><td>Scene save/recall/morph with per-channel FX and role state</td></tr>
+                    <tr><td>ai-composer.js</td><td>AI composition engine: soundscape-aware, role-based track assignment</td></tr>
+                    <tr><td>mic-input.js</td><td>Microphone input management</td></tr>
+                    <tr><td>sampler.js</td><td>8-pad sampler with kit loading and capture</td></tr>
+                    <tr><td>synth.js</td><td>2-oscillator subtractive synth with ADSR, filter, LFO</td></tr>
+                    <tr><td>radio.js</td><td>Internet radio streaming and capture</td></tr>
+                    <tr><td>recorder.js</td><td>Audio recording to file</td></tr>
+                    <tr><td>arrangement.js</td><td>Multi-scene arrangement timeline</td></tr>
+                    <tr><td>gps.js</td><td>GPS positioning and location tracking</td></tr>
+                    <tr><td>landmark.js</td><td>GPS-tagged sonic snapshots</td></tr>
+                    <tr><td>journey.js</td><td>GPS-tracked walking sessions</td></tr>
+                    <tr><td>app.js</td><td>UI controller, event binding, initialization</td></tr>
+                </tbody>
+            </table>
+        </main>
+
+        <footer class="page-footer">
+            <span>Oh My Ondas</span>
+            <span>GPL-3.0</span>
+            <a href="https://github.com/alevm/oh-my-ondas" target="_blank">GitHub</a>
+        </footer>
+    </div>
+</body>
+</html>

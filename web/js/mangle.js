@@ -1,12 +1,20 @@
-// Oh My Ondas - Mangling Effects (Bit Crusher, Glitch, Grain, Delay)
+// Oh My Ondas - Mangling Effects Routing Manager
+// Delegates FX processing to per-channel ChannelFX instances
 
 class MangleEngine {
     constructor() {
         this.ctx = null;
+
+        // Legacy audio nodes (kept for backward compat if ChannelFX unavailable)
         this.inputNode = null;
         this.outputNode = null;
+        this.dryGain = null;
+        this.delayNode = null;
+        this.delayFeedback = null;
+        this.wetGain = null;
+        this.glitchInterval = null;
 
-        // Effect states
+        // Effect state tracking
         this.effects = {
             crusher: { enabled: false, bits: 16, sampleRate: 44100 },
             glitch: { enabled: false, probability: 0, sliceSize: 100, mode: 'stutter' },
@@ -14,238 +22,234 @@ class MangleEngine {
             delay: { enabled: false, time: 250, feedback: 30, mix: 0 }
         };
 
-        // Audio nodes
-        this.crusherNode = null;
-        this.delayNode = null;
-        this.delayFeedback = null;
-        this.delayMix = null;
-        this.dryGain = null;
-        this.wetGain = null;
+        // ChannelFX refs (populated in init)
+        this.channelFxMap = {};
+        this.masterFxRef = null;
 
-        // Glitch buffer
-        this.glitchBuffer = null;
-        this.glitchInterval = null;
-
-        // Grain cloud
-        this.grainBuffer = null;
-        this.grainInterval = null;
-        this.grains = [];
+        // Current routing target
+        this.currentRoute = 'master';
     }
 
     async init() {
         this.ctx = window.audioEngine?.getContext();
         if (!this.ctx) return false;
 
-        // Create effect chain
-        this.inputNode = this.ctx.createGain();
-        this.outputNode = this.ctx.createGain();
+        // Cache refs to all ChannelFX instances
+        const ae = window.audioEngine;
+        for (const name of ['mic', 'samples', 'synth', 'radio']) {
+            const fx = ae.getChannelFX(name);
+            if (fx) this.channelFxMap[name] = fx;
+        }
+        this.masterFxRef = ae.getMasterFX();
 
-        // Dry path
-        this.dryGain = this.ctx.createGain();
-        this.dryGain.gain.value = 1;
+        // Legacy fallback: create own audio graph if no ChannelFX available
+        if (!this.masterFxRef) {
+            this.inputNode = this.ctx.createGain();
+            this.outputNode = this.ctx.createGain();
+            this.dryGain = this.ctx.createGain();
+            this.dryGain.gain.value = 1;
+            this.delayNode = this.ctx.createDelay(2);
+            this.delayNode.delayTime.value = 0.25;
+            this.delayFeedback = this.ctx.createGain();
+            this.delayFeedback.gain.value = 0.3;
+            this.wetGain = this.ctx.createGain();
+            this.wetGain.gain.value = 0;
 
-        // Create delay effect
-        this.delayNode = this.ctx.createDelay(2);
-        this.delayNode.delayTime.value = 0.25;
+            this.inputNode.connect(this.dryGain);
+            this.inputNode.connect(this.delayNode);
+            this.delayNode.connect(this.delayFeedback);
+            this.delayFeedback.connect(this.delayNode);
+            this.delayNode.connect(this.wetGain);
+            this.dryGain.connect(this.outputNode);
+            this.wetGain.connect(this.outputNode);
+            this.outputNode.connect(window.audioEngine.masterGain);
+        }
 
-        this.delayFeedback = this.ctx.createGain();
-        this.delayFeedback.gain.value = 0.3;
-
-        this.wetGain = this.ctx.createGain();
-        this.wetGain.gain.value = 0;
-
-        // Connect delay
-        this.inputNode.connect(this.dryGain);
-        this.inputNode.connect(this.delayNode);
-        this.delayNode.connect(this.delayFeedback);
-        this.delayFeedback.connect(this.delayNode);
-        this.delayNode.connect(this.wetGain);
-
-        this.dryGain.connect(this.outputNode);
-        this.wetGain.connect(this.outputNode);
-
-        // Connect to master
-        this.outputNode.connect(window.audioEngine.masterGain);
-
-        console.log('MangleEngine initialized');
+        console.log('MangleEngine initialized (routing mode:',
+            this.masterFxRef ? 'per-channel' : 'legacy', ')');
         return true;
+    }
+
+    // Get the ChannelFX target for current route
+    _getTarget() {
+        if (this.currentRoute === 'master' && this.masterFxRef) {
+            return this.masterFxRef;
+        }
+        return this.channelFxMap[this.currentRoute] || this.masterFxRef || null;
     }
 
     getInputNode() {
         return this.inputNode;
     }
 
-    // Bit Crusher (using waveshaper approximation)
-    setCrusher(bits, sampleRate) {
-        this.effects.crusher.bits = bits;
-        this.effects.crusher.sampleRate = sampleRate;
-        // Note: True bit crushing requires AudioWorklet
-        // This is a simplified version using distortion
+    // --- Routing ---
+
+    setRoute(route) {
+        this.currentRoute = route;
+        console.log('FX routing set to:', route);
     }
 
-    toggleCrusher(enabled) {
-        this.effects.crusher.enabled = enabled;
+    getRoute() {
+        return this.currentRoute;
     }
 
-    // Delay
+    // --- Delay (routed) ---
+
     setDelayTime(ms) {
         this.effects.delay.time = ms;
-        if (this.delayNode) {
+        const target = this._getTarget();
+        if (target) {
+            target.setDelayTime(ms);
+        } else if (this.delayNode) {
             this.delayNode.delayTime.setTargetAtTime(ms / 1000, this.ctx.currentTime, 0.02);
         }
     }
 
     setDelayFeedback(percent) {
         this.effects.delay.feedback = percent;
-        if (this.delayFeedback) {
+        const target = this._getTarget();
+        if (target) {
+            target.setDelayFeedback(percent);
+        } else if (this.delayFeedback) {
             this.delayFeedback.gain.setTargetAtTime(percent / 100, this.ctx.currentTime, 0.02);
         }
     }
 
     setDelayMix(percent) {
         this.effects.delay.mix = percent;
-        const wet = percent / 100;
-        const dry = 1 - wet * 0.5; // Keep some dry even at 100%
-
-        if (this.dryGain && this.wetGain) {
+        const target = this._getTarget();
+        if (target) {
+            target.setDelayMix(percent);
+        } else if (this.dryGain && this.wetGain) {
+            const wet = percent / 100;
+            const dry = 1 - wet * 0.5;
             this.dryGain.gain.setTargetAtTime(dry, this.ctx.currentTime, 0.02);
             this.wetGain.gain.setTargetAtTime(wet, this.ctx.currentTime, 0.02);
         }
     }
 
-    // Glitch
+    // --- Per-channel direct control ---
+
+    setChannelDelayMix(channelName, percent) {
+        const target = this.channelFxMap[channelName] || this.masterFxRef;
+        if (target) target.setDelayMix(percent);
+    }
+
+    setChannelDelayTime(channelName, ms) {
+        const target = this.channelFxMap[channelName] || this.masterFxRef;
+        if (target) target.setDelayTime(ms);
+    }
+
+    setChannelDelayFeedback(channelName, percent) {
+        const target = this.channelFxMap[channelName] || this.masterFxRef;
+        if (target) target.setDelayFeedback(percent);
+    }
+
+    setChannelGlitch(channelName, probability, sliceSize, mode) {
+        const target = this.channelFxMap[channelName] || this.masterFxRef;
+        if (target) target.setGlitch(probability, sliceSize, mode);
+    }
+
+    setChannelGrain(channelName, density, size, pitch) {
+        const target = this.channelFxMap[channelName] || this.masterFxRef;
+        if (target) target.setGrain(density, size, pitch);
+    }
+
+    // --- Glitch (routed) ---
+
     setGlitch(probability, sliceSize, mode) {
         this.effects.glitch.probability = probability;
         this.effects.glitch.sliceSize = sliceSize;
         this.effects.glitch.mode = mode;
 
-        // Start/stop glitch processing
-        if (probability > 0 && !this.glitchInterval) {
-            this.startGlitch();
-        } else if (probability === 0 && this.glitchInterval) {
-            this.stopGlitch();
+        const target = this._getTarget();
+        if (target) {
+            target.setGlitch(probability, sliceSize, mode);
         }
     }
 
-    startGlitch() {
-        const checkInterval = 100; // Check every 100ms
+    // --- Grain (routed) ---
 
-        this.glitchInterval = setInterval(() => {
-            if (Math.random() * 100 < this.effects.glitch.probability) {
-                this.triggerGlitch();
-            }
-        }, checkInterval);
-    }
-
-    stopGlitch() {
-        if (this.glitchInterval) {
-            clearInterval(this.glitchInterval);
-            this.glitchInterval = null;
-        }
-    }
-
-    triggerGlitch() {
-        const mode = this.effects.glitch.mode;
-        const duration = this.effects.glitch.sliceSize / 1000;
-
-        switch (mode) {
-            case 'stutter':
-                // Quick volume chop
-                if (this.outputNode) {
-                    const now = this.ctx.currentTime;
-                    this.outputNode.gain.setValueAtTime(0, now);
-                    this.outputNode.gain.setValueAtTime(1, now + duration * 0.1);
-                    this.outputNode.gain.setValueAtTime(0, now + duration * 0.2);
-                    this.outputNode.gain.setValueAtTime(1, now + duration * 0.3);
-                }
-                break;
-
-            case 'reverse':
-                // Simulate reverse with quick delay feedback burst
-                if (this.delayFeedback) {
-                    const now = this.ctx.currentTime;
-                    const originalFeedback = this.effects.delay.feedback / 100;
-                    this.delayFeedback.gain.setValueAtTime(0.9, now);
-                    this.delayFeedback.gain.setValueAtTime(originalFeedback, now + duration);
-                }
-                break;
-
-            case 'jump':
-                // Random volume spike/drop
-                if (this.outputNode) {
-                    const now = this.ctx.currentTime;
-                    const jumpLevel = 0.2 + Math.random() * 0.6;
-                    this.outputNode.gain.setValueAtTime(jumpLevel, now);
-                    this.outputNode.gain.setValueAtTime(1, now + duration);
-                }
-                break;
-        }
-    }
-
-    // Grain Cloud (simplified - uses delay for texture)
     setGrain(density, size, pitch) {
         this.effects.grain.density = density;
         this.effects.grain.size = size;
         this.effects.grain.pitch = pitch;
 
-        // Use delay to simulate grain texture
-        if (density > 0) {
-            const delayTime = size / 1000;
-            const feedback = Math.min(0.8, density / 100);
-
-            this.delayNode.delayTime.setTargetAtTime(delayTime, this.ctx.currentTime, 0.02);
-            this.delayFeedback.gain.setTargetAtTime(feedback, this.ctx.currentTime, 0.02);
-            this.wetGain.gain.setTargetAtTime(density / 100, this.ctx.currentTime, 0.02);
+        const target = this._getTarget();
+        if (target) {
+            target.setGrain(density, size, pitch);
         }
     }
 
     toggleGrainFreeze(frozen) {
         this.effects.grain.frozen = frozen;
-
-        if (frozen && this.delayFeedback) {
-            // Near-infinite feedback for freeze
-            this.delayFeedback.gain.setTargetAtTime(0.98, this.ctx.currentTime, 0.02);
-        } else if (this.delayFeedback) {
-            // Restore normal feedback
-            this.delayFeedback.gain.setTargetAtTime(
-                this.effects.grain.density / 100 * 0.8,
-                this.ctx.currentTime,
-                0.02
-            );
+        const target = this._getTarget();
+        if (target) {
+            target.toggleGrainFreeze(frozen);
         }
     }
 
-    // Set FX routing target
-    setRoute(route) {
-        this.currentRoute = route;
-        console.log('FX routing set to:', route);
-        // The actual routing happens at the channel level
-        // This just tracks which channel the FX controls affect
+    // --- Crusher (state tracking only) ---
+
+    setCrusher(bits, sampleRate) {
+        this.effects.crusher.bits = bits;
+        this.effects.crusher.sampleRate = sampleRate;
     }
 
-    // Set bit depth for crusher
+    toggleCrusher(enabled) {
+        this.effects.crusher.enabled = enabled;
+    }
+
     setBitDepth(bits) {
         this.effects.crusher.bits = bits;
         this.effects.crusher.enabled = bits < 16;
-        // Note: True bit crushing requires AudioWorklet
-        console.log('Crusher bits:', bits);
     }
 
-    // Get current effect states
+    // --- State ---
+
     getState() {
         return { ...this.effects };
     }
 
-    // Reset all effects
+    // Get all per-channel FX states
+    getAllChannelStates() {
+        const states = {};
+        for (const [name, fx] of Object.entries(this.channelFxMap)) {
+            states[name] = fx.getState();
+        }
+        if (this.masterFxRef) {
+            states.master = this.masterFxRef.getState();
+        }
+        return states;
+    }
+
+    // Restore all per-channel FX states
+    setAllChannelStates(states) {
+        if (!states) return;
+        for (const [name, state] of Object.entries(states)) {
+            if (name === 'master' && this.masterFxRef) {
+                this.masterFxRef.setState(state);
+            } else if (this.channelFxMap[name]) {
+                this.channelFxMap[name].setState(state);
+            }
+        }
+    }
+
+    // --- Reset ---
+
     reset() {
-        this.setCrusher(16, 44100);
-        this.toggleCrusher(false);
-        this.setGlitch(0, 100, 'stutter');
-        this.setGrain(0, 50, 0);
-        this.toggleGrainFreeze(false);
-        this.setDelayTime(250);
-        this.setDelayFeedback(30);
-        this.setDelayMix(0);
+        this.effects = {
+            crusher: { enabled: false, bits: 16, sampleRate: 44100 },
+            glitch: { enabled: false, probability: 0, sliceSize: 100, mode: 'stutter' },
+            grain: { enabled: false, density: 0, size: 50, pitch: 0, frozen: false },
+            delay: { enabled: false, time: 250, feedback: 30, mix: 0 }
+        };
+
+        // Reset all ChannelFX instances
+        for (const fx of Object.values(this.channelFxMap)) {
+            fx.reset();
+        }
+        if (this.masterFxRef) this.masterFxRef.reset();
     }
 }
 
