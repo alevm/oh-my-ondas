@@ -17,8 +17,65 @@ class AIComposer {
         this.updateContext();
         setInterval(() => this.updateContext(), 30000);
 
+        // Hook into continuous soundscape monitoring
+        if (window.soundscapeAnalyzer) {
+            window.soundscapeAnalyzer.onClassificationChange((change) => {
+                this.onSoundscapeChange(change);
+            });
+        }
+
         console.log('AIComposer initialized');
         return true;
+    }
+
+    // React to live soundscape classification changes
+    onSoundscapeChange(change) {
+        this.context.soundscape = change.analysis;
+        this.context.vibe = this.suggestVibe();
+
+        // If sequencer is playing, adjust live FX based on new classification
+        if (window.sequencer?.isPlaying() && window.mangleEngine) {
+            switch (change.current) {
+                case 'rhythmic':
+                    window.mangleEngine.setDelayMix(Math.min(80, (window.mangleEngine.getDelayMix?.() || 30) + 15));
+                    break;
+                case 'chaotic':
+                    window.mangleEngine.setGlitch(30, 100, 'stutter');
+                    break;
+                case 'quiet':
+                    window.mangleEngine.setDelayMix(15);
+                    window.mangleEngine.setGlitch(0, 0, 'stutter');
+                    window.mangleEngine.setGrain(0, 50, 0);
+                    break;
+                case 'tonal':
+                    window.mangleEngine.setGrain(30, 60, 0);
+                    break;
+            }
+            console.log(`Soundscape changed: ${change.previous} -> ${change.current}, FX adjusted`);
+        }
+
+        this.updateUI();
+    }
+
+    // Ensure all audio sources (mic, radio, synth) are active
+    async ensureAllSources() {
+        // 1. Mic
+        if (window.micInput && !window.micInput.isActive()) {
+            await window.micInput.ensureActive();
+        }
+        // 2. Radio — tune if not already playing
+        if (window.radioPlayer && !window.radioPlayer.isPlaying()) {
+            await window.radioPlayer.autoTuneLocal();
+            // Fallback if autoTune failed
+            if (!window.radioPlayer.isPlaying()) {
+                await window.radioPlayer.playFallback();
+            }
+        }
+        // 3. Synth — start if not running
+        if (window.synth && !window.synth.isPlaying?.()) {
+            window.synth.start?.();
+        }
+        // 4. Sampler is always available (triggered by sequencer)
     }
 
     updateContext() {
@@ -135,7 +192,14 @@ class AIComposer {
     async listenToEnvironment(durationMs = 3000) {
         if (!window.soundscapeAnalyzer) return null;
 
-        // Ensure mic is active
+        // If continuous monitoring is active, use its latest result
+        if (window.soundscapeAnalyzer.monitoring) {
+            const latest = window.soundscapeAnalyzer.getLatest();
+            this.context.soundscape = latest;
+            return latest;
+        }
+
+        // Otherwise, run a one-shot analysis
         if (window.micInput) {
             await window.micInput.ensureActive();
         }
@@ -254,7 +318,10 @@ class AIComposer {
     async generateFull(vibe, density = 70, complexity = 50) {
         if (!window.sequencer) return null;
 
-        // 0. Listen to environment for soundscape-aware composition
+        // 0. Ensure all sources are active before generating
+        await this.ensureAllSources();
+
+        // 0b. Listen to environment for soundscape-aware composition
         await this.listenToEnvironment(2000);
 
         // Adjust density/complexity from soundscape metrics
@@ -290,13 +357,11 @@ class AIComposer {
         // 2. Generate base rhythm pattern
         window.sequencer.generateVibePattern(vibe, density, complexity);
 
-        // 3. Assign track sources via SourceRoleManager if available
+        // 3. Assign track sources — all four always available now
         let melodicTracks = [];
-        if (window.sourceRoleManager) {
-            const availableSources = ['sampler', 'synth'];
-            if (window.radioPlayer?.isPlaying()) availableSources.push('radio');
-            if (window.micInput?.isActive()) availableSources.push('mic');
+        const availableSources = ['sampler', 'synth', 'radio', 'mic'];
 
+        if (window.sourceRoleManager) {
             const assignments = window.sourceRoleManager.generateRoleAssignment({
                 vibe,
                 soundscape: this.context.soundscape,

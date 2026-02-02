@@ -1337,7 +1337,7 @@ class App {
     }
 
     // Handle mode switch from mockup (PICTURE / SOUNDSCAPE / INTERACT)
-    handleMockupMode(mode) {
+    async handleMockupMode(mode) {
         this._currentMode = mode;
 
         // Mode → default panel mapping
@@ -1369,15 +1369,27 @@ class App {
                 break;
 
             case 'soundscape':
-                // AI ambient mode: use auto-detected vibe, generate + play
+                // AI ambient mode: ensure all sources live, continuous monitoring, generate + play
                 {
+                    await window.aiComposer?.ensureAllSources();
+
+                    window.soundscapeAnalyzer?.startMonitoring(5000);
+
                     const vibe = window.aiComposer?.context?.vibe || 'calm';
+
+                    await window.aiComposer?.generateFull(vibe, 70, 50);
                     this.generateFullComposition(vibe);
+
+                    this.updatePadDisplay();
+
                     if (!window.sequencer?.isPlaying()) {
                         window.sequencer?.play();
                         const playBtn = document.getElementById('btnPlayE') || document.getElementById('btnPlay');
                         playBtn?.classList.add('active');
                     }
+
+                    const statusEl = document.getElementById('aiStatus');
+                    if (statusEl) statusEl.textContent = `SOUNDSCAPE: All sources active — ${vibe}`;
                 }
                 break;
 
@@ -2551,10 +2563,11 @@ class App {
                 // Use auto-detected vibe from AI composer
                 const vibe = window.aiComposer?.context?.vibe || 'calm';
 
-                // Use the full AI generate path (auto-capture + auto-assign + pitch P-Locks)
+                // Ensure all sources active, then full AI generate
                 const statusEl = document.getElementById('aiStatus');
                 if (statusEl) statusEl.textContent = 'Generating...';
 
+                await window.aiComposer?.ensureAllSources();
                 await window.aiComposer?.generateFull(vibe, 70, 50);
                 this.generateFullComposition(vibe);
 
@@ -2580,7 +2593,7 @@ class App {
                 grain: 0,
                 glitch: 0,
                 crush: 16,
-                mixer: { mic: 50, samples: 70, synth: 60, radio: 20, master: 85 }
+                mixer: { mic: 50, samples: 70, synth: 60, radio: 40, master: 85 }
             },
             urban: {
                 tempo: 110 + Math.floor(Math.random() * 30), // 110-140
@@ -2588,7 +2601,7 @@ class App {
                 grain: Math.floor(Math.random() * 30),
                 glitch: Math.floor(Math.random() * 20),
                 crush: 12 + Math.floor(Math.random() * 4),
-                mixer: { mic: 30, samples: 90, synth: 70, radio: 40, master: 90 }
+                mixer: { mic: 30, samples: 90, synth: 70, radio: 55, master: 90 }
             },
             nature: {
                 tempo: 70 + Math.floor(Math.random() * 30),  // 70-100
@@ -2596,7 +2609,7 @@ class App {
                 grain: 20 + Math.floor(Math.random() * 40),
                 glitch: 0,
                 crush: 16,
-                mixer: { mic: 70, samples: 60, synth: 40, radio: 50, master: 80 }
+                mixer: { mic: 70, samples: 60, synth: 40, radio: 55, master: 80 }
             },
             chaos: {
                 tempo: 130 + Math.floor(Math.random() * 40), // 130-170
@@ -2662,8 +2675,12 @@ class App {
         // Update sequencer display
         this.updateOctSteps();
 
-        // Auto-tune to a local radio station
-        this.tuneLocalRadio();
+        // Auto-tune to a local radio station (with fallback)
+        this.tuneLocalRadio().then(() => {
+            if (!window.radioPlayer?.isPlaying()) {
+                window.radioPlayer?.playFallback();
+            }
+        });
 
         console.log(`Generated ${vibe} composition: tempo=${settings.tempo}, delay=${settings.delay}, grain=${settings.grain}`);
 

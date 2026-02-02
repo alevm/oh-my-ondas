@@ -4,6 +4,144 @@
 class SoundscapeAnalyzer {
     constructor() {
         this.analyzing = false;
+        this.monitoring = false;
+        this.monitorInterval = null;
+        this.persistentAnalyser = null;
+        this.latest = this._emptyResult();
+        this.changeCallbacks = [];
+        this.previousClassification = 'quiet';
+    }
+
+    // Start continuous monitoring of the mic channel
+    startMonitoring(intervalMs = 5000) {
+        if (this.monitoring) return;
+
+        const ae = window.audioEngine;
+        if (!ae?.ctx || !ae.channels.mic?.gain) {
+            console.warn('SoundscapeAnalyzer: cannot start monitoring — no audio engine or mic channel');
+            return;
+        }
+
+        // Ensure mic is active
+        if (window.micInput && !window.micInput.isActive()) {
+            window.micInput.ensureActive();
+        }
+
+        // Create persistent analyser node (parallel tap, non-destructive)
+        this.persistentAnalyser = ae.ctx.createAnalyser();
+        this.persistentAnalyser.fftSize = 2048;
+        this.persistentAnalyser.smoothingTimeConstant = 0.3;
+        ae.channels.mic.gain.connect(this.persistentAnalyser);
+
+        this.monitoring = true;
+        console.log(`SoundscapeAnalyzer: continuous monitoring started (${intervalMs}ms interval)`);
+
+        // Run first tick immediately, then on interval
+        this._monitorTick();
+        this.monitorInterval = setInterval(() => this._monitorTick(), intervalMs);
+    }
+
+    // Collect ~1s of spectral data and process
+    _monitorTick() {
+        if (!this.monitoring || !this.persistentAnalyser) return;
+
+        const ae = window.audioEngine;
+        if (!ae?.ctx) return;
+
+        const analyser = this.persistentAnalyser;
+        const sampleRate = ae.ctx.sampleRate;
+        const freqBinCount = analyser.frequencyBinCount;
+        const binHz = sampleRate / analyser.fftSize;
+        const frameInterval = 50;
+        const totalFrames = 20; // 20 frames * 50ms = 1 second of data
+
+        const frames = [];
+        const envelopePoints = [];
+        let prevRms = 0;
+        let transientCount = 0;
+        let frameCount = 0;
+
+        const collectFrame = () => {
+            if (frameCount >= totalFrames || !this.monitoring) {
+                // Process collected data
+                const result = this._processFrames(frames, envelopePoints, transientCount, totalFrames * frameInterval, binHz, freqBinCount);
+                this.latest = result;
+
+                // Update AI composer context directly
+                if (window.aiComposer) {
+                    window.aiComposer.context.soundscape = result;
+                }
+
+                // Fire change callbacks if classification changed
+                if (result.classification !== this.previousClassification) {
+                    const change = {
+                        previous: this.previousClassification,
+                        current: result.classification,
+                        analysis: result
+                    };
+                    for (const cb of this.changeCallbacks) {
+                        try { cb(change); } catch (e) { console.error('SoundscapeAnalyzer change callback error:', e); }
+                    }
+                    this.previousClassification = result.classification;
+                }
+                return;
+            }
+
+            const freqData = new Uint8Array(freqBinCount);
+            const timeData = new Uint8Array(analyser.fftSize);
+            analyser.getByteFrequencyData(freqData);
+            analyser.getByteTimeDomainData(timeData);
+
+            let rmsSum = 0;
+            for (let i = 0; i < timeData.length; i++) {
+                const val = (timeData[i] - 128) / 128;
+                rmsSum += val * val;
+            }
+            const rms = Math.sqrt(rmsSum / timeData.length);
+
+            if (rms > prevRms * 1.8 && rms > 0.02) {
+                transientCount++;
+            }
+            prevRms = rms;
+
+            frames.push(Array.from(freqData));
+            envelopePoints.push({
+                time: frameCount * frameInterval,
+                level: Math.round(rms * 1000) / 1000
+            });
+
+            frameCount++;
+            setTimeout(collectFrame, frameInterval);
+        };
+
+        collectFrame();
+    }
+
+    stopMonitoring() {
+        if (!this.monitoring) return;
+        this.monitoring = false;
+
+        if (this.monitorInterval) {
+            clearInterval(this.monitorInterval);
+            this.monitorInterval = null;
+        }
+
+        if (this.persistentAnalyser) {
+            try {
+                window.audioEngine?.channels?.mic?.gain?.disconnect(this.persistentAnalyser);
+            } catch (e) {}
+            this.persistentAnalyser = null;
+        }
+
+        console.log('SoundscapeAnalyzer: monitoring stopped');
+    }
+
+    onClassificationChange(callback) {
+        this.changeCallbacks.push(callback);
+    }
+
+    getLatest() {
+        return this.latest;
     }
 
     // Analyze mic input for the given duration
