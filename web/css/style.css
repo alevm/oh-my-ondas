@@ -163,7 +163,7 @@ html, body {
 .nav-link:hover { background: var(--border); color: #fff; }
 .nav-link.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-/* ===== GRID LAYOUT - Matches Hardware: Display top, 3-column controls ===== */
+/* ===== GRID LAYOUT - 5-column, 4-row layout for full module access ===== */
 .device {
     /* Product palette (Aztec-inspired) — scoped to device context */
     /* Page framework inherits website palette from :root */
@@ -176,8 +176,8 @@ html, body {
     --gold: #d4a857;
 
     display: grid;
-    grid-template-columns: 140px 1fr 1fr 1fr;
-    grid-template-rows: auto 1fr 1fr auto;
+    grid-template-columns: 160px 1fr 1fr 1fr 1fr;
+    grid-template-rows: 160px 1fr 1fr 1fr;
     gap: 4px;
     padding: 6px;
     flex: 1;
@@ -196,26 +196,25 @@ html, body {
     flex-direction: column;
 }
 
-/* TOP ROW: SEQ spans full width (like hardware display) */
-.device > .seq-panel { grid-column: 1 / 5; grid-row: 1; min-height: 140px; }
+/* ROW 1: SEQ spans full width */
+.device > .seq-panel { grid-column: 1 / 6; grid-row: 1; min-height: 140px; }
 
-/* ROW 2: MIXER | PADS | KNOBS/CTRL | SYNTH */
-.device > .mixer-panel { grid-column: 1; grid-row: 2 / 4; }
+/* ROW 2: MIXER | PADS A | PADS B | CTRL KNOBS | SYNTH (spans rows 2-3) */
+.device > .mixer-panel { grid-column: 1; grid-row: 2 / 5; }
 .device > .pads-panel:not(.pads2) { grid-column: 2; grid-row: 2; }
-.device > .knobs-panel { grid-column: 3; grid-row: 2; }
-.device > .synth-panel { grid-column: 4; grid-row: 2; }
+.device > .pads-panel.pads2 { grid-column: 3; grid-row: 2; display: flex !important; }
+.device > .knobs-panel { grid-column: 4; grid-row: 2; }
+.device > .synth-panel { grid-column: 5; grid-row: 2 / 4; }
 
-/* ROW 3: (mixer continues) | SCENES | FX | AI GEN (spans 2 rows) */
-.device > .scenes-panel { grid-column: 2; grid-row: 3; }
-.device > .fx-panel { grid-column: 3; grid-row: 3; }
-.device > .ai-panel { grid-column: 4; grid-row: 3 / 5; }
+/* ROW 3: (mixer continues) | SCENES (spans 2 cols) | FX | (synth continues) */
+.device > .scenes-panel { grid-column: 2 / 4; grid-row: 3; }
+.device > .fx-panel { grid-column: 4; grid-row: 3; }
 
-/* ROW 4 (bottom): EQ | RADIO (spans 2 cols) */
-.device > .eq-panel { grid-column: 1; grid-row: 4; }
-.device > .radio-panel { grid-column: 2 / 4; grid-row: 4; }
-
-/* Hide PADS B for now */
-.device > .pads2 { display: none; }
+/* ROW 4 (bottom): (mixer continues) | RADIO | AI GEN | JOURNEY | EQ */
+.device > .radio-panel { grid-column: 2; grid-row: 4; }
+.device > .ai-panel { grid-column: 3; grid-row: 4; }
+.device > .journey-panel { grid-column: 4; grid-row: 4; }
+.device > .eq-panel { grid-column: 5; grid-row: 4; }
 
 /* REC panel styling */
 .device > .rec-panel {
@@ -1624,10 +1623,10 @@ body.embedded-mode .device > .panel.panel-visible {
     border-left: none !important;
 }
 
-/* Always hide pads and knobs (they exist as physical controls on the mockup) */
-body.embedded-mode .device > .pads-panel,
-body.embedded-mode .device > .knobs-panel {
-    display: none !important;
+/* Show pads and knobs when explicitly visible via tab selection */
+body.embedded-mode .device > .pads-panel.panel-visible,
+body.embedded-mode .device > .knobs-panel.panel-visible {
+    display: flex !important;
 }
 
 /* Panel-specific tweaks for embedded full-height display */
@@ -1954,4 +1953,52 @@ body.embedded-mode .device > .journey-panel.panel-visible #journeyMap {
 body.embedded-mode .device > .journey-panel.panel-visible .journey-waypoints {
     flex: 1;
     max-height: none;
+}
+
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+@media (max-width: 1439px) {
+    .device {
+        grid-template-columns: 160px 1fr 1fr 1fr;
+        grid-template-rows: 160px 1fr 1fr 1fr;
+    }
+    /* Hide PADS B on medium screens */
+    .device > .pads-panel.pads2 { display: none !important; }
+    /* Adjust synth to 4th column */
+    .device > .synth-panel { grid-column: 4; grid-row: 2 / 4; }
+    /* Scenes spans 2 cols */
+    .device > .scenes-panel { grid-column: 2 / 4; grid-row: 3; }
+    /* Bottom row adjustments */
+    .device > .radio-panel { grid-column: 2; grid-row: 4; }
+    .device > .ai-panel { grid-column: 3; grid-row: 4; }
+    .device > .journey-panel { grid-column: 4; grid-row: 4; }
+    .device > .eq-panel { grid-column: 1; grid-row: 4; }
+    .device > .mixer-panel { grid-row: 2 / 4; }
+}
+
+@media (max-width: 1023px) {
+    .device {
+        grid-template-columns: 140px 1fr 1fr;
+        grid-template-rows: 140px 1fr 1fr 1fr 1fr;
+    }
+    .device > .seq-panel { grid-column: 1 / 4; }
+    .device > .mixer-panel { grid-column: 1; grid-row: 2 / 5; }
+    .device > .pads-panel:not(.pads2) { grid-column: 2; grid-row: 2; }
+    .device > .knobs-panel { grid-column: 3; grid-row: 2; }
+    .device > .synth-panel { grid-column: 2 / 4; grid-row: 3; }
+    .device > .scenes-panel { grid-column: 2 / 4; grid-row: 4; }
+    .device > .fx-panel { grid-column: 1; grid-row: 5; }
+    .device > .radio-panel { grid-column: 2; grid-row: 5; }
+    .device > .ai-panel { grid-column: 3; grid-row: 5; }
+    .device > .eq-panel { display: none; }
+    .device > .journey-panel { display: none; }
+}
+
+@media (max-width: 767px) {
+    .device {
+        display: flex;
+        flex-direction: column;
+    }
+    .panel-tabs { display: flex !important; }
+    .device > .panel { display: none; }
+    .device > .panel.panel-visible { display: flex !important; }
 }
