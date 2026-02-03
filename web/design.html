@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Hardware design specifications for Oh My Ondas. Teensy 4.1 + ESP32 architecture, BOM, pin assignments, and enclosure CAD.">
+    <meta property="og:title" content="Hardware Design - Oh My Ondas">
+    <meta property="og:description" content="Open-source hardware specs: Teensy 4.1, ESP32, pads, buttons, encoders, and audio I/O for a location-based music instrument.">
     <title>Hardware Design - Oh My Ondas</title>
     <link rel="stylesheet" href="css/style.css?v=254">
     <style>
@@ -101,7 +104,7 @@
             position: absolute;
             top: 390px; left: 10px; right: 10px; bottom: 10px;
             opacity: 0.08;
-            background-image: url('https://media.rhizome.org/blog/8979/Chombart-de-Lauwe.jpg');
+            background-image: url('images/chombart-de-lauwe.jpg');
             background-size: cover;
             border-radius: 8px;
             z-index: 0;
@@ -411,7 +414,7 @@
             width: 50px; height: 50px;
             border-radius: 4px;
             background: #e8e8e8;
-            background-image: url('https://media.rhizome.org/blog/8979/Chombart-de-Lauwe.jpg');
+            background-image: url('images/chombart-de-lauwe.jpg');
             background-size: cover;
             background-position: center;
             flex-shrink: 0;
@@ -602,14 +605,14 @@
     <div class="page-container">
         <header class="page-header">
             <a href="index.html" class="logo">OH MY ONDAS</a>
-            <nav class="nav-links">
+            <nav class="nav-links" aria-label="Main navigation">
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="app.html" class="nav-link">App</a>
-                <a href="design.html" class="nav-link active">Design</a>
-                <a href="sdlc.html" class="nav-link">SDLC</a>
                 <a href="about.html" class="nav-link">About</a>
-                <a href="analysis.html" class="nav-link">Analysis</a>
-                <a href="architecture.html" class="nav-link">Arch</a>
+                <a href="design.html" class="nav-link secondary active">Design</a>
+                <a href="architecture.html" class="nav-link secondary">Arch</a>
+                <a href="analysis.html" class="nav-link secondary">Analysis</a>
+                <a href="sdlc.html" class="nav-link secondary">SDLC</a>
             </nav>
         </header>
 
@@ -821,7 +824,7 @@
                         <li>Latency: <code>&lt;10ms</code></li>
                         <li>8 Sample Slots (30s each)</li>
                         <li>8-Track Step Sequencer</li>
-                        <li>24 Effect Types</li>
+                        <li>3 Effect Types (Delay, Glitch, Grain)</li>
                     </ul>
                 </div>
                 <div class="spec-card">
@@ -933,7 +936,7 @@
         <footer class="page-footer">
             <span>Oh My Ondas v2.5.2</span>
             <span>GPL-3.0 License</span>
-            <a href="https://github.com/alevm/oh-my-ondas">GitHub</a>
+            <a href="https://github.com/alevm/oh-my-ondas" target="_blank" rel="noopener noreferrer">GitHub</a>
         </footer>
     </div>
 

@@ -6,6 +6,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="screen-orientation" content="landscape">
+    <meta name="description" content="Web prototype of Oh My Ondas. 8-track sequencer, sampler, synth, FX chain, and AI composition from GPS and microphone input.">
+    <meta property="og:title" content="Oh My Ondas App">
+    <meta property="og:description" content="Location-aware music composition tool with sequencer, sampler, synth, and AI generation.">
     <title>App - Oh My Ondas</title>
     <link rel="stylesheet" href="css/style.css?v=254">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9/dist/leaflet.css" />
@@ -35,14 +38,14 @@
         <!-- IMMUTABLE HEADER (hidden in embedded mode via CSS) -->
         <header class="page-header">
             <a href="index.html" class="logo">OH MY ONDAS</a>
-            <nav class="nav-links">
+            <nav class="nav-links" aria-label="Main navigation">
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="app.html" class="nav-link active">App</a>
-                <a href="design.html" class="nav-link">Design</a>
-                <a href="sdlc.html" class="nav-link">SDLC</a>
                 <a href="about.html" class="nav-link">About</a>
-                <a href="analysis.html" class="nav-link">Analysis</a>
-                <a href="architecture.html" class="nav-link">Arch</a>
+                <a href="design.html" class="nav-link secondary">Design</a>
+                <a href="architecture.html" class="nav-link secondary">Arch</a>
+                <a href="analysis.html" class="nav-link secondary">Analysis</a>
+                <a href="sdlc.html" class="nav-link secondary">SDLC</a>
             </nav>
         </header>
 
@@ -681,7 +684,7 @@
     <footer class="page-footer">
         <span>Oh My Ondas v2.5.2</span>
         <span>GPL-3.0 License</span>
-        <a href="https://github.com/alevm/oh-my-ondas">GitHub</a>
+        <a href="https://github.com/alevm/oh-my-ondas" target="_blank" rel="noopener noreferrer">GitHub</a>
     </footer>
 
     <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"></script>

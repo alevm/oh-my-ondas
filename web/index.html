@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GPS-aware musical instrument that captures location waves and transforms them into compositions. Open-source hardware + web prototype.">
+    <meta property="og:title" content="Oh My Ondas - Location-Based Music Instrument">
+    <meta property="og:description" content="Capture the wave spectrum of any location and turn it into music. Sequencer, sampler, synth, and AI composition engine.">
     <title>Oh My Ondas - Interactive Hardware</title>
     <link rel="stylesheet" href="css/style.css?v=254">
     <style>
@@ -73,7 +76,7 @@
             position: absolute;
             top: 296px; left: 10px; right: 10px; bottom: 10px;
             opacity: 0.07;
-            background-image: url('https://media.rhizome.org/blog/8979/Chombart-de-Lauwe.jpg');
+            background-image: url('images/chombart-de-lauwe.jpg');
             background-size: cover;
             border-radius: 0 0 8px 8px;
             z-index: 0;
@@ -475,8 +478,8 @@
         .sensor-name { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #1270b8; }
         .sensor-desc { font-size: 8px; color: #666; }
 
-        .sensor-line { position: absolute; border-top: 2px solid #1270b8; }
-        .sensor-line-v { position: absolute; border-left: 2px solid #1270b8; }
+        .sensor-line { position: absolute; border-top: 3px solid #1270b8; }
+        .sensor-line-v { position: absolute; border-left: 3px solid #1270b8; }
         .sensor-line::after, .sensor-line-v::after {
             content: ''; position: absolute;
             width: 8px; height: 8px;
@@ -618,14 +621,14 @@
 <body>
     <header class="page-header">
         <a href="index.html" class="logo">OH MY ONDAS</a>
-        <nav class="nav-links">
+        <nav class="nav-links" aria-label="Main navigation">
             <a href="index.html" class="nav-link active">Home</a>
             <a href="app.html" class="nav-link">App</a>
-            <a href="design.html" class="nav-link">Design</a>
-            <a href="sdlc.html" class="nav-link">SDLC</a>
             <a href="about.html" class="nav-link">About</a>
-            <a href="analysis.html" class="nav-link">Analysis</a>
-            <a href="architecture.html" class="nav-link">Arch</a>
+            <a href="design.html" class="nav-link secondary">Design</a>
+            <a href="architecture.html" class="nav-link secondary">Arch</a>
+            <a href="analysis.html" class="nav-link secondary">Analysis</a>
+            <a href="sdlc.html" class="nav-link secondary">SDLC</a>
         </nav>
     </header>
 
@@ -639,10 +642,10 @@
                 <div class="corner-screw screw-bl"></div>
                 <div class="corner-screw screw-br"></div>
                 <div class="brand-silkscreen">OH MY ONDAS</div>
-                <div class="status-leds">
-                    <div class="status-led led-teal"></div>
-                    <div class="status-led led-green"></div>
-                    <div class="status-led led-red"></div>
+                <div class="status-leds" title="Status LEDs: Teal=WiFi/GPS, Green=Audio Active, Red=Recording">
+                    <div class="status-led led-teal" title="WiFi/GPS Connected"></div>
+                    <div class="status-led led-green" title="Audio Active"></div>
+                    <div class="status-led led-red" title="Recording"></div>
                 </div>
                 <div class="artwork"></div>
 
@@ -716,13 +719,13 @@
                 </div>
 
                 <!-- 5-Way Joystick Navigation -->
-                <div class="joystick-module" id="joystickModule">
+                <div class="joystick-module" id="joystickModule" title="5-way navigation joystick">
                     <div class="joystick-base">
-                        <div class="joystick-dir joystick-up" data-dir="up">&#9650;</div>
-                        <div class="joystick-dir joystick-left" data-dir="left">&#9664;</div>
-                        <div class="joystick-center" data-dir="select"></div>
-                        <div class="joystick-dir joystick-right" data-dir="right">&#9654;</div>
-                        <div class="joystick-dir joystick-down" data-dir="down">&#9660;</div>
+                        <div class="joystick-dir joystick-up" data-dir="up" title="Navigate Up">&#9650;</div>
+                        <div class="joystick-dir joystick-left" data-dir="left" title="Navigate Left">&#9664;</div>
+                        <div class="joystick-center" data-dir="select" title="Select/Confirm"></div>
+                        <div class="joystick-dir joystick-right" data-dir="right" title="Navigate Right">&#9654;</div>
+                        <div class="joystick-dir joystick-down" data-dir="down" title="Navigate Down">&#9660;</div>
                     </div>
                     <span class="joystick-label">NAV</span>
                 </div>
@@ -850,7 +853,7 @@
     <footer class="page-footer">
         <span>Oh My Ondas v2.5.2</span>
         <span>GPL-3.0 License</span>
-        <a href="https://github.com/alevm/oh-my-ondas">GitHub</a>
+        <a href="https://github.com/alevm/oh-my-ondas" target="_blank" rel="noopener noreferrer">GitHub</a>
     </footer>
 
     <script>

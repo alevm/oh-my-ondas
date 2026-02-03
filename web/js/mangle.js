@@ -235,6 +235,137 @@ class MangleEngine {
         }
     }
 
+    // --- Reverb (simulated via delay) ---
+
+    setReverbMix(percent) {
+        // Simulate reverb using delay with specific settings
+        // Short delay time + high feedback = reverb-like diffusion
+        const target = this._getTarget();
+        if (!target) return;
+
+        if (percent > 0) {
+            // Store current delay state if not already saved
+            if (!this._savedReverbState) {
+                this._savedReverbState = {
+                    time: this.effects.delay.time,
+                    feedback: this.effects.delay.feedback,
+                    mix: this.effects.delay.mix
+                };
+            }
+
+            // Configure delay for reverb-like sound:
+            // - Short delay time (30-80ms) for early reflections
+            // - High feedback (60-80%) for decay tail
+            // - Mix based on reverb amount
+            const reverbTime = 50 + (percent / 100) * 30; // 50-80ms
+            const reverbFeedback = 50 + (percent / 100) * 30; // 50-80%
+
+            target.setDelayTime(reverbTime);
+            target.setDelayFeedback(reverbFeedback);
+            target.setDelayMix(percent * 0.6); // Scale down mix slightly
+        } else {
+            // Restore original delay settings
+            if (this._savedReverbState) {
+                target.setDelayTime(this._savedReverbState.time);
+                target.setDelayFeedback(this._savedReverbState.feedback);
+                target.setDelayMix(this._savedReverbState.mix);
+                this._savedReverbState = null;
+            }
+        }
+    }
+
+    // --- Punch FX (momentary effects) ---
+
+    // Reverse effect - uses glitch in reverse mode at 100% probability
+    setReverse(enabled) {
+        if (enabled) {
+            // Store current glitch state
+            this._savedGlitchState = { ...this.effects.glitch };
+            this.setGlitch(100, 150, 'reverse');
+        } else {
+            // Restore original glitch state
+            if (this._savedGlitchState) {
+                this.setGlitch(
+                    this._savedGlitchState.probability || 0,
+                    this._savedGlitchState.sliceSize || 100,
+                    this._savedGlitchState.mode || 'stutter'
+                );
+            } else {
+                this.setGlitch(0, 100, 'stutter');
+            }
+        }
+    }
+
+    // Filter sweep - controls synth filter or master filter
+    setFilterSweep(enabled, lowHz = 200, highHz = 8000) {
+        if (!this.ctx) return;
+
+        if (enabled) {
+            // Create filter if not exists
+            if (!this._punchFilter) {
+                this._punchFilter = this.ctx.createBiquadFilter();
+                this._punchFilter.type = 'lowpass';
+                this._punchFilter.frequency.value = highHz;
+                this._punchFilter.Q.value = 2;
+
+                // Insert into master chain if possible
+                if (window.audioEngine?.masterGain) {
+                    const masterGain = window.audioEngine.masterGain;
+                    const dest = masterGain.context.destination;
+                    masterGain.disconnect();
+                    masterGain.connect(this._punchFilter);
+                    this._punchFilter.connect(dest);
+                    this._filterInserted = true;
+                }
+            }
+            // Sweep down
+            this._punchFilter.frequency.setTargetAtTime(lowHz, this.ctx.currentTime, 0.05);
+        } else {
+            // Sweep back up
+            if (this._punchFilter) {
+                this._punchFilter.frequency.setTargetAtTime(highHz, this.ctx.currentTime, 0.1);
+            }
+        }
+    }
+
+    // Tape stop effect - simulates slowing down via delay time ramp
+    setTapeStop(enabled) {
+        if (!this.ctx) return;
+
+        const target = this._getTarget();
+        if (!target) return;
+
+        if (enabled) {
+            // Store current delay state
+            this._savedDelayState = { ...this.effects.delay };
+
+            // Ramp delay time up to simulate slowing down
+            const now = this.ctx.currentTime;
+            if (target.delayNode) {
+                target.delayNode.delayTime.cancelScheduledValues(now);
+                target.delayNode.delayTime.setValueAtTime(target.delayNode.delayTime.value, now);
+                target.delayNode.delayTime.linearRampToValueAtTime(0.5, now + 0.3);
+            }
+            // Also reduce output for tape stop feel
+            if (target.outputNode) {
+                target.outputNode.gain.setTargetAtTime(0.3, now, 0.1);
+            }
+        } else {
+            // Restore normal
+            const now = this.ctx.currentTime;
+            if (target.delayNode && this._savedDelayState) {
+                target.delayNode.delayTime.cancelScheduledValues(now);
+                target.delayNode.delayTime.setTargetAtTime(
+                    this._savedDelayState.time / 1000 || 0.25,
+                    now, 0.1
+                );
+            }
+            if (target.outputNode) {
+                target.outputNode.gain.setTargetAtTime(1, now, 0.05);
+            }
+        }
+    }
+
     // --- Reset ---
 
     reset() {

@@ -1930,34 +1930,32 @@ class App {
         }
 
         channels.forEach(({ name, key }) => {
-            const vu = document.getElementById(`vu${name}`);
-            if (vu) {
-                const level = window.audioEngine?.getMeterLevel(key) || 0;
-                const fill = vu.querySelector('.vu-fill');
-                const peak = document.getElementById(`peak${name}`);
+            // HTML structure: .vu-fill has id="vuXxx", .vu-peak has id="peakXxx"
+            const fill = document.getElementById(`vu${name}`);
+            const peak = document.getElementById(`peak${name}`);
+            const level = window.audioEngine?.getMeterLevel(key) || 0;
 
-                if (fill) {
-                    fill.style.height = level + '%';
-                    // Color based on level
-                    if (level > 90) {
-                        fill.style.background = '#e74c3c';
-                    } else if (level > 70) {
-                        fill.style.background = '#f1c40f';
-                    } else {
-                        fill.style.background = '#27ae60';
-                    }
+            if (fill) {
+                fill.style.height = level + '%';
+                // Color based on level
+                if (level > 90) {
+                    fill.style.background = '#e74c3c';
+                } else if (level > 70) {
+                    fill.style.background = '#f1c40f';
+                } else {
+                    fill.style.background = '#27ae60';
                 }
+            }
 
-                // Update peak hold
-                if (peak) {
-                    if (level > this.peakHolds[key]) {
-                        this.peakHolds[key] = level;
-                    } else {
-                        // Decay peak slowly
-                        this.peakHolds[key] = Math.max(0, this.peakHolds[key] - 1);
-                    }
-                    peak.style.bottom = this.peakHolds[key] + '%';
+            // Update peak hold
+            if (peak) {
+                if (level > this.peakHolds[key]) {
+                    this.peakHolds[key] = level;
+                } else {
+                    // Decay peak slowly
+                    this.peakHolds[key] = Math.max(0, this.peakHolds[key] - 1);
                 }
+                peak.style.bottom = this.peakHolds[key] + '%';
             }
         });
 

@@ -92,7 +92,7 @@ html, body {
     width: 100%;
     height: 100%;
     background-color: #e8e8e8;
-    background-image: url('https://media.rhizome.org/blog/8979/Chombart-de-Lauwe.jpg');
+    background-image: url('../images/chombart-de-lauwe.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -208,7 +208,11 @@ html, body {
     transition: all 0.15s ease;
 }
 .nav-link:hover { background: var(--border); color: #fff; }
-.nav-link.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.nav-link.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+/* Secondary nav links (technical docs) - lighter styling */
+.nav-link.secondary { opacity: 0.75; font-weight: 500; }
+.nav-link.secondary:hover { opacity: 1; }
+.nav-link.secondary.active { opacity: 1; font-weight: 700; }
 
 /* ===== GRID LAYOUT - 5-column, 4-row layout for full module access ===== */
 .device {
@@ -1105,8 +1109,8 @@ body.embedded-mode .device > .ai-panel.panel-visible .ai-btn {
 .fx-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
 .fx-row span { font-size: 12px; width: 32px; color: var(--text-light); font-weight: 600; }
 .fx-row input { flex: 1; height: 8px; }
-.punch-fx { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
-.punch-btn { height: 30px; border: 2px solid var(--border); border-radius: 4px; background: var(--panel-alt); font-size: 12px; font-weight: 600; cursor: pointer; }
+.punch-fx { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.punch-btn { height: 36px; border: 2px solid var(--border); border-radius: 4px; background: var(--panel-alt); font-size: 12px; font-weight: 600; cursor: pointer; }
 .punch-btn:active, .punch-btn.active { background: var(--accent); color: #fff; }
 
 /* ===== MODAL ===== */
@@ -1991,12 +1995,13 @@ body.embedded-mode .device > .journey-panel.panel-visible .journey-waypoints {
 }
 
 /* ===== RESPONSIVE BREAKPOINTS ===== */
-@media (max-width: 1439px) {
+/* Keep PADS B visible until 1199px to support 1440px screens with browser chrome */
+@media (max-width: 1199px) {
     .device {
         grid-template-columns: 160px 1fr 1fr 1fr;
         grid-template-rows: 160px 1fr 1fr 1fr;
     }
-    /* Hide PADS B on medium screens */
+    /* Hide PADS B on smaller screens */
     .device > .pads-panel.pads2 { display: none !important; }
     /* Adjust synth to 4th column */
     .device > .synth-panel { grid-column: 4; grid-row: 2 / 4; }
