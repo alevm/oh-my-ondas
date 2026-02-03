@@ -45,11 +45,9 @@ class SceneManager {
             pattern: JSON.parse(JSON.stringify(window.sequencer?.getPattern() || [])),
             // NEW: Store source routing (copy array)
             sources: [...(window.sequencer?.getTrackSources() || [])],
-            // NEW: Store AI settings
+            // Store AI vibe setting
             ai: {
-                vibe: document.querySelector('.vibe-btn.active')?.dataset.vibe || 'calm',
-                density: parseInt(document.getElementById('aiDensity')?.value || 50),
-                complexity: parseInt(document.getElementById('aiComplexity')?.value || 50)
+                vibe: document.querySelector('.vibe-btn.active')?.dataset.vibe || 'calm'
             },
             timestamp: Date.now()
         };
@@ -147,33 +145,22 @@ class SceneManager {
         // Apply tempo
         if (state.tempo && window.sequencer) {
             window.sequencer.setTempo(state.tempo);
-            // Update tempo UI
-            const tempoSlider = document.getElementById('seqTempo');
-            const tempoDisplay = document.getElementById('seqTempoDisplay');
-            const tempoValue = document.getElementById('tempoValue');
+            // Update tempo UI (actual IDs: tempoSlider, tempoVal, tempoSliderE, tempoValE)
+            const tempoSlider = document.getElementById('tempoSlider');
+            const tempoSliderE = document.getElementById('tempoSliderE');
+            const tempoVal = document.getElementById('tempoVal');
+            const tempoValE = document.getElementById('tempoValE');
             if (tempoSlider) tempoSlider.value = state.tempo;
-            if (tempoDisplay) tempoDisplay.textContent = state.tempo;
-            if (tempoValue) tempoValue.textContent = state.tempo;
+            if (tempoSliderE) tempoSliderE.value = state.tempo;
+            if (tempoVal) tempoVal.textContent = state.tempo;
+            if (tempoValE) tempoValE.textContent = state.tempo;
         }
 
-        // Update FX UI sliders
-        if (state.fx) {
-            if (state.fx.delay) {
-                const delayTime = document.getElementById('delayTime');
-                const delayFeedback = document.getElementById('delayFeedback');
-                const delayMix = document.getElementById('delayMix');
-                if (delayTime) {
-                    delayTime.value = state.fx.delay.time;
-                    document.getElementById('delayTimeDisplay').textContent = state.fx.delay.time;
-                }
-                if (delayFeedback) {
-                    delayFeedback.value = state.fx.delay.feedback;
-                    document.getElementById('delayFeedbackDisplay').textContent = state.fx.delay.feedback;
-                }
-                if (delayMix) {
-                    delayMix.value = state.fx.delay.mix;
-                    document.getElementById('delayMixDisplay').textContent = state.fx.delay.mix;
-                }
+        // Update FX UI sliders (actual ID: fxDelay)
+        if (state.fx?.delay) {
+            const fxDelay = document.getElementById('fxDelay');
+            if (fxDelay) {
+                fxDelay.value = state.fx.delay.mix || 0;
             }
         }
 
@@ -187,21 +174,17 @@ class SceneManager {
                     }
                 }
             }
-            // Notify app to update UI
-            if (window.app) {
-                window.app.updateStepGrid();
-                window.app.updateTrackOverview();
-            }
+            // Re-render the pattern UI
+            window.sequencer.renderPattern?.();
         }
 
         // Apply source routing
         if (state.sources && window.sequencer) {
             state.sources.forEach((source, idx) => {
-                window.sequencer.setTrackSource(idx, source);
+                window.sequencer.setTrackSource?.(idx, source);
             });
-            if (window.app) {
-                window.app.updateSourceRouting();
-            }
+            // Re-render after source changes
+            window.sequencer.renderPattern?.();
         }
 
         // Apply AI settings
@@ -210,16 +193,10 @@ class SceneManager {
             document.querySelectorAll('.vibe-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.vibe === state.ai.vibe);
             });
-            // Update sliders
-            const densitySlider = document.getElementById('aiDensity');
-            const complexitySlider = document.getElementById('aiComplexity');
-            if (densitySlider) {
-                densitySlider.value = state.ai.density;
-                document.getElementById('aiDensityDisplay').textContent = state.ai.density;
-            }
-            if (complexitySlider) {
-                complexitySlider.value = state.ai.complexity;
-                document.getElementById('aiComplexityDisplay').textContent = state.ai.complexity;
+            // Update vibe display
+            const vibeDisplay = document.getElementById('aiVibe');
+            if (vibeDisplay && state.ai.vibe) {
+                vibeDisplay.textContent = state.ai.vibe.charAt(0).toUpperCase() + state.ai.vibe.slice(1);
             }
         }
     }

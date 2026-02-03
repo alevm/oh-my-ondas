@@ -307,21 +307,23 @@ class App {
     // Transport
     setupTransport() {
         const btnPlay = document.getElementById('btnPlay');
-        const btnPlay2 = document.getElementById('btnPlay2');
         const btnStop = document.getElementById('btnStop');
-        const btnStop2 = document.getElementById('btnStop2');
         const btnRecord = document.getElementById('btnRecord');
-        const btnRecord2 = document.getElementById('btnRecord2');
+
+        // Embedded transport (inline bar, shown in embedded/iframe mode)
+        const btnPlayE = document.getElementById('btnPlayE');
+        const btnStopE = document.getElementById('btnStopE');
+        const btnRecordE = document.getElementById('btnRecordE');
 
         const playHandler = () => {
             if (window.sequencer.isPlaying()) {
                 window.sequencer.stop();
                 btnPlay?.classList.remove('active');
-                btnPlay2?.classList.remove('active');
+                btnPlayE?.classList.remove('active');
             } else {
                 window.sequencer.play();
                 btnPlay?.classList.add('active');
-                btnPlay2?.classList.add('active');
+                btnPlayE?.classList.add('active');
             }
             // Update tempo display
             this.updateTempoDisplay();
@@ -330,12 +332,12 @@ class App {
         const stopHandler = () => {
             window.sequencer.stop();
             btnPlay?.classList.remove('active');
-            btnPlay2?.classList.remove('active');
+            btnPlayE?.classList.remove('active');
 
             if (window.sessionRecorder.isRecording()) {
                 window.sessionRecorder.stop();
                 btnRecord?.classList.remove('active');
-                btnRecord2?.classList.remove('active');
+                btnRecordE?.classList.remove('active');
                 this.stopTimeDisplay();
             }
 
@@ -343,20 +345,21 @@ class App {
             window.radioPlayer.stop();
             window.sampler.stopAll();
 
-            document.getElementById('synthToggle').classList.remove('active');
-            document.getElementById('synthToggle').textContent = 'OFF';
+            document.getElementById('synthToggle')?.classList.remove('active');
+            const synthToggle = document.getElementById('synthToggle');
+            if (synthToggle) synthToggle.textContent = 'OFF';
         };
 
         const recordHandler = () => {
             if (window.sessionRecorder.isRecording()) {
                 window.sessionRecorder.stop();
                 btnRecord?.classList.remove('active');
-                btnRecord2?.classList.remove('active');
+                btnRecordE?.classList.remove('active');
                 this.stopTimeDisplay();
             } else {
                 window.sessionRecorder.start();
                 btnRecord?.classList.add('active');
-                btnRecord2?.classList.add('active');
+                btnRecordE?.classList.add('active');
                 this.startTimeDisplay();
             }
         };
@@ -366,15 +369,7 @@ class App {
         btnStop?.addEventListener('click', stopHandler);
         btnRecord?.addEventListener('click', recordHandler);
 
-        // Secondary transport (screen column)
-        btnPlay2?.addEventListener('click', playHandler);
-        btnStop2?.addEventListener('click', stopHandler);
-        btnRecord2?.addEventListener('click', recordHandler);
-
-        // Embedded transport (inline bar, shown in embedded/iframe mode)
-        const btnPlayE = document.getElementById('btnPlayE');
-        const btnStopE = document.getElementById('btnStopE');
-        const btnRecordE = document.getElementById('btnRecordE');
+        // Embedded transport
         btnPlayE?.addEventListener('click', playHandler);
         btnStopE?.addEventListener('click', stopHandler);
         btnRecordE?.addEventListener('click', recordHandler);

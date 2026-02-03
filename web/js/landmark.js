@@ -791,21 +791,17 @@ class Landmark {
                 lon: this.gpsData.longitude
             });
 
-            // Try to get local stations
-            if (window.radioPlayer.scanLocalStations) {
-                await window.radioPlayer.scanLocalStations(
-                    this.gpsData.latitude,
-                    this.gpsData.longitude
-                );
+            // Try to get local stations (searchLocalStations uses GPS internally)
+            let stations = [];
+            if (window.radioPlayer?.searchLocalStations) {
+                stations = await window.radioPlayer.searchLocalStations() || [];
             }
-
-            const stations = window.radioPlayer.getStations?.() || [];
             this.log('Stations found', { count: stations.length });
 
             if (stations.length > 0) {
                 // Play first local station at low volume (ambient layer)
                 this.log('Playing station', { station: stations[0] });
-                window.radioPlayer.play(stations[0]);
+                window.radioPlayer.play(stations[0].url, stations[0].name);
 
                 // Set radio to low mix (background texture)
                 const radioFader = document.getElementById('faderRadio');

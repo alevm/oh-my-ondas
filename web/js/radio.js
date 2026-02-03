@@ -217,7 +217,7 @@ class RadioPlayer {
             params.append('hidebroken', 'true');
 
             // Search by coordinates (within ~100km radius)
-            const response = await fetch(`${this.apiBase}/stations/search?${params}&geo_lat=${gps.lat}&geo_long=${gps.lng}&geo_radius=100000`);
+            const response = await fetch(`${this.apiBase}/stations/search?${params}&geo_lat=${gps.latitude}&geo_long=${gps.longitude}&geo_radius=100000`);
 
             if (!response.ok) {
                 // Fallback: try reverse geocoding to get country
@@ -252,7 +252,7 @@ class RadioPlayer {
     async searchByCountryFromGPS(gps) {
         try {
             // Use Nominatim for reverse geocoding (free)
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${gps.lat}&lon=${gps.lng}&format=json`);
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${gps.latitude}&lon=${gps.longitude}&format=json`);
             const data = await response.json();
 
             const countryCode = data.address?.country_code?.toUpperCase();
