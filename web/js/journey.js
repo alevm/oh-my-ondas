@@ -1,6 +1,17 @@
 // Oh My Ondas - Journey Mode
 // GPS-tracked walking sessions with audio waypoint captures
 
+// Security: HTML escape utility to prevent XSS
+function escapeHtml(str) {
+    if (typeof str !== 'string') return str;
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 class Journey {
     constructor() {
         this.active = false;
@@ -330,9 +341,9 @@ class Journey {
             const timeStr = time.getHours().toString().padStart(2, '0') + ':' +
                            time.getMinutes().toString().padStart(2, '0');
 
-            item.innerHTML = `<span class="wp-letter">${wp.letter}</span>` +
-                `<span class="wp-time">${timeStr}</span>` +
-                `<span class="wp-location">${wp.locationName || '...'}</span>` +
+            item.innerHTML = `<span class="wp-letter">${escapeHtml(wp.letter)}</span>` +
+                `<span class="wp-time">${escapeHtml(timeStr)}</span>` +
+                `<span class="wp-location">${escapeHtml(wp.locationName) || '...'}</span>` +
                 (wp.hasAudio ? '<span class="wp-audio-dot"></span>' : '');
 
             list.appendChild(item);

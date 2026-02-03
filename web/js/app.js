@@ -1,5 +1,16 @@
 // Oh My Ondas v2.5.2 - Main Application Controller
 
+// Security: HTML escape utility to prevent XSS
+function escapeHtml(str) {
+    if (typeof str !== 'string') return str;
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 class App {
     constructor() {
         this.initialized = false;
@@ -1395,6 +1406,8 @@ class App {
 
         // Listen for commands from parent mockup page
         window.addEventListener('message', (event) => {
+            // Security: Only accept messages from same origin
+            if (event.origin !== window.location.origin) return;
             const msg = event.data;
             if (!msg || msg.type !== 'mockup-control') return;
 
@@ -1477,7 +1490,7 @@ class App {
                     activePanel: this._activePanel || 'seq-panel',
                     gps: gps ? `${gps.latitude.toFixed(4)}, ${gps.longitude.toFixed(4)}` : null
                 }
-            }, '*');
+            }, window.location.origin);
         }, 100);
     }
 
@@ -1804,7 +1817,7 @@ class App {
                     panel: panelId,
                     encoders: this._encoderContext
                 }
-            }, '*');
+            }, window.location.origin);
         }
     }
 
@@ -2955,8 +2968,8 @@ class App {
             }
 
             stationList.innerHTML = stations.slice(0, 5).map(s => `
-                <div class="station-item" data-url="${s.url}" data-name="${s.name}">
-                    ${s.name}
+                <div class="station-item" data-url="${escapeHtml(s.url)}" data-name="${escapeHtml(s.name)}">
+                    ${escapeHtml(s.name)}
                 </div>
             `).join('');
 
@@ -2990,8 +3003,8 @@ class App {
                 return;
             }
             stationList.innerHTML = stations.slice(0, 5).map(s => `
-                <div class="station-item" data-url="${s.url}" data-name="${s.name}">
-                    ${s.name}
+                <div class="station-item" data-url="${escapeHtml(s.url)}" data-name="${escapeHtml(s.name)}">
+                    ${escapeHtml(s.name)}
                 </div>
             `).join('');
 
@@ -3159,11 +3172,11 @@ class App {
         }
 
         recList.innerHTML = recordings.map((rec) => `
-            <div class="rec-item" data-id="${rec.id}">
-                <span class="rec-item-name" data-id="${rec.id}">${rec.name || 'Rec'}</span>
-                ${rec.url ? `<button class="rec-item-play" data-id="${rec.id}">▶</button>` : ''}
-                ${rec.blob ? `<button class="rec-item-dl" data-id="${rec.id}">↓</button>` : ''}
-                <button class="rec-item-del" data-id="${rec.id}">✕</button>
+            <div class="rec-item" data-id="${escapeHtml(rec.id)}">
+                <span class="rec-item-name" data-id="${escapeHtml(rec.id)}">${escapeHtml(rec.name) || 'Rec'}</span>
+                ${rec.url ? `<button class="rec-item-play" data-id="${escapeHtml(rec.id)}">▶</button>` : ''}
+                ${rec.blob ? `<button class="rec-item-dl" data-id="${escapeHtml(rec.id)}">↓</button>` : ''}
+                <button class="rec-item-del" data-id="${escapeHtml(rec.id)}">✕</button>
             </div>
         `).join('');
 
@@ -3463,6 +3476,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isEmbedded) {
         // In embedded mode, listen for first postMessage as init trigger
         const initOnMessage = (event) => {
+            // Security: Only accept messages from same origin
+            if (event.origin !== window.location.origin) return;
             if (event.data && event.data.type === 'mockup-control') {
                 if (!window.app.initialized) window.app.init();
                 window.removeEventListener('message', initOnMessage);

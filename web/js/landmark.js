@@ -2,6 +2,17 @@
 // Captures a "sonic snapshot" of the current location
 // Version 2.0 - with extensive logging
 
+// Security: HTML escape utility to prevent XSS
+function escapeHtml(str) {
+    if (typeof str !== 'string') return str;
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 class Landmark {
     constructor() {
         this.gpsData = null;
@@ -62,7 +73,7 @@ class Landmark {
             }
         }
 
-        entry.innerHTML = `<span class="timestamp">${timestamp}</span>${text}`;
+        entry.innerHTML = `<span class="timestamp">${escapeHtml(timestamp)}</span>${escapeHtml(text)}`;
         logEl.appendChild(entry);
 
         // Auto-scroll to bottom
@@ -867,7 +878,7 @@ class Landmark {
             <div class="landmark-icon">📍</div>
             <div class="landmark-text">
                 <div class="landmark-title">LANDMARK CAPTURED</div>
-                <div class="landmark-location">${this.locationName || 'Location acquired'}</div>
+                <div class="landmark-location">${escapeHtml(this.locationName) || 'Location acquired'}</div>
             </div>
         `;
 

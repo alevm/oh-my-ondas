@@ -859,11 +859,13 @@
 
         function sendToApp(action, data) {
             if (appFrame && appFrame.contentWindow) {
-                appFrame.contentWindow.postMessage({ type: 'mockup-control', action, data }, '*');
+                appFrame.contentWindow.postMessage({ type: 'mockup-control', action, data }, window.location.origin);
             }
         }
 
         window.addEventListener('message', (event) => {
+            // Security: Only accept messages from same origin
+            if (event.origin !== window.location.origin) return;
             if (!event.data) return;
             if (event.data.type === 'app-state') updateMockupFromState(event.data.data);
             if (event.data.type === 'encoder-context') updateEncoderLabels(event.data.data);

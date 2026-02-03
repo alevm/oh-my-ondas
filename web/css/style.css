@@ -5,6 +5,10 @@
     padding: 0;
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
+}
+
+/* Disable text selection only in app UI, not content pages */
+.device, .device * {
     user-select: none;
 }
 
@@ -13,8 +17,8 @@
     --panel: #ffffff;
     --panel-alt: #fafafa;
     --border: #e0e0e0;
-    --accent: #5ba8d4;
-    --accent-dark: #4891bb;
+    --accent: #2b7eb3;  /* Darker for WCAG AA contrast (4.5:1 on white) */
+    --accent-dark: #236a99;
     --green: #6abf8a;
     --red: #c47070;
     --blue: #d48ba0;
@@ -23,6 +27,50 @@
     --text-light: #888;
     --gold: #d4c56a;
     --cream: #fafafa;
+    --focus-ring: #2b7eb3;
+}
+
+/* ===== ACCESSIBILITY: Focus Indicators ===== */
+:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+/* Buttons and interactive elements */
+button:focus-visible,
+.btn:focus-visible,
+.tr-btn:focus-visible,
+.seq-btn:focus-visible,
+.src-btn:focus-visible,
+.pad:focus-visible,
+.panel-tab:focus-visible,
+.nav-link:focus-visible,
+.vibe-btn:focus-visible,
+.scene-btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(43, 126, 179, 0.2);
+}
+
+/* Inputs and sliders */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 1px;
+}
+
+/* Range sliders need special handling */
+input[type="range"]:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(43, 126, 179, 0.3);
+    border-radius: 4px;
+}
+
+/* Links */
+a:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
 }
 
 html, body {

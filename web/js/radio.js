@@ -1,5 +1,18 @@
 // Oh My Ondas - Internet Radio Player
 
+// Rate limiter for Nominatim API (1 req/sec max per OSM policy)
+const nominatimRateLimiter = {
+    lastCall: 0,
+    minInterval: 1100, // 1.1 seconds to be safe
+    async throttledFetch(url) {
+        const now = Date.now();
+        const wait = Math.max(0, this.lastCall + this.minInterval - now);
+        if (wait > 0) await new Promise(r => setTimeout(r, wait));
+        this.lastCall = Date.now();
+        return fetch(url);
+    }
+};
+
 class RadioPlayer {
     constructor() {
         this.audio = null;
@@ -251,8 +264,8 @@ class RadioPlayer {
     // Fallback: search by country using GPS reverse geocoding
     async searchByCountryFromGPS(gps) {
         try {
-            // Use Nominatim for reverse geocoding (free)
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${gps.latitude}&lon=${gps.longitude}&format=json`);
+            // Use Nominatim for reverse geocoding (rate-limited per OSM policy)
+            const response = await nominatimRateLimiter.throttledFetch(`https://nominatim.openstreetmap.org/reverse?lat=${gps.latitude}&lon=${gps.longitude}&format=json`);
             const data = await response.json();
 
             const countryCode = data.address?.country_code?.toUpperCase();
