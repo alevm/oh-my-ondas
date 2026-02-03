@@ -2002,3 +2002,88 @@ body.embedded-mode .device > .journey-panel.panel-visible .journey-waypoints {
     .device > .panel { display: none; }
     .device > .panel.panel-visible { display: flex !important; }
 }
+
+/* ===== DEMO MODE STYLES ===== */
+.demo-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: linear-gradient(135deg, var(--accent) 0%, #3a8bbf 100%);
+    color: #fff;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    font-family: var(--mono);
+}
+
+.demo-banner-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.demo-banner-content strong {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.demo-banner-content span {
+    font-size: 12px;
+    opacity: 0.85;
+}
+
+.demo-banner-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: #fff;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.demo-banner-close:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* Demo mode body adjustments */
+body.demo-mode {
+    padding-top: 52px;
+}
+
+body.demo-mode .panel-tabs {
+    display: flex !important;
+}
+
+body.demo-mode .device > .panel {
+    display: none;
+}
+
+body.demo-mode .device > .panel.panel-visible {
+    display: flex !important;
+}
+
+/* Demo-specific highlights */
+body.demo-capture .radio-panel,
+body.demo-capture .journey-panel {
+    border: 2px solid var(--accent);
+}
+
+body.demo-brand .seq-panel {
+    border: 2px solid var(--accent);
+}
+
+body.demo-sense .mixer-panel .vu-meter {
+    box-shadow: 0 0 8px var(--accent);
+}
+
+body.demo-create .fx-panel {
+    border: 2px solid var(--accent);
+}

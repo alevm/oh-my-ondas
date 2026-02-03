@@ -121,8 +121,148 @@ class App {
         // Apply saved settings
         this.applySettings();
 
+        // Setup demo mode if active
+        this.setupDemoMode();
+
         this.initialized = true;
         console.log('App v2.5.2 initialized');
+    }
+
+    // Demo mode configuration
+    setupDemoMode() {
+        const mode = this.getDemoMode();
+        if (!mode) return;
+
+        // Add demo-mode class to body for CSS targeting
+        document.body.classList.add('demo-mode', `demo-${mode}`);
+
+        // Show panel tabs bar (like embedded mode)
+        const panelTabs = document.getElementById('panelTabs');
+        if (panelTabs) panelTabs.style.display = 'flex';
+
+        // Demo mode configurations
+        const demoConfig = {
+            // Lavinia: AI-Powered Localization - Capture local audio identity
+            capture: {
+                title: 'Capture Local Audio Identity',
+                subtitle: 'GPS → Local Radio → Soundscape Analysis',
+                panels: ['radio-panel', 'journey-panel', 'mixer-panel'],
+                startPanel: 'radio-panel',
+                autoActions: ['gps', 'radio-scan']
+            },
+            // Lavinia: AI-Powered Localization - Brand-consistent output
+            brand: {
+                title: 'Brand-Consistent Output',
+                subtitle: 'Same pattern template, locally-sourced audio',
+                panels: ['seq-panel', 'pads-panel', 'scenes-panel'],
+                startPanel: 'seq-panel',
+                autoActions: ['load-brand-pattern']
+            },
+            // Multisensorial: Immersive capture experience
+            sense: {
+                title: 'Immersive Sensory Capture',
+                subtitle: 'Real-time soundscape analysis & visualization',
+                panels: ['mixer-panel', 'eq-panel', 'ai-panel'],
+                startPanel: 'mixer-panel',
+                autoActions: ['mic', 'analyze']
+            },
+            // Multisensorial: Create & take home
+            create: {
+                title: 'Create Your Sonic Souvenir',
+                subtitle: 'Sequence, sculpt, and export your creation',
+                panels: ['seq-panel', 'fx-panel', 'scenes-panel'],
+                startPanel: 'seq-panel',
+                autoActions: []
+            }
+        };
+
+        const config = demoConfig[mode];
+        if (!config) {
+            console.warn(`Unknown demo mode: ${mode}`);
+            return;
+        }
+
+        // Show demo banner
+        this.showDemoBanner(config.title, config.subtitle);
+
+        // Switch to start panel
+        this.switchToPanel(config.startPanel);
+
+        // Execute auto-actions
+        config.autoActions.forEach(action => {
+            this.executeDemoAction(action);
+        });
+
+        console.log(`Demo mode "${mode}" activated: ${config.title}`);
+    }
+
+    showDemoBanner(title, subtitle) {
+        const banner = document.createElement('div');
+        banner.className = 'demo-banner';
+        banner.innerHTML = `
+            <div class="demo-banner-content">
+                <strong>${title}</strong>
+                <span>${subtitle}</span>
+            </div>
+            <button class="demo-banner-close" onclick="this.parentElement.remove()">×</button>
+        `;
+        document.body.insertBefore(banner, document.body.firstChild);
+    }
+
+    executeDemoAction(action) {
+        switch (action) {
+            case 'gps':
+                // GPS is auto-initialized, just ensure it's tracking
+                window.gpsTracker?.startTracking?.();
+                break;
+            case 'radio-scan':
+                // Trigger local radio search after GPS fix
+                setTimeout(() => {
+                    const scanBtn = document.querySelector('.radio-panel .btn-scan, #btnRadioScan');
+                    if (scanBtn) scanBtn.click();
+                }, 2000);
+                break;
+            case 'mic':
+                // Prompt mic access
+                window.micInput?.requestAccess?.();
+                break;
+            case 'analyze':
+                // Start soundscape analysis
+                window.aiComposer?.startAnalysis?.();
+                break;
+            case 'load-brand-pattern':
+                // Load a demo pattern template
+                this.loadBrandPattern();
+                break;
+        }
+    }
+
+    loadBrandPattern() {
+        // Create a simple "brand template" pattern
+        // This demonstrates the concept: fixed structure, variable content
+        if (!window.sequencer) return;
+
+        // Basic 4-on-floor kick pattern
+        const pattern = window.sequencer.patterns[window.sequencer.currentPatternIdx];
+        if (!pattern) return;
+
+        // Track 0: Kick on 1, 5, 9, 13 (4/4)
+        [0, 4, 8, 12].forEach(step => {
+            pattern.tracks[0].steps[step].active = true;
+        });
+
+        // Track 2: Hihat on every other step
+        for (let i = 0; i < 16; i += 2) {
+            pattern.tracks[2].steps[i].active = true;
+        }
+
+        // Track 1: Snare on 5, 13
+        [4, 12].forEach(step => {
+            pattern.tracks[1].steps[step].active = true;
+        });
+
+        window.sequencer.renderPattern();
+        console.log('Brand pattern template loaded');
     }
 
     applySettings() {
@@ -1244,6 +1384,16 @@ class App {
         return new URLSearchParams(window.location.search).get('embedded') === '1';
     }
 
+    // Demo mode detection
+    getDemoMode() {
+        return new URLSearchParams(window.location.search).get('demo') || null;
+    }
+
+    // Demo mode uses panel tabs like embedded mode
+    isDemoOrEmbedded() {
+        return this.isEmbedded() || this.getDemoMode();
+    }
+
     // PostMessage bridge for embedded mode communication with parent mockup
     setupPostMessageBridge() {
         if (!this.isEmbedded()) return;
@@ -1597,9 +1747,9 @@ class App {
         }
     }
 
-    // Panel tab navigation (embedded mode only)
+    // Panel tab navigation (embedded and demo modes)
     setupPanelTabs() {
-        if (!this.isEmbedded()) return;
+        if (!this.isDemoOrEmbedded()) return;
 
         // Set initial panel
         this.switchToPanel(this._activePanel);
