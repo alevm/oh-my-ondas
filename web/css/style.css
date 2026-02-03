@@ -134,7 +134,6 @@ html, body {
 }
 
 .logo { font-weight: 800; font-size: 22px; color: var(--text); letter-spacing: 1px; }
-.transport { display: flex; gap: 6px; }
 .tr-btn {
     width: 56px; height: 56px;
     border: 2px solid var(--border);
@@ -263,14 +262,6 @@ html, body {
 .device > .ai-panel { grid-column: 3; grid-row: 4; }
 .device > .journey-panel { grid-column: 4; grid-row: 4; }
 .device > .eq-panel { grid-column: 5; grid-row: 4; }
-
-/* REC panel styling */
-.device > .rec-panel {
-    display: flex;
-    background: #ffffff !important;
-    border-color: #e0e0e0 !important;
-    border-left: 3px solid var(--red) !important;
-}
 
 /* TOP ROW - SEQ display area (dark like hardware screen) */
 .device > .seq-panel {
@@ -430,6 +421,7 @@ html, body {
     display: flex;
     flex-wrap: wrap;
     gap: 2px;
+    width: 100%;
 }
 
 .src-btn, .kit-btn, .target-btn {
@@ -590,7 +582,6 @@ body.embedded-mode .device > .ai-panel.panel-visible .ai-btn {
 }
 
 /* Channel buttons row */
-.ch-btns { display: flex; gap: 2px; width: 100%; }
 .mute, .solo {
     flex: 1;
     height: 22px;
@@ -833,10 +824,7 @@ body.embedded-mode .device > .ai-panel.panel-visible .ai-btn {
     opacity: 1;
 }
 
-/* MAP BOX */
-.map-panel { }
-.map-box { width: 100%; height: 80px; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; background: #e8e8e8; }
-.map-img { width: 100%; height: 100%; background: center/cover no-repeat; }
+/* MAP COORDS (used in proto.html) */
 .map-coords { font-size: 8px; text-align: center; color: var(--text-light); margin-top: 2px; }
 
 /* AI */
@@ -995,8 +983,7 @@ body.embedded-mode .device > .ai-panel.panel-visible .ai-btn {
     pointer-events: none;
 }
 
-/* REC */
-.rec-panel { }
+/* REC (rec-item classes used dynamically in app.js) */
 .rec-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
 .rec-header span:nth-child(2) { font-size: 11px; font-weight: 600; color: var(--accent); margin-left: auto; }
 .rec-last { display: flex; align-items: center; gap: 6px; padding: 6px; background: var(--panel-alt); border-radius: 4px; margin-bottom: 6px; flex: 1; }

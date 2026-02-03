@@ -12,6 +12,19 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
+// Rate limiter for Nominatim API (1 req/sec max per OSM policy)
+const nominatimRateLimiter = {
+    lastCall: 0,
+    minInterval: 1100, // 1.1 seconds to be safe
+    async throttledFetch(url) {
+        const now = Date.now();
+        const wait = Math.max(0, this.lastCall + this.minInterval - now);
+        if (wait > 0) await new Promise(r => setTimeout(r, wait));
+        this.lastCall = Date.now();
+        return fetch(url);
+    }
+};
+
 class Journey {
     constructor() {
         this.active = false;
@@ -289,10 +302,10 @@ class Journey {
             hasAudio: false
         };
 
-        // Reverse geocode
+        // Reverse geocode (rate-limited per OSM policy)
         try {
             const url = `https://nominatim.openstreetmap.org/reverse?lat=${pos.lat}&lon=${pos.lon}&format=json&zoom=16`;
-            const resp = await fetch(url, { headers: { 'User-Agent': 'OhMyOndas/2.0' } });
+            const resp = await nominatimRateLimiter.throttledFetch(url);
             const data = await resp.json();
             if (data.address) {
                 const place = data.address.road || data.address.suburb ||

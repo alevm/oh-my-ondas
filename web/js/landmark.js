@@ -13,6 +13,19 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
+// Rate limiter for Nominatim API (1 req/sec max per OSM policy)
+const nominatimRateLimiter = {
+    lastCall: 0,
+    minInterval: 1100, // 1.1 seconds to be safe
+    async throttledFetch(url) {
+        const now = Date.now();
+        const wait = Math.max(0, this.lastCall + this.minInterval - now);
+        if (wait > 0) await new Promise(r => setTimeout(r, wait));
+        this.lastCall = Date.now();
+        return fetch(url);
+    }
+};
+
 class Landmark {
     constructor() {
         this.gpsData = null;
@@ -260,9 +273,9 @@ class Landmark {
         try {
             const { latitude, longitude } = this.gpsData;
             const url = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=14`;
-            this.log('Fetching location name from Nominatim', { url });
+            this.log('Fetching location name from Nominatim (rate-limited)', { url });
 
-            const response = await fetch(url, { headers: { 'User-Agent': 'OhMyBox/2.0' } });
+            const response = await nominatimRateLimiter.throttledFetch(url);
             const data = await response.json();
 
             this.log('Reverse geocoding response', data);
