@@ -2390,18 +2390,42 @@ class App {
         const xfadeLeft = document.getElementById('xfadeLeft');
         const xfadeRight = document.getElementById('xfadeRight');
 
-        // Scene selection
+        // Scene selection with shift+click for morph
         sceneBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', (e) => {
                 const idx = parseInt(btn.dataset.scene);
 
-                // If shift-clicking or already active, assign to crossfader
-                if (btn.classList.contains('active')) {
-                    // Assign to right side of crossfader
+                if (e.shiftKey && window.sceneManager.hasScene(idx)) {
+                    // Shift+click: smooth morph to target scene over 2 seconds
+                    this.xfadeSceneB = idx;
+                    xfadeRight.textContent = ['A', 'B', 'C', 'D'][idx];
+                    btn.classList.add('morphing');
+                    const morphDuration = 2000;
+                    const morphStart = performance.now();
+                    const startVal = crossfader ? parseInt(crossfader.value) / 100 : 0;
+                    const animate = (now) => {
+                        const elapsed = now - morphStart;
+                        const t = Math.min(1, elapsed / morphDuration);
+                        const morphVal = startVal + (1 - startVal) * t;
+                        this.morphScenes(morphVal);
+                        if (crossfader) crossfader.value = Math.round(morphVal * 100);
+                        if (t < 1) {
+                            requestAnimationFrame(animate);
+                        } else {
+                            btn.classList.remove('morphing');
+                            // After morph complete, recall fully
+                            window.sceneManager.recallScene(idx);
+                            this.updateOctSteps();
+                            if (crossfader) crossfader.value = 0;
+                        }
+                    };
+                    requestAnimationFrame(animate);
+                } else if (btn.classList.contains('active')) {
+                    // Already active: assign to right side of crossfader
                     this.xfadeSceneB = idx;
                     xfadeRight.textContent = ['A', 'B', 'C', 'D'][idx];
                 } else {
-                    // Normal click: recall scene
+                    // Normal click: instant recall
                     if (window.sceneManager.hasScene(idx)) {
                         window.sceneManager.recallScene(idx);
                         this.updateOctSteps();
@@ -2714,6 +2738,24 @@ class App {
     setupAI() {
         const generateBtn = document.getElementById('aiGenerate');
 
+        // Wire AI progress callback for visual feedback
+        if (window.aiComposer) {
+            window.aiComposer.onProgress((stage, message) => {
+                const progressEl = document.getElementById('aiProgress');
+                const statusEl = document.getElementById('aiStatus');
+                if (progressEl) {
+                    const stageIcons = {
+                        listening: '&#127911;', capturing: '&#127908;',
+                        generating: '&#127926;', assigning: '&#127929;',
+                        tuning: '&#127925;', done: '&#9989;'
+                    };
+                    progressEl.innerHTML = `<span class="ai-progress-icon">${stageIcons[stage] || ''}</span> ${message}`;
+                    progressEl.className = `ai-progress ai-progress-${stage}`;
+                }
+                if (statusEl) statusEl.textContent = message;
+            });
+        }
+
         if (generateBtn) {
             generateBtn.addEventListener('click', async () => {
                 // Use auto-detected vibe from AI composer
@@ -2729,8 +2771,72 @@ class App {
 
                 // Update pad display for any auto-captured samples
                 this.updatePadDisplay();
+
+                // Update role badges and modulation route labels
+                this.updateRoleBadges();
+                this.updateModulationLabels();
+
                 if (statusEl) statusEl.textContent = `Generated ${vibe} composition with captured audio`;
             });
+        }
+    }
+
+    // Update role badge indicators on mixer channels
+    updateRoleBadges() {
+        if (!window.sourceRoleManager) return;
+        const assignments = window.sourceRoleManager.getAssignments();
+        const channelMap = { mic: 'Mic', samples: 'Samples', synth: 'Synth', radio: 'Radio' };
+        const roleLabels = { rhythm: 'R', texture: 'T', melody: 'M', modulation: 'X' };
+        const roleColors = { rhythm: '#c47070', texture: '#5b9bd5', melody: '#6abf8a', modulation: '#d4c56a' };
+
+        // Clear all role badges
+        for (const ch of Object.keys(channelMap)) {
+            const el = document.getElementById(`role${channelMap[ch]}`);
+            if (el) { el.textContent = ''; el.style.background = 'transparent'; }
+        }
+
+        // Count roles per source channel
+        const sourceRoles = {};
+        for (const a of assignments) {
+            if (!sourceRoles[a.source]) sourceRoles[a.source] = [];
+            sourceRoles[a.source].push(a.role);
+        }
+
+        // Set badges
+        for (const [source, roles] of Object.entries(sourceRoles)) {
+            const chName = source === 'sampler' ? 'Samples' :
+                           source.charAt(0).toUpperCase() + source.slice(1);
+            const el = document.getElementById(`role${chName}`);
+            if (!el) continue;
+            // Show primary role (most common)
+            const primaryRole = roles[0];
+            el.textContent = roleLabels[primaryRole] || '';
+            el.style.background = roleColors[primaryRole] || 'transparent';
+            el.style.color = '#fff';
+        }
+    }
+
+    // Update modulation route labels beneath mixer channels
+    updateModulationLabels() {
+        if (!window.sourceRoleManager) return;
+        const routes = window.sourceRoleManager.modulationRoutes;
+        const channelMap = { mic: 'Mic', samples: 'Samples', synth: 'Synth', radio: 'Radio' };
+
+        // Clear all route labels
+        for (const ch of Object.keys(channelMap)) {
+            const el = document.getElementById(`route${channelMap[ch]}`);
+            if (el) el.textContent = '';
+        }
+
+        // Set route labels
+        for (const route of routes) {
+            const srcName = route.sourceChannel === 'sampler' ? 'Samples' :
+                            route.sourceChannel ? route.sourceChannel.charAt(0).toUpperCase() + route.sourceChannel.slice(1) : '';
+            const el = document.getElementById(`route${srcName}`);
+            if (!el) continue;
+            const target = route.targetChannel || `T${route.targetTrack ?? ''}`;
+            const param = route.targetParam || '';
+            el.textContent = `\u2192 ${target} ${param}`;
         }
     }
 

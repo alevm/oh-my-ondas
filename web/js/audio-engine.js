@@ -327,6 +327,29 @@ class AudioEngine {
         return this.masterFx || null;
     }
 
+    // Set up sidechain ducking: source channel ducks target channel
+    setupSidechain(sourceChannel, targetChannel, amount = 0.8) {
+        if (!window.sourceRoleManager) return;
+        window.sourceRoleManager.modulationRoutes.push({
+            sourceChannel,
+            targetChannel,
+            targetParam: 'sidechain',
+            scale: amount * 100
+        });
+        console.log(`Sidechain: ${sourceChannel} → ${targetChannel} (${Math.round(amount * 100)}%)`);
+    }
+
+    // Apply sidechain gain reduction to a channel (called from processModulation)
+    applySidechainGain(channelName, sourceRms, amount) {
+        const channel = this.channels[channelName];
+        if (!channel || !channel.gain || !this.ctx) return;
+
+        // Inverse gain: 1 - (sourceRMS/100 * amount/100)
+        const reduction = (sourceRms / 100) * (amount / 100);
+        const targetGain = Math.max(0.05, 1 - reduction) * (channel.muted ? 0 : channel.level);
+        channel.gain.gain.setTargetAtTime(targetGain, this.ctx.currentTime, 0.01);
+    }
+
     // Get current EQ values for a channel
     getEQ(target) {
         let eq;

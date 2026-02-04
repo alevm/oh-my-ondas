@@ -229,12 +229,21 @@ class Sampler {
         // Connect to samples channel
         window.audioEngine.connectToChannel(velGain, 'samples');
 
-        // Slice: play a segment of the buffer
-        const sliceCount = 16;
+        // Slice: play a segment of the buffer (custom boundaries or equal divisions)
         if (options.slice != null && options.slice > 0) {
-            const sliceDuration = buffer.duration / sliceCount;
-            const offset = options.slice * sliceDuration;
-            source.start(0, offset, sliceDuration);
+            const meta = this.padMeta.get(padIndex);
+            let offset, duration;
+            if (meta?.sliceBoundaries && options.slice < meta.sliceBoundaries.length) {
+                const slice = meta.sliceBoundaries[options.slice];
+                offset = slice.start;
+                duration = slice.end - slice.start;
+            } else {
+                const sliceCount = 16;
+                const sliceDuration = buffer.duration / sliceCount;
+                offset = options.slice * sliceDuration;
+                duration = sliceDuration;
+            }
+            source.start(0, offset, duration);
         } else {
             source.start();
         }
@@ -268,8 +277,60 @@ class Sampler {
         this.activeSources.clear();
     }
 
+    // Auto-slice a captured buffer at onset points (or evenly if no onsets)
+    autoSlice(padIndex) {
+        const buffer = this.samples.get(padIndex);
+        if (!buffer) return null;
+
+        const analyzer = window.soundscapeAnalyzer;
+        if (!analyzer) return null;
+
+        const onsets = analyzer.detectOnsets(buffer);
+        let sliceBoundaries = [];
+
+        if (onsets.length >= 2) {
+            // Create slice boundaries at onset points (up to 16 slices)
+            const maxSlices = 16;
+            const selectedOnsets = onsets.length > maxSlices
+                ? onsets.filter((_, i) => i % Math.ceil(onsets.length / maxSlices) === 0).slice(0, maxSlices)
+                : onsets;
+
+            for (let i = 0; i < selectedOnsets.length; i++) {
+                const startTime = selectedOnsets[i].time / 1000; // convert ms to seconds
+                const endTime = i < selectedOnsets.length - 1
+                    ? selectedOnsets[i + 1].time / 1000
+                    : buffer.duration;
+                sliceBoundaries.push({ start: startTime, end: endTime });
+            }
+        } else {
+            // No onsets found (ambient): divide evenly into 16 equal slices
+            const sliceCount = 16;
+            const sliceDuration = buffer.duration / sliceCount;
+            for (let i = 0; i < sliceCount; i++) {
+                sliceBoundaries.push({
+                    start: i * sliceDuration,
+                    end: (i + 1) * sliceDuration
+                });
+            }
+        }
+
+        // Store in padMeta
+        const meta = this.padMeta.get(padIndex) || {};
+        meta.sliceBoundaries = sliceBoundaries;
+        this.padMeta.set(padIndex, meta);
+
+        console.log(`Auto-sliced pad ${padIndex}: ${sliceBoundaries.length} slices`);
+        return sliceBoundaries;
+    }
+
+    getSliceCount(padIndex) {
+        const meta = this.padMeta.get(padIndex);
+        if (meta?.sliceBoundaries) return meta.sliceBoundaries.length;
+        return 16; // default equal divisions
+    }
+
     loadBuffer(padIndex, audioBuffer, meta = {}) {
-        if (padIndex < 0 || padIndex > 7) return false;
+        if (padIndex < 0 || padIndex > 15) return false;
         this.samples.set(padIndex, audioBuffer);
         this.padMeta.set(padIndex, {
             name: meta.name || 'Sample',
@@ -299,7 +360,7 @@ class Sampler {
     }
 
     getNextEmptyPad() {
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 16; i++) {
             if (!this.padMeta.has(i)) return i;
         }
         return null;

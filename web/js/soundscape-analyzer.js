@@ -298,6 +298,185 @@ class SoundscapeAnalyzer {
         return 'ambient';
     }
 
+    // Analyze an AudioBuffer offline (no mic/live input needed)
+    analyzeBuffer(audioBuffer) {
+        if (!audioBuffer || audioBuffer.length === 0) return this._emptyResult();
+
+        const sampleRate = audioBuffer.sampleRate;
+        const channelData = audioBuffer.getChannelData(0);
+        const frameSize = Math.floor(sampleRate * 0.05); // 50ms windows
+        const totalFrames = Math.floor(channelData.length / frameSize);
+        if (totalFrames === 0) return this._emptyResult();
+
+        const fftSize = 2048;
+        const freqBinCount = fftSize / 2;
+        const binHz = sampleRate / fftSize;
+        const frames = [];
+        const envelopePoints = [];
+        let prevRms = 0;
+        let transientCount = 0;
+
+        for (let f = 0; f < totalFrames; f++) {
+            const offset = f * frameSize;
+
+            // RMS for this window
+            let rmsSum = 0;
+            const windowLen = Math.min(frameSize, channelData.length - offset);
+            for (let i = 0; i < windowLen; i++) {
+                const val = channelData[offset + i];
+                rmsSum += val * val;
+            }
+            const rms = Math.sqrt(rmsSum / windowLen);
+
+            // Transient detection
+            if (rms > prevRms * 1.8 && rms > 0.02) {
+                transientCount++;
+            }
+            prevRms = rms;
+
+            envelopePoints.push({
+                time: f * 50,
+                level: Math.round(rms * 1000) / 1000
+            });
+
+            // Simple DFT magnitude spectrum for this frame
+            const spectrum = new Array(freqBinCount).fill(0);
+            const analysisLen = Math.min(fftSize, channelData.length - offset);
+            for (let k = 0; k < freqBinCount; k++) {
+                let re = 0, im = 0;
+                // Downsample DFT: skip samples for speed (every 4th sample)
+                const step = Math.max(1, Math.floor(analysisLen / 512));
+                for (let n = 0; n < analysisLen; n += step) {
+                    const angle = (2 * Math.PI * k * n) / fftSize;
+                    re += channelData[offset + n] * Math.cos(angle);
+                    im -= channelData[offset + n] * Math.sin(angle);
+                }
+                spectrum[k] = Math.sqrt(re * re + im * im) / (analysisLen / step);
+            }
+            // Scale to 0-255 range like Uint8Array frequency data
+            const maxMag = Math.max(...spectrum, 0.001);
+            const scaled = spectrum.map(v => Math.round((v / maxMag) * 255));
+            frames.push(scaled);
+        }
+
+        const durationMs = (channelData.length / sampleRate) * 1000;
+        return this._processFrames(frames, envelopePoints, transientCount, durationMs, binHz, freqBinCount);
+    }
+
+    // Detect onsets (transient attacks) in an AudioBuffer
+    // Returns array of {time, amplitude, index} sorted by time
+    detectOnsets(audioBuffer, thresholdMultiplier = 1.8) {
+        if (!audioBuffer || audioBuffer.length === 0) return [];
+
+        const sampleRate = audioBuffer.sampleRate;
+        const channelData = audioBuffer.getChannelData(0);
+        const windowSize = Math.floor(sampleRate * 0.01); // 10ms windows
+        const numWindows = Math.floor(channelData.length / windowSize);
+        const onsets = [];
+        let prevRms = 0;
+
+        for (let w = 0; w < numWindows; w++) {
+            const offset = w * windowSize;
+            let rmsSum = 0;
+            for (let i = 0; i < windowSize; i++) {
+                const val = channelData[offset + i];
+                rmsSum += val * val;
+            }
+            const rms = Math.sqrt(rmsSum / windowSize);
+
+            if (rms > prevRms * thresholdMultiplier && rms > 0.02) {
+                onsets.push({
+                    time: (offset / sampleRate) * 1000, // ms
+                    amplitude: Math.round(rms * 1000) / 1000,
+                    index: offset
+                });
+            }
+            prevRms = rms;
+        }
+
+        return onsets;
+    }
+
+    // Extract transient segments from an AudioBuffer based on onset positions
+    // Returns array of AudioBuffers, one per transient
+    extractTransients(audioBuffer, onsets, paddingMs = 50) {
+        if (!audioBuffer || !onsets || onsets.length === 0) return [];
+
+        const sampleRate = audioBuffer.sampleRate;
+        const channelData = audioBuffer.getChannelData(0);
+        const paddingSamples = Math.floor((paddingMs / 1000) * sampleRate);
+        const transients = [];
+        const ctx = window.audioEngine?.ctx;
+        if (!ctx) return [];
+
+        for (const onset of onsets) {
+            const startSample = Math.max(0, onset.index - paddingSamples);
+            const endSample = Math.min(channelData.length, onset.index + paddingSamples * 2);
+            const length = endSample - startSample;
+            if (length <= 0) continue;
+
+            const transientBuffer = ctx.createBuffer(1, length, sampleRate);
+            const transientData = transientBuffer.getChannelData(0);
+            for (let i = 0; i < length; i++) {
+                transientData[i] = channelData[startSample + i];
+            }
+            transients.push(transientBuffer);
+        }
+
+        return transients;
+    }
+
+    // Detect tempo (BPM) from an AudioBuffer using inter-onset intervals
+    // Returns {bpm, confidence}
+    detectTempo(audioBuffer) {
+        if (!audioBuffer || audioBuffer.length === 0) return { bpm: 0, confidence: 0 };
+
+        const onsets = this.detectOnsets(audioBuffer, 1.5);
+        if (onsets.length < 3) return { bpm: 0, confidence: 0 };
+
+        // Compute inter-onset intervals (IOIs) in ms
+        const iois = [];
+        for (let i = 1; i < onsets.length; i++) {
+            const ioi = onsets[i].time - onsets[i - 1].time;
+            // Filter: only consider IOIs between 200ms (300 BPM) and 2000ms (30 BPM)
+            if (ioi >= 200 && ioi <= 2000) {
+                iois.push(ioi);
+            }
+        }
+
+        if (iois.length < 2) return { bpm: 0, confidence: 0 };
+
+        // Histogram IOIs with 20ms bin resolution
+        const binSize = 20;
+        const bins = new Map();
+        for (const ioi of iois) {
+            const bin = Math.round(ioi / binSize) * binSize;
+            bins.set(bin, (bins.get(bin) || 0) + 1);
+        }
+
+        // Find the mode (most common IOI bin)
+        let modeBin = 0;
+        let modeCount = 0;
+        for (const [bin, count] of bins) {
+            if (count > modeCount) {
+                modeCount = count;
+                modeBin = bin;
+            }
+        }
+
+        if (modeBin === 0) return { bpm: 0, confidence: 0 };
+
+        // Convert IOI to BPM
+        const bpm = Math.round(60000 / modeBin);
+
+        // Confidence: percentage of IOIs within ±10% of the detected period
+        const tolerance = modeBin * 0.1;
+        const matchingIOIs = iois.filter(ioi => Math.abs(ioi - modeBin) <= tolerance).length;
+        const confidence = Math.round((matchingIOIs / iois.length) * 100);
+
+        return { bpm, confidence };
+    }
+
     _emptyResult() {
         return {
             dominantFreqs: [],

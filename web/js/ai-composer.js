@@ -10,6 +10,8 @@ class AIComposer {
             gps: null,
             soundscape: null
         };
+        this.progressCallbacks = [];
+        this.arrangementArchetype = null;
     }
 
     init() {
@@ -32,6 +34,11 @@ class AIComposer {
     onSoundscapeChange(change) {
         this.context.soundscape = change.analysis;
         this.context.vibe = this.suggestVibe();
+
+        // Dynamic role re-evaluation on classification change
+        if (window.sourceRoleManager && window.sequencer?.isPlaying()) {
+            window.sourceRoleManager.reevaluateRoles(change.analysis);
+        }
 
         // If sequencer is playing, adjust live FX based on new classification
         if (window.sequencer?.isPlaying() && window.mangleEngine) {
@@ -314,15 +321,74 @@ class AIComposer {
         return padIdx;
     }
 
+    // Analyze a captured sample and assign a sonic role based on its character
+    analyzeAndAssignCapture(padIndex) {
+        const buffer = window.sampler?.samples?.get(padIndex);
+        if (!buffer || !window.soundscapeAnalyzer) return null;
+
+        const analysis = window.soundscapeAnalyzer.analyzeBuffer(buffer);
+        const onsets = window.soundscapeAnalyzer.detectOnsets(buffer);
+
+        // Classify: percussive, tonal, or ambient
+        let sonicRole;
+        if (analysis.transientDensity > 3) {
+            sonicRole = 'rhythm';
+        } else if (analysis.spectralCentroid > 500 && analysis.brightness < 40) {
+            sonicRole = 'melody';
+        } else {
+            sonicRole = 'texture';
+        }
+
+        // Store classification in padMeta
+        const meta = window.sampler.padMeta.get(padIndex) || {};
+        meta.sonicRole = sonicRole;
+        meta.analysis = {
+            classification: analysis.classification,
+            spectralCentroid: analysis.spectralCentroid,
+            brightness: analysis.brightness,
+            transientDensity: analysis.transientDensity,
+            onsetCount: onsets.length
+        };
+        window.sampler.padMeta.set(padIndex, meta);
+
+        // Auto-slice the capture
+        window.sampler.autoSlice(padIndex);
+
+        console.log(`Pad ${padIndex} analyzed: ${sonicRole} (${analysis.classification})`);
+        return { sonicRole, analysis, onsets };
+    }
+
+    // Progress callback system for AI generation UI feedback
+    onProgress(callback) {
+        this.progressCallbacks.push(callback);
+    }
+
+    _emitProgress(stage, message) {
+        for (const cb of this.progressCallbacks) {
+            try { cb(stage, message); } catch (e) { console.error('Progress callback error:', e); }
+        }
+    }
+
+    // Set a named arrangement archetype for generation
+    setArrangementArchetype(name) {
+        const archetypes = this._getArrangementArchetypes();
+        if (archetypes[name]) {
+            this.arrangementArchetype = name;
+            console.log(`Arrangement archetype set: ${name}`);
+        }
+    }
+
     // Full AI generate: auto-capture, auto-assign sources, add pitch P-Locks
     async generateFull(vibe, density = 70, complexity = 50) {
         if (!window.sequencer) return null;
 
         // 0. Ensure all sources are active before generating
+        this._emitProgress('listening', 'Analyzing environment...');
         await this.ensureAllSources();
 
         // 0b. Listen to environment for soundscape-aware composition
         await this.listenToEnvironment(2000);
+        this._emitProgress('capturing', 'Recording radio/mic...');
 
         // Adjust density/complexity from soundscape metrics
         if (this.context.soundscape && this.context.soundscape.avgAmplitude > 0.05) {
@@ -354,10 +420,17 @@ class AIComposer {
             if (micPad !== null) capturedPads.push(micPad);
         }
 
+        // Analyze and assign roles to all captured pads
+        this._emitProgress('generating', 'Creating pattern...');
+        for (const padIdx of capturedPads) {
+            this.analyzeAndAssignCapture(padIdx);
+        }
+
         // 2. Generate base rhythm pattern
         window.sequencer.generateVibePattern(vibe, density, complexity);
 
         // 3. Assign track sources — all four always available now
+        this._emitProgress('assigning', 'Assigning roles...');
         let melodicTracks = [];
         const availableSources = ['sampler', 'synth', 'radio', 'mic'];
 
@@ -396,12 +469,14 @@ class AIComposer {
         }
 
         // 4. Add pitch P-Locks to melodic tracks
+        this._emitProgress('tuning', 'Tuning to environment...');
         this.addPitchPLocks(melodicTracks, vibe, complexity);
 
         // 5. Tune pitches to environment if soundscape available
         this._tunePitchesToEnvironment(melodicTracks);
 
         // 6. Generate suggestions
+        this._emitProgress('done', 'Complete');
         return this.generateSuggestions(vibe, density, complexity);
     }
 
@@ -614,19 +689,49 @@ class AIComposer {
         };
     }
 
-    // Create a musical vibe progression
-    createVibeProgression(numScenes) {
-        const patterns = [
-            // Build up patterns
-            ['calm', 'urban', 'chaos', 'calm'],
-            ['nature', 'calm', 'urban', 'chaos'],
-            ['calm', 'nature', 'urban', 'chaos'],
-            // Dynamic patterns
-            ['urban', 'calm', 'chaos', 'nature'],
-            ['chaos', 'urban', 'calm', 'nature']
-        ];
+    // Named arrangement archetypes for distinct composition structures
+    _getArrangementArchetypes() {
+        return {
+            // Build-up patterns (tension → release)
+            build:     ['calm', 'urban', 'chaos', 'chaos'],
+            rise:      ['nature', 'calm', 'urban', 'chaos'],
+            ascend:    ['calm', 'nature', 'urban', 'chaos'],
 
-        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+            // Breakdown patterns (energy → calm)
+            breakdown: ['chaos', 'urban', 'calm', 'nature'],
+            descent:   ['chaos', 'chaos', 'urban', 'calm'],
+            unwind:    ['urban', 'chaos', 'calm', 'calm'],
+
+            // Wave patterns (oscillating energy)
+            wave:      ['calm', 'urban', 'calm', 'chaos'],
+            pulse:     ['urban', 'calm', 'chaos', 'calm'],
+            tide:      ['nature', 'chaos', 'nature', 'urban'],
+
+            // Journey patterns (narrative arc)
+            journey:   ['nature', 'calm', 'urban', 'nature'],
+            odyssey:   ['calm', 'urban', 'chaos', 'nature'],
+            wander:    ['nature', 'urban', 'nature', 'chaos'],
+
+            // Contrast patterns (abrupt changes)
+            contrast:  ['calm', 'chaos', 'calm', 'chaos'],
+            clash:     ['nature', 'chaos', 'urban', 'nature'],
+            shock:     ['chaos', 'calm', 'chaos', 'urban']
+        };
+    }
+
+    // Create a musical vibe progression using archetypes
+    createVibeProgression(numScenes) {
+        const archetypes = this._getArrangementArchetypes();
+        let pattern;
+
+        if (this.arrangementArchetype && archetypes[this.arrangementArchetype]) {
+            pattern = archetypes[this.arrangementArchetype];
+        } else {
+            // Pick a random archetype
+            const keys = Object.keys(archetypes);
+            const key = keys[Math.floor(Math.random() * keys.length)];
+            pattern = archetypes[key];
+        }
 
         // Adjust to requested length
         const result = [];

@@ -10,6 +10,10 @@ class SourceRoleManager {
 
         // Modulation routes: [{sourceChannel, targetChannel, targetParam, scale}]
         this.modulationRoutes = [];
+
+        // Debounce: minimum bars between role re-evaluations
+        this._lastReevalBar = -Infinity;
+        this._reevalMinBars = 8;
     }
 
     // Role distribution templates by vibe
@@ -284,8 +288,79 @@ class SourceRoleManager {
                 case 'glitch':
                     me.setChannelGlitch(route.targetChannel, mapped, 100, 'stutter');
                     break;
+                case 'sidechain':
+                    // Inverse gain: duck target when source is loud
+                    ae.applySidechainGain(route.targetChannel, rms, route.scale);
+                    break;
+                case 'sync':
+                    // Cross-source rhythmic sync: trigger target track when source exceeds threshold
+                    if (rms > (route._threshold || 30) && (route._prevRms || 0) < (route._threshold || 30)) {
+                        const seq = window.sequencer;
+                        if (seq && route.targetTrack != null) {
+                            const step = seq.currentStep || 0;
+                            if (seq.pattern[route.targetTrack]?.[step]) {
+                                seq.pattern[route.targetTrack][step].active = true;
+                            }
+                        }
+                    }
+                    route._prevRms = rms;
+                    break;
             }
         }
+    }
+
+    // Re-evaluate roles when soundscape classification changes significantly
+    reevaluateRoles(soundscape) {
+        if (!soundscape || this.assignments.length === 0) return false;
+
+        // Debounce: check bar count from sequencer
+        const seq = window.sequencer;
+        if (seq) {
+            const currentBar = Math.floor((seq.currentStep || 0) / seq.steps);
+            if (currentBar - this._lastReevalBar < this._reevalMinBars) return false;
+            this._lastReevalBar = currentBar;
+        }
+
+        const vibe = window.aiComposer?.context?.vibe || 'calm';
+        const availableSources = ['sampler', 'synth', 'radio', 'mic'];
+
+        // Generate new assignment based on updated soundscape
+        const newAssignments = this.generateRoleAssignment({
+            vibe,
+            soundscape,
+            availableSources
+        });
+
+        // Only swap roles for tracks not in the middle of a note
+        let swapped = false;
+        for (const newA of newAssignments) {
+            const oldA = this.assignments.find(a => a.track === newA.track);
+            if (!oldA || oldA.role === newA.role) continue;
+
+            // Apply the new role
+            if (seq) seq.setTrackSource(newA.track, newA.source);
+            this.assignRole(newA.track, newA.role, newA.source);
+            swapped = true;
+        }
+
+        if (swapped) {
+            console.log('Roles re-evaluated based on soundscape change');
+        }
+        return swapped;
+    }
+
+    // Set up cross-source rhythmic sync: source channel triggers target track steps
+    setupCrossSync(sourceChannel, targetTrackIndex) {
+        this.modulationRoutes.push({
+            sourceChannel,
+            targetChannel: null,
+            targetParam: 'sync',
+            targetTrack: targetTrackIndex,
+            scale: 1,
+            _prevRms: 0,
+            _threshold: 30 // RMS threshold to trigger
+        });
+        console.log(`Cross-sync: ${sourceChannel} → track ${targetTrackIndex}`);
     }
 
     // Get current assignments

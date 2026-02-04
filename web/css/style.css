@@ -2127,3 +2127,90 @@ body.demo-sense .mixer-panel .vu-meter {
 body.demo-create .fx-panel {
     border: 2px solid var(--accent);
 }
+
+/* ===== Role Badges on Mixer Channels ===== */
+.ch-role {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    font-size: 9px;
+    font-weight: 800;
+    text-align: center;
+    line-height: 16px;
+    background: transparent;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+/* ===== Modulation Route Labels ===== */
+.ch-route {
+    display: block;
+    font-size: 8px;
+    color: var(--yellow);
+    text-align: center;
+    min-height: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 50px;
+}
+
+/* ===== AI Progress Indicator ===== */
+.ai-progress {
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    padding: 6px 8px;
+    min-height: 28px;
+    transition: background 0.3s;
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+.ai-progress-icon { font-size: 14px; }
+.ai-progress-listening { background: rgba(43, 126, 179, 0.15); color: var(--accent); }
+.ai-progress-capturing { background: rgba(196, 112, 112, 0.15); color: var(--red); }
+.ai-progress-generating { background: rgba(106, 191, 138, 0.15); color: var(--green); }
+.ai-progress-assigning { background: rgba(212, 197, 106, 0.15); color: var(--yellow); }
+.ai-progress-tuning { background: rgba(212, 139, 160, 0.15); color: var(--blue); }
+.ai-progress-done { background: rgba(106, 191, 138, 0.2); color: var(--green); }
+
+/* ===== Scene Morph Animation ===== */
+.scene-btn.morphing {
+    animation: scene-morph-pulse 0.5s ease-in-out infinite;
+    box-shadow: 0 0 10px rgba(43, 126, 179, 0.5);
+}
+@keyframes scene-morph-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* ===== Saved Journeys List ===== */
+.journey-saved {
+    margin-top: 4px;
+    max-height: 80px;
+    overflow-y: auto;
+    border-top: 1px solid var(--border);
+    padding-top: 4px;
+}
+.journey-saved-item {
+    display: flex;
+    gap: 8px;
+    padding: 3px 6px;
+    font-size: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    align-items: center;
+}
+.journey-saved-item:hover {
+    background: rgba(43, 126, 179, 0.08);
+}
+.js-date { font-weight: 700; color: #d4783a; width: 70px; }
+.js-dist { color: var(--text-light); width: 50px; }
+.js-wpts { color: var(--text-light); }
+.journey-empty {
+    font-size: 10px;
+    color: var(--text-light);
+    text-align: center;
+    padding: 4px;
+}

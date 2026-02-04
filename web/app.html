@@ -212,6 +212,8 @@
                     <div class="mixer-channels">
                         <div class="ch" data-ch="mic">
                             <span class="ch-name">MIC</span>
+                            <span class="ch-role" id="roleMic" title="Assigned role"></span>
+                            <span class="ch-route" id="routeMic" title="Modulation route"></span>
                             <input type="range" class="gain-knob" id="gainMic" min="0" max="200" value="100" title="Input gain (0-200%)">
                             <div class="vu-meter" title="Microphone level"><div class="vu-fill" id="vuMic"></div><div class="vu-peak" id="peakMic"></div></div>
                             <input type="range" class="v-fader" id="faderMic" min="0" max="100" value="80" orient="vertical" title="Microphone volume">
@@ -223,6 +225,8 @@
                         </div>
                         <div class="ch" data-ch="samples">
                             <span class="ch-name">SMP</span>
+                            <span class="ch-role" id="roleSamples" title="Assigned role"></span>
+                            <span class="ch-route" id="routeSamples" title="Modulation route"></span>
                             <input type="range" class="gain-knob" id="gainSamples" min="0" max="200" value="100" title="Input gain (0-200%)">
                             <div class="vu-meter" title="Sampler level"><div class="vu-fill" id="vuSamples"></div><div class="vu-peak" id="peakSamples"></div></div>
                             <input type="range" class="v-fader" id="faderSamples" min="0" max="100" value="80" orient="vertical" title="Sampler volume">
@@ -234,6 +238,8 @@
                         </div>
                         <div class="ch" data-ch="synth">
                             <span class="ch-name">SYN</span>
+                            <span class="ch-role" id="roleSynth" title="Assigned role"></span>
+                            <span class="ch-route" id="routeSynth" title="Modulation route"></span>
                             <input type="range" class="gain-knob" id="gainSynth" min="0" max="200" value="100" title="Input gain (0-200%)">
                             <div class="vu-meter" title="Synth level"><div class="vu-fill" id="vuSynth"></div><div class="vu-peak" id="peakSynth"></div></div>
                             <input type="range" class="v-fader" id="faderSynth" min="0" max="100" value="80" orient="vertical" title="Synth volume">
@@ -245,6 +251,8 @@
                         </div>
                         <div class="ch" data-ch="radio">
                             <span class="ch-name">RAD</span>
+                            <span class="ch-role" id="roleRadio" title="Assigned role"></span>
+                            <span class="ch-route" id="routeRadio" title="Modulation route"></span>
                             <input type="range" class="gain-knob" id="gainRadio" min="0" max="200" value="100" title="Input gain (0-200%)">
                             <div class="vu-meter" title="Radio level"><div class="vu-fill" id="vuRadio"></div><div class="vu-peak" id="peakRadio"></div></div>
                             <input type="range" class="v-fader" id="faderRadio" min="0" max="100" value="80" orient="vertical" title="Radio volume">
@@ -445,6 +453,7 @@
                         <div class="analysis-channels" id="analysisChannels"></div>
                         <div class="analysis-summary" id="analysisSummary"></div>
                     </div>
+                    <div class="ai-progress" id="aiProgress"></div>
                     <div class="ai-status" id="aiStatus">AI senses the environment and generates music accordingly</div>
                 </div>
 
@@ -582,10 +591,12 @@
                         <button id="journeyStart" class="journey-btn">START</button>
                         <button id="journeyWaypoint" class="journey-btn" disabled>WAYPOINT</button>
                         <button id="journeyEnd" class="journey-btn" disabled>END</button>
+                        <button id="journeyExportGPX" class="journey-btn" title="Export journey as GPX file">GPX</button>
                     </div>
                     <div id="journeyWaypoints" class="journey-waypoints"></div>
-                    <div id="journeyStats" class="journey-stats">0m | 0:00 | 0 wpts</div>
+                    <div id="journeyStats" class="journey-stats">0m | 0:00 | 0 wpts | 0 km/h</div>
                     <div id="journeyStatus" class="journey-status">Press START to begin a walking session</div>
+                    <div id="journeySaved" class="journey-saved"></div>
                 </div>
             </main>
         </div>
