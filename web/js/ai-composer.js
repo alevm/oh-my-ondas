@@ -37,7 +37,11 @@ class AIComposer {
 
         // Dynamic role re-evaluation on classification change
         if (window.sourceRoleManager && window.sequencer?.isPlaying()) {
-            window.sourceRoleManager.reevaluateRoles(change.analysis);
+            const swapped = window.sourceRoleManager.reevaluateRoles(change.analysis);
+            if (swapped && window.app) {
+                window.app.updateRoleBadges();
+                window.app.updateModulationLabels();
+            }
         }
 
         // If sequencer is playing, adjust live FX based on new classification
@@ -423,7 +427,19 @@ class AIComposer {
         // Analyze and assign roles to all captured pads
         this._emitProgress('generating', 'Creating pattern...');
         for (const padIdx of capturedPads) {
-            this.analyzeAndAssignCapture(padIdx);
+            const result = this.analyzeAndAssignCapture(padIdx);
+
+            // Auto-apply detected tempo from captured audio
+            if (result && window.soundscapeAnalyzer) {
+                const buffer = window.sampler?.samples?.get(padIdx);
+                if (buffer) {
+                    const tempo = window.soundscapeAnalyzer.detectTempo(buffer);
+                    if (tempo.bpm >= 60 && tempo.bpm <= 200 && tempo.confidence > 30) {
+                        window.sequencer.setTempo(tempo.bpm);
+                        console.log(`Auto-detected tempo from pad ${padIdx}: ${tempo.bpm} BPM (${tempo.confidence}% confidence)`);
+                    }
+                }
+            }
         }
 
         // 2. Generate base rhythm pattern
@@ -442,10 +458,33 @@ class AIComposer {
             });
 
             // Apply assignments
+            let rhythmTracks = [];
+            let textureTracks = [];
             for (const assignment of assignments) {
                 window.sequencer.setTrackSource(assignment.track, assignment.source);
                 window.sourceRoleManager.assignRole(assignment.track, assignment.role, assignment.source);
                 if (assignment.role === 'melody') melodicTracks.push(assignment.track);
+                if (assignment.role === 'rhythm') rhythmTracks.push(assignment);
+                if (assignment.role === 'texture') textureTracks.push(assignment);
+            }
+
+            // Auto-wire cross-sync: first rhythm source drives other rhythm tracks
+            if (rhythmTracks.length >= 2) {
+                const primary = rhythmTracks[0];
+                for (let i = 1; i < rhythmTracks.length; i++) {
+                    window.sourceRoleManager.setupCrossSync(primary.source === 'sampler' ? 'samples' : primary.source, rhythmTracks[i].track);
+                }
+            }
+
+            // Auto-wire sidechain: rhythm source ducks texture sources
+            if (rhythmTracks.length > 0 && textureTracks.length > 0) {
+                const rhythmSource = rhythmTracks[0].source === 'sampler' ? 'samples' : rhythmTracks[0].source;
+                for (const tex of textureTracks) {
+                    const texChannel = tex.source === 'sampler' ? 'samples' : tex.source;
+                    if (texChannel !== rhythmSource) {
+                        window.audioEngine.setupSidechain(rhythmSource, texChannel, 0.5);
+                    }
+                }
             }
         } else {
             // Legacy fallback
