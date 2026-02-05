@@ -60,6 +60,52 @@
             border-bottom: 2px solid #e0e0e0;
         }
 
+        /* ==================== GALLERY TABS ==================== */
+        .gallery-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 0;
+            border-bottom: 3px solid #e0e0e0;
+        }
+        .gallery-tab {
+            padding: 12px 24px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #888;
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            background: transparent;
+            transition: all 0.15s;
+            position: relative;
+            bottom: -3px;
+        }
+        .gallery-tab:hover { color: #555; background: rgba(0,0,0,0.03); }
+        .gallery-tab.active {
+            color: var(--accent);
+            background: #fff;
+            border-color: #e0e0e0;
+            border-bottom-color: #fff;
+        }
+        .gallery-tab .tab-num {
+            display: inline-block;
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #888;
+            font-size: 10px;
+            line-height: 18px;
+            text-align: center;
+            margin-right: 6px;
+        }
+        .gallery-tab.active .tab-num {
+            background: var(--accent);
+            color: #fff;
+        }
+
         /* ==================== DEVICE SHOWCASE ==================== */
         .showcase-stage {
             display: flex;
@@ -74,6 +120,9 @@
             transform: scale(0.65);
             transform-origin: top center;
         }
+
+        .gallery-panel { display: none; }
+        .gallery-panel.active { display: block; }
 
         /* Device — scaled down via parent transform */
         .device-container { position: relative; width: 1100px; height: 700px; overflow: visible; }
@@ -244,7 +293,7 @@
         .label-pads { top: 450px; left: 25px; color: var(--gray-text); }
         .label-ctrl { top: 450px; right: 25px; color: var(--gray-text); width: 200px; text-align: center; }
 
-        /* 3 Mode Buttons — identical to index.html */
+        /* Mode Buttons */
         .modes-bar {
             position: absolute;
             top: 400px; left: 25px; right: 25px;
@@ -273,8 +322,11 @@
         .mode-btn[data-mode="interact"] {
             border-color: #1270b8; background: transparent; color: #1270b8;
         }
+        .mode-btn[data-mode="journey"] {
+            border-color: #d4783a; background: transparent; color: #d4783a;
+        }
 
-        /* 8 Touch Pads — identical to index.html */
+        /* 8 Touch Pads */
         .pads-container {
             position: absolute;
             top: 460px; left: 25px;
@@ -555,7 +607,7 @@
         .gps-strip .gps-coords { font-size: 9px; color: #555; font-family: monospace; }
         .gps-strip .gps-city { font-size: 8px; color: #888; }
 
-        /* I/O ports — identical to index.html */
+        /* I/O ports */
         .io-ports {
             position: absolute;
             right: -25px;
@@ -592,7 +644,7 @@
             background: #c0392b;
         }
 
-        /* Sensor diagrams — identical to index.html */
+        /* Sensor diagrams */
         .sensor {
             position: absolute;
             display: flex;
@@ -667,10 +719,66 @@
             color: #888;
             font-size: 11px;
             border-top: 1px solid #e0e0e0;
+            flex-wrap: wrap;
         }
         .info-bar span { color: #1aa167; font-weight: 600; }
 
-        /* Specs grid (kept from original) */
+        /* Iteration description card */
+        .iter-desc {
+            background: #fafafa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #555;
+            line-height: 1.6;
+        }
+        .iter-desc h4 {
+            font-size: 14px; font-weight: 800;
+            color: var(--accent); margin-bottom: 8px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .iter-desc ul { margin: 0; padding-left: 20px; }
+        .iter-desc li { margin-bottom: 4px; }
+
+        /* Interactive tab — link card */
+        .interactive-link-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            gap: 20px;
+            padding: 40px;
+        }
+        .interactive-link-card h3 {
+            font-size: 24px; font-weight: 800;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .interactive-link-card p {
+            font-size: 14px; color: #666;
+            text-align: center; max-width: 500px;
+            line-height: 1.6;
+        }
+        .interactive-link-card a {
+            display: inline-block;
+            padding: 14px 36px;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+        .interactive-link-card a:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+
+        /* Specs grid */
         .specs-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -719,13 +827,18 @@
         .pin-table tr:nth-child(even) { background: #fafafa; }
         .pin-table .pin-num { font-family: monospace; font-weight: 700; color: var(--accent); }
 
-        /* Sequencer step animation — playhead cycling */
-        @keyframes playhead-cycle {
-            0%   { background: var(--green); }
-            6%   { background: #222; }
-            100% { background: #222; }
+        /* Minimal iteration — compact display */
+        .minimal .display {
+            height: 280px;
         }
-        .lcd-step.animated { animation: playhead-cycle 8s linear infinite; }
+        .minimal .artwork {
+            top: 290px;
+        }
+        .minimal .modes-bar { display: none; }
+        .minimal .pads-container { top: 380px; }
+        .minimal .encoders-container { top: 380px; width: 200px; }
+        .minimal .label-pads { top: 370px; }
+        .minimal .label-ctrl { top: 370px; }
     </style>
 </head>
 <body>
@@ -750,277 +863,518 @@
             <h1 class="page-title">Hardware Design</h1>
             <p class="page-subtitle">Portable music instrument with location-aware sampling, synthesis, and AI composition</p>
 
-            <!-- 3D Showcase -->
-            <div class="showcase-stage">
-                <div class="showcase-rotator">
-                    <div class="device-container">
-                        <div class="enclosure">
-                            <div class="artwork"></div>
+            <!-- Gallery Tabs -->
+            <div class="gallery-tabs" id="galleryTabs">
+                <button class="gallery-tab active" data-tab="minimal"><span class="tab-num">1</span>Minimal</button>
+                <button class="gallery-tab" data-tab="standard"><span class="tab-num">2</span>Standard</button>
+                <button class="gallery-tab" data-tab="full"><span class="tab-num">3</span>Full</button>
+                <button class="gallery-tab" data-tab="interactive"><span class="tab-num">4</span>Interactive</button>
+            </div>
 
-                            <!-- Static Display -->
-                            <div class="display">
-                                <div class="lcd-screen">
-                                    <!-- Transport bar -->
-                                    <div class="lcd-status-bar">
-                                        <div class="lcd-transport">
-                                            <div class="lcd-tr-btn active">&#9654;</div>
-                                            <div class="lcd-tr-btn">&#9632;</div>
-                                            <div class="lcd-tr-btn">&#9679;</div>
-                                        </div>
-                                        <div class="lcd-bpm"><span class="lcd-bpm-val">120</span> BPM</div>
-                                        <div class="lcd-tap">TAP</div>
-                                        <div class="lcd-gps">40.4168, -3.7038</div>
-                                        <div class="lcd-time">14:32</div>
-                                    </div>
+            <!-- TAB 1: Minimal -->
+            <div class="gallery-panel active" data-panel="minimal">
+                <div class="showcase-stage">
+                    <div class="showcase-rotator">
+                        <div class="device-container minimal">
+                            <div class="enclosure">
+                                <div class="artwork"></div>
 
-                                    <!-- Tab bar -->
-                                    <div class="lcd-tabs">
-                                        <div class="lcd-tab active">SEQ</div>
-                                        <div class="lcd-tab">MIX</div>
-                                        <div class="lcd-tab">SYN</div>
-                                        <div class="lcd-tab">SCN</div>
-                                        <div class="lcd-tab">AI</div>
-                                        <div class="lcd-tab">FX</div>
-                                        <div class="lcd-tab">RAD</div>
-                                        <div class="lcd-tab">EQ</div>
-                                    </div>
-
-                                    <!-- SEQ panel content -->
-                                    <div class="lcd-seq-area">
-                                        <div class="lcd-seq-header">
-                                            <span class="lcd-seq-title">SEQ</span>
-                                            <span class="lcd-seq-ctrl active">SMP</span>
-                                            <span class="lcd-seq-ctrl">SYN</span>
-                                            <span class="lcd-seq-ctrl">RAD</span>
-                                            <span class="lcd-seq-ctrl">MIC</span>
-                                            <span class="lcd-seq-ctrl" style="margin-left: auto;">RND</span>
-                                            <span class="lcd-seq-ctrl">CLR</span>
-                                            <span class="lcd-seq-ctrl">EUC</span>
-                                            <span class="lcd-seq-ctrl">DUB</span>
+                                <!-- Display -->
+                                <div class="display">
+                                    <div class="lcd-screen">
+                                        <div class="lcd-status-bar">
+                                            <div class="lcd-transport">
+                                                <div class="lcd-tr-btn active">&#9654;</div>
+                                                <div class="lcd-tr-btn">&#9632;</div>
+                                                <div class="lcd-tr-btn">&#9679;</div>
+                                            </div>
+                                            <div class="lcd-bpm"><span class="lcd-bpm-val">120</span> BPM</div>
+                                            <div class="lcd-gps">40.4168, -3.7038</div>
+                                            <div class="lcd-time">14:32</div>
                                         </div>
-                                        <div class="lcd-patterns">
-                                            <div class="lcd-pat active">A</div>
-                                            <div class="lcd-pat">B</div>
-                                            <div class="lcd-pat">C</div>
-                                            <div class="lcd-pat">D</div>
-                                            <div class="lcd-pat">E</div>
-                                            <div class="lcd-pat">F</div>
-                                            <div class="lcd-pat">G</div>
-                                            <div class="lcd-pat">H</div>
+                                        <div class="lcd-tabs">
+                                            <div class="lcd-tab active">SEQ</div>
+                                            <div class="lcd-tab">MIX</div>
+                                            <div class="lcd-tab">SYN</div>
+                                            <div class="lcd-tab">AI</div>
                                         </div>
-                                        <div class="lcd-tracks" id="lcdTracks"></div>
+                                        <div class="lcd-seq-area">
+                                            <div class="lcd-seq-header">
+                                                <span class="lcd-seq-title">SEQ</span>
+                                                <span class="lcd-seq-ctrl active">SMP</span>
+                                                <span class="lcd-seq-ctrl">SYN</span>
+                                            </div>
+                                            <div class="lcd-tracks" id="lcdTracksMinimal"></div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- 3 Mode Buttons -->
-                            <div class="modes-bar">
-                                <div class="mode-btn" data-mode="picture">PICTURE</div>
-                                <div class="mode-btn" data-mode="soundscape">SOUNDSCAPE</div>
-                                <div class="mode-btn" data-mode="interact">INTERACT</div>
-                            </div>
+                                <!-- Labels -->
+                                <span class="section-label label-pads">PADS</span>
+                                <span class="section-label label-ctrl">CTRL</span>
 
-                            <!-- Labels -->
-                            <span class="section-label label-pads">PADS</span>
-                            <span class="section-label label-ctrl">CTRL</span>
+                                <!-- 8 Pads -->
+                                <div class="pads-container">
+                                    <div class="pad">1</div><div class="pad">2</div><div class="pad">3</div><div class="pad">4</div>
+                                    <div class="pad">5</div><div class="pad">6</div><div class="pad">7</div><div class="pad">8</div>
+                                </div>
 
-                            <!-- 8 Touch Pads -->
-                            <div class="pads-container">
-                                <div class="pad">1</div>
-                                <div class="pad">2</div>
-                                <div class="pad">3</div>
-                                <div class="pad">4</div>
-                                <div class="pad">5</div>
-                                <div class="pad">6</div>
-                                <div class="pad">7</div>
-                                <div class="pad">8</div>
-                            </div>
+                                <!-- 4 Encoders -->
+                                <div class="encoders-container">
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">VOL</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">PAN</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">FX</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">BPM</span></div>
+                                </div>
 
-                            <!-- 4 Main Encoders -->
-                            <div class="encoders-container">
-                                <div class="encoder">
-                                    <div class="encoder-knob"></div>
-                                    <span class="encoder-label">VOL</span>
-                                    <span class="encoder-value">80</span>
+                                <!-- Transport -->
+                                <div class="transport-container">
+                                    <div class="transport-btn play active">&#9654;</div>
+                                    <div class="transport-btn stop">&#9632;</div>
+                                    <div class="transport-btn rec">&#9679;</div>
                                 </div>
-                                <div class="encoder">
-                                    <div class="encoder-knob"></div>
-                                    <span class="encoder-label">PAN</span>
-                                    <span class="encoder-value">C</span>
-                                </div>
-                                <div class="encoder">
-                                    <div class="encoder-knob"></div>
-                                    <span class="encoder-label">FX</span>
-                                    <span class="encoder-value">30</span>
-                                </div>
-                                <div class="encoder">
-                                    <div class="encoder-knob"></div>
-                                    <span class="encoder-label">BPM</span>
-                                    <span class="encoder-value">120</span>
-                                </div>
-                            </div>
 
-                            <!-- 4 Synth Knobs -->
-                            <div class="synth-knobs">
-                                <div class="encoder">
-                                    <div class="encoder-knob"></div>
-                                    <span class="encoder-label">CUTOFF</span>
-                                    <span class="encoder-value">72</span>
-                                </div>
-                                <div class="encoder">
-                                    <div class="encoder-knob"></div>
-                                    <span class="encoder-label">RES</span>
-                                    <span class="encoder-value">40</span>
-                                </div>
-                                <div class="encoder">
-                                    <div class="encoder-knob"></div>
-                                    <span class="encoder-label">ATK</span>
-                                    <span class="encoder-value">10</span>
-                                </div>
-                                <div class="encoder">
-                                    <div class="encoder-knob"></div>
-                                    <span class="encoder-label">REL</span>
-                                    <span class="encoder-value">50</span>
+                                <!-- GPS Strip -->
+                                <div class="gps-strip">
+                                    <div class="gps-map-thumb"></div>
+                                    <div class="gps-icon">+</div>
+                                    <div class="gps-info">
+                                        <span class="gps-label">GPS</span>
+                                        <span class="gps-coords">40.4168, -3.7038</span>
+                                    </div>
                                 </div>
                             </div>
-
-                            <!-- 4 Mixer Faders -->
-                            <div class="faders-container">
-                                <div class="fader-ch">
-                                    <span class="fader-lbl mic">MIC</span>
-                                    <div class="fader-track"><div class="fader-thumb" style="top: 20px;"></div></div>
-                                    <span class="fader-val">75</span>
-                                    <div class="fader-led" style="background:#1aa167; box-shadow:0 0 4px rgba(26,161,103,0.6);"></div>
-                                </div>
-                                <div class="fader-ch">
-                                    <span class="fader-lbl smp">SMP</span>
-                                    <div class="fader-track"><div class="fader-thumb" style="top: 10px;"></div></div>
-                                    <span class="fader-val">90</span>
-                                    <div class="fader-led" style="background:#1270b8; box-shadow:0 0 4px rgba(18,112,184,0.6);"></div>
-                                </div>
-                                <div class="fader-ch">
-                                    <span class="fader-lbl syn">SYN</span>
-                                    <div class="fader-track"><div class="fader-thumb" style="top: 30px;"></div></div>
-                                    <span class="fader-val">60</span>
-                                    <div class="fader-led" style="background:#278789; box-shadow:0 0 4px rgba(39,135,137,0.6);"></div>
-                                </div>
-                                <div class="fader-ch">
-                                    <span class="fader-lbl rad">RAD</span>
-                                    <div class="fader-track"><div class="fader-thumb" style="top: 40px;"></div></div>
-                                    <span class="fader-val">45</span>
-                                    <div class="fader-led" style="background:#d4a857; box-shadow:0 0 4px rgba(212,168,87,0.6);"></div>
-                                </div>
-                            </div>
-
-                            <!-- Function Buttons -->
-                            <div class="func-btns">
-                                <div class="func-btn shift">SHIFT</div>
-                                <div class="func-btn dub">DUB</div>
-                                <div class="func-btn fill">FILL</div>
-                                <div class="func-btn clear">CLR</div>
-                                <div class="func-btn scene">SCENE</div>
-                                <div class="func-btn fx">FX</div>
-                            </div>
-
-                            <!-- Crossfader -->
-                            <div class="xfade-section">
-                                <span class="xfade-label">X-FADE</span>
-                                <div class="xfade-track">
-                                    <div class="xfade-thumb"></div>
-                                </div>
-                                <div class="xfade-ends"><span>A</span><span>B</span></div>
-                            </div>
-
-                            <!-- Status LEDs -->
-                            <div class="hw-leds">
-                                <div class="hw-led gps" title="GPS"></div>
-                                <div class="hw-led wifi" title="WiFi"></div>
-                                <div class="hw-led audio" title="Audio"></div>
-                            </div>
-
-                            <!-- Transport -->
-                            <div class="transport-container">
-                                <div class="transport-btn play active">&#9654;</div>
-                                <div class="transport-btn stop">&#9632;</div>
-                                <div class="transport-btn rec">&#9679;</div>
-                            </div>
-
-                            <!-- GPS Strip -->
-                            <div class="gps-strip">
-                                <div class="gps-map-thumb"></div>
-                                <div class="gps-icon">+</div>
-                                <div class="gps-info">
-                                    <span class="gps-label">GPS</span>
-                                    <span class="gps-coords">40.4168, -3.7038</span>
-                                    <span class="gps-city">Madrid, ES</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- I/O Ports -->
-                        <div class="io-ports">
-                            <div style="position: relative;">
-                                <div class="io-port"></div>
-                                <div class="io-label" style="top: 2px;">Audio Out</div>
-                                <div class="io-label-line" style="top: 8px;"></div>
-                            </div>
-                            <div style="position: relative;">
-                                <div class="io-port"></div>
-                                <div class="io-label" style="top: 2px;">Headphones</div>
-                                <div class="io-label-line" style="top: 8px;"></div>
-                            </div>
-                            <div style="position: relative;">
-                                <div class="io-port"></div>
-                                <div class="io-label" style="top: 2px;">Audio In</div>
-                                <div class="io-label-line" style="top: 8px;"></div>
-                            </div>
-                        </div>
-
-                        <!-- External Sensors -->
-                        <div class="sensor sensor-piezo">
-                            <div class="sensor-icon">&#9676;</div>
-                            <div class="sensor-info">
-                                <span class="sensor-name">Piezo</span>
-                                <span class="sensor-desc">Vibration sensor</span>
-                            </div>
-                            <div class="sensor-line"></div>
-                        </div>
-                        <div class="sensor sensor-mic">
-                            <div class="sensor-icon">&#9834;</div>
-                            <div class="sensor-info">
-                                <span class="sensor-name">Mic</span>
-                                <span class="sensor-desc">Condenser</span>
-                            </div>
-                            <div class="sensor-line"></div>
-                        </div>
-                        <div class="sensor sensor-wifi">
-                            <div class="sensor-icon">&#8801;</div>
-                            <div class="sensor-info">
-                                <span class="sensor-name">WiFi</span>
-                                <span class="sensor-desc">802.11</span>
-                            </div>
-                            <div class="sensor-line-v"></div>
-                        </div>
-                        <div class="sensor sensor-radio">
-                            <div class="sensor-icon">&#9399;</div>
-                            <div class="sensor-info">
-                                <span class="sensor-name">Radio</span>
-                                <span class="sensor-desc">FM Antenna</span>
-                            </div>
-                            <div class="sensor-line-v"></div>
                         </div>
                     </div>
                 </div>
+                <div class="info-bar" style="border-radius: 8px;">
+                    <div>Display: <span>5" LCD</span></div>
+                    <div>Pads: <span>8x MPR121</span></div>
+                    <div>Encoders: <span>4x Rotary</span></div>
+                    <div>Buttons: <span>3 (Transport)</span></div>
+                </div>
+                <div class="iter-desc">
+                    <h4>Iteration 1 &mdash; Minimal Concept</h4>
+                    <ul>
+                        <li>Earliest design: large display with basic sequencer, 8 pads, 4 encoders, transport</li>
+                        <li>No mode buttons &mdash; modes controlled via on-screen UI</li>
+                        <li>GPS strip for location awareness, minimal physical controls</li>
+                        <li>Proves core concept: location-sampled pads + step sequencer</li>
+                    </ul>
+                </div>
             </div>
 
-            <div class="info-bar" style="border-radius: 8px; margin-bottom: 40px;">
-                <div>Enclosure: <span>200x140x45mm</span></div>
-                <div>Display: <span>5" Touch</span></div>
-                <div>Pads: <span>8x MPR121</span></div>
-                <div>Encoders: <span>8x Rotary</span></div>
-                <div>Faders: <span>4x Mixer</span></div>
-                <div>Buttons: <span>9 (Transport + Func)</span></div>
-                <div>X-Fade: <span>1x Slider</span></div>
+            <!-- TAB 2: Standard -->
+            <div class="gallery-panel" data-panel="standard">
+                <div class="showcase-stage">
+                    <div class="showcase-rotator">
+                        <div class="device-container">
+                            <div class="enclosure">
+                                <div class="artwork"></div>
+
+                                <!-- Display -->
+                                <div class="display">
+                                    <div class="lcd-screen">
+                                        <div class="lcd-status-bar">
+                                            <div class="lcd-transport">
+                                                <div class="lcd-tr-btn active">&#9654;</div>
+                                                <div class="lcd-tr-btn">&#9632;</div>
+                                                <div class="lcd-tr-btn">&#9679;</div>
+                                            </div>
+                                            <div class="lcd-bpm"><span class="lcd-bpm-val">120</span> BPM</div>
+                                            <div class="lcd-tap">TAP</div>
+                                            <div class="lcd-gps">40.4168, -3.7038</div>
+                                            <div class="lcd-time">14:32</div>
+                                        </div>
+                                        <div class="lcd-tabs">
+                                            <div class="lcd-tab active">SEQ</div>
+                                            <div class="lcd-tab">MIX</div>
+                                            <div class="lcd-tab">SYN</div>
+                                            <div class="lcd-tab">SCN</div>
+                                            <div class="lcd-tab">AI</div>
+                                            <div class="lcd-tab">FX</div>
+                                            <div class="lcd-tab">RAD</div>
+                                        </div>
+                                        <div class="lcd-seq-area">
+                                            <div class="lcd-seq-header">
+                                                <span class="lcd-seq-title">SEQ</span>
+                                                <span class="lcd-seq-ctrl active">SMP</span>
+                                                <span class="lcd-seq-ctrl">SYN</span>
+                                                <span class="lcd-seq-ctrl">RAD</span>
+                                                <span class="lcd-seq-ctrl">MIC</span>
+                                            </div>
+                                            <div class="lcd-patterns">
+                                                <div class="lcd-pat active">A</div>
+                                                <div class="lcd-pat">B</div>
+                                                <div class="lcd-pat">C</div>
+                                                <div class="lcd-pat">D</div>
+                                            </div>
+                                            <div class="lcd-tracks" id="lcdTracksStandard"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 3 Mode Buttons -->
+                                <div class="modes-bar">
+                                    <div class="mode-btn" data-mode="picture">PICTURE</div>
+                                    <div class="mode-btn" data-mode="soundscape">SOUNDSCAPE</div>
+                                    <div class="mode-btn" data-mode="interact">INTERACT</div>
+                                </div>
+
+                                <!-- Labels -->
+                                <span class="section-label label-pads">PADS</span>
+                                <span class="section-label label-ctrl">CTRL</span>
+
+                                <!-- 8 Pads -->
+                                <div class="pads-container">
+                                    <div class="pad">1</div><div class="pad">2</div><div class="pad">3</div><div class="pad">4</div>
+                                    <div class="pad">5</div><div class="pad">6</div><div class="pad">7</div><div class="pad">8</div>
+                                </div>
+
+                                <!-- 4 Encoders -->
+                                <div class="encoders-container">
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">VOL</span><span class="encoder-value">80</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">PAN</span><span class="encoder-value">C</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">FX</span><span class="encoder-value">30</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">BPM</span><span class="encoder-value">120</span></div>
+                                </div>
+
+                                <!-- Status LEDs -->
+                                <div class="hw-leds">
+                                    <div class="hw-led gps" title="GPS"></div>
+                                    <div class="hw-led wifi" title="WiFi"></div>
+                                    <div class="hw-led audio" title="Audio"></div>
+                                </div>
+
+                                <!-- Transport -->
+                                <div class="transport-container">
+                                    <div class="transport-btn play active">&#9654;</div>
+                                    <div class="transport-btn stop">&#9632;</div>
+                                    <div class="transport-btn rec">&#9679;</div>
+                                </div>
+
+                                <!-- GPS Strip -->
+                                <div class="gps-strip">
+                                    <div class="gps-map-thumb"></div>
+                                    <div class="gps-icon">+</div>
+                                    <div class="gps-info">
+                                        <span class="gps-label">GPS</span>
+                                        <span class="gps-coords">40.4168, -3.7038</span>
+                                        <span class="gps-city">Madrid, ES</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- I/O Ports -->
+                            <div class="io-ports">
+                                <div style="position: relative;">
+                                    <div class="io-port"></div>
+                                    <div class="io-label" style="top: 2px;">Audio Out</div>
+                                    <div class="io-label-line" style="top: 8px;"></div>
+                                </div>
+                                <div style="position: relative;">
+                                    <div class="io-port"></div>
+                                    <div class="io-label" style="top: 2px;">Headphones</div>
+                                    <div class="io-label-line" style="top: 8px;"></div>
+                                </div>
+                                <div style="position: relative;">
+                                    <div class="io-port"></div>
+                                    <div class="io-label" style="top: 2px;">Audio In</div>
+                                    <div class="io-label-line" style="top: 8px;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Sensors -->
+                            <div class="sensor sensor-piezo">
+                                <div class="sensor-icon">&#9676;</div>
+                                <div class="sensor-info"><span class="sensor-name">Piezo</span><span class="sensor-desc">Vibration sensor</span></div>
+                                <div class="sensor-line"></div>
+                            </div>
+                            <div class="sensor sensor-mic">
+                                <div class="sensor-icon">&#9834;</div>
+                                <div class="sensor-info"><span class="sensor-name">Mic</span><span class="sensor-desc">Condenser</span></div>
+                                <div class="sensor-line"></div>
+                            </div>
+                            <div class="sensor sensor-wifi">
+                                <div class="sensor-icon">&#8801;</div>
+                                <div class="sensor-info"><span class="sensor-name">WiFi</span><span class="sensor-desc">802.11</span></div>
+                                <div class="sensor-line-v"></div>
+                            </div>
+                            <div class="sensor sensor-radio">
+                                <div class="sensor-icon">&#9399;</div>
+                                <div class="sensor-info"><span class="sensor-name">Radio</span><span class="sensor-desc">FM Antenna</span></div>
+                                <div class="sensor-line-v"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-bar" style="border-radius: 8px;">
+                    <div>Display: <span>5" LCD</span></div>
+                    <div>Pads: <span>8x MPR121</span></div>
+                    <div>Encoders: <span>4x Rotary</span></div>
+                    <div>Modes: <span>3 Buttons</span></div>
+                    <div>Buttons: <span>6 (Transport + Mode)</span></div>
+                </div>
+                <div class="iter-desc">
+                    <h4>Iteration 2 &mdash; Standard</h4>
+                    <ul>
+                        <li>Adds 3 dedicated mode buttons (Picture / Soundscape / Interact)</li>
+                        <li>GPS strip with map thumbnail and city display</li>
+                        <li>Status LEDs for GPS, WiFi, and audio activity</li>
+                        <li>I/O ports and external sensor connections visible</li>
+                        <li>Core sequencer UI with pattern bank display</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 3: Full -->
+            <div class="gallery-panel" data-panel="full">
+                <div class="showcase-stage">
+                    <div class="showcase-rotator">
+                        <div class="device-container">
+                            <div class="enclosure">
+                                <div class="artwork"></div>
+
+                                <!-- Display -->
+                                <div class="display">
+                                    <div class="lcd-screen">
+                                        <div class="lcd-status-bar">
+                                            <div class="lcd-transport">
+                                                <div class="lcd-tr-btn active">&#9654;</div>
+                                                <div class="lcd-tr-btn">&#9632;</div>
+                                                <div class="lcd-tr-btn">&#9679;</div>
+                                            </div>
+                                            <div class="lcd-bpm"><span class="lcd-bpm-val">120</span> BPM</div>
+                                            <div class="lcd-tap">TAP</div>
+                                            <div class="lcd-gps">40.4168, -3.7038</div>
+                                            <div class="lcd-time">14:32</div>
+                                        </div>
+                                        <div class="lcd-tabs">
+                                            <div class="lcd-tab active">SEQ</div>
+                                            <div class="lcd-tab">MIX</div>
+                                            <div class="lcd-tab">SYN</div>
+                                            <div class="lcd-tab">SCN</div>
+                                            <div class="lcd-tab">AI</div>
+                                            <div class="lcd-tab">FX</div>
+                                            <div class="lcd-tab">RAD</div>
+                                            <div class="lcd-tab">EQ</div>
+                                        </div>
+                                        <div class="lcd-seq-area">
+                                            <div class="lcd-seq-header">
+                                                <span class="lcd-seq-title">SEQ</span>
+                                                <span class="lcd-seq-ctrl active">SMP</span>
+                                                <span class="lcd-seq-ctrl">SYN</span>
+                                                <span class="lcd-seq-ctrl">RAD</span>
+                                                <span class="lcd-seq-ctrl">MIC</span>
+                                                <span class="lcd-seq-ctrl" style="margin-left: auto;">RND</span>
+                                                <span class="lcd-seq-ctrl">CLR</span>
+                                                <span class="lcd-seq-ctrl">EUC</span>
+                                                <span class="lcd-seq-ctrl">DUB</span>
+                                            </div>
+                                            <div class="lcd-patterns">
+                                                <div class="lcd-pat active">A</div>
+                                                <div class="lcd-pat">B</div>
+                                                <div class="lcd-pat">C</div>
+                                                <div class="lcd-pat">D</div>
+                                                <div class="lcd-pat">E</div>
+                                                <div class="lcd-pat">F</div>
+                                                <div class="lcd-pat">G</div>
+                                                <div class="lcd-pat">H</div>
+                                            </div>
+                                            <div class="lcd-tracks" id="lcdTracksFull"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 4 Mode Buttons -->
+                                <div class="modes-bar">
+                                    <div class="mode-btn" data-mode="picture">PICTURE</div>
+                                    <div class="mode-btn" data-mode="soundscape">SOUNDSCAPE</div>
+                                    <div class="mode-btn" data-mode="interact">INTERACT</div>
+                                    <div class="mode-btn" data-mode="journey">JOURNEY</div>
+                                </div>
+
+                                <!-- Labels -->
+                                <span class="section-label label-pads">PADS</span>
+                                <span class="section-label label-ctrl">CTRL</span>
+
+                                <!-- 8 Pads -->
+                                <div class="pads-container">
+                                    <div class="pad">1</div><div class="pad">2</div><div class="pad">3</div><div class="pad">4</div>
+                                    <div class="pad">5</div><div class="pad">6</div><div class="pad">7</div><div class="pad">8</div>
+                                </div>
+
+                                <!-- 4 Main Encoders -->
+                                <div class="encoders-container">
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">VOL</span><span class="encoder-value">80</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">PAN</span><span class="encoder-value">C</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">FX</span><span class="encoder-value">30</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">BPM</span><span class="encoder-value">120</span></div>
+                                </div>
+
+                                <!-- 4 Synth Knobs -->
+                                <div class="synth-knobs">
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">CUTOFF</span><span class="encoder-value">72</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">RES</span><span class="encoder-value">40</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">ATK</span><span class="encoder-value">10</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">REL</span><span class="encoder-value">50</span></div>
+                                </div>
+
+                                <!-- 4 Mixer Faders -->
+                                <div class="faders-container">
+                                    <div class="fader-ch">
+                                        <span class="fader-lbl mic">MIC</span>
+                                        <div class="fader-track"><div class="fader-thumb" style="top: 20px;"></div></div>
+                                        <span class="fader-val">75</span>
+                                        <div class="fader-led" style="background:#1aa167; box-shadow:0 0 4px rgba(26,161,103,0.6);"></div>
+                                    </div>
+                                    <div class="fader-ch">
+                                        <span class="fader-lbl smp">SMP</span>
+                                        <div class="fader-track"><div class="fader-thumb" style="top: 10px;"></div></div>
+                                        <span class="fader-val">90</span>
+                                        <div class="fader-led" style="background:#1270b8; box-shadow:0 0 4px rgba(18,112,184,0.6);"></div>
+                                    </div>
+                                    <div class="fader-ch">
+                                        <span class="fader-lbl syn">SYN</span>
+                                        <div class="fader-track"><div class="fader-thumb" style="top: 30px;"></div></div>
+                                        <span class="fader-val">60</span>
+                                        <div class="fader-led" style="background:#278789; box-shadow:0 0 4px rgba(39,135,137,0.6);"></div>
+                                    </div>
+                                    <div class="fader-ch">
+                                        <span class="fader-lbl rad">RAD</span>
+                                        <div class="fader-track"><div class="fader-thumb" style="top: 40px;"></div></div>
+                                        <span class="fader-val">45</span>
+                                        <div class="fader-led" style="background:#d4a857; box-shadow:0 0 4px rgba(212,168,87,0.6);"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Function Buttons -->
+                                <div class="func-btns">
+                                    <div class="func-btn shift">SHIFT</div>
+                                    <div class="func-btn dub">DUB</div>
+                                    <div class="func-btn fill">FILL</div>
+                                    <div class="func-btn clear">CLR</div>
+                                    <div class="func-btn scene">SCENE</div>
+                                    <div class="func-btn fx">FX</div>
+                                </div>
+
+                                <!-- Crossfader -->
+                                <div class="xfade-section">
+                                    <span class="xfade-label">X-FADE</span>
+                                    <div class="xfade-track"><div class="xfade-thumb"></div></div>
+                                    <div class="xfade-ends"><span>A</span><span>B</span></div>
+                                </div>
+
+                                <!-- Status LEDs -->
+                                <div class="hw-leds">
+                                    <div class="hw-led gps" title="GPS"></div>
+                                    <div class="hw-led wifi" title="WiFi"></div>
+                                    <div class="hw-led audio" title="Audio"></div>
+                                </div>
+
+                                <!-- Transport -->
+                                <div class="transport-container">
+                                    <div class="transport-btn play active">&#9654;</div>
+                                    <div class="transport-btn stop">&#9632;</div>
+                                    <div class="transport-btn rec">&#9679;</div>
+                                </div>
+
+                                <!-- GPS Strip -->
+                                <div class="gps-strip">
+                                    <div class="gps-map-thumb"></div>
+                                    <div class="gps-icon">+</div>
+                                    <div class="gps-info">
+                                        <span class="gps-label">GPS</span>
+                                        <span class="gps-coords">40.4168, -3.7038</span>
+                                        <span class="gps-city">Madrid, ES</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- I/O Ports -->
+                            <div class="io-ports">
+                                <div style="position: relative;">
+                                    <div class="io-port"></div>
+                                    <div class="io-label" style="top: 2px;">Audio Out</div>
+                                    <div class="io-label-line" style="top: 8px;"></div>
+                                </div>
+                                <div style="position: relative;">
+                                    <div class="io-port"></div>
+                                    <div class="io-label" style="top: 2px;">Headphones</div>
+                                    <div class="io-label-line" style="top: 8px;"></div>
+                                </div>
+                                <div style="position: relative;">
+                                    <div class="io-port"></div>
+                                    <div class="io-label" style="top: 2px;">Audio In</div>
+                                    <div class="io-label-line" style="top: 8px;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Sensors -->
+                            <div class="sensor sensor-piezo">
+                                <div class="sensor-icon">&#9676;</div>
+                                <div class="sensor-info"><span class="sensor-name">Piezo</span><span class="sensor-desc">Vibration sensor</span></div>
+                                <div class="sensor-line"></div>
+                            </div>
+                            <div class="sensor sensor-mic">
+                                <div class="sensor-icon">&#9834;</div>
+                                <div class="sensor-info"><span class="sensor-name">Mic</span><span class="sensor-desc">Condenser</span></div>
+                                <div class="sensor-line"></div>
+                            </div>
+                            <div class="sensor sensor-wifi">
+                                <div class="sensor-icon">&#8801;</div>
+                                <div class="sensor-info"><span class="sensor-name">WiFi</span><span class="sensor-desc">802.11</span></div>
+                                <div class="sensor-line-v"></div>
+                            </div>
+                            <div class="sensor sensor-radio">
+                                <div class="sensor-icon">&#9399;</div>
+                                <div class="sensor-info"><span class="sensor-name">Radio</span><span class="sensor-desc">FM Antenna</span></div>
+                                <div class="sensor-line-v"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-bar" style="border-radius: 8px;">
+                    <div>Display: <span>5" LCD</span></div>
+                    <div>Pads: <span>8x MPR121</span></div>
+                    <div>Encoders: <span>8x Rotary</span></div>
+                    <div>Faders: <span>4x Mixer</span></div>
+                    <div>Buttons: <span>13 (Transport + Mode + Func)</span></div>
+                    <div>X-Fade: <span>1x Slider</span></div>
+                </div>
+                <div class="iter-desc">
+                    <h4>Iteration 3 &mdash; Full Hardware</h4>
+                    <ul>
+                        <li>4 mode buttons including Journey mode for GPS-path compositions</li>
+                        <li>4 synth knobs (CUTOFF/RES/ATK/REL) for direct sound shaping</li>
+                        <li>4 mixer faders with level LEDs (MIC/SMP/SYN/RAD channels)</li>
+                        <li>6 function buttons (SHIFT/DUB/FILL/CLR/SCENE/FX)</li>
+                        <li>Crossfader for scene A/B blending</li>
+                        <li>8-pattern bank, 8-track sequencer with euclidean and DUB modes</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 4: Interactive -->
+            <div class="gallery-panel" data-panel="interactive">
+                <div class="interactive-link-card">
+                    <h3>Interactive Prototype</h3>
+                    <p>The full interactive hardware mockup with working controls, embedded web app display, and physical-style button interaction. Petrol green enclosure with all controls wired to the embedded app.</p>
+                    <p style="font-size: 12px; color: #888;">13 encoders, 4 faders, 8 pads, 16 buttons, 5-way joystick, crossfader &mdash; all interactive</p>
+                    <a href="index.html">Open Interactive Mockup</a>
+                </div>
+                <div class="iter-desc">
+                    <h4>Iteration 4 &mdash; Interactive (Petrol Green)</h4>
+                    <ul>
+                        <li>Non-touch 5" LCD display with MENU/BACK/SHIFT/PAGE physical navigation</li>
+                        <li>5 main encoders (VOL/PAN/FILT/FX/DECAY) + 4 synth + 4 FX knobs</li>
+                        <li>4 mixer faders with drag interaction and level LEDs</li>
+                        <li>5 function buttons (DUB/FILL/CLR/SCENE/BANK)</li>
+                        <li>5-way joystick with PREV/NEXT buttons, crossfader</li>
+                        <li>Full keyboard shortcuts: arrow keys, 1-8 for pads, M/B for menu/back</li>
+                        <li>Embedded app.html runs inside the display &mdash; all controls send postMessage commands</li>
+                    </ul>
+                </div>
             </div>
 
             <!-- Technical Specifications -->
@@ -1060,13 +1414,16 @@
                     <h3>Controls</h3>
                     <ul>
                         <li>8x Touch Pads (MPR121)</li>
-                        <li>4x Main Encoders (VOL/PAN/FX/BPM)</li>
+                        <li>5x Main Encoders (VOL/PAN/FILT/FX/DECAY)</li>
                         <li>4x Synth Encoders (CUTOFF/RES/ATK/REL)</li>
+                        <li>4x FX Encoders (DELAY/GLITCH/GRAIN/CRUSH)</li>
                         <li>4x Mixer Faders (MIC/SMP/SYN/RAD)</li>
                         <li>1x Crossfader (Scene A/B)</li>
                         <li>3x Transport Buttons (Play/Stop/Rec)</li>
-                        <li>3x Mode Buttons (Picture/Soundscape/Interact)</li>
-                        <li>6x Function Buttons (SHIFT/DUB/FILL/CLR/SCENE/FX)</li>
+                        <li>4x Mode Buttons</li>
+                        <li>4x Nav Buttons (MENU/BACK/SHIFT/PAGE)</li>
+                        <li>5x Function Buttons (DUB/FILL/CLR/SCENE/BANK)</li>
+                        <li>5-Way Joystick + PREV/NEXT</li>
                     </ul>
                 </div>
                 <div class="spec-card">
@@ -1083,7 +1440,7 @@
                     <ul>
                         <li>Size: <code>200 x 140 x 45mm</code></li>
                         <li>Weight: <code>~600g</code></li>
-                        <li>Display: 5" IPS Touch (800x480)</li>
+                        <li>Display: 5" IPS LCD (800x480)</li>
                         <li>Battery: 5-7 hours</li>
                     </ul>
                 </div>
@@ -1120,14 +1477,17 @@
                     <tr><td>ESP32-WROOM</td><td>WiFi/BT module</td><td>1</td><td class="price">$8.00</td></tr>
                     <tr><td>microSD Card</td><td>64GB sample storage</td><td>1</td><td class="price">$12.00</td></tr>
                     <tr><td colspan="4" style="background:#1a1a1a;color:#3498db;font-weight:700;">DISPLAY</td></tr>
-                    <tr><td>5" IPS Display</td><td>800x480 Capacitive Touch</td><td>1</td><td class="price">$35.00</td></tr>
+                    <tr><td>5" IPS Display</td><td>800x480 LCD (non-touch)</td><td>1</td><td class="price">$28.00</td></tr>
                     <tr><td>Display Driver</td><td>SSD1963 board</td><td>1</td><td class="price">$8.00</td></tr>
                     <tr><td colspan="4" style="background:#1a1a1a;color:#1270b8;font-weight:700;">USER INTERFACE</td></tr>
                     <tr><td>MPR121 Breakout</td><td>12-ch touch sensor</td><td>1</td><td class="price">$7.95</td></tr>
                     <tr><td>Copper Tape</td><td>Conductive, for pads</td><td>1</td><td class="price">$6.00</td></tr>
-                    <tr><td>Rotary Encoders</td><td>With push button</td><td>4</td><td class="price">$11.80</td></tr>
-                    <tr><td>Encoder Knobs</td><td>Aluminum 18mm</td><td>4</td><td class="price">$6.00</td></tr>
-                    <tr><td>Tactile Buttons</td><td>Transport + Mode (6x6mm)</td><td>6</td><td class="price">$3.00</td></tr>
+                    <tr><td>Rotary Encoders</td><td>With push button</td><td>13</td><td class="price">$20.00</td></tr>
+                    <tr><td>Encoder Knobs</td><td>Aluminum 18mm</td><td>13</td><td class="price">$18.00</td></tr>
+                    <tr><td>Slide Faders</td><td>45mm mixer faders</td><td>4</td><td class="price">$12.00</td></tr>
+                    <tr><td>Tactile Buttons</td><td>Mode/Nav/Func (6x6mm)</td><td>16</td><td class="price">$5.00</td></tr>
+                    <tr><td>DJ Crossfader</td><td>45mm slide</td><td>1</td><td class="price">$12.00</td></tr>
+                    <tr><td>5-Way Joystick</td><td>Navigation module</td><td>1</td><td class="price">$2.00</td></tr>
                     <tr><td colspan="4" style="background:#1a1a1a;color:#e67e22;font-weight:700;">CONNECTIVITY & POWER</td></tr>
                     <tr><td>GPS Module</td><td>NEO-6M with antenna</td><td>1</td><td class="price">$12.00</td></tr>
                     <tr><td>Audio Jacks</td><td>3.5mm stereo</td><td>3</td><td class="price">$4.50</td></tr>
@@ -1135,14 +1495,15 @@
                     <tr><td>LiPo Battery</td><td>3500mAh 3.7V</td><td>1</td><td class="price">$18.00</td></tr>
                     <tr><td>TP4056 Charger</td><td>USB-C charging</td><td>1</td><td class="price">$2.00</td></tr>
                     <tr><td>5V Boost</td><td>Battery converter</td><td>1</td><td class="price">$3.00</td></tr>
+                    <tr><td>MCP23017</td><td>I2C GPIO expander</td><td>2</td><td class="price">$4.00</td></tr>
                     <tr><td colspan="4" style="background:#1a1a1a;color:#95a5a6;font-weight:700;">ENCLOSURE & MISC</td></tr>
                     <tr><td>Enclosure</td><td>Aluminum 200x140x45mm</td><td>1</td><td class="price">$28.00</td></tr>
                     <tr><td>Acrylic Panel</td><td>Laser-cut top</td><td>1</td><td class="price">$12.00</td></tr>
                     <tr><td>Hardware</td><td>Screws, standoffs, feet</td><td>-</td><td class="price">$7.00</td></tr>
                     <tr><td>Wire/Connectors</td><td>Internal wiring</td><td>-</td><td class="price">$8.00</td></tr>
-                    <tr class="bom-total"><td colspan="3">TOTAL (Parts)</td><td>~$240</td></tr>
-                    <tr><td colspan="3" style="color:#888;">+ Shipping/Tax</td><td style="color:#888;">~$40</td></tr>
-                    <tr class="bom-total" style="color:#27ae60;"><td colspan="3">GRAND TOTAL</td><td>~$280</td></tr>
+                    <tr class="bom-total"><td colspan="3">TOTAL (Parts)</td><td>~$295</td></tr>
+                    <tr><td colspan="3" style="color:#888;">+ Shipping/Tax</td><td style="color:#888;">~$45</td></tr>
+                    <tr class="bom-total" style="color:#27ae60;"><td colspan="3">GRAND TOTAL</td><td>~$340</td></tr>
                 </tbody>
             </table>
         </main>
@@ -1155,11 +1516,23 @@
     </div>
 
     <script>
-    // Generate static sequencer grid with a frozen playhead
     (function() {
-        const tracks = document.getElementById('lcdTracks');
-        if (!tracks) return;
+        // Tab switching
+        const tabs = document.querySelectorAll('.gallery-tab');
+        const panels = document.querySelectorAll('.gallery-panel');
 
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = tab.dataset.tab;
+                tabs.forEach(t => t.classList.remove('active'));
+                panels.forEach(p => p.classList.remove('active'));
+                tab.classList.add('active');
+                const panel = document.querySelector(`.gallery-panel[data-panel="${target}"]`);
+                if (panel) panel.classList.add('active');
+            });
+        });
+
+        // Generate sequencer grids
         const sources = ['BD', 'SD', 'HH', 'PC', 'S1', 'S2', 'S3', 'S4'];
         const patterns = [
             [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],
@@ -1172,38 +1545,45 @@
             [0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1]
         ];
 
-        const playheadPos = 12; // frozen playhead position
+        function buildGrid(containerId, trackCount, stepCount, playheadPos) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
 
-        sources.forEach((src, t) => {
-            const row = document.createElement('div');
-            row.className = 'lcd-track' + (t === 0 ? ' selected' : '');
+            for (let t = 0; t < trackCount; t++) {
+                const row = document.createElement('div');
+                row.className = 'lcd-track' + (t === 0 ? ' selected' : '');
 
-            const num = document.createElement('span');
-            num.className = 'lcd-track-num';
-            num.textContent = (t + 1);
-            row.appendChild(num);
+                const num = document.createElement('span');
+                num.className = 'lcd-track-num';
+                num.textContent = (t + 1);
+                row.appendChild(num);
 
-            const srcEl = document.createElement('span');
-            srcEl.className = 'lcd-track-src';
-            srcEl.textContent = src;
-            row.appendChild(srcEl);
+                const srcEl = document.createElement('span');
+                srcEl.className = 'lcd-track-src';
+                srcEl.textContent = sources[t] || '';
+                row.appendChild(srcEl);
 
-            const steps = document.createElement('div');
-            steps.className = 'lcd-steps';
+                const steps = document.createElement('div');
+                steps.className = 'lcd-steps';
 
-            for (let s = 0; s < 16; s++) {
-                const step = document.createElement('div');
-                let cls = 'lcd-step';
-                if (s % 4 === 0) cls += ' beat';
-                if (patterns[t][s]) cls += ' on';
-                if (s === playheadPos) cls += ' current';
-                step.className = cls;
-                steps.appendChild(step);
+                for (let s = 0; s < stepCount; s++) {
+                    const step = document.createElement('div');
+                    let cls = 'lcd-step';
+                    if (s % 4 === 0) cls += ' beat';
+                    if (patterns[t] && patterns[t][s]) cls += ' on';
+                    if (s === playheadPos) cls += ' current';
+                    step.className = cls;
+                    steps.appendChild(step);
+                }
+
+                row.appendChild(steps);
+                container.appendChild(row);
             }
+        }
 
-            row.appendChild(steps);
-            tracks.appendChild(row);
-        });
+        buildGrid('lcdTracksMinimal', 6, 16, 8);
+        buildGrid('lcdTracksStandard', 8, 16, 10);
+        buildGrid('lcdTracksFull', 8, 16, 12);
     })();
     </script>
 </body>

@@ -85,7 +85,7 @@
             pointer-events: none;
         }
 
-        /* ===== TOP: Encoders | Display | Modes ===== */
+        /* ===== TOP: Encoders | Display | Modes + Nav ===== */
 
         .encoder-column {
             position: absolute;
@@ -140,11 +140,11 @@
         .encoder-label { font-size: 7px; color: rgba(255,255,255,0.5); font-weight: 700; letter-spacing: 0.5px; }
         .encoder-value { font-size: 7px; color: rgba(255,255,255,0.35); font-family: monospace; }
 
-        /* Display */
+        /* Display — wider, non-touch */
         .display {
             position: absolute;
             left: 102px; top: 16px;
-            width: 620px; height: 265px;
+            width: 680px; height: 265px;
             background: #0a0a0a;
             border-radius: 6px;
             border: 3px solid #111;
@@ -153,25 +153,25 @@
             z-index: 2;
         }
 
-        /* Mode column — right */
+        /* Mode column — narrower, compact */
         .mode-column {
             position: absolute;
             right: 18px; top: 18px;
-            width: 320px;
+            width: 160px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 5px;
             z-index: 2;
         }
 
         .mode-btn {
-            height: 56px;
+            height: 36px;
             width: 100%;
-            border-radius: 8px;
+            border-radius: 6px;
             border: 2px solid;
-            font-size: 14px;
+            font-size: 11px;
             font-weight: 800;
-            letter-spacing: 2.5px;
+            letter-spacing: 2px;
             cursor: pointer;
             text-transform: uppercase;
             transition: all 0.15s;
@@ -187,6 +187,41 @@
         .mode-btn[data-mode="journey"] { border-color: #d4783a; color: #d4783a; }
         .mode-btn[data-mode="journey"].active { background: #d4783a; color: #fff; box-shadow: 0 0 14px rgba(212,120,58,0.4); }
         .mode-btn:hover { opacity: 0.85; transform: scale(1.02); }
+
+        /* Screen navigation cluster — below mode buttons */
+        .screen-nav {
+            position: absolute;
+            right: 18px; top: 192px;
+            width: 160px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            z-index: 2;
+        }
+
+        .nav-btn {
+            flex: 1 1 46%;
+            height: 28px;
+            border-radius: 5px;
+            border: 1.5px solid var(--petrol-border);
+            background: linear-gradient(180deg, var(--petrol-raised) 0%, var(--petrol-dark) 100%);
+            color: rgba(255,255,255,0.55);
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .nav-btn:hover { background: linear-gradient(180deg, #5a7a7a 0%, var(--petrol-raised) 100%); color: rgba(255,255,255,0.8); }
+        .nav-btn:active { background: #278789; color: #fff; }
+        .nav-btn.shift-btn { border-color: #d4a857; color: #d4a857; }
+        .nav-btn.shift-btn:active, .nav-btn.shift-btn.active { background: #d4a857; color: #fff; }
+        .nav-btn.page-btn { border-color: #1270b8; color: #1270b8; }
+        .nav-btn.page-btn:active { background: #1270b8; color: #fff; }
 
         /* ===== TOP EDGE: Transport (ridge buttons) ===== */
 
@@ -225,12 +260,12 @@
             text-align: center;
         }
 
-        /* ===== BOTTOM: Pads | Crossfader ===== */
+        /* ===== BOTTOM HALF ===== */
 
-        /* Pads — smaller */
+        /* Pads — left */
         .pads-container {
             position: absolute;
-            left: 100px; top: 315px;
+            left: 18px; top: 310px;
             display: grid;
             grid-template-columns: repeat(4, 62px);
             grid-template-rows: repeat(2, 46px);
@@ -281,7 +316,7 @@
         /* Crossfader — below pads */
         .crossfader-section {
             position: absolute;
-            left: 108px; top: 440px;
+            left: 26px; top: 432px;
             width: 264px;
             z-index: 2;
             display: flex;
@@ -318,50 +353,62 @@
             font-size: 7px; font-weight: 700; color: rgba(255,255,255,0.3);
         }
 
-        /* ===== Side Grips — ergonomic handheld contours ===== */
-        .grip {
+        /* 4 Mixer Faders — center-left */
+        .faders-container {
             position: absolute;
-            width: 28px;
-            height: 220px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: linear-gradient(165deg, var(--petrol-light) 0%, var(--petrol) 50%, var(--petrol-dark) 100%);
-            border: 1px solid var(--petrol-border);
-            z-index: 0;
+            left: 310px; top: 310px;
+            display: flex;
+            gap: 14px;
+            z-index: 2;
         }
-        .grip::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 14px;
-            height: 100px;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(255,255,255,0.05) 0px,
-                rgba(255,255,255,0.05) 2px,
-                transparent 2px,
-                transparent 8px
-            );
+        .fader-ch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .fader-lbl {
+            font-size: 7px; font-weight: 800;
+            letter-spacing: 0.5px; text-transform: uppercase;
+        }
+        .fader-lbl.mic { color: #1aa167; }
+        .fader-lbl.smp { color: #1270b8; }
+        .fader-lbl.syn { color: #278789; }
+        .fader-lbl.rad { color: #d4a857; }
+        .fader-track {
+            width: 6px; height: 90px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 3px;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .fader-thumb {
+            position: absolute; left: -5px;
+            width: 16px; height: 10px;
+            background: linear-gradient(180deg, var(--petrol-highlight) 0%, var(--petrol-raised) 100%);
+            border: 1px solid #5a7a7a;
             border-radius: 2px;
+            cursor: ns-resize;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
-        .grip-left {
-            left: -18px;
-            border-radius: 12px 0 0 12px;
-            box-shadow: -4px 4px 12px rgba(0,0,0,0.25), inset 1px 0 0 rgba(255,255,255,0.04);
+        .fader-thumb::after {
+            content: ''; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 8px; height: 1px;
+            background: rgba(255,255,255,0.3);
         }
-        .grip-left::after { right: 5px; }
-        .grip-right {
-            right: -18px;
-            border-radius: 0 12px 12px 0;
-            box-shadow: 4px 4px 12px rgba(0,0,0,0.25), inset -1px 0 0 rgba(255,255,255,0.04);
+        .fader-val {
+            font-size: 7px; color: rgba(255,255,255,0.35); font-family: monospace;
         }
-        .grip-right::after { left: 5px; }
+        .fader-led {
+            width: 4px; height: 4px;
+            border-radius: 50%;
+        }
 
-        /* ===== 5-Way Joystick Navigation ===== */
+        /* 5-Way Joystick Navigation — center */
         .joystick-module {
             position: absolute;
-            left: 460px; top: 345px;
+            left: 480px; top: 320px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -415,13 +462,183 @@
             letter-spacing: 0.5px;
         }
 
+        /* Nav buttons around joystick */
+        .joy-nav-btns {
+            position: absolute;
+            left: 460px; top: 395px;
+            display: flex;
+            gap: 4px;
+            z-index: 2;
+        }
+        .joy-nav-btn {
+            width: 44px; height: 22px;
+            border-radius: 4px;
+            border: 1.5px solid var(--petrol-border);
+            background: linear-gradient(180deg, var(--petrol-raised) 0%, var(--petrol-dark) 100%);
+            color: rgba(255,255,255,0.5);
+            font-size: 7px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .joy-nav-btn:hover { color: rgba(255,255,255,0.8); }
+        .joy-nav-btn:active { background: #278789; color: #fff; }
+
+        /* Synth Knobs — 2x2, center-right */
+        .synth-knobs-area {
+            position: absolute;
+            left: 580px; top: 310px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px 14px;
+            z-index: 2;
+        }
+
+        .knob-unit { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+        .knob-unit .encoder-knob { width: 28px; height: 28px; }
+        .knob-unit .encoder-knob::before { width: 9px; height: 9px; }
+        .knob-unit .encoder-knob::after { height: 5px; }
+        .knob-unit .encoder-label { font-size: 6px; color: rgba(255,255,255,0.45); font-weight: 700; letter-spacing: 0.5px; }
+        .knob-unit .encoder-value { font-size: 6px; color: rgba(255,255,255,0.3); font-family: monospace; }
+
+        .knob-unit[data-param="cutoff"] .encoder-knob::after { background: #278789; }
+        .knob-unit[data-param="resonance"] .encoder-knob::after { background: #278789; }
+        .knob-unit[data-param="attack"] .encoder-knob::after { background: #d4a857; }
+        .knob-unit[data-param="release"] .encoder-knob::after { background: #d4a857; }
+
+        /* FX Knobs — 2x2, far right */
+        .fx-knobs-area {
+            position: absolute;
+            left: 700px; top: 310px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px 14px;
+            z-index: 2;
+        }
+
+        .fx-knobs-area .knob-unit[data-param="delay"] .encoder-knob::after { background: #c0392b; }
+        .fx-knobs-area .knob-unit[data-param="glitch"] .encoder-knob::after { background: #c0392b; }
+        .fx-knobs-area .knob-unit[data-param="grain"] .encoder-knob::after { background: #1270b8; }
+        .fx-knobs-area .knob-unit[data-param="crush"] .encoder-knob::after { background: #1270b8; }
+
+        /* Knob area labels */
+        .area-label {
+            font-size: 6px; font-weight: 800; letter-spacing: 1.5px;
+            color: rgba(255,255,255,0.2); text-transform: uppercase;
+            position: absolute; z-index: 3;
+        }
+        .label-synth { left: 588px; top: 300px; }
+        .label-fx { left: 715px; top: 300px; }
+        .label-mixer { left: 318px; top: 300px; }
+
+        /* Function Buttons Row — bottom center */
+        .func-btns {
+            position: absolute;
+            left: 310px; top: 430px;
+            display: flex;
+            gap: 5px;
+            z-index: 2;
+        }
+        .func-btn {
+            width: 54px; height: 22px;
+            border-radius: 4px;
+            border: 1.5px solid var(--petrol-border);
+            background: linear-gradient(180deg, var(--petrol-raised) 0%, var(--petrol-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7px; font-weight: 800;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .func-btn:hover { transform: scale(1.03); }
+        .func-btn:active { transform: scale(0.97); }
+        .func-btn.dub { border-color: #c0392b; color: #c0392b; }
+        .func-btn.dub:active { background: #c0392b; color: #fff; }
+        .func-btn.fill { border-color: #d4a857; color: #d4a857; }
+        .func-btn.fill:active { background: #d4a857; color: #fff; }
+        .func-btn.clr { border-color: #1270b8; color: #1270b8; }
+        .func-btn.clr:active { background: #1270b8; color: #fff; }
+        .func-btn.scene { border-color: #1aa167; color: #1aa167; }
+        .func-btn.scene:active { background: #1aa167; color: #fff; }
+        .func-btn.bank { border-color: #278789; color: #278789; }
+        .func-btn.bank:active { background: #278789; color: #fff; }
+
+        /* GPS Strip — bottom right */
+        .gps-strip {
+            position: absolute;
+            right: 18px; bottom: 18px;
+            width: 240px; height: 46px;
+            background: rgba(0,0,0,0.2);
+            border: 1.5px solid #278789;
+            border-radius: 6px;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            gap: 6px;
+            overflow: hidden;
+        }
+        .gps-strip .gps-icon { font-size: 12px; color: #278789; flex-shrink: 0; }
+        .gps-strip .gps-info { display: flex; flex-direction: column; gap: 1px; }
+        .gps-strip .gps-label { font-size: 7px; font-weight: 800; color: #278789; letter-spacing: 1px; }
+        .gps-strip .gps-coords { font-size: 8px; color: rgba(255,255,255,0.4); font-family: monospace; }
+        .gps-strip .gps-city { font-size: 7px; color: rgba(255,255,255,0.25); }
+
+        /* ===== Side Grips ===== */
+        .grip {
+            position: absolute;
+            width: 28px;
+            height: 220px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(165deg, var(--petrol-light) 0%, var(--petrol) 50%, var(--petrol-dark) 100%);
+            border: 1px solid var(--petrol-border);
+            z-index: 0;
+        }
+        .grip::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 100px;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(255,255,255,0.05) 0px,
+                rgba(255,255,255,0.05) 2px,
+                transparent 2px,
+                transparent 8px
+            );
+            border-radius: 2px;
+        }
+        .grip-left {
+            left: -18px;
+            border-radius: 12px 0 0 12px;
+            box-shadow: -4px 4px 12px rgba(0,0,0,0.25), inset 1px 0 0 rgba(255,255,255,0.04);
+        }
+        .grip-left::after { right: 5px; }
+        .grip-right {
+            right: -18px;
+            border-radius: 0 12px 12px 0;
+            box-shadow: 4px 4px 12px rgba(0,0,0,0.25), inset -1px 0 0 rgba(255,255,255,0.04);
+        }
+        .grip-right::after { left: 5px; }
+
         /* Labels */
         .section-label {
             position: absolute; font-size: 7px; font-weight: 700;
             letter-spacing: 2px; color: rgba(255,255,255,0.2); z-index: 3;
         }
         .label-enc { top: 278px; left: 28px; }
-        .label-pads { top: 303px; left: 106px; }
+        .label-pads { top: 300px; left: 24px; }
 
         /* I/O */
         .io-ports {
@@ -585,6 +802,7 @@
             border-top: 1px solid #e0e0e0;
             position: relative;
             z-index: 1;
+            flex-wrap: wrap;
         }
         .info-bar span { color: #1aa167; font-weight: 600; }
 
@@ -688,7 +906,7 @@
                     </div>
                 </div>
 
-                <!-- 5" Touch Display -->
+                <!-- 5" LCD Display (non-touch) -->
                 <div class="display">
                     <iframe id="appDisplay"
                             src="app.html?embedded=1&mockup=1"
@@ -697,7 +915,7 @@
                     </iframe>
                 </div>
 
-                <!-- 4 Mode Buttons — right column -->
+                <!-- 4 Mode Buttons — right column (compact) -->
                 <div class="mode-column">
                     <button class="mode-btn active" data-mode="picture">PICTURE</button>
                     <button class="mode-btn" data-mode="soundscape">SOUNDSCAPE</button>
@@ -705,9 +923,20 @@
                     <button class="mode-btn" data-mode="journey">JOURNEY</button>
                 </div>
 
+                <!-- Screen Navigation Cluster — below mode buttons -->
+                <div class="screen-nav">
+                    <button class="nav-btn" data-action="menu">MENU</button>
+                    <button class="nav-btn" data-action="back">BACK</button>
+                    <button class="nav-btn shift-btn" data-action="shift">SHIFT</button>
+                    <button class="nav-btn page-btn" data-action="page">PAGE</button>
+                </div>
+
                 <!-- Labels -->
                 <span class="section-label label-enc">CTRL</span>
                 <span class="section-label label-pads">PADS</span>
+                <span class="area-label label-mixer">MIXER</span>
+                <span class="area-label label-synth">SYNTH</span>
+                <span class="area-label label-fx">FX</span>
 
                 <!-- Transport — top edge (ridge buttons) -->
                 <div class="transport-bar">
@@ -716,7 +945,7 @@
                     <button class="transport-btn rec" data-action="rec" title="Record">&#9679;</button>
                 </div>
 
-                <!-- 8 Touch Pads — smaller -->
+                <!-- 8 Touch Pads -->
                 <div class="pads-container" id="padsContainer">
                     <div class="pad" data-pad="0">1</div>
                     <div class="pad" data-pad="1">2</div>
@@ -726,6 +955,46 @@
                     <div class="pad" data-pad="5">6</div>
                     <div class="pad" data-pad="6">7</div>
                     <div class="pad" data-pad="7">8</div>
+                </div>
+
+                <!-- Crossfader — below pads -->
+                <div class="crossfader-section" id="crossfader">
+                    <span class="crossfader-label">X-FADE</span>
+                    <div class="crossfader-track">
+                        <div class="crossfader-thumb" id="xfadeThumb" data-value="50"></div>
+                    </div>
+                    <div class="crossfader-ends">
+                        <span>A</span>
+                        <span>B</span>
+                    </div>
+                </div>
+
+                <!-- 4 Mixer Faders -->
+                <div class="faders-container" id="fadersContainer">
+                    <div class="fader-ch" data-channel="mic">
+                        <span class="fader-lbl mic">MIC</span>
+                        <div class="fader-track"><div class="fader-thumb" data-value="75" style="top: 18px;"></div></div>
+                        <span class="fader-val">75</span>
+                        <div class="fader-led" style="background:#1aa167; box-shadow:0 0 4px rgba(26,161,103,0.6);"></div>
+                    </div>
+                    <div class="fader-ch" data-channel="sample">
+                        <span class="fader-lbl smp">SMP</span>
+                        <div class="fader-track"><div class="fader-thumb" data-value="90" style="top: 8px;"></div></div>
+                        <span class="fader-val">90</span>
+                        <div class="fader-led" style="background:#1270b8; box-shadow:0 0 4px rgba(18,112,184,0.6);"></div>
+                    </div>
+                    <div class="fader-ch" data-channel="synth">
+                        <span class="fader-lbl syn">SYN</span>
+                        <div class="fader-track"><div class="fader-thumb" data-value="60" style="top: 28px;"></div></div>
+                        <span class="fader-val">60</span>
+                        <div class="fader-led" style="background:#278789; box-shadow:0 0 4px rgba(39,135,137,0.6);"></div>
+                    </div>
+                    <div class="fader-ch" data-channel="radio">
+                        <span class="fader-lbl rad">RAD</span>
+                        <div class="fader-track"><div class="fader-thumb" data-value="45" style="top: 40px;"></div></div>
+                        <span class="fader-val">45</span>
+                        <div class="fader-led" style="background:#d4a857; box-shadow:0 0 4px rgba(212,168,87,0.6);"></div>
+                    </div>
                 </div>
 
                 <!-- 5-Way Joystick Navigation -->
@@ -740,15 +1009,76 @@
                     <span class="joystick-label">NAV</span>
                 </div>
 
-                <!-- Crossfader — below pads -->
-                <div class="crossfader-section" id="crossfader">
-                    <span class="crossfader-label">X-FADE</span>
-                    <div class="crossfader-track">
-                        <div class="crossfader-thumb" id="xfadeThumb" data-value="50"></div>
+                <!-- Extra nav buttons below joystick -->
+                <div class="joy-nav-btns">
+                    <button class="joy-nav-btn" data-action="prev" title="Previous">&#9664; PREV</button>
+                    <button class="joy-nav-btn" data-action="next" title="Next">NEXT &#9654;</button>
+                </div>
+
+                <!-- 4 Synth Knobs (2x2) -->
+                <div class="synth-knobs-area" id="synthKnobs">
+                    <div class="knob-unit" data-param="cutoff">
+                        <div class="encoder-knob" data-value="72"></div>
+                        <span class="encoder-label">CUTOFF</span>
+                        <span class="encoder-value">72</span>
                     </div>
-                    <div class="crossfader-ends">
-                        <span>A</span>
-                        <span>B</span>
+                    <div class="knob-unit" data-param="resonance">
+                        <div class="encoder-knob" data-value="40"></div>
+                        <span class="encoder-label">RES</span>
+                        <span class="encoder-value">40</span>
+                    </div>
+                    <div class="knob-unit" data-param="attack">
+                        <div class="encoder-knob" data-value="10"></div>
+                        <span class="encoder-label">ATK</span>
+                        <span class="encoder-value">10</span>
+                    </div>
+                    <div class="knob-unit" data-param="release">
+                        <div class="encoder-knob" data-value="50"></div>
+                        <span class="encoder-label">REL</span>
+                        <span class="encoder-value">50</span>
+                    </div>
+                </div>
+
+                <!-- 4 FX Knobs (2x2) -->
+                <div class="fx-knobs-area" id="fxKnobs">
+                    <div class="knob-unit" data-param="delay">
+                        <div class="encoder-knob" data-value="35"></div>
+                        <span class="encoder-label">DELAY</span>
+                        <span class="encoder-value">35</span>
+                    </div>
+                    <div class="knob-unit" data-param="glitch">
+                        <div class="encoder-knob" data-value="0"></div>
+                        <span class="encoder-label">GLITCH</span>
+                        <span class="encoder-value">0</span>
+                    </div>
+                    <div class="knob-unit" data-param="grain">
+                        <div class="encoder-knob" data-value="20"></div>
+                        <span class="encoder-label">GRAIN</span>
+                        <span class="encoder-value">20</span>
+                    </div>
+                    <div class="knob-unit" data-param="crush">
+                        <div class="encoder-knob" data-value="0"></div>
+                        <span class="encoder-label">CRUSH</span>
+                        <span class="encoder-value">0</span>
+                    </div>
+                </div>
+
+                <!-- Function Buttons Row -->
+                <div class="func-btns" id="funcBtns">
+                    <button class="func-btn dub" data-func="dub">DUB</button>
+                    <button class="func-btn fill" data-func="fill">FILL</button>
+                    <button class="func-btn clr" data-func="clr">CLR</button>
+                    <button class="func-btn scene" data-func="scene">SCENE</button>
+                    <button class="func-btn bank" data-func="bank">BANK</button>
+                </div>
+
+                <!-- GPS Strip — bottom right -->
+                <div class="gps-strip">
+                    <div class="gps-icon">+</div>
+                    <div class="gps-info">
+                        <span class="gps-label">GPS</span>
+                        <span class="gps-coords">40.4168, -3.7038</span>
+                        <span class="gps-city">Madrid, ES</span>
                     </div>
                 </div>
             </div>
@@ -810,11 +1140,12 @@
 
     <div class="info-bar">
         <div>Enclosure: <span>200x140x45mm</span></div>
-        <div>Display: <span>5" Touch</span></div>
+        <div>Display: <span>5" LCD (non-touch)</span></div>
         <div>Pads: <span>8x MPR121</span></div>
-        <div>Encoders: <span>5x Rotary + X-Fade</span></div>
-        <div>Nav: <span>5-Way Joystick</span></div>
-        <div>Modes: <span>4 (incl. Journey)</span></div>
+        <div>Encoders: <span>5 Main + 4 Synth + 4 FX</span></div>
+        <div>Faders: <span>4x Mixer</span></div>
+        <div>Nav: <span>5-Way + D-Pad</span></div>
+        <div>Buttons: <span>16 (Mode/Nav/Func/Transport)</span></div>
         <div>Time: <span id="timeVal">--:--</span></div>
     </div>
 
@@ -825,7 +1156,7 @@
                 <h4>Brain + Display</h4>
                 <ul>
                     <li>Raspberry Pi 4 (4GB) <span class="cost">~$55</span></li>
-                    <li>5" HDMI Capacitive Touch <span class="cost">~$40</span></li>
+                    <li>5" HDMI LCD (non-touch) <span class="cost">~$28</span></li>
                     <li>I2S DAC (PCM5102A) <span class="cost">~$8</span></li>
                     <li>USB/MEMS Microphone <span class="cost">~$10</span></li>
                     <li>Piezo Contact Mic <span class="cost">~$5</span></li>
@@ -834,10 +1165,11 @@
             <div class="diy-col">
                 <h4>Controls + Connectivity</h4>
                 <ul>
-                    <li>5x KY-040 Rotary Encoders <span class="cost">~$8</span></li>
+                    <li>13x KY-040 Rotary Encoders <span class="cost">~$20</span></li>
+                    <li>4x 45mm Slide Faders <span class="cost">~$12</span></li>
                     <li>1x 45mm DJ Crossfader <span class="cost">~$12</span></li>
                     <li>MPR121 + 8 Copper Pads <span class="cost">~$15</span></li>
-                    <li>3x Momentary Buttons <span class="cost">~$3</span></li>
+                    <li>16x Tactile Buttons <span class="cost">~$5</span></li>
                     <li>5-Way Joystick Module <span class="cost">~$2</span></li>
                     <li>FM Receiver (TEA5767) <span class="cost">~$4</span></li>
                 </ul>
@@ -847,13 +1179,13 @@
                 <ul>
                     <li>3D Printed Case (PLA) <span class="cost">~$15</span></li>
                     <li>Wires, Headers, Standoffs <span class="cost">~$10</span></li>
-                    <li class="diy-total">Estimated Total <span class="cost">~$187</span></li>
+                    <li class="diy-total">Estimated Total <span class="cost">~$201</span></li>
                 </ul>
                 <div class="diy-badge">FEASIBILITY: HIGH</div>
                 <ul style="margin-top: 8px;">
                     <li>No custom PCB required</li>
                     <li>Through-hole soldering only</li>
-                    <li>Pi GPIO handles all I/O</li>
+                    <li>Pi GPIO + MCP23017 expanders</li>
                     <li>Chromium kiosk for the UI</li>
                 </ul>
             </div>
@@ -877,7 +1209,6 @@
         }
 
         window.addEventListener('message', (event) => {
-            // Security: Only accept messages from same origin
             if (event.origin !== window.location.origin) return;
             if (!event.data) return;
             if (event.data.type === 'app-state') updateMockupFromState(event.data.data);
@@ -886,7 +1217,7 @@
 
         function updateEncoderLabels(ctx) {
             if (!ctx || !ctx.encoders) return;
-            const encoders = document.querySelectorAll('.encoder');
+            const encoders = document.querySelectorAll('.encoder-column .encoder');
             ctx.encoders.forEach((label, i) => {
                 if (encoders[i]) {
                     const labelEl = encoders[i].querySelector('.encoder-label');
@@ -929,8 +1260,8 @@
             pad.addEventListener('touchend', release);
         });
 
-        // Encoders
-        document.querySelectorAll('.encoder').forEach(enc => {
+        // Encoders (left column)
+        document.querySelectorAll('.encoder-column .encoder').forEach(enc => {
             let startY = 0, startVal = 50;
             const param = enc.dataset.param;
             const knob = enc.querySelector('.encoder-knob');
@@ -956,6 +1287,69 @@
                 startVal = parseInt(knob?.dataset.value || 50);
                 const move = (e2) => onMove(e2.clientY);
                 const up = () => { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); };
+                document.addEventListener('mousemove', move);
+                document.addEventListener('mouseup', up);
+            });
+        });
+
+        // Synth + FX Knobs (drag to change)
+        document.querySelectorAll('.knob-unit').forEach(unit => {
+            let startY = 0, startVal = 50;
+            const param = unit.dataset.param;
+            const knob = unit.querySelector('.encoder-knob');
+
+            const onMove = (clientY) => {
+                const delta = (startY - clientY) * 0.5;
+                const val = Math.max(0, Math.min(100, startVal + delta));
+                const rounded = Math.round(val);
+                const valEl = unit.querySelector('.encoder-value');
+                if (valEl) valEl.textContent = rounded;
+                if (knob) knob.dataset.value = rounded;
+                sendToApp('encoder', { param, value: rounded });
+            };
+
+            unit.addEventListener('mousedown', (e) => {
+                startY = e.clientY;
+                startVal = parseInt(knob?.dataset.value || 50);
+                const move = (e2) => onMove(e2.clientY);
+                const up = () => { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); };
+                document.addEventListener('mousemove', move);
+                document.addEventListener('mouseup', up);
+            });
+        });
+
+        // Faders (drag to change)
+        document.querySelectorAll('.fader-ch').forEach(ch => {
+            const thumb = ch.querySelector('.fader-thumb');
+            const track = ch.querySelector('.fader-track');
+            const valEl = ch.querySelector('.fader-val');
+            const channel = ch.dataset.channel;
+            if (!thumb || !track) return;
+
+            let dragging = false;
+
+            thumb.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                dragging = true;
+                const startY = e.clientY;
+                const startTop = parseInt(thumb.style.top) || 0;
+                const trackH = track.offsetHeight - thumb.offsetHeight;
+
+                const move = (e2) => {
+                    if (!dragging) return;
+                    const deltaY = e2.clientY - startY;
+                    const newTop = Math.max(0, Math.min(trackH, startTop + deltaY));
+                    thumb.style.top = newTop + 'px';
+                    const val = Math.round(100 - (newTop / trackH) * 100);
+                    thumb.dataset.value = val;
+                    if (valEl) valEl.textContent = val;
+                    sendToApp('fader', { channel, value: val });
+                };
+                const up = () => {
+                    dragging = false;
+                    document.removeEventListener('mousemove', move);
+                    document.removeEventListener('mouseup', up);
+                };
                 document.addEventListener('mousemove', move);
                 document.addEventListener('mouseup', up);
             });
@@ -1000,6 +1394,31 @@
             });
         });
 
+        // Screen nav buttons (MENU, BACK, SHIFT, PAGE)
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const action = btn.dataset.action;
+                if (action === 'shift') {
+                    btn.classList.toggle('active');
+                }
+                sendToApp('button', { action });
+            });
+        });
+
+        // Function buttons (DUB, FILL, CLR, SCENE, BANK)
+        document.querySelectorAll('.func-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                sendToApp('function', { func: btn.dataset.func });
+            });
+        });
+
+        // Joy nav buttons (PREV, NEXT)
+        document.querySelectorAll('.joy-nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                sendToApp('button', { action: btn.dataset.action });
+            });
+        });
+
         // 5-Way Joystick
         document.querySelectorAll('.joystick-dir, .joystick-center').forEach(el => {
             el.addEventListener('click', () => {
@@ -1012,6 +1431,14 @@
             if (e.key === ' ') { e.preventDefault(); sendToApp('transport', { action: 'play' }); }
             if (e.key >= '1' && e.key <= '8') { sendToApp('pad', { index: parseInt(e.key) - 1 }); }
             if (e.key === 'Escape') { sendToApp('transport', { action: 'stop' }); }
+            if (e.key === 'ArrowUp') { e.preventDefault(); sendToApp('joystick', { direction: 'up' }); }
+            if (e.key === 'ArrowDown') { e.preventDefault(); sendToApp('joystick', { direction: 'down' }); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); sendToApp('joystick', { direction: 'left' }); }
+            if (e.key === 'ArrowRight') { e.preventDefault(); sendToApp('joystick', { direction: 'right' }); }
+            if (e.key === 'Enter') { sendToApp('joystick', { direction: 'select' }); }
+            if (e.key === 'm' || e.key === 'M') { sendToApp('button', { action: 'menu' }); }
+            if (e.key === 'b' || e.key === 'B') { sendToApp('button', { action: 'back' }); }
+            if (e.key === 'Shift') { sendToApp('button', { action: 'shift' }); }
         });
 
         // Time
