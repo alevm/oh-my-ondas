@@ -12,22 +12,8 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
-// Rate limiter for Nominatim API (1 req/sec max per OSM policy)
-// Shared global to avoid duplicate declarations across modules
-if (!window.nominatimRateLimiter) {
-    window.nominatimRateLimiter = {
-        lastCall: 0,
-        minInterval: 1100, // 1.1 seconds to be safe
-        async throttledFetch(url) {
-            const now = Date.now();
-            const wait = Math.max(0, this.lastCall + this.minInterval - now);
-            if (wait > 0) await new Promise(r => setTimeout(r, wait));
-            this.lastCall = Date.now();
-            return fetch(url);
-        }
-    };
-}
-const nominatimRateLimiter = window.nominatimRateLimiter;
+// Rate limiter: reuse shared global defined in radio.js
+// (radio.js loads first and creates window.nominatimRateLimiter)
 
 class Journey {
     constructor() {
@@ -438,7 +424,7 @@ class Journey {
         // Reverse geocode (rate-limited per OSM policy)
         try {
             const url = `https://nominatim.openstreetmap.org/reverse?lat=${pos.lat}&lon=${pos.lon}&format=json&zoom=16`;
-            const resp = await nominatimRateLimiter.throttledFetch(url);
+            const resp = await window.nominatimRateLimiter.throttledFetch(url);
             const data = await resp.json();
             if (data.address) {
                 const place = data.address.road || data.address.suburb ||

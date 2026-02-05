@@ -112,7 +112,7 @@ html, body {
     border: none;
     border-radius: 0;
     overflow: hidden;
-    background: rgba(255,255,255,0.9);
+    background: rgba(255,255,255,0.7);
 }
 
 /* ===== PAGE HEADER (unified nav — immutable) ===== */
@@ -121,10 +121,14 @@ html, body {
     align-items: center;
     gap: 16px;
     padding: 10px 16px;
-    background: #ffffff;
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--border);
     height: 60px;
     flex-shrink: 0;
+    position: relative;
+    z-index: 10;
 }
 .page-header .logo {
     text-decoration: none;
@@ -2034,13 +2038,52 @@ body.embedded-mode .device > .journey-panel.panel-visible .journey-waypoints {
 }
 
 @media (max-width: 767px) {
+    /* Collapse sidebar - show transport inline + panel tabs */
+    .app-layout {
+        grid-template-columns: 1fr;
+    }
+    .app-sidebar {
+        display: none;
+    }
+    .transport-panel {
+        display: flex !important;
+        flex-shrink: 0;
+    }
+    .panel-tabs {
+        display: flex !important;
+        flex-shrink: 0;
+    }
+    #app {
+        background: rgba(255,255,255,0.75);
+    }
     .device {
         display: flex;
         flex-direction: column;
+        flex: 1;
+        overflow: hidden;
     }
-    .panel-tabs { display: flex !important; }
-    .device > .panel { display: none; }
-    .device > .panel.panel-visible { display: flex !important; }
+    .device > .panel {
+        display: none !important;
+    }
+    .device > .panel.panel-visible {
+        display: flex !important;
+        flex: 1;
+        flex-direction: column;
+        overflow-y: auto;
+        border-radius: 0;
+    }
+    /* Full-height panels on mobile */
+    .device > .seq-panel.panel-visible .oct-tracks {
+        flex: 1;
+        min-height: 100px;
+    }
+    .device > .mixer-panel.panel-visible .mixer-channels {
+        flex: 1;
+        height: auto;
+    }
+    .device > .mixer-panel.panel-visible .v-fader {
+        min-height: 80px;
+    }
 }
 
 /* ===== DEMO MODE STYLES ===== */

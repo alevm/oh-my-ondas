@@ -1755,18 +1755,36 @@ class App {
         }
     }
 
-    // Panel tab navigation (embedded and demo modes)
+    // Panel tab navigation (embedded, demo, and mobile modes)
     setupPanelTabs() {
-        if (!this.isDemoOrEmbedded()) return;
+        const isMobile = () => window.innerWidth <= 767;
 
-        // Set initial panel
-        this.switchToPanel(this._activePanel);
-
-        // Bind tab click handlers
+        // Always bind tab click handlers (needed for mobile too)
         document.querySelectorAll('.panel-tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 this.switchToPanel(tab.dataset.panel);
             });
+        });
+
+        // Set initial panel if in embedded/demo/mobile mode
+        if (this.isDemoOrEmbedded() || isMobile()) {
+            this.switchToPanel(this._activePanel);
+        }
+
+        // Handle resize: activate/deactivate panel tabs when crossing mobile breakpoint
+        let wasMobile = isMobile();
+        window.addEventListener('resize', () => {
+            const nowMobile = isMobile();
+            if (nowMobile && !wasMobile) {
+                // Entering mobile: ensure a panel is visible
+                this.switchToPanel(this._activePanel || 'seq-panel');
+            } else if (!nowMobile && wasMobile && !this.isDemoOrEmbedded()) {
+                // Leaving mobile: remove panel-visible so grid layout takes over
+                document.querySelectorAll('.device > .panel').forEach(p => {
+                    p.classList.remove('panel-visible');
+                });
+            }
+            wasMobile = nowMobile;
         });
     }
 

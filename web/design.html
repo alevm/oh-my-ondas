@@ -28,7 +28,7 @@
             position: relative;
             z-index: 1;
             min-height: 100vh;
-            background: rgba(255,255,255,0.95);
+            background: rgba(255,255,255,0.75);
         }
 
         .page-content {
@@ -317,23 +317,21 @@
             background: #ccc;
         }
 
-        /* 4 Encoders — identical to index.html */
+        /* 4 Main Encoders (VOL/PAN/FX/BPM) */
         .encoders-container {
             position: absolute;
-            top: 460px; right: 25px;
+            top: 458px; right: 25px;
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(2, 1fr);
-            gap: 10px;
-            width: 200px;
-            height: 110px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            width: 280px;
             z-index: 2;
         }
 
-        .encoder { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+        .encoder { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 
         .encoder-knob {
-            width: 36px; height: 36px;
+            width: 32px; height: 32px;
             background: linear-gradient(145deg, #f5f5f5 0%, #ddd 100%);
             border-radius: 50%;
             border: 2px solid #bbb;
@@ -345,7 +343,7 @@
             content: '';
             position: absolute;
             top: 50%; left: 50%;
-            width: 14px; height: 14px;
+            width: 12px; height: 12px;
             background: linear-gradient(145deg, #eee 0%, #ccc 100%);
             border-radius: 50%;
             transform: translate(-50%, -50%);
@@ -354,23 +352,154 @@
         .encoder-knob::after {
             content: '';
             position: absolute;
-            top: 4px; left: 50%;
-            width: 3px; height: 8px;
+            top: 3px; left: 50%;
+            width: 3px; height: 7px;
             background: #278789;
             border-radius: 2px;
             transform: translateX(-50%);
         }
 
-        /* Per-encoder color indicators */
         .encoder:nth-child(1) .encoder-knob::after { background: #1aa167; }
         .encoder:nth-child(2) .encoder-knob::after { background: #1270b8; }
         .encoder:nth-child(3) .encoder-knob::after { background: #d4a857; }
         .encoder:nth-child(4) .encoder-knob::after { background: #c0392b; }
 
-        .encoder-label { font-size: 9px; color: var(--gray-text); font-weight: 600; }
-        .encoder-value { font-size: 8px; color: #666; font-family: monospace; }
+        .encoder-label { font-size: 8px; color: var(--gray-text); font-weight: 600; }
+        .encoder-value { font-size: 7px; color: #666; font-family: monospace; }
 
-        /* Transport — identical to index.html */
+        /* 4 Synth Knobs (CUTOFF/RES/ATK/REL) */
+        .synth-knobs {
+            position: absolute;
+            top: 520px; right: 25px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            width: 280px;
+            z-index: 2;
+        }
+        .synth-knobs .encoder:nth-child(1) .encoder-knob::after { background: #278789; }
+        .synth-knobs .encoder:nth-child(2) .encoder-knob::after { background: #278789; }
+        .synth-knobs .encoder:nth-child(3) .encoder-knob::after { background: #d4a857; }
+        .synth-knobs .encoder:nth-child(4) .encoder-knob::after { background: #d4a857; }
+
+        /* 4 Vertical Mixer Faders */
+        .faders-container {
+            position: absolute;
+            top: 452px; left: 530px;
+            display: flex;
+            gap: 16px;
+            z-index: 2;
+            width: 220px;
+        }
+        .fader-ch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            flex: 1;
+        }
+        .fader-lbl {
+            font-size: 7px; font-weight: 800;
+            letter-spacing: 0.5px; text-transform: uppercase;
+        }
+        .fader-lbl.mic { color: #1aa167; }
+        .fader-lbl.smp { color: #1270b8; }
+        .fader-lbl.syn { color: #278789; }
+        .fader-lbl.rad { color: #d4a857; }
+        .fader-track {
+            width: 6px; height: 82px;
+            background: linear-gradient(180deg, #e0e0e0 0%, #ccc 100%);
+            border-radius: 3px;
+            position: relative;
+            border: 1px solid #bbb;
+        }
+        .fader-thumb {
+            position: absolute; left: -5px;
+            width: 16px; height: 10px;
+            background: linear-gradient(180deg, #fff 0%, #ddd 100%);
+            border: 1px solid #999;
+            border-radius: 2px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .fader-val {
+            font-size: 7px; color: #888; font-family: monospace;
+        }
+        .fader-led {
+            width: 4px; height: 4px;
+            border-radius: 50%; margin-top: 1px;
+        }
+
+        /* Function Buttons */
+        .func-btns {
+            position: absolute;
+            top: 580px; left: 25px;
+            display: flex;
+            gap: 5px;
+            z-index: 2;
+        }
+        .func-btn {
+            width: 48px; height: 20px;
+            border-radius: 4px;
+            border: 1.5px solid #bbb;
+            background: linear-gradient(180deg, #f5f5f5 0%, #e0e0e0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7px; font-weight: 800;
+            letter-spacing: 0.5px; color: #666;
+        }
+        .func-btn.shift { border-color: #278789; color: #278789; }
+        .func-btn.dub { border-color: #c0392b; color: #c0392b; }
+        .func-btn.fill { border-color: #d4a857; color: #d4a857; }
+        .func-btn.clear { border-color: #1270b8; color: #1270b8; }
+        .func-btn.scene { border-color: #1aa167; color: #1aa167; }
+        .func-btn.fx { border-color: #278789; color: #278789; }
+
+        /* Crossfader */
+        .xfade-section {
+            position: absolute;
+            top: 560px; left: 530px;
+            width: 220px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        .xfade-label { font-size: 7px; font-weight: 700; color: var(--gray-text); letter-spacing: 1px; }
+        .xfade-track {
+            width: 100%; height: 5px;
+            background: linear-gradient(90deg, #e0e0e0, #ccc);
+            border-radius: 3px;
+            position: relative;
+            border: 1px solid #bbb;
+        }
+        .xfade-thumb {
+            position: absolute; top: -8px; left: 50%;
+            transform: translateX(-50%);
+            width: 16px; height: 20px;
+            background: linear-gradient(180deg, #fff 0%, #ddd 100%);
+            border-radius: 3px;
+            border: 1px solid #999;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        .xfade-ends {
+            display: flex; justify-content: space-between; width: 100%;
+            font-size: 7px; font-weight: 700; color: #888;
+        }
+
+        /* Status LEDs */
+        .hw-leds {
+            position: absolute;
+            bottom: 28px; left: 180px;
+            display: flex; gap: 8px; z-index: 2;
+        }
+        .hw-led { width: 5px; height: 5px; border-radius: 50%; }
+        .hw-led.gps { background: #278789; box-shadow: 0 0 4px rgba(39,135,137,0.6); }
+        .hw-led.wifi { background: #1aa167; box-shadow: 0 0 4px rgba(26,161,103,0.6); }
+        .hw-led.audio { background: #d4a857; box-shadow: 0 0 4px rgba(212,168,87,0.6); }
+
+        /* Transport */
         .transport-container {
             position: absolute;
             bottom: 18px; left: 25px;
@@ -395,23 +524,23 @@
         .transport-btn.rec { color: #c0392b; border-color: #c0392b; }
         .transport-btn.play.active { background: #1aa167; color: #fff; border-color: #1aa167; }
 
-        /* GPS Strip — identical to index.html */
+        /* GPS Strip */
         .gps-strip {
             position: absolute;
             bottom: 12px; right: 25px;
-            width: 280px; height: 70px;
+            width: 280px; height: 50px;
             background: #fff;
             border: 2px solid #278789;
             border-radius: 8px;
             z-index: 2;
             display: flex;
             align-items: center;
-            padding: 0 10px;
-            gap: 8px;
+            padding: 0 8px;
+            gap: 6px;
             overflow: hidden;
         }
         .gps-map-thumb {
-            width: 50px; height: 50px;
+            width: 36px; height: 36px;
             border-radius: 4px;
             background: #e8e8e8;
             background-image: url('images/chombart-de-lauwe.jpg');
@@ -420,11 +549,11 @@
             flex-shrink: 0;
             border: 1px solid #ddd;
         }
-        .gps-strip .gps-icon { font-size: 18px; color: #278789; flex-shrink: 0; }
-        .gps-strip .gps-info { display: flex; flex-direction: column; gap: 2px; }
-        .gps-strip .gps-label { font-size: 9px; font-weight: 800; color: #278789; letter-spacing: 1px; }
-        .gps-strip .gps-coords { font-size: 10px; color: #555; font-family: monospace; }
-        .gps-strip .gps-city { font-size: 9px; color: #888; }
+        .gps-strip .gps-icon { font-size: 14px; color: #278789; flex-shrink: 0; }
+        .gps-strip .gps-info { display: flex; flex-direction: column; gap: 1px; }
+        .gps-strip .gps-label { font-size: 8px; font-weight: 800; color: #278789; letter-spacing: 1px; }
+        .gps-strip .gps-coords { font-size: 9px; color: #555; font-family: monospace; }
+        .gps-strip .gps-city { font-size: 8px; color: #888; }
 
         /* I/O ports — identical to index.html */
         .io-ports {
@@ -610,6 +739,7 @@
                 <a href="app.html" class="nav-link">App</a>
                 <a href="about.html" class="nav-link">About</a>
                 <a href="design.html" class="nav-link secondary active">Design</a>
+                <a href="gallery.html" class="nav-link secondary">Gallery</a>
                 <a href="architecture.html" class="nav-link secondary">Arch</a>
                 <a href="analysis.html" class="nav-link secondary">Analysis</a>
                 <a href="sdlc.html" class="nav-link secondary">SDLC</a>
@@ -706,7 +836,7 @@
                                 <div class="pad">8</div>
                             </div>
 
-                            <!-- 4 Encoders -->
+                            <!-- 4 Main Encoders -->
                             <div class="encoders-container">
                                 <div class="encoder">
                                     <div class="encoder-knob"></div>
@@ -715,13 +845,13 @@
                                 </div>
                                 <div class="encoder">
                                     <div class="encoder-knob"></div>
-                                    <span class="encoder-label">SWG</span>
-                                    <span class="encoder-value">0</span>
+                                    <span class="encoder-label">PAN</span>
+                                    <span class="encoder-value">C</span>
                                 </div>
                                 <div class="encoder">
                                     <div class="encoder-knob"></div>
-                                    <span class="encoder-label">LEN</span>
-                                    <span class="encoder-value">16</span>
+                                    <span class="encoder-label">FX</span>
+                                    <span class="encoder-value">30</span>
                                 </div>
                                 <div class="encoder">
                                     <div class="encoder-knob"></div>
@@ -730,13 +860,90 @@
                                 </div>
                             </div>
 
+                            <!-- 4 Synth Knobs -->
+                            <div class="synth-knobs">
+                                <div class="encoder">
+                                    <div class="encoder-knob"></div>
+                                    <span class="encoder-label">CUTOFF</span>
+                                    <span class="encoder-value">72</span>
+                                </div>
+                                <div class="encoder">
+                                    <div class="encoder-knob"></div>
+                                    <span class="encoder-label">RES</span>
+                                    <span class="encoder-value">40</span>
+                                </div>
+                                <div class="encoder">
+                                    <div class="encoder-knob"></div>
+                                    <span class="encoder-label">ATK</span>
+                                    <span class="encoder-value">10</span>
+                                </div>
+                                <div class="encoder">
+                                    <div class="encoder-knob"></div>
+                                    <span class="encoder-label">REL</span>
+                                    <span class="encoder-value">50</span>
+                                </div>
+                            </div>
+
+                            <!-- 4 Mixer Faders -->
+                            <div class="faders-container">
+                                <div class="fader-ch">
+                                    <span class="fader-lbl mic">MIC</span>
+                                    <div class="fader-track"><div class="fader-thumb" style="top: 20px;"></div></div>
+                                    <span class="fader-val">75</span>
+                                    <div class="fader-led" style="background:#1aa167; box-shadow:0 0 4px rgba(26,161,103,0.6);"></div>
+                                </div>
+                                <div class="fader-ch">
+                                    <span class="fader-lbl smp">SMP</span>
+                                    <div class="fader-track"><div class="fader-thumb" style="top: 10px;"></div></div>
+                                    <span class="fader-val">90</span>
+                                    <div class="fader-led" style="background:#1270b8; box-shadow:0 0 4px rgba(18,112,184,0.6);"></div>
+                                </div>
+                                <div class="fader-ch">
+                                    <span class="fader-lbl syn">SYN</span>
+                                    <div class="fader-track"><div class="fader-thumb" style="top: 30px;"></div></div>
+                                    <span class="fader-val">60</span>
+                                    <div class="fader-led" style="background:#278789; box-shadow:0 0 4px rgba(39,135,137,0.6);"></div>
+                                </div>
+                                <div class="fader-ch">
+                                    <span class="fader-lbl rad">RAD</span>
+                                    <div class="fader-track"><div class="fader-thumb" style="top: 40px;"></div></div>
+                                    <span class="fader-val">45</span>
+                                    <div class="fader-led" style="background:#d4a857; box-shadow:0 0 4px rgba(212,168,87,0.6);"></div>
+                                </div>
+                            </div>
+
+                            <!-- Function Buttons -->
+                            <div class="func-btns">
+                                <div class="func-btn shift">SHIFT</div>
+                                <div class="func-btn dub">DUB</div>
+                                <div class="func-btn fill">FILL</div>
+                                <div class="func-btn clear">CLR</div>
+                                <div class="func-btn scene">SCENE</div>
+                                <div class="func-btn fx">FX</div>
+                            </div>
+
+                            <!-- Crossfader -->
+                            <div class="xfade-section">
+                                <span class="xfade-label">X-FADE</span>
+                                <div class="xfade-track">
+                                    <div class="xfade-thumb"></div>
+                                </div>
+                                <div class="xfade-ends"><span>A</span><span>B</span></div>
+                            </div>
+
+                            <!-- Status LEDs -->
+                            <div class="hw-leds">
+                                <div class="hw-led gps" title="GPS"></div>
+                                <div class="hw-led wifi" title="WiFi"></div>
+                                <div class="hw-led audio" title="Audio"></div>
+                            </div>
+
                             <!-- Transport -->
                             <div class="transport-container">
                                 <div class="transport-btn play active">&#9654;</div>
                                 <div class="transport-btn stop">&#9632;</div>
                                 <div class="transport-btn rec">&#9679;</div>
                             </div>
-
 
                             <!-- GPS Strip -->
                             <div class="gps-strip">
@@ -810,7 +1017,10 @@
                 <div>Enclosure: <span>200x140x45mm</span></div>
                 <div>Display: <span>5" Touch</span></div>
                 <div>Pads: <span>8x MPR121</span></div>
-                <div>Encoders: <span>4x Rotary</span></div>
+                <div>Encoders: <span>8x Rotary</span></div>
+                <div>Faders: <span>4x Mixer</span></div>
+                <div>Buttons: <span>9 (Transport + Func)</span></div>
+                <div>X-Fade: <span>1x Slider</span></div>
             </div>
 
             <!-- Technical Specifications -->
@@ -850,9 +1060,13 @@
                     <h3>Controls</h3>
                     <ul>
                         <li>8x Touch Pads (MPR121)</li>
-                        <li>4x Rotary Encoders (context-sensitive)</li>
+                        <li>4x Main Encoders (VOL/PAN/FX/BPM)</li>
+                        <li>4x Synth Encoders (CUTOFF/RES/ATK/REL)</li>
+                        <li>4x Mixer Faders (MIC/SMP/SYN/RAD)</li>
+                        <li>1x Crossfader (Scene A/B)</li>
                         <li>3x Transport Buttons (Play/Stop/Rec)</li>
                         <li>3x Mode Buttons (Picture/Soundscape/Interact)</li>
+                        <li>6x Function Buttons (SHIFT/DUB/FILL/CLR/SCENE/FX)</li>
                     </ul>
                 </div>
                 <div class="spec-card">

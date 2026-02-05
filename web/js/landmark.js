@@ -13,22 +13,8 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
-// Rate limiter for Nominatim API (1 req/sec max per OSM policy)
-// Shared global to avoid duplicate declarations across modules
-if (!window.nominatimRateLimiter) {
-    window.nominatimRateLimiter = {
-        lastCall: 0,
-        minInterval: 1100, // 1.1 seconds to be safe
-        async throttledFetch(url) {
-            const now = Date.now();
-            const wait = Math.max(0, this.lastCall + this.minInterval - now);
-            if (wait > 0) await new Promise(r => setTimeout(r, wait));
-            this.lastCall = Date.now();
-            return fetch(url);
-        }
-    };
-}
-const nominatimRateLimiter = window.nominatimRateLimiter;
+// Rate limiter: reuse shared global defined in radio.js
+// (radio.js loads first and creates window.nominatimRateLimiter)
 
 class Landmark {
     constructor() {
@@ -279,7 +265,7 @@ class Landmark {
             const url = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=14`;
             this.log('Fetching location name from Nominatim (rate-limited)', { url });
 
-            const response = await nominatimRateLimiter.throttledFetch(url);
+            const response = await window.nominatimRateLimiter.throttledFetch(url);
             const data = await response.json();
 
             this.log('Reverse geocoding response', data);

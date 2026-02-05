@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Design gallery showing the visual evolution of Oh My Ondas from early prototypes to final hardware mockup.">
+    <meta property="og:title" content="Design Gallery - Oh My Ondas">
+    <meta property="og:description" content="All design iterations: palette explorations, hardware concepts, UI layouts, and the full web prototype.">
+    <title>Design Gallery - Oh My Ondas</title>
+    <link rel="stylesheet" href="css/style.css?v=254">
+    <style>
+        body {
+            overflow: auto;
+        }
+        .page-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            background: rgba(255,255,255,0.75);
+        }
+        .page-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 12px;
+            border-bottom: 3px solid #e0e0e0;
+            padding-bottom: 16px;
+        }
+        .page-subtitle {
+            color: #888;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+
+        /* Gallery Grid */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(520px, 1fr));
+            gap: 32px;
+            margin-bottom: 48px;
+        }
+
+        .gallery-card {
+            background: #fff;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .gallery-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+
+        .card-preview {
+            position: relative;
+            width: 100%;
+            height: 340px;
+            overflow: hidden;
+            background: #1a1a1a;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .card-preview iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 200%;
+            transform: scale(0.5);
+            transform-origin: top left;
+            border: none;
+            pointer-events: none;
+        }
+        .card-preview .preview-overlay {
+            position: absolute;
+            inset: 0;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .card-info {
+            padding: 20px;
+        }
+        .card-version {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            padding: 3px 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .card-version.v1 { background: #f0f0f0; color: #888; }
+        .card-version.v2 { background: rgba(230,184,0,0.15); color: #b89200; }
+        .card-version.v3 { background: rgba(91,168,212,0.15); color: #4891bb; }
+        .card-version.v4 { background: rgba(39,135,137,0.15); color: #278789; }
+        .card-version.v5 { background: rgba(26,161,103,0.15); color: #1aa167; }
+        .card-version.current { background: rgba(43,126,179,0.15); color: #2b7eb3; }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+        .card-desc {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .card-tag {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 3px;
+            background: #f5f5f5;
+            color: #888;
+            border: 1px solid #e0e0e0;
+        }
+        .card-link {
+            display: inline-block;
+            margin-top: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: none;
+            letter-spacing: 0.5px;
+        }
+        .card-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Timeline */
+        .timeline-header {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin: 48px 0 24px 0;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .evolution-track {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            margin-bottom: 40px;
+            overflow-x: auto;
+            padding: 20px 0;
+        }
+        .evo-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 140px;
+            position: relative;
+        }
+        .evo-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 3px solid #e0e0e0;
+            background: #fff;
+            z-index: 1;
+        }
+        .evo-dot.active {
+            border-color: #278789;
+            background: #278789;
+            box-shadow: 0 0 8px rgba(39,135,137,0.4);
+        }
+        .evo-line {
+            width: 100%;
+            height: 3px;
+            background: #e0e0e0;
+            flex-shrink: 0;
+        }
+        .evo-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #888;
+            margin-top: 8px;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+        .evo-sublabel {
+            font-size: 9px;
+            color: #bbb;
+            text-align: center;
+        }
+
+        /* iOS Review Section */
+        .review-section {
+            background: #fafafa;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            padding: 32px;
+            margin-top: 48px;
+        }
+        .review-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+        }
+        .review-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .review-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+        }
+        .review-card h4 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .review-card h4.challenge { color: #c0392b; }
+        .review-card h4.effort { color: #d4a857; }
+        .review-card h4.alternative { color: #1aa167; }
+        .review-card h4.verdict { color: #278789; }
+        .review-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .review-card li {
+            padding: 4px 0;
+            font-size: 13px;
+            color: #555;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .review-card li:last-child { border-bottom: none; }
+        .review-card p {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+            .card-preview {
+                height: 220px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="mapBackground" class="map-bg"></div>
+
+    <div class="page-container">
+        <header class="page-header">
+            <a href="index.html" class="logo">OH MY ONDAS</a>
+            <nav class="nav-links" aria-label="Main navigation">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="app.html" class="nav-link">App</a>
+                <a href="about.html" class="nav-link">About</a>
+                <a href="design.html" class="nav-link secondary">Design</a>
+                <a href="gallery.html" class="nav-link secondary active">Gallery</a>
+                <a href="architecture.html" class="nav-link secondary">Arch</a>
+            </nav>
+        </header>
+
+        <main class="page-content">
+            <h1 class="page-title">Design Gallery</h1>
+            <p class="page-subtitle">Visual evolution of Oh My Ondas &mdash; from palette explorations to hardware-ready instrument</p>
+
+            <!-- Evolution Timeline -->
+            <div class="evolution-track">
+                <div class="evo-step">
+                    <div class="evo-dot"></div>
+                    <span class="evo-label">Prototypes</span>
+                    <span class="evo-sublabel">Dark UI concepts</span>
+                </div>
+                <div class="evo-line"></div>
+                <div class="evo-step">
+                    <div class="evo-dot"></div>
+                    <span class="evo-label">Palette A</span>
+                    <span class="evo-sublabel">Yellow / Red / Blue</span>
+                </div>
+                <div class="evo-line"></div>
+                <div class="evo-step">
+                    <div class="evo-dot"></div>
+                    <span class="evo-label">Palette B</span>
+                    <span class="evo-sublabel">Pastel tones</span>
+                </div>
+                <div class="evo-line"></div>
+                <div class="evo-step">
+                    <div class="evo-dot"></div>
+                    <span class="evo-label">Hardware v1</span>
+                    <span class="evo-sublabel">Light enclosure</span>
+                </div>
+                <div class="evo-line"></div>
+                <div class="evo-step">
+                    <div class="evo-dot active"></div>
+                    <span class="evo-label">Hardware v2</span>
+                    <span class="evo-sublabel">Petrol interactive</span>
+                </div>
+                <div class="evo-line"></div>
+                <div class="evo-step">
+                    <div class="evo-dot active"></div>
+                    <span class="evo-label">Web App</span>
+                    <span class="evo-sublabel">Full prototype</span>
+                </div>
+            </div>
+
+            <!-- Gallery Cards -->
+            <div class="gallery-grid">
+
+                <!-- 1. Early Prototypes -->
+                <div class="gallery-card">
+                    <div class="card-preview">
+                        <iframe src="proto.html" loading="lazy" sandbox="allow-same-origin"></iframe>
+                        <a class="preview-overlay" href="proto.html" title="Open prototype"></a>
+                    </div>
+                    <div class="card-info">
+                        <span class="card-version v1">ITERATION 1</span>
+                        <div class="card-title">Early Prototypes</div>
+                        <p class="card-desc">
+                            Dark-themed exploration of multiple hardware concepts. Monospace typography,
+                            minimal chrome. Tested layout ideas for display, pads, encoders and transport
+                            in a dark industrial aesthetic.
+                        </p>
+                        <div class="card-tags">
+                            <span class="card-tag">Dark UI</span>
+                            <span class="card-tag">Concept</span>
+                            <span class="card-tag">Multi-layout</span>
+                        </div>
+                        <a class="card-link" href="proto.html">View prototype &rarr;</a>
+                    </div>
+                </div>
+
+                <!-- 2. Palette A: Yellow/Red/Blue -->
+                <div class="gallery-card">
+                    <div class="card-preview">
+                        <iframe src="mockup-palette-a.html" loading="lazy" sandbox="allow-same-origin"></iframe>
+                        <a class="preview-overlay" href="mockup-palette-a.html" title="Open Palette A"></a>
+                    </div>
+                    <div class="card-info">
+                        <span class="card-version v2">ITERATION 2A</span>
+                        <div class="card-title">Palette A: Primary Colors</div>
+                        <p class="card-desc">
+                            Bauhaus-inspired primary color exploration. Yellow accent (#e6b800),
+                            red highlights, blue info panels. Strong visual hierarchy but felt
+                            too aggressive for an instrument meant for outdoor soundscape capture.
+                        </p>
+                        <div class="card-tags">
+                            <span class="card-tag">Yellow/Red/Blue</span>
+                            <span class="card-tag">Bauhaus</span>
+                            <span class="card-tag">High contrast</span>
+                        </div>
+                        <a class="card-link" href="mockup-palette-a.html">View palette A &rarr;</a>
+                    </div>
+                </div>
+
+                <!-- 3. Palette B: Pastels -->
+                <div class="gallery-card">
+                    <div class="card-preview">
+                        <iframe src="mockup-palette-b.html" loading="lazy" sandbox="allow-same-origin"></iframe>
+                        <a class="preview-overlay" href="mockup-palette-b.html" title="Open Palette B"></a>
+                    </div>
+                    <div class="card-info">
+                        <span class="card-version v3">ITERATION 2B</span>
+                        <div class="card-title">Palette B: Pastel Tones</div>
+                        <p class="card-desc">
+                            Softer palette with light blue (#5ba8d4), pink (#d48ba0), and muted yellow (#d4c56a).
+                            This became the foundation for the final web app palette &mdash; calmer, more
+                            environmental, reflecting acoustic ecology principles.
+                        </p>
+                        <div class="card-tags">
+                            <span class="card-tag">Blue/Pink/Yellow</span>
+                            <span class="card-tag">Pastel</span>
+                            <span class="card-tag">Chosen palette</span>
+                        </div>
+                        <a class="card-link" href="mockup-palette-b.html">View palette B &rarr;</a>
+                    </div>
+                </div>
+
+                <!-- 4. Hardware Design v1 -->
+                <div class="gallery-card">
+                    <div class="card-preview">
+                        <iframe src="design.html" loading="lazy" sandbox="allow-same-origin"></iframe>
+                        <a class="preview-overlay" href="design.html" title="Open hardware design"></a>
+                    </div>
+                    <div class="card-info">
+                        <span class="card-version v4">ITERATION 3</span>
+                        <div class="card-title">Hardware Design: Light Enclosure</div>
+                        <p class="card-desc">
+                            First physical hardware concept. Aluminum enclosure (200x140x45mm),
+                            5" touch display, 8 capacitive pads, 8 rotary encoders, 4 mixer faders,
+                            crossfader, transport buttons, and function keys. Static LCD mockup
+                            showing the sequencer view. Full BOM and pin assignments.
+                        </p>
+                        <div class="card-tags">
+                            <span class="card-tag">Hardware</span>
+                            <span class="card-tag">Teensy 4.1</span>
+                            <span class="card-tag">BOM</span>
+                            <span class="card-tag">Pin map</span>
+                        </div>
+                        <a class="card-link" href="design.html">View hardware design &rarr;</a>
+                    </div>
+                </div>
+
+                <!-- 5. Interactive Hardware v2 -->
+                <div class="gallery-card">
+                    <div class="card-preview">
+                        <iframe src="index.html" loading="lazy" sandbox="allow-same-origin"></iframe>
+                        <a class="preview-overlay" href="index.html" title="Open interactive mockup"></a>
+                    </div>
+                    <div class="card-info">
+                        <span class="card-version v5">ITERATION 4</span>
+                        <div class="card-title">Interactive Hardware: Petrol Green</div>
+                        <p class="card-desc">
+                            Dark petrol-green (#1a3535) enclosure with live interactive display running
+                            the actual web app in embedded mode. 5 encoders, 8 pads, 5-way joystick,
+                            crossfader, transport ridge buttons, mode selection, side grips, and full
+                            I/O port callouts. Communicates with app via postMessage.
+                        </p>
+                        <div class="card-tags">
+                            <span class="card-tag">Interactive</span>
+                            <span class="card-tag">Live display</span>
+                            <span class="card-tag">Joystick</span>
+                            <span class="card-tag">PostMessage API</span>
+                        </div>
+                        <a class="card-link" href="index.html">View interactive mockup &rarr;</a>
+                    </div>
+                </div>
+
+                <!-- 6. Full Web App -->
+                <div class="gallery-card">
+                    <div class="card-preview">
+                        <iframe src="app.html" loading="lazy" sandbox="allow-same-origin"></iframe>
+                        <a class="preview-overlay" href="app.html" title="Open web app"></a>
+                    </div>
+                    <div class="card-info">
+                        <span class="card-version current">CURRENT</span>
+                        <div class="card-title">Web App: Full Prototype</div>
+                        <p class="card-desc">
+                            Complete 5-column grid layout with all modules: 8-track sequencer with
+                            P-locks, 4-channel mixer with VU meters, dual-oscillator synth,
+                            8-pad sampler, FX chain (delay/glitch/grain/crusher), AI composer,
+                            radio integration, GPS journeys, 4-scene recall, and master EQ.
+                        </p>
+                        <div class="card-tags">
+                            <span class="card-tag">Web Audio API</span>
+                            <span class="card-tag">8-track SEQ</span>
+                            <span class="card-tag">AI Composer</span>
+                            <span class="card-tag">GPS</span>
+                        </div>
+                        <a class="card-link" href="app.html">Launch web app &rarr;</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- iOS App Review -->
+            <div class="review-section" id="ios-review">
+                <h2 class="review-title">iOS Native App: Effort, Challenges &amp; Feasibility</h2>
+                <p style="color: #888; font-size: 14px; margin-bottom: 20px;">
+                    An honest assessment of what building a native iOS application would involve,
+                    and whether it aligns with the project's hardware-first design philosophy.
+                </p>
+
+                <div class="review-grid">
+                    <div class="review-card">
+                        <h4 class="challenge">Technical Challenges</h4>
+                        <ul>
+                            <li><strong>Audio latency</strong> &mdash; iOS AudioUnit/AVAudioEngine needs careful buffer management to match the &lt;10ms target</li>
+                            <li><strong>Background audio</strong> &mdash; GPS tracking + mic capture + radio streaming simultaneously requires complex background mode handling</li>
+                            <li><strong>Web Audio parity</strong> &mdash; Re-implementing the entire audio engine (synth, sampler, sequencer, FX chain, mixer) in Swift/ObjC</li>
+                            <li><strong>MIDI/hardware bridge</strong> &mdash; CoreMIDI for external controllers, but no direct GPIO/I2C access like Teensy firmware</li>
+                            <li><strong>Radio streaming</strong> &mdash; No FM receiver hardware; limited to internet radio via AVPlayer</li>
+                            <li><strong>App Store restrictions</strong> &mdash; Background GPS + mic access triggers privacy review scrutiny</li>
+                        </ul>
+                    </div>
+
+                    <div class="review-card">
+                        <h4 class="effort">Development Effort</h4>
+                        <ul>
+                            <li><strong>Audio engine</strong> &mdash; Core Audio / AVAudioEngine graph: sequencer, synth, sampler, mixer, FX (major effort)</li>
+                            <li><strong>UI rebuild</strong> &mdash; SwiftUI or UIKit recreation of all panels, controls, knobs, faders, sequencer grid</li>
+                            <li><strong>AI integration</strong> &mdash; Claude API client, pattern generation logic (moderate port)</li>
+                            <li><strong>GPS/Maps</strong> &mdash; MapKit + CoreLocation for journeys, landmarks (straightforward)</li>
+                            <li><strong>Data persistence</strong> &mdash; CoreData or SwiftData for scenes, recordings, settings</li>
+                            <li><strong>Testing</strong> &mdash; XCTest + UI testing for all audio/GPS/control flows</li>
+                            <li><strong>Apple Developer account</strong> &mdash; $99/year, review process, provisioning</li>
+                        </ul>
+                    </div>
+
+                    <div class="review-card">
+                        <h4 class="challenge">Why iOS Conflicts with the Vision</h4>
+                        <ul>
+                            <li><strong>No tactile controls</strong> &mdash; Touch-only interaction defeats the purpose of a physical instrument with knobs, faders, and pads you can feel</li>
+                            <li><strong>Screen dependency</strong> &mdash; Musicians need eyes-free operation; a phone screen demands visual attention</li>
+                            <li><strong>No piezo/contact mic</strong> &mdash; iOS has no analog sensor inputs for vibration capture</li>
+                            <li><strong>No FM radio</strong> &mdash; iPhone has no FM receiver; a core feature (local radio capture) would be internet-only</li>
+                            <li><strong>Battery competition</strong> &mdash; Audio + GPS + radio drains phone battery needed for other tasks</li>
+                            <li><strong>Latency risk</strong> &mdash; iOS audio pipeline adds overhead vs. dedicated Teensy hardware</li>
+                        </ul>
+                    </div>
+
+                    <div class="review-card">
+                        <h4 class="alternative">Better Alternatives</h4>
+                        <ul>
+                            <li><strong>Raspberry Pi kiosk</strong> &mdash; Run the web app in Chromium fullscreen on a 5" touchscreen with GPIO for hardware controls (~$187 BOM)</li>
+                            <li><strong>Teensy 4.1 firmware</strong> &mdash; Purpose-built hardware with &lt;5ms latency, direct I2C/SPI, analog inputs (already designed)</li>
+                            <li><strong>iOS companion app</strong> &mdash; Lightweight remote control via BLE/WiFi to the hardware device (scene recall, GPS share, monitoring)</li>
+                            <li><strong>PWA enhancement</strong> &mdash; Improve the existing web app as Progressive Web App: offline support, home screen install, Web MIDI for external controllers</li>
+                        </ul>
+                    </div>
+
+                    <div class="review-card" style="grid-column: 1 / -1;">
+                        <h4 class="verdict">Verdict</h4>
+                        <p>
+                            A native iOS app would require rebuilding the entire audio engine, UI, and
+                            interaction model from scratch &mdash; but would lose the core qualities that
+                            make Oh My Ondas a real <em>instrument</em>: tactile knobs you can twist without
+                            looking, faders with physical travel, pads with actual pressure response, and
+                            dedicated analog inputs (piezo, FM radio). The result would be "yet another
+                            synth app on the App Store" rather than a location-aware <em>hardware instrument</em>.
+                        </p>
+                        <p style="margin-top: 12px;">
+                            <strong>Recommended path:</strong> Build the Teensy/Raspberry Pi hardware device.
+                            Use the existing web app as the development/testing prototype. If mobile access is
+                            needed, create a lightweight iOS <em>companion</em> app that communicates with
+                            the hardware via BLE &mdash; for remote monitoring, scene management, and GPS
+                            data sharing. Not as a replacement for the instrument itself.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="page-footer">
+            <span>Oh My Ondas v2.5.2</span>
+            <span>GPL-3.0 License</span>
+            <a href="https://github.com/alevm/oh-my-ondas" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </footer>
+    </div>
+</body>
+</html>
