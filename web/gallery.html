@@ -96,6 +96,7 @@
             margin-bottom: 8px;
         }
         .card-version.v1 { background: #f0f0f0; color: #888; }
+        .card-version.v1b { background: rgba(255,107,43,0.15); color: #d45a20; }
         .card-version.v2 { background: rgba(230,184,0,0.15); color: #b89200; }
         .card-version.v3 { background: rgba(91,168,212,0.15); color: #4891bb; }
         .card-version.v4 { background: rgba(39,135,137,0.15); color: #278789; }
@@ -286,8 +287,14 @@
             <div class="evolution-track">
                 <div class="evo-step">
                     <div class="evo-dot"></div>
-                    <span class="evo-label">Prototypes</span>
-                    <span class="evo-sublabel">Dark UI concepts</span>
+                    <span class="evo-label">Sonic Camera</span>
+                    <span class="evo-sublabel">Camera form factor</span>
+                </div>
+                <div class="evo-line"></div>
+                <div class="evo-step">
+                    <div class="evo-dot" style="border-color: #ff6b2b; background: #ff6b2b;"></div>
+                    <span class="evo-label">Orange Era</span>
+                    <span class="evo-sublabel">First hardware mockup</span>
                 </div>
                 <div class="evo-line"></div>
                 <div class="evo-step">
@@ -324,26 +331,51 @@
             <!-- Gallery Cards -->
             <div class="gallery-grid">
 
-                <!-- 1. Early Prototypes -->
+                <!-- 1. Sonic Camera -->
                 <div class="gallery-card">
                     <div class="card-preview">
                         <iframe src="proto.html" loading="lazy" sandbox="allow-same-origin"></iframe>
-                        <a class="preview-overlay" href="proto.html" title="Open prototype"></a>
+                        <a class="preview-overlay" href="proto.html" title="Open Sonic Camera prototype"></a>
                     </div>
                     <div class="card-info">
                         <span class="card-version v1">ITERATION 1</span>
-                        <div class="card-title">Early Prototypes</div>
+                        <div class="card-title">Sonic Camera</div>
                         <p class="card-desc">
-                            Dark-themed exploration of multiple hardware concepts. Monospace typography,
-                            minimal chrome. Tested layout ideas for display, pads, encoders and transport
-                            in a dark industrial aesthetic.
+                            Camera form-factor concept inspired by Contax T2 and Ricoh GR. Lens = omnidirectional
+                            microphone, shutter button = REC trigger. Compact body with side display, hot shoe
+                            mount, and GPS LED. The original vision &mdash; capture sound like you capture light.
                         </p>
                         <div class="card-tags">
+                            <span class="card-tag">Camera body</span>
+                            <span class="card-tag">Mic as lens</span>
                             <span class="card-tag">Dark UI</span>
-                            <span class="card-tag">Concept</span>
-                            <span class="card-tag">Multi-layout</span>
                         </div>
-                        <a class="card-link" href="proto.html">View prototype &rarr;</a>
+                        <a class="card-link" href="proto.html">View Sonic Camera &rarr;</a>
+                    </div>
+                </div>
+
+                <!-- 1B. Orange Era: First Hardware Mockup -->
+                <div class="gallery-card">
+                    <div class="card-preview" style="background: #f5f5f0;">
+                        <iframe src="mockup-orange.html" loading="lazy" sandbox="allow-same-origin"></iframe>
+                        <a class="preview-overlay" href="mockup-orange.html" title="Open orange palette mockup"></a>
+                    </div>
+                    <div class="card-info">
+                        <span class="card-version v1b">ITERATION 1B</span>
+                        <div class="card-title">Orange Era: First Hardware Mockup</div>
+                        <p class="card-desc">
+                            First pivot from camera to sequencer form-factor. Light background with bold
+                            orange accent (#ff6b2b) on pads, transport controls, and sensor callouts.
+                            Embedded display showing the live app. The bridge between camera concept
+                            and the current hardware design.
+                        </p>
+                        <div class="card-tags">
+                            <span class="card-tag">Orange #ff6b2b</span>
+                            <span class="card-tag">Light enclosure</span>
+                            <span class="card-tag">Embedded app</span>
+                            <span class="card-tag">Recovered from git</span>
+                        </div>
+                        <a class="card-link" href="mockup-orange.html">View orange mockup &rarr;</a>
                     </div>
                 </div>
 
@@ -354,7 +386,7 @@
                         <a class="preview-overlay" href="mockup-palette-a.html" title="Open Palette A"></a>
                     </div>
                     <div class="card-info">
-                        <span class="card-version v2">ITERATION 2A</span>
+                        <span class="card-version v2">ITERATION 2</span>
                         <div class="card-title">Palette A: Primary Colors</div>
                         <p class="card-desc">
                             Bauhaus-inspired primary color exploration. Yellow accent (#e6b800),
@@ -377,7 +409,7 @@
                         <a class="preview-overlay" href="mockup-palette-b.html" title="Open Palette B"></a>
                     </div>
                     <div class="card-info">
-                        <span class="card-version v3">ITERATION 2B</span>
+                        <span class="card-version v3">ITERATION 3</span>
                         <div class="card-title">Palette B: Pastel Tones</div>
                         <p class="card-desc">
                             Softer palette with light blue (#5ba8d4), pink (#d48ba0), and muted yellow (#d4c56a).
@@ -400,7 +432,7 @@
                         <a class="preview-overlay" href="design.html" title="Open hardware design"></a>
                     </div>
                     <div class="card-info">
-                        <span class="card-version v4">ITERATION 3</span>
+                        <span class="card-version v4">ITERATION 4</span>
                         <div class="card-title">Hardware Design: Light Enclosure</div>
                         <p class="card-desc">
                             First physical hardware concept. Aluminum enclosure (200x140x45mm),
@@ -425,7 +457,7 @@
                         <a class="preview-overlay" href="index.html" title="Open interactive mockup"></a>
                     </div>
                     <div class="card-info">
-                        <span class="card-version v5">ITERATION 4</span>
+                        <span class="card-version v5">ITERATION 5</span>
                         <div class="card-title">Interactive Hardware: Petrol Green</div>
                         <p class="card-desc">
                             Dark petrol-green (#1a3535) enclosure with live interactive display running

@@ -124,52 +124,6 @@
         .gallery-panel { display: none; }
         .gallery-panel.active { display: block; }
 
-        /* Iframe preview for iteration pages */
-        .iframe-showcase {
-            display: flex;
-            justify-content: center;
-            padding: 24px 0;
-            min-height: 420px;
-        }
-        .iframe-frame {
-            position: relative;
-            width: 100%;
-            max-width: 960px;
-            height: 440px;
-            overflow: hidden;
-            border-radius: 8px;
-            border: 2px solid #e0e0e0;
-            background: #1a1a1a;
-        }
-        .iframe-frame iframe {
-            position: absolute;
-            top: 0; left: 0;
-            width: 200%;
-            height: 200%;
-            transform: scale(0.5);
-            transform-origin: top left;
-            border: none;
-            pointer-events: none;
-        }
-        .iframe-overlay {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            padding-bottom: 16px;
-            color: #fff;
-            font-size: 12px;
-            font-weight: 700;
-            text-decoration: none;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            background: linear-gradient(transparent 70%, rgba(0,0,0,0.5) 100%);
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        .iframe-overlay:hover { opacity: 1; }
-
         /* Device — scaled down via parent transform */
         .device-container { position: relative; width: 1100px; height: 700px; overflow: visible; }
 
@@ -873,6 +827,18 @@
         .pin-table tr:nth-child(even) { background: #fafafa; }
         .pin-table .pin-num { font-family: monospace; font-weight: 700; color: var(--accent); }
 
+        /* Minimal iteration — compact display */
+        .minimal .display {
+            height: 280px;
+        }
+        .minimal .artwork {
+            top: 290px;
+        }
+        .minimal .modes-bar { display: none; }
+        .minimal .pads-container { top: 380px; }
+        .minimal .encoders-container { top: 380px; width: 200px; }
+        .minimal .label-pads { top: 370px; }
+        .minimal .label-ctrl { top: 370px; }
     </style>
 </head>
 <body>
@@ -898,72 +864,270 @@
 
             <!-- Gallery Tabs -->
             <div class="gallery-tabs" id="galleryTabs">
-                <button class="gallery-tab active" data-tab="prototypes"><span class="tab-num">1</span>Prototypes</button>
-                <button class="gallery-tab" data-tab="bauhaus"><span class="tab-num">2</span>Bauhaus</button>
-                <button class="gallery-tab" data-tab="pastels"><span class="tab-num">3</span>Pastels</button>
-                <button class="gallery-tab" data-tab="hardware"><span class="tab-num">4</span>Hardware</button>
-                <button class="gallery-tab" data-tab="interactive"><span class="tab-num">5</span>Interactive</button>
+                <button class="gallery-tab active" data-tab="minimal"><span class="tab-num">1</span>Minimal</button>
+                <button class="gallery-tab" data-tab="standard"><span class="tab-num">2</span>Standard</button>
+                <button class="gallery-tab" data-tab="full"><span class="tab-num">3</span>Full</button>
+                <button class="gallery-tab" data-tab="interactive"><span class="tab-num">4</span>Interactive</button>
             </div>
 
-            <!-- TAB 1: Prototypes -->
-            <div class="gallery-panel active" data-panel="prototypes">
-                <div class="iframe-showcase">
-                    <div class="iframe-frame">
-                        <iframe src="proto.html" loading="lazy" sandbox="allow-same-origin" title="Dark Prototypes preview"></iframe>
-                        <a class="iframe-overlay" href="proto.html">Open full page &rarr;</a>
+            <!-- TAB 1: Minimal -->
+            <div class="gallery-panel active" data-panel="minimal">
+                <div class="showcase-stage">
+                    <div class="showcase-rotator">
+                        <div class="device-container minimal">
+                            <div class="enclosure">
+                                <div class="artwork"></div>
+
+                                <!-- Display -->
+                                <div class="display">
+                                    <div class="lcd-screen">
+                                        <div class="lcd-status-bar">
+                                            <div class="lcd-transport">
+                                                <div class="lcd-tr-btn active">&#9654;</div>
+                                                <div class="lcd-tr-btn">&#9632;</div>
+                                                <div class="lcd-tr-btn">&#9679;</div>
+                                            </div>
+                                            <div class="lcd-bpm"><span class="lcd-bpm-val">120</span> BPM</div>
+                                            <div class="lcd-gps">40.4168, -3.7038</div>
+                                            <div class="lcd-time">14:32</div>
+                                        </div>
+                                        <div class="lcd-tabs">
+                                            <div class="lcd-tab active">SEQ</div>
+                                            <div class="lcd-tab">MIX</div>
+                                            <div class="lcd-tab">SYN</div>
+                                            <div class="lcd-tab">AI</div>
+                                        </div>
+                                        <div class="lcd-seq-area">
+                                            <div class="lcd-seq-header">
+                                                <span class="lcd-seq-title">SEQ</span>
+                                                <span class="lcd-seq-ctrl active">SMP</span>
+                                                <span class="lcd-seq-ctrl">SYN</span>
+                                            </div>
+                                            <div class="lcd-tracks" id="lcdTracksMinimal"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Labels -->
+                                <span class="section-label label-pads">PADS</span>
+                                <span class="section-label label-ctrl">CTRL</span>
+
+                                <!-- 8 Pads -->
+                                <div class="pads-container">
+                                    <div class="pad">1</div><div class="pad">2</div><div class="pad">3</div><div class="pad">4</div>
+                                    <div class="pad">5</div><div class="pad">6</div><div class="pad">7</div><div class="pad">8</div>
+                                </div>
+
+                                <!-- 4 Encoders -->
+                                <div class="encoders-container">
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">VOL</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">PAN</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">FX</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">BPM</span></div>
+                                </div>
+
+                                <!-- Transport -->
+                                <div class="transport-container">
+                                    <div class="transport-btn play active">&#9654;</div>
+                                    <div class="transport-btn stop">&#9632;</div>
+                                    <div class="transport-btn rec">&#9679;</div>
+                                </div>
+
+                                <!-- GPS Strip -->
+                                <div class="gps-strip">
+                                    <div class="gps-map-thumb"></div>
+                                    <div class="gps-icon">+</div>
+                                    <div class="gps-info">
+                                        <span class="gps-label">GPS</span>
+                                        <span class="gps-coords">40.4168, -3.7038</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                <div class="info-bar" style="border-radius: 8px;">
+                    <div>Display: <span>5" LCD</span></div>
+                    <div>Pads: <span>8x MPR121</span></div>
+                    <div>Encoders: <span>4x Rotary</span></div>
+                    <div>Buttons: <span>3 (Transport)</span></div>
+                </div>
                 <div class="iter-desc">
-                    <h4>Iteration 1 &mdash; Dark Prototypes</h4>
+                    <h4>Iteration 1 &mdash; Minimal Concept</h4>
                     <ul>
-                        <li>Dark-themed exploration of multiple hardware concepts with monospace typography</li>
-                        <li>Multiple layout variants: "Sonic Camera" inspired by Contax T2 / Ricoh GR1</li>
-                        <li>Red accent (#e94560), minimal chrome, industrial aesthetic</li>
-                        <li>Tested core interaction patterns: display + pads + encoders + transport</li>
+                        <li>Earliest design: large display with basic sequencer, 8 pads, 4 encoders, transport</li>
+                        <li>No mode buttons &mdash; modes controlled via on-screen UI</li>
+                        <li>GPS strip for location awareness, minimal physical controls</li>
+                        <li>Proves core concept: location-sampled pads + step sequencer</li>
                     </ul>
                 </div>
             </div>
 
-            <!-- TAB 2: Bauhaus (Palette A) -->
-            <div class="gallery-panel" data-panel="bauhaus">
-                <div class="iframe-showcase">
-                    <div class="iframe-frame">
-                        <iframe src="mockup-palette-a.html" loading="lazy" sandbox="allow-same-origin" title="Bauhaus palette preview"></iframe>
-                        <a class="iframe-overlay" href="mockup-palette-a.html">Open full page &rarr;</a>
+            <!-- TAB 2: Standard -->
+            <div class="gallery-panel" data-panel="standard">
+                <div class="showcase-stage">
+                    <div class="showcase-rotator">
+                        <div class="device-container">
+                            <div class="enclosure">
+                                <div class="artwork"></div>
+
+                                <!-- Display -->
+                                <div class="display">
+                                    <div class="lcd-screen">
+                                        <div class="lcd-status-bar">
+                                            <div class="lcd-transport">
+                                                <div class="lcd-tr-btn active">&#9654;</div>
+                                                <div class="lcd-tr-btn">&#9632;</div>
+                                                <div class="lcd-tr-btn">&#9679;</div>
+                                            </div>
+                                            <div class="lcd-bpm"><span class="lcd-bpm-val">120</span> BPM</div>
+                                            <div class="lcd-tap">TAP</div>
+                                            <div class="lcd-gps">40.4168, -3.7038</div>
+                                            <div class="lcd-time">14:32</div>
+                                        </div>
+                                        <div class="lcd-tabs">
+                                            <div class="lcd-tab active">SEQ</div>
+                                            <div class="lcd-tab">MIX</div>
+                                            <div class="lcd-tab">SYN</div>
+                                            <div class="lcd-tab">SCN</div>
+                                            <div class="lcd-tab">AI</div>
+                                            <div class="lcd-tab">FX</div>
+                                            <div class="lcd-tab">RAD</div>
+                                        </div>
+                                        <div class="lcd-seq-area">
+                                            <div class="lcd-seq-header">
+                                                <span class="lcd-seq-title">SEQ</span>
+                                                <span class="lcd-seq-ctrl active">SMP</span>
+                                                <span class="lcd-seq-ctrl">SYN</span>
+                                                <span class="lcd-seq-ctrl">RAD</span>
+                                                <span class="lcd-seq-ctrl">MIC</span>
+                                            </div>
+                                            <div class="lcd-patterns">
+                                                <div class="lcd-pat active">A</div>
+                                                <div class="lcd-pat">B</div>
+                                                <div class="lcd-pat">C</div>
+                                                <div class="lcd-pat">D</div>
+                                            </div>
+                                            <div class="lcd-tracks" id="lcdTracksStandard"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 3 Mode Buttons -->
+                                <div class="modes-bar">
+                                    <div class="mode-btn" data-mode="picture">PICTURE</div>
+                                    <div class="mode-btn" data-mode="soundscape">SOUNDSCAPE</div>
+                                    <div class="mode-btn" data-mode="interact">INTERACT</div>
+                                </div>
+
+                                <!-- Labels -->
+                                <span class="section-label label-pads">PADS</span>
+                                <span class="section-label label-ctrl">CTRL</span>
+
+                                <!-- 8 Pads -->
+                                <div class="pads-container">
+                                    <div class="pad">1</div><div class="pad">2</div><div class="pad">3</div><div class="pad">4</div>
+                                    <div class="pad">5</div><div class="pad">6</div><div class="pad">7</div><div class="pad">8</div>
+                                </div>
+
+                                <!-- 4 Encoders -->
+                                <div class="encoders-container">
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">VOL</span><span class="encoder-value">80</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">PAN</span><span class="encoder-value">C</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">FX</span><span class="encoder-value">30</span></div>
+                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">BPM</span><span class="encoder-value">120</span></div>
+                                </div>
+
+                                <!-- Status LEDs -->
+                                <div class="hw-leds">
+                                    <div class="hw-led gps" title="GPS"></div>
+                                    <div class="hw-led wifi" title="WiFi"></div>
+                                    <div class="hw-led audio" title="Audio"></div>
+                                </div>
+
+                                <!-- Transport -->
+                                <div class="transport-container">
+                                    <div class="transport-btn play active">&#9654;</div>
+                                    <div class="transport-btn stop">&#9632;</div>
+                                    <div class="transport-btn rec">&#9679;</div>
+                                </div>
+
+                                <!-- GPS Strip -->
+                                <div class="gps-strip">
+                                    <div class="gps-map-thumb"></div>
+                                    <div class="gps-icon">+</div>
+                                    <div class="gps-info">
+                                        <span class="gps-label">GPS</span>
+                                        <span class="gps-coords">40.4168, -3.7038</span>
+                                        <span class="gps-city">Madrid, ES</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- I/O Ports -->
+                            <div class="io-ports">
+                                <div style="position: relative;">
+                                    <div class="io-port"></div>
+                                    <div class="io-label" style="top: 2px;">Audio Out</div>
+                                    <div class="io-label-line" style="top: 8px;"></div>
+                                </div>
+                                <div style="position: relative;">
+                                    <div class="io-port"></div>
+                                    <div class="io-label" style="top: 2px;">Headphones</div>
+                                    <div class="io-label-line" style="top: 8px;"></div>
+                                </div>
+                                <div style="position: relative;">
+                                    <div class="io-port"></div>
+                                    <div class="io-label" style="top: 2px;">Audio In</div>
+                                    <div class="io-label-line" style="top: 8px;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Sensors -->
+                            <div class="sensor sensor-piezo">
+                                <div class="sensor-icon">&#9676;</div>
+                                <div class="sensor-info"><span class="sensor-name">Piezo</span><span class="sensor-desc">Vibration sensor</span></div>
+                                <div class="sensor-line"></div>
+                            </div>
+                            <div class="sensor sensor-mic">
+                                <div class="sensor-icon">&#9834;</div>
+                                <div class="sensor-info"><span class="sensor-name">Mic</span><span class="sensor-desc">Condenser</span></div>
+                                <div class="sensor-line"></div>
+                            </div>
+                            <div class="sensor sensor-wifi">
+                                <div class="sensor-icon">&#8801;</div>
+                                <div class="sensor-info"><span class="sensor-name">WiFi</span><span class="sensor-desc">802.11</span></div>
+                                <div class="sensor-line-v"></div>
+                            </div>
+                            <div class="sensor sensor-radio">
+                                <div class="sensor-icon">&#9399;</div>
+                                <div class="sensor-info"><span class="sensor-name">Radio</span><span class="sensor-desc">FM Antenna</span></div>
+                                <div class="sensor-line-v"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                <div class="info-bar" style="border-radius: 8px;">
+                    <div>Display: <span>5" LCD</span></div>
+                    <div>Pads: <span>8x MPR121</span></div>
+                    <div>Encoders: <span>4x Rotary</span></div>
+                    <div>Modes: <span>3 Buttons</span></div>
+                    <div>Buttons: <span>6 (Transport + Mode)</span></div>
+                </div>
                 <div class="iter-desc">
-                    <h4>Iteration 2A &mdash; Bauhaus: Yellow / Red / Blue</h4>
+                    <h4>Iteration 2 &mdash; Standard</h4>
                     <ul>
-                        <li>Bauhaus-inspired primary color palette: gold accent (#e6b800), red (#d42b2b), blue (#2255cc)</li>
-                        <li>Strong visual hierarchy with high-contrast buttons and status indicators</li>
-                        <li>Full sequencer grid, transport, mode buttons, GPS integration</li>
-                        <li>Felt too aggressive for an instrument meant for outdoor soundscape capture &mdash; led to softer palette exploration</li>
+                        <li>Adds 3 dedicated mode buttons (Picture / Soundscape / Interact)</li>
+                        <li>GPS strip with map thumbnail and city display</li>
+                        <li>Status LEDs for GPS, WiFi, and audio activity</li>
+                        <li>I/O ports and external sensor connections visible</li>
+                        <li>Core sequencer UI with pattern bank display</li>
                     </ul>
                 </div>
             </div>
 
-            <!-- TAB 3: Pastels (Palette B) -->
-            <div class="gallery-panel" data-panel="pastels">
-                <div class="iframe-showcase">
-                    <div class="iframe-frame">
-                        <iframe src="mockup-palette-b.html" loading="lazy" sandbox="allow-same-origin" title="Pastels palette preview"></iframe>
-                        <a class="iframe-overlay" href="mockup-palette-b.html">Open full page &rarr;</a>
-                    </div>
-                </div>
-                <div class="iter-desc">
-                    <h4>Iteration 2B &mdash; Pastels: Blue / Pink / Yellow</h4>
-                    <ul>
-                        <li>Softer palette with light blue (#5ba8d4), pink (#d48ba0), and muted yellow (#d4c56a)</li>
-                        <li>This became the foundation for the final web app palette</li>
-                        <li>Calmer aesthetic reflecting acoustic ecology principles</li>
-                        <li>More environmental feel suited to location-based sound capture</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- TAB 4: Hardware (Full CSS mockup) -->
-            <div class="gallery-panel" data-panel="hardware">
+            <!-- TAB 3: Full -->
+            <div class="gallery-panel" data-panel="full">
                 <div class="showcase-stage">
                     <div class="showcase-rotator">
                         <div class="device-container">
@@ -1178,14 +1342,14 @@
                     <div>X-Fade: <span>1x Slider</span></div>
                 </div>
                 <div class="iter-desc">
-                    <h4>Iteration 3 &mdash; Hardware Design (Light Enclosure)</h4>
+                    <h4>Iteration 3 &mdash; Full Hardware</h4>
                     <ul>
-                        <li>First physical hardware concept: aluminum enclosure 200x140x45mm, light grey finish</li>
                         <li>4 mode buttons including Journey mode for GPS-path compositions</li>
-                        <li>4 synth knobs (CUTOFF/RES/ATK/REL), 4 mixer faders (MIC/SMP/SYN/RAD)</li>
-                        <li>6 function buttons (SHIFT/DUB/FILL/CLR/SCENE/FX), crossfader</li>
-                        <li>Static LCD mockup showing full sequencer with 8 patterns and 8 tracks</li>
-                        <li>Complete BOM and pin assignments for Teensy 4.1 + ESP32 build</li>
+                        <li>4 synth knobs (CUTOFF/RES/ATK/REL) for direct sound shaping</li>
+                        <li>4 mixer faders with level LEDs (MIC/SMP/SYN/RAD channels)</li>
+                        <li>6 function buttons (SHIFT/DUB/FILL/CLR/SCENE/FX)</li>
+                        <li>Crossfader for scene A/B blending</li>
+                        <li>8-pattern bank, 8-track sequencer with euclidean and DUB modes</li>
                     </ul>
                 </div>
             </div>
@@ -1199,7 +1363,7 @@
                     <a href="index.html">Open Interactive Mockup</a>
                 </div>
                 <div class="iter-desc">
-                    <h4>Iteration 4 &mdash; Interactive Prototype (Petrol Green)</h4>
+                    <h4>Iteration 4 &mdash; Interactive (Petrol Green)</h4>
                     <ul>
                         <li>Non-touch 5" LCD display with MENU/BACK/SHIFT/PAGE physical navigation</li>
                         <li>5 main encoders (VOL/PAN/FILT/FX/DECAY) + 4 synth + 4 FX knobs</li>
@@ -1416,6 +1580,8 @@
             }
         }
 
+        buildGrid('lcdTracksMinimal', 6, 16, 8);
+        buildGrid('lcdTracksStandard', 8, 16, 10);
         buildGrid('lcdTracksFull', 8, 16, 12);
     })();
     </script>
