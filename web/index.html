@@ -267,9 +267,9 @@
             position: absolute;
             left: 18px; top: 310px;
             display: grid;
-            grid-template-columns: repeat(4, 62px);
-            grid-template-rows: repeat(2, 46px);
-            gap: 5px;
+            grid-template-columns: repeat(4, 70px);
+            grid-template-rows: repeat(2, 52px);
+            gap: 6px;
             z-index: 2;
             background: rgba(0,0,0,0.12);
             border: 1px solid rgba(255,255,255,0.04);
@@ -316,8 +316,8 @@
         /* Crossfader — below pads */
         .crossfader-section {
             position: absolute;
-            left: 26px; top: 432px;
-            width: 264px;
+            left: 26px; top: 460px;
+            width: 290px;
             z-index: 2;
             display: flex;
             flex-direction: column;
@@ -356,9 +356,9 @@
         /* 4 Mixer Faders — center-left */
         .faders-container {
             position: absolute;
-            left: 310px; top: 310px;
+            left: 350px; top: 306px;
             display: flex;
-            gap: 14px;
+            gap: 18px;
             z-index: 2;
         }
         .fader-ch {
@@ -376,7 +376,7 @@
         .fader-lbl.syn { color: #278789; }
         .fader-lbl.rad { color: #d4a857; }
         .fader-track {
-            width: 6px; height: 90px;
+            width: 6px; height: 120px;
             background: rgba(0,0,0,0.3);
             border-radius: 3px;
             position: relative;
@@ -408,7 +408,7 @@
         /* 5-Way Joystick Navigation — center */
         .joystick-module {
             position: absolute;
-            left: 480px; top: 320px;
+            left: 530px; top: 316px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -416,7 +416,7 @@
             z-index: 2;
         }
         .joystick-base {
-            width: 58px; height: 58px;
+            width: 68px; height: 68px;
             border-radius: 50%;
             background: linear-gradient(145deg, var(--petrol-raised) 0%, var(--petrol-dark) 100%);
             border: 2px solid var(--petrol-border);
@@ -446,7 +446,7 @@
         .joystick-down { grid-column: 2; grid-row: 3; border-radius: 0 0 50% 50%; }
         .joystick-center {
             grid-column: 2; grid-row: 2;
-            width: 18px; height: 18px;
+            width: 22px; height: 22px;
             border-radius: 50%;
             background: linear-gradient(145deg, var(--petrol-highlight), var(--petrol-raised));
             border: 1px solid #5a7a7a;
@@ -465,7 +465,7 @@
         /* Nav buttons around joystick */
         .joy-nav-btns {
             position: absolute;
-            left: 460px; top: 395px;
+            left: 514px; top: 410px;
             display: flex;
             gap: 4px;
             z-index: 2;
@@ -492,19 +492,19 @@
         /* Synth Knobs — 2x2, center-right */
         .synth-knobs-area {
             position: absolute;
-            left: 580px; top: 310px;
+            left: 640px; top: 310px;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 4px 14px;
+            gap: 8px 22px;
             z-index: 2;
         }
 
         .knob-unit { display: flex; flex-direction: column; align-items: center; gap: 1px; }
-        .knob-unit .encoder-knob { width: 28px; height: 28px; }
-        .knob-unit .encoder-knob::before { width: 9px; height: 9px; }
-        .knob-unit .encoder-knob::after { height: 5px; }
-        .knob-unit .encoder-label { font-size: 6px; color: rgba(255,255,255,0.45); font-weight: 700; letter-spacing: 0.5px; }
-        .knob-unit .encoder-value { font-size: 6px; color: rgba(255,255,255,0.3); font-family: monospace; }
+        .knob-unit .encoder-knob { width: 34px; height: 34px; }
+        .knob-unit .encoder-knob::before { width: 11px; height: 11px; }
+        .knob-unit .encoder-knob::after { height: 6px; }
+        .knob-unit .encoder-label { font-size: 7px; color: rgba(255,255,255,0.45); font-weight: 700; letter-spacing: 0.5px; }
+        .knob-unit .encoder-value { font-size: 7px; color: rgba(255,255,255,0.3); font-family: monospace; }
 
         .knob-unit[data-param="cutoff"] .encoder-knob::after { background: #278789; }
         .knob-unit[data-param="resonance"] .encoder-knob::after { background: #278789; }
@@ -514,10 +514,10 @@
         /* FX Knobs — 2x2, far right */
         .fx-knobs-area {
             position: absolute;
-            left: 700px; top: 310px;
+            left: 830px; top: 310px;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 4px 14px;
+            gap: 8px 22px;
             z-index: 2;
         }
 
@@ -532,27 +532,27 @@
             color: rgba(255,255,255,0.2); text-transform: uppercase;
             position: absolute; z-index: 3;
         }
-        .label-synth { left: 588px; top: 300px; }
-        .label-fx { left: 715px; top: 300px; }
-        .label-mixer { left: 318px; top: 300px; }
+        .label-synth { left: 654px; top: 300px; }
+        .label-fx { left: 844px; top: 300px; }
+        .label-mixer { left: 358px; top: 296px; }
 
         /* Function Buttons Row — bottom center */
         .func-btns {
             position: absolute;
-            left: 310px; top: 430px;
+            left: 350px; top: 470px;
             display: flex;
-            gap: 5px;
+            gap: 8px;
             z-index: 2;
         }
         .func-btn {
-            width: 54px; height: 22px;
+            width: 64px; height: 28px;
             border-radius: 4px;
             border: 1.5px solid var(--petrol-border);
             background: linear-gradient(180deg, var(--petrol-raised) 0%, var(--petrol-dark) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 7px; font-weight: 800;
+            font-size: 8px; font-weight: 800;
             letter-spacing: 0.5px;
             cursor: pointer;
             transition: all 0.1s;
@@ -575,7 +575,7 @@
         .gps-strip {
             position: absolute;
             right: 18px; bottom: 18px;
-            width: 240px; height: 46px;
+            width: 280px; height: 50px;
             background: rgba(0,0,0,0.2);
             border: 1.5px solid #278789;
             border-radius: 6px;
@@ -853,7 +853,6 @@
             <a href="app.html" class="nav-link">App</a>
             <a href="about.html" class="nav-link">About</a>
             <a href="design.html" class="nav-link secondary">Design</a>
-            <a href="gallery.html" class="nav-link secondary">Gallery</a>
             <a href="architecture.html" class="nav-link secondary">Arch</a>
             <a href="analysis.html" class="nav-link secondary">Analysis</a>
             <a href="sdlc.html" class="nav-link secondary">SDLC</a>
