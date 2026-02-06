@@ -26,6 +26,13 @@
 // DISPLAY
 // ============================================
 
+// Development: SSD1306 128x64 OLED (I2C)
+// Production target: 5" IPS LCD 800x480 (SPI, ILI9488 or RA8875)
+// Display pins for SPI LCD (future):
+// #define TFT_CS   36
+// #define TFT_DC   37
+// #define TFT_RST  38
+
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET -1  // Share reset with Arduino
@@ -37,8 +44,15 @@
 // I2C (shared by touch sensor, display)
 // SDA = Pin 18, SCL = Pin 19 (default I2C pins)
 
-// Audio Shield (I2S)
-// Uses pins 7, 20, 21, 23 internally
+// Audio Shield (I2S) - RESERVED PINS, do NOT reuse:
+// Pin 7  = I2S TX (BCLK)
+// Pin 20 = I2S LRCLK
+// Pin 21 = I2S BCLK
+// Pin 23 = I2S TX
+// Pin 2  = I2S RX (audio input)
+
+// Touch Sensor IRQ (MPR121)
+#define TOUCH_IRQ 15
 
 // Encoder 1 (MIX)
 #define ENC1_CLK 3
@@ -47,7 +61,7 @@
 
 // Encoder 2 (FX)
 #define ENC2_CLK 6
-#define ENC2_DT  7
+#define ENC2_DT  14
 #define ENC2_SW  8
 
 // Encoder 3 (MOD)

@@ -723,24 +723,6 @@
         }
         .info-bar span { color: #1aa167; font-weight: 600; }
 
-        /* Iteration description card */
-        .iter-desc {
-            background: #fafafa;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 16px 20px;
-            margin-top: 12px;
-            font-size: 13px;
-            color: #555;
-            line-height: 1.6;
-        }
-        .iter-desc h4 {
-            font-size: 14px; font-weight: 800;
-            color: var(--accent); margin-bottom: 8px;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        .iter-desc ul { margin: 0; padding-left: 20px; }
-        .iter-desc li { margin-bottom: 4px; }
 
         /* Interactive tab — link card */
         .interactive-link-card {
@@ -827,18 +809,203 @@
         .pin-table tr:nth-child(even) { background: #fafafa; }
         .pin-table .pin-num { font-family: monospace; font-weight: 700; color: var(--accent); }
 
-        /* Minimal iteration — compact display */
-        .minimal .display {
-            height: 280px;
+        /* ==================== CAMERA MOCKUP (Iteration 1) ==================== */
+        .camera-body {
+            position: relative;
+            width: 480px; height: 300px;
+            background: linear-gradient(180deg, #2a2a2a 0%, #1e1e1e 30%, #222 100%);
+            border-radius: 12px 12px 10px 10px;
+            box-shadow:
+                0 2px 0 #333,
+                0 4px 0 #1a1a1a,
+                0 8px 24px rgba(0,0,0,0.6),
+                inset 0 1px 0 rgba(255,255,255,0.06);
+            margin-top: 40px;
         }
-        .minimal .artwork {
-            top: 290px;
+        .camera-top {
+            position: absolute; top: -28px; left: 0; right: 0; height: 28px;
+            background: linear-gradient(180deg, #383838 0%, #2a2a2a 100%);
+            border-radius: 10px 10px 0 0;
+            display: flex; align-items: center; padding: 0 16px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
         }
-        .minimal .modes-bar { display: none; }
-        .minimal .pads-container { top: 380px; }
-        .minimal .encoders-container { top: 380px; width: 200px; }
-        .minimal .label-pads { top: 370px; }
-        .minimal .label-ctrl { top: 370px; }
+        .camera-brand {
+            font-size: 9px; font-weight: 800; letter-spacing: 3px; color: #888;
+            position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+        }
+        .camera-model {
+            font-size: 7px; letter-spacing: 1.5px; color: #555;
+            position: absolute; left: 16px; top: 18px;
+        }
+        .shutter-btn {
+            position: absolute; right: 60px; top: -4px;
+            width: 36px; height: 36px;
+            background: radial-gradient(circle at 40% 35%, #c0392b, #922b21);
+            border-radius: 50%;
+            border: 2px solid #444;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+        .shutter-btn::after {
+            content: 'REC'; position: absolute; bottom: -14px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 6px; font-weight: 700; color: #c0392b; letter-spacing: 1px;
+        }
+        .mode-dial {
+            position: absolute; right: 12px; top: -6px;
+            width: 40px; height: 40px;
+            background: conic-gradient(from 0deg, #444, #555, #444, #333, #444);
+            border-radius: 50%;
+            border: 2px solid #555;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+        }
+        .mode-dial::before {
+            content: ''; position: absolute; top: 3px; left: 50%;
+            transform: translateX(-50%);
+            width: 2px; height: 8px; background: #e94560; border-radius: 1px;
+        }
+        .mode-dial::after {
+            content: 'MODE'; position: absolute; bottom: -14px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 6px; font-weight: 700; color: #555; letter-spacing: 1px;
+        }
+        .hot-shoe {
+            position: absolute; left: 50%; top: -4px; transform: translateX(-50%);
+            width: 40px; height: 6px;
+            background: #555; border-radius: 1px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .camera-front {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            display: flex; align-items: center;
+        }
+        .lens-assembly {
+            position: absolute; left: 24px; top: 50%; transform: translateY(-50%);
+            width: 120px; height: 120px;
+        }
+        .lens-ring-outer {
+            width: 120px; height: 120px;
+            background: conic-gradient(from 0deg, #333, #444, #333, #2a2a2a, #333);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 0 3px #1a1a1a, 0 4px 12px rgba(0,0,0,0.4);
+        }
+        .lens-ring-inner {
+            width: 90px; height: 90px;
+            background: radial-gradient(circle at 35% 35%, #1a2a3a, #0a0f14 60%, #050a0f);
+            border-radius: 50%;
+            border: 2px solid #2a2a2a;
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+        }
+        .lens-ring-inner::before {
+            content: ''; position: absolute;
+            width: 60px; height: 60px;
+            background: radial-gradient(circle at 30% 30%, rgba(100,150,200,0.15), transparent 60%);
+            border-radius: 50%;
+        }
+        .lens-label {
+            position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
+            font-size: 7px; color: #444; letter-spacing: 1px; white-space: nowrap;
+        }
+        .lens-icon { font-size: 18px; color: rgba(100,180,255,0.3); }
+        .aperture-blades {
+            position: absolute;
+            width: 50px; height: 50px;
+            border: 1px solid rgba(100,150,200,0.1);
+            border-radius: 50%;
+        }
+        .camera-display {
+            position: absolute; right: 16px; top: 16px;
+            width: 300px; height: 200px;
+            background: #0a0f0a;
+            border-radius: 4px;
+            border: 2px solid #111;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+        .camera-display .lcd-screen { height: 100%; }
+        .camera-display .lcd-status-bar { height: 24px; padding: 0 6px; gap: 6px; }
+        .camera-display .lcd-tr-btn { width: 18px; height: 18px; font-size: 8px; }
+        .camera-display .lcd-bpm { font-size: 10px; }
+        .camera-display .lcd-gps { font-size: 8px; }
+        .camera-display .lcd-seq-area { padding: 4px; }
+        .camera-display .lcd-track { height: 16px; }
+        .camera-display .lcd-track-num { font-size: 8px; width: 10px; }
+        .camera-display .lcd-track-src { font-size: 7px; width: 18px; }
+        .viewfinder {
+            position: absolute; top: 10px; right: 20px;
+            width: 28px; height: 18px;
+            background: #111; border: 1px solid #444; border-radius: 2px;
+        }
+        .viewfinder::before {
+            content: ''; position: absolute;
+            top: 2px; left: 2px; right: 2px; bottom: 2px;
+            background: radial-gradient(circle, rgba(26,161,103,0.3), transparent);
+            border-radius: 1px;
+        }
+        .camera-bottom {
+            position: absolute; bottom: -6px; left: 4px; right: 4px; height: 6px;
+            background: #181818;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        .tripod-mount {
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 16px; height: 4px; background: #333; border-radius: 0 0 2px 2px;
+        }
+        .camera-side-left {
+            position: absolute; left: -8px; top: 40px;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .side-port {
+            width: 6px; height: 14px; background: #181818;
+            border-radius: 2px 0 0 2px; border: 1px solid #333; border-right: none;
+        }
+        .camera-grip {
+            position: absolute; left: 154px; top: 8px; bottom: 8px; width: 18px;
+            background: repeating-linear-gradient(180deg, #2a2a2a 0px, #2a2a2a 2px, #222 2px, #222 4px);
+            border-radius: 3px;
+            box-shadow: inset 0 0 4px rgba(0,0,0,0.3);
+        }
+        .gps-led {
+            position: absolute; left: 140px; top: 50%; transform: translateY(-50%);
+            width: 5px; height: 5px; background: #6abf8a;
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(106,191,138,0.5);
+            animation: gps-blink 2s ease-in-out infinite;
+        }
+        @keyframes gps-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .gps-led-label {
+            position: absolute; left: 150px; top: 50%; transform: translateY(-50%);
+            font-size: 6px; color: #555; letter-spacing: 1px;
+        }
+
+        /* ==================== ORANGE VARIANT (Iteration 2) ==================== */
+        .orange-variant .mode-btn[data-mode="picture"] {
+            border-color: #ff6b2b; background: #ff6b2b; color: #fff;
+        }
+        .orange-variant .pad:nth-child(1) { border-color: #ff6b2b; }
+        .orange-variant .pad:nth-child(4) { border-color: #ff6b2b; }
+        .orange-variant .pad:nth-child(8) { border-color: #ff6b2b; }
+        .orange-variant .encoder-knob::after { background: #ff6b2b !important; }
+        .orange-variant .gps-strip { border-color: #ff6b2b; }
+        .orange-variant .gps-strip .gps-icon { color: #ff6b2b; }
+        .orange-variant .gps-strip .gps-label { color: #ff6b2b; }
+        .orange-variant .hw-led.gps { background: #ff6b2b; box-shadow: 0 0 4px rgba(255,107,43,0.6); }
+        .orange-variant .sensor-piezo .sensor-icon { border-color: #ff6b2b; }
+        .orange-variant .sensor-piezo .sensor-name { color: #ff6b2b; }
+        .orange-variant .sensor-piezo .sensor-line { border-color: #ff6b2b; color: #ff6b2b; }
+        .orange-variant .sensor-piezo .sensor-line::before { border-color: #ff6b2b; }
+        .orange-variant .encoders-container {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            width: 200px;
+            height: 110px;
+        }
+        .orange-variant .lcd-step.on { background: #ff6b2b; }
     </style>
 </head>
 <body>
@@ -864,110 +1031,79 @@
 
             <!-- Gallery Tabs -->
             <div class="gallery-tabs" id="galleryTabs">
-                <button class="gallery-tab active" data-tab="minimal"><span class="tab-num">1</span>Minimal</button>
-                <button class="gallery-tab" data-tab="standard"><span class="tab-num">2</span>Standard</button>
-                <button class="gallery-tab" data-tab="full"><span class="tab-num">3</span>Full</button>
-                <button class="gallery-tab" data-tab="interactive"><span class="tab-num">4</span>Interactive</button>
+                <button class="gallery-tab active" data-tab="minimal"><span class="tab-num">1</span>Iteration 1</button>
+                <button class="gallery-tab" data-tab="standard"><span class="tab-num">2</span>Iteration 2</button>
+                <button class="gallery-tab" data-tab="full"><span class="tab-num">3</span>Iteration 3</button>
+                <button class="gallery-tab" data-tab="interactive"><span class="tab-num">4</span>Iteration 4</button>
             </div>
 
-            <!-- TAB 1: Minimal -->
+            <!-- TAB 1: Sonic Camera -->
             <div class="gallery-panel active" data-panel="minimal">
-                <div class="showcase-stage">
-                    <div class="showcase-rotator">
-                        <div class="device-container minimal">
-                            <div class="enclosure">
-                                <div class="artwork"></div>
-
-                                <!-- Display -->
-                                <div class="display">
-                                    <div class="lcd-screen">
-                                        <div class="lcd-status-bar">
-                                            <div class="lcd-transport">
-                                                <div class="lcd-tr-btn active">&#9654;</div>
-                                                <div class="lcd-tr-btn">&#9632;</div>
-                                                <div class="lcd-tr-btn">&#9679;</div>
-                                            </div>
-                                            <div class="lcd-bpm"><span class="lcd-bpm-val">120</span> BPM</div>
-                                            <div class="lcd-gps">40.4168, -3.7038</div>
-                                            <div class="lcd-time">14:32</div>
-                                        </div>
-                                        <div class="lcd-tabs">
-                                            <div class="lcd-tab active">SEQ</div>
-                                            <div class="lcd-tab">MIX</div>
-                                            <div class="lcd-tab">SYN</div>
-                                            <div class="lcd-tab">AI</div>
-                                        </div>
-                                        <div class="lcd-seq-area">
-                                            <div class="lcd-seq-header">
-                                                <span class="lcd-seq-title">SEQ</span>
-                                                <span class="lcd-seq-ctrl active">SMP</span>
-                                                <span class="lcd-seq-ctrl">SYN</span>
-                                            </div>
-                                            <div class="lcd-tracks" id="lcdTracksMinimal"></div>
-                                        </div>
+                <div class="showcase-stage" style="justify-content: center;">
+                    <div class="camera-body">
+                        <!-- Top plate -->
+                        <div class="camera-top">
+                            <span class="camera-brand">OH MY ONDAS</span>
+                            <span class="camera-model">SONIC CAPTURE SYSTEM</span>
+                            <div class="gps-led"></div>
+                            <span class="gps-led-label">GPS</span>
+                            <div class="hot-shoe"></div>
+                            <div class="shutter-btn" title="Record / Capture"></div>
+                            <div class="mode-dial" title="Mode"></div>
+                        </div>
+                        <!-- Front face -->
+                        <div class="camera-front">
+                            <div class="lens-assembly">
+                                <div class="lens-ring-outer">
+                                    <div class="lens-ring-inner">
+                                        <div class="aperture-blades"></div>
+                                        <span class="lens-icon">&#9834;</span>
                                     </div>
                                 </div>
-
-                                <!-- Labels -->
-                                <span class="section-label label-pads">PADS</span>
-                                <span class="section-label label-ctrl">CTRL</span>
-
-                                <!-- 8 Pads -->
-                                <div class="pads-container">
-                                    <div class="pad">1</div><div class="pad">2</div><div class="pad">3</div><div class="pad">4</div>
-                                    <div class="pad">5</div><div class="pad">6</div><div class="pad">7</div><div class="pad">8</div>
-                                </div>
-
-                                <!-- 4 Encoders -->
-                                <div class="encoders-container">
-                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">VOL</span></div>
-                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">PAN</span></div>
-                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">FX</span></div>
-                                    <div class="encoder"><div class="encoder-knob"></div><span class="encoder-label">BPM</span></div>
-                                </div>
-
-                                <!-- Transport -->
-                                <div class="transport-container">
-                                    <div class="transport-btn play active">&#9654;</div>
-                                    <div class="transport-btn stop">&#9632;</div>
-                                    <div class="transport-btn rec">&#9679;</div>
-                                </div>
-
-                                <!-- GPS Strip -->
-                                <div class="gps-strip">
-                                    <div class="gps-map-thumb"></div>
-                                    <div class="gps-icon">+</div>
-                                    <div class="gps-info">
-                                        <span class="gps-label">GPS</span>
-                                        <span class="gps-coords">40.4168, -3.7038</span>
+                                <div class="lens-label">MIC &middot; 360&deg; CAPTURE</div>
+                            </div>
+                            <div class="camera-grip"></div>
+                            <div class="camera-display">
+                                <div class="lcd-screen">
+                                    <div class="lcd-status-bar">
+                                        <div class="lcd-transport">
+                                            <div class="lcd-tr-btn active">&#9654;</div>
+                                            <div class="lcd-tr-btn">&#9632;</div>
+                                        </div>
+                                        <div class="lcd-bpm"><span class="lcd-bpm-val">120</span> BPM</div>
+                                        <div class="lcd-gps">41.38, 2.17</div>
+                                    </div>
+                                    <div class="lcd-seq-area" style="padding: 4px;">
+                                        <div class="lcd-tracks" id="lcdTracksCamera"></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <!-- Bottom plate -->
+                        <div class="camera-bottom">
+                            <div class="tripod-mount"></div>
+                        </div>
+                        <!-- Side ports -->
+                        <div class="camera-side-left">
+                            <div class="side-port" title="USB-C"></div>
+                            <div class="side-port" title="3.5mm Audio"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="info-bar" style="border-radius: 8px;">
-                    <div>Display: <span>5" LCD</span></div>
-                    <div>Pads: <span>8x MPR121</span></div>
-                    <div>Encoders: <span>4x Rotary</span></div>
-                    <div>Buttons: <span>3 (Transport)</span></div>
-                </div>
-                <div class="iter-desc">
-                    <h4>Iteration 1 &mdash; Minimal Concept</h4>
-                    <ul>
-                        <li>Earliest design: large display with basic sequencer, 8 pads, 4 encoders, transport</li>
-                        <li>No mode buttons &mdash; modes controlled via on-screen UI</li>
-                        <li>GPS strip for location awareness, minimal physical controls</li>
-                        <li>Proves core concept: location-sampled pads + step sequencer</li>
-                    </ul>
+                    <div>Form: <span>Camera</span></div>
+                    <div>Mic: <span>360&deg; Omni</span></div>
+                    <div>Display: <span>2.5" LCD</span></div>
+                    <div>Controls: <span>Shutter + Dial</span></div>
+                    <div>Weight: <span>~280g</span></div>
                 </div>
             </div>
 
-            <!-- TAB 2: Standard -->
+            <!-- TAB 2: Orange Era -->
             <div class="gallery-panel" data-panel="standard">
                 <div class="showcase-stage">
                     <div class="showcase-rotator">
-                        <div class="device-container">
+                        <div class="device-container orange-variant">
                             <div class="enclosure">
                                 <div class="artwork"></div>
 
@@ -1008,7 +1144,7 @@
                                                 <div class="lcd-pat">C</div>
                                                 <div class="lcd-pat">D</div>
                                             </div>
-                                            <div class="lcd-tracks" id="lcdTracksStandard"></div>
+                                            <div class="lcd-tracks" id="lcdTracksOrange"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -1113,16 +1249,6 @@
                     <div>Encoders: <span>4x Rotary</span></div>
                     <div>Modes: <span>3 Buttons</span></div>
                     <div>Buttons: <span>6 (Transport + Mode)</span></div>
-                </div>
-                <div class="iter-desc">
-                    <h4>Iteration 2 &mdash; Standard</h4>
-                    <ul>
-                        <li>Adds 3 dedicated mode buttons (Picture / Soundscape / Interact)</li>
-                        <li>GPS strip with map thumbnail and city display</li>
-                        <li>Status LEDs for GPS, WiFi, and audio activity</li>
-                        <li>I/O ports and external sensor connections visible</li>
-                        <li>Core sequencer UI with pattern bank display</li>
-                    </ul>
                 </div>
             </div>
 
@@ -1341,17 +1467,6 @@
                     <div>Buttons: <span>13 (Transport + Mode + Func)</span></div>
                     <div>X-Fade: <span>1x Slider</span></div>
                 </div>
-                <div class="iter-desc">
-                    <h4>Iteration 3 &mdash; Full Hardware</h4>
-                    <ul>
-                        <li>4 mode buttons including Journey mode for GPS-path compositions</li>
-                        <li>4 synth knobs (CUTOFF/RES/ATK/REL) for direct sound shaping</li>
-                        <li>4 mixer faders with level LEDs (MIC/SMP/SYN/RAD channels)</li>
-                        <li>6 function buttons (SHIFT/DUB/FILL/CLR/SCENE/FX)</li>
-                        <li>Crossfader for scene A/B blending</li>
-                        <li>8-pattern bank, 8-track sequencer with euclidean and DUB modes</li>
-                    </ul>
-                </div>
             </div>
 
             <!-- TAB 4: Interactive -->
@@ -1361,18 +1476,6 @@
                     <p>The full interactive hardware mockup with working controls, embedded web app display, and physical-style button interaction. Petrol green enclosure with all controls wired to the embedded app.</p>
                     <p style="font-size: 12px; color: #888;">13 encoders, 4 faders, 8 pads, 16 buttons, 5-way joystick, crossfader &mdash; all interactive</p>
                     <a href="index.html">Open Interactive Mockup</a>
-                </div>
-                <div class="iter-desc">
-                    <h4>Iteration 4 &mdash; Interactive (Petrol Green)</h4>
-                    <ul>
-                        <li>Non-touch 5" LCD display with MENU/BACK/SHIFT/PAGE physical navigation</li>
-                        <li>5 main encoders (VOL/PAN/FILT/FX/DECAY) + 4 synth + 4 FX knobs</li>
-                        <li>4 mixer faders with drag interaction and level LEDs</li>
-                        <li>5 function buttons (DUB/FILL/CLR/SCENE/BANK)</li>
-                        <li>5-way joystick with PREV/NEXT buttons, crossfader</li>
-                        <li>Full keyboard shortcuts: arrow keys, 1-8 for pads, M/B for menu/back</li>
-                        <li>Embedded app.html runs inside the display &mdash; all controls send postMessage commands</li>
-                    </ul>
                 </div>
             </div>
 
@@ -1423,6 +1526,7 @@
                         <li>4x Nav Buttons (MENU/BACK/SHIFT/PAGE)</li>
                         <li>5x Function Buttons (DUB/FILL/CLR/SCENE/BANK)</li>
                         <li>5-Way Joystick + PREV/NEXT</li>
+                        <li><em>13 encoders via 2x MCP23017 I2C expanders</em></li>
                     </ul>
                 </div>
                 <div class="spec-card">
@@ -1437,10 +1541,10 @@
                 <div class="spec-card">
                     <h3>Physical</h3>
                     <ul>
-                        <li>Size: <code>200 x 140 x 45mm</code></li>
-                        <li>Weight: <code>~600g</code></li>
-                        <li>Display: 5" IPS LCD (800x480)</li>
-                        <li>Battery: 5-7 hours</li>
+                        <li>Size: <code>300 x 200 x 50mm</code></li>
+                        <li>Weight: <code>~800g</code></li>
+                        <li>Display: 5" IPS LCD (800x480, SPI)</li>
+                        <li>Battery: 3-4 hours (3500mAh)</li>
                     </ul>
                 </div>
             </div>
@@ -1452,19 +1556,21 @@
                     <tr><th>Function</th><th>Pins</th><th>Protocol</th><th>Notes</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td>Audio Shield (I2S)</td><td><span class="pin-num">7, 20, 21, 23</span></td><td>I2S</td><td>SGTL5000 codec</td></tr>
-                    <tr><td>Touch Sensor (MPR121)</td><td><span class="pin-num">18, 19, 2</span></td><td>I2C + IRQ</td><td>Address: 0x5A</td></tr>
-                    <tr><td>Encoders 1-4</td><td><span class="pin-num">3-12, 24-25</span></td><td>GPIO</td><td>CLK, DT, SW per encoder</td></tr>
+                    <tr><td>Audio Shield (I2S)</td><td><span class="pin-num">2, 7, 20, 21, 23</span></td><td>I2S</td><td>SGTL5000 codec (RESERVED)</td></tr>
+                    <tr><td>Touch Sensor (MPR121)</td><td><span class="pin-num">18, 19, 15</span></td><td>I2C + IRQ</td><td>Address: 0x5A, IRQ on pin 15</td></tr>
+                    <tr><td>5" LCD Display</td><td><span class="pin-num">36, 37, 38</span></td><td>SPI</td><td>ILI9488/RA8875 (CS, DC, RST)</td></tr>
+                    <tr><td>Encoders 1-4</td><td><span class="pin-num">3-6, 8-12, 14, 24-25</span></td><td>GPIO</td><td>CLK, DT, SW per encoder</td></tr>
                     <tr><td>Buttons</td><td><span class="pin-num">26-29</span></td><td>GPIO</td><td>MODE, SHIFT, REC, PLAY</td></tr>
                     <tr><td>NeoPixel LEDs</td><td><span class="pin-num">30</span></td><td>WS2812</td><td>8x RGB</td></tr>
                     <tr><td>ESP32</td><td><span class="pin-num">16, 17</span></td><td>UART</td><td>Serial2 @ 115200</td></tr>
+                    <tr><td>GPIO Expander</td><td><span class="pin-num">18, 19</span></td><td>I2C</td><td>2x MCP23017 for extra encoders</td></tr>
                     <tr><td>SD Card</td><td><span class="pin-num">Built-in</span></td><td>SDIO</td><td>64GB for samples</td></tr>
                 </tbody>
             </table>
 
             <!-- Bill of Materials -->
-            <h2 class="section-header">Bill of Materials v3.0</h2>
-            <p style="color:#888; font-size:12px; margin-bottom:10px;">European suppliers (Mouser.es, Farnell, Bricogeek)</p>
+            <h2 class="section-header">Bill of Materials v3.1</h2>
+            <p style="color:#888; font-size:12px; margin-bottom:10px;">European suppliers (Mouser.es, Farnell, Bricogeek) &mdash; prices verified Feb 2026</p>
             <table class="bom-table">
                 <thead>
                     <tr><th>Component</th><th>Description</th><th>Qty</th><th>Price</th></tr>
@@ -1476,8 +1582,7 @@
                     <tr><td>ESP32-WROOM</td><td>WiFi/BT module</td><td>1</td><td class="price">$8.00</td></tr>
                     <tr><td>microSD Card</td><td>64GB sample storage</td><td>1</td><td class="price">$12.00</td></tr>
                     <tr><td colspan="4" style="background:#1a1a1a;color:#3498db;font-weight:700;">DISPLAY</td></tr>
-                    <tr><td>5" IPS Display</td><td>800x480 LCD (non-touch)</td><td>1</td><td class="price">$28.00</td></tr>
-                    <tr><td>Display Driver</td><td>SSD1963 board</td><td>1</td><td class="price">$8.00</td></tr>
+                    <tr><td>5" IPS Display</td><td>800x480 SPI LCD (ILI9488)</td><td>1</td><td class="price">$55.00</td></tr>
                     <tr><td colspan="4" style="background:#1a1a1a;color:#1270b8;font-weight:700;">USER INTERFACE</td></tr>
                     <tr><td>MPR121 Breakout</td><td>12-ch touch sensor</td><td>1</td><td class="price">$7.95</td></tr>
                     <tr><td>Copper Tape</td><td>Conductive, for pads</td><td>1</td><td class="price">$6.00</td></tr>
@@ -1496,13 +1601,15 @@
                     <tr><td>5V Boost</td><td>Battery converter</td><td>1</td><td class="price">$3.00</td></tr>
                     <tr><td>MCP23017</td><td>I2C GPIO expander</td><td>2</td><td class="price">$4.00</td></tr>
                     <tr><td colspan="4" style="background:#1a1a1a;color:#95a5a6;font-weight:700;">ENCLOSURE & MISC</td></tr>
-                    <tr><td>Enclosure</td><td>Aluminum 200x140x45mm</td><td>1</td><td class="price">$28.00</td></tr>
-                    <tr><td>Acrylic Panel</td><td>Laser-cut top</td><td>1</td><td class="price">$12.00</td></tr>
-                    <tr><td>Hardware</td><td>Screws, standoffs, feet</td><td>-</td><td class="price">$7.00</td></tr>
-                    <tr><td>Wire/Connectors</td><td>Internal wiring</td><td>-</td><td class="price">$8.00</td></tr>
-                    <tr class="bom-total"><td colspan="3">TOTAL (Parts)</td><td>~$295</td></tr>
-                    <tr><td colspan="3" style="color:#888;">+ Shipping/Tax</td><td style="color:#888;">~$45</td></tr>
-                    <tr class="bom-total" style="color:#27ae60;"><td colspan="3">GRAND TOTAL</td><td>~$340</td></tr>
+                    <tr><td>Enclosure</td><td>Aluminum 300x200x50mm</td><td>1</td><td class="price">$35.00</td></tr>
+                    <tr><td>Acrylic Panel</td><td>Laser-cut faceplate</td><td>1</td><td class="price">$18.00</td></tr>
+                    <tr><td>Prototype PCB</td><td>Custom 2-layer PCB</td><td>1</td><td class="price">$80.00</td></tr>
+                    <tr><td>Passives Kit</td><td>Caps, resistors, ferrites</td><td>-</td><td class="price">$15.00</td></tr>
+                    <tr><td>Hardware</td><td>Screws, standoffs, feet</td><td>-</td><td class="price">$8.00</td></tr>
+                    <tr><td>Wire/Connectors</td><td>Internal wiring, headers</td><td>-</td><td class="price">$12.00</td></tr>
+                    <tr class="bom-total"><td colspan="3">TOTAL (Parts)</td><td>~$420</td></tr>
+                    <tr><td colspan="3" style="color:#888;">+ Shipping/Tax (EU)</td><td style="color:#888;">~$60</td></tr>
+                    <tr class="bom-total" style="color:#27ae60;"><td colspan="3">GRAND TOTAL</td><td>~$480</td></tr>
                 </tbody>
             </table>
         </main>
@@ -1519,17 +1626,37 @@
         // Tab switching
         const tabs = document.querySelectorAll('.gallery-tab');
         const panels = document.querySelectorAll('.gallery-panel');
+        const tabArr = Array.from(tabs);
 
-        tabs.forEach(tab => {
+        function activateTab(index) {
+            tabs.forEach(t => t.classList.remove('active'));
+            panels.forEach(p => p.classList.remove('active'));
+            tabArr[index].classList.add('active');
+            const target = tabArr[index].dataset.tab;
+            const panel = document.querySelector(`.gallery-panel[data-panel="${target}"]`);
+            if (panel) panel.classList.add('active');
+        }
+
+        tabs.forEach((tab, i) => {
             tab.addEventListener('click', () => {
-                const target = tab.dataset.tab;
-                tabs.forEach(t => t.classList.remove('active'));
-                panels.forEach(p => p.classList.remove('active'));
-                tab.classList.add('active');
-                const panel = document.querySelector(`.gallery-panel[data-panel="${target}"]`);
-                if (panel) panel.classList.add('active');
+                activateTab(i);
+                // Pause auto-rotation on click, resume after 12s
+                clearInterval(rotateInterval);
+                clearTimeout(resumeTimeout);
+                resumeTimeout = setTimeout(() => {
+                    rotateInterval = setInterval(autoRotate, 6000);
+                }, 12000);
             });
         });
+
+        // Auto-rotation
+        let currentTab = 0;
+        let resumeTimeout;
+        function autoRotate() {
+            currentTab = (currentTab + 1) % tabArr.length;
+            activateTab(currentTab);
+        }
+        let rotateInterval = setInterval(autoRotate, 6000);
 
         // Generate sequencer grids
         const sources = ['BD', 'SD', 'HH', 'PC', 'S1', 'S2', 'S3', 'S4'];
@@ -1580,8 +1707,8 @@
             }
         }
 
-        buildGrid('lcdTracksMinimal', 6, 16, 8);
-        buildGrid('lcdTracksStandard', 8, 16, 10);
+        buildGrid('lcdTracksCamera', 5, 16, 6);
+        buildGrid('lcdTracksOrange', 8, 16, 10);
         buildGrid('lcdTracksFull', 8, 16, 12);
     })();
     </script>

@@ -1471,6 +1471,26 @@ class App {
                 case 'joystick':
                     this.handleJoystick(msg.data.direction);
                     break;
+                case 'fader':
+                    if (msg.data.channel && typeof msg.data.value === 'number') {
+                        this.handleMockupFader(msg.data.channel, msg.data.value);
+                    }
+                    break;
+                case 'crossfade':
+                    if (typeof msg.data.value === 'number') {
+                        this.handleMockupCrossfade(msg.data.value);
+                    }
+                    break;
+                case 'button':
+                    if (msg.data.action) {
+                        this.handleMockupButton(msg.data.action);
+                    }
+                    break;
+                case 'function':
+                    if (msg.data.func) {
+                        this.handleMockupFunction(msg.data.func);
+                    }
+                    break;
             }
         });
 
@@ -1657,7 +1677,16 @@ class App {
             volume: { knobId: 'knobVol', engineParam: 'vol', min: 0, max: 100 },
             pan: { knobId: 'knobPan', engineParam: 'pan', min: -100, max: 100 },
             filter: { knobId: 'knobFilter', engineParam: 'filter', min: 20, max: 8000 },
-            fx: { knobId: 'knobDelay', engineParam: 'delay', min: 0, max: 100 }
+            fx: { knobId: 'knobDelay', engineParam: 'delay', min: 0, max: 100 },
+            decay: { knobId: 'knobDecay', engineParam: 'decay', min: 0, max: 100 },
+            cutoff: { knobId: 'filterCutoff', engineParam: 'filter', min: 20, max: 8000 },
+            resonance: { knobId: 'filterRes', engineParam: 'resonance', min: 0, max: 100 },
+            attack: { knobId: 'envAttack', engineParam: 'attack', min: 0, max: 100 },
+            release: { knobId: 'envRelease', engineParam: 'release', min: 0, max: 100 },
+            delay: { knobId: 'knobDelay', engineParam: 'delay', min: 0, max: 100 },
+            glitch: { knobId: null, engineParam: 'glitch', min: 0, max: 100 },
+            grain: { knobId: null, engineParam: 'grain', min: 0, max: 100 },
+            crush: { knobId: null, engineParam: 'crush', min: 0, max: 100 }
         };
 
         const mapping = paramMap[param];
@@ -1686,6 +1715,127 @@ class App {
                 break;
             case 'delay':
                 window.mangleEngine?.setDelayMix(value);
+                break;
+            case 'decay':
+                window.audioEngine?.setDecay(value / 100);
+                break;
+            case 'resonance':
+                window.synth?.setFilterResonance(scaled / 100);
+                break;
+            case 'attack':
+                window.synth?.setEnvAttack(scaled / 100);
+                break;
+            case 'release':
+                window.synth?.setEnvRelease(scaled / 100);
+                break;
+            case 'glitch':
+                window.mangleEngine?.setGlitchAmount(value);
+                break;
+            case 'grain':
+                window.mangleEngine?.setGrainSize(value);
+                break;
+            case 'crush':
+                window.mangleEngine?.setBitCrush(value);
+                break;
+        }
+    }
+
+    // Handle mixer fader input from mockup
+    handleMockupFader(channel, value) {
+        const level = value / 100;
+        switch (channel) {
+            case 'mic':
+                window.audioEngine?.setInputLevel(level);
+                break;
+            case 'sample':
+                window.audioEngine?.setSamplerLevel(level);
+                break;
+            case 'synth':
+                window.synth?.setLevel(level);
+                break;
+            case 'radio':
+                window.radioEngine?.setLevel(level);
+                break;
+        }
+    }
+
+    // Handle crossfader input from mockup (0=A, 100=B)
+    handleMockupCrossfade(value) {
+        const mix = value / 100;
+        window.audioEngine?.setCrossfade(mix);
+    }
+
+    // Handle navigation button input from mockup
+    handleMockupButton(action) {
+        switch (action) {
+            case 'menu':
+                // Toggle menu/settings panel
+                this.switchToPanel('settings');
+                break;
+            case 'back':
+                // Go back to main sequencer panel
+                this.switchToPanel('sequencer');
+                break;
+            case 'shift':
+                this._shiftPressed = !this._shiftPressed;
+                break;
+            case 'page':
+                // Cycle through panels
+                {
+                    const panels = ['sequencer', 'mixer', 'synth', 'scene', 'ai', 'fx', 'radio'];
+                    const current = panels.indexOf(this._activePanel) || 0;
+                    const next = (current + 1) % panels.length;
+                    this.switchToPanel(panels[next]);
+                }
+                break;
+            case 'prev':
+                // Previous pattern
+                if (window.sequencer) {
+                    const cur = window.sequencer.getCurrentPattern?.() || 0;
+                    if (cur > 0) window.sequencer.selectPattern?.(cur - 1);
+                }
+                break;
+            case 'next':
+                // Next pattern
+                if (window.sequencer) {
+                    const cur = window.sequencer.getCurrentPattern?.() || 0;
+                    window.sequencer.selectPattern?.(cur + 1);
+                }
+                break;
+        }
+    }
+
+    // Handle function button input from mockup
+    handleMockupFunction(func) {
+        switch (func) {
+            case 'dub':
+                // Toggle dub/overdub mode
+                if (window.sequencer) {
+                    window.sequencer.toggleDub?.();
+                }
+                break;
+            case 'fill':
+                // Trigger pattern fill
+                if (window.sequencer) {
+                    window.sequencer.triggerFill?.();
+                }
+                break;
+            case 'clr':
+                // Clear current track/pattern
+                if (window.sequencer) {
+                    window.sequencer.clearCurrentTrack?.();
+                }
+                break;
+            case 'scene':
+                // Switch to scene view
+                this.switchToPanel('scene');
+                break;
+            case 'bank':
+                // Cycle sample banks
+                if (window.audioEngine) {
+                    const cur = window.audioEngine.getCurrentBank?.() || 0;
+                    window.audioEngine.selectBank?.((cur + 1) % 4);
+                }
                 break;
         }
     }
