@@ -7,6 +7,8 @@
 #define SEQUENCER_H
 
 #include <Arduino.h>
+#include <SD.h>
+#include <ArduinoJson.h>
 #include "config.h"
 
 // Parameter lock types
@@ -52,31 +54,37 @@ struct Pattern {
     Track tracks[MAX_TRACKS];
 };
 
+// Callback: called when a step triggers
+typedef void (*StepTriggerCallback)(int track, int step, const Step& stepData);
+
 class Sequencer {
 public:
     Sequencer();
-    
+
     void begin(float initialBpm);
     void update();
-    
+
+    // Trigger callback
+    void setTriggerCallback(StepTriggerCallback callback);
+
     // Transport
     void start();
     void stop();
     void pause();
     void reset();
     bool isRunning();
-    
+
     // Tempo
     void setTempo(float bpm);
     float getTempo();
     void adjustSwing(int delta);
     uint8_t getSwing();
-    
+
     // Position
     int getCurrentStep();
     int getCurrentBar();
     void setPosition(int step);
-    
+
     // Track management
     void selectTrack(int track);
     int getSelectedTrack();
@@ -86,35 +94,37 @@ public:
     void unsoloTrack(int track);
     bool isTrackMuted(int track);
     bool isTrackSoloed(int track);
-    
+
     // Step editing
     void toggleStep(int step);
     void setStep(int track, int step, bool active);
     bool hasStep(int step);
     bool getStep(int track, int step);
-    
+    Step& getStepData(int track, int step);
+
     // Trig conditions
     void setTrigCondition(int track, int step, TrigCondition condition);
     TrigCondition getTrigCondition(int track, int step);
-    
+
     // Parameter locks
     void setParamLock(int track, int step, ParamType param, float value);
     void clearParamLock(int track, int step, ParamType param);
     void clearAllParamLocks(int track, int step);
     bool hasParamLock(int track, int step, ParamType param);
     float getParamLock(int track, int step, ParamType param);
-    
+
     // Pattern management
     void loadPattern(int patternNumber);
     void savePattern(int patternNumber);
     void copyPattern(int from, int to);
     void clearPattern();
     int getCurrentPattern();
-    
+    uint8_t getPatternLength();
+
     // Fill mode
     void setFillMode(bool enabled);
     bool isFillMode();
-    
+
 private:
     Pattern pattern;
     int currentPatternNumber;
@@ -123,11 +133,14 @@ private:
     bool running;
     bool fillMode;
     float globalBpm;
-    
+
     unsigned long lastStepTime;
     unsigned long stepInterval;
-    uint8_t triggerCounts[MAX_TRACKS]; // For Nth play conditions
-    
+    unsigned long swingOffset;   // microseconds offset for even steps
+    uint8_t triggerCounts[MAX_TRACKS];
+
+    StepTriggerCallback triggerCallback;
+
     void calculateStepInterval();
     bool evaluateTrigCondition(int track, int step);
     void triggerStep(int track, int step);

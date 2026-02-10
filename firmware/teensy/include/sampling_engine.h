@@ -27,20 +27,20 @@ struct Sample {
 class SamplingEngine {
 public:
     SamplingEngine();
-    
-    void begin();
+
+    void begin(AudioPlaySdWav* players, AudioAmplifier* amps);
     void update();
-    
+
     // Sample management
     bool loadSample(int slot, const char* filename);
     void unloadSample(int slot);
     bool isSampleLoaded(int slot);
-    
+
     // Playback control
     void trigger(int slot);
     void stop(int slot);
     void stopAll();
-    
+
     // Properties
     void setVolume(int slot, float volume);
     void setPitch(int slot, float pitch);
@@ -48,25 +48,25 @@ public:
     void setLoop(int slot, bool loop);
     void setStartPos(int slot, uint32_t pos);
     void setEndPos(int slot, uint32_t pos);
-    
+
     // Queries
     bool isPlaying(int slot);
     bool isLooping(int slot);
     float getVolume(int slot);
     float getPitch(int slot);
-    
+
     // Bank management
     void loadBank(int bankNumber);
     void saveBank(int bankNumber);
     int getCurrentBank();
-    
+
 private:
     Sample samples[MAX_TRACKS];
     int currentBank;
-    
-    // Audio players (external, connected in main)
-    // AudioPlaySdWav* players[MAX_TRACKS];
-    
+
+    AudioPlaySdWav* players;
+    AudioAmplifier* amps;
+
     void initializeSample(int slot);
     bool validateSlot(int slot);
 };

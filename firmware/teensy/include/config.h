@@ -19,8 +19,13 @@
 
 // Audio settings
 #define SAMPLE_RATE 44100
-#define AUDIO_MEMORY_BLOCKS 120
+#define AUDIO_MEMORY_BLOCKS 200
 #define MAX_SAMPLE_LENGTH_MS 30000  // 30 seconds per sample
+
+// Audio buffer sizes
+#define GRANULAR_BUFFER_SIZE 12800  // ~290ms at 44.1kHz
+#define CHORUS_DELAY_LENGTH 512
+#define DELAY_MAX_MS 1000
 
 // ============================================
 // DISPLAY
