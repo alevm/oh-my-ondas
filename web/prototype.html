@@ -68,15 +68,26 @@
 
         .proto-board {
             position: relative;
-            width: 920px;
-            height: 520px;
+            width: 1120px;
+            height: 880px;
             margin: 0 auto;
-            background: #f0ece4;
-            border-radius: 8px;
-            border: 2px solid #ccc;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            background: #edeae2;
+            border-radius: 10px;
+            border: 2px solid #c0b8a8;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.10);
             font-family: 'SF Mono', 'Cascadia Code', monospace;
             font-size: 9px;
+        }
+
+        /* Zone labels */
+        .zone-label {
+            position: absolute;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #b0a890;
+            z-index: 1;
         }
 
         /* Breadboards */
@@ -84,54 +95,47 @@
             position: absolute;
             background: #faf8f2;
             border: 1.5px solid #c5c0b4;
-            border-radius: 4px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+            border-radius: 5px;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.06);
         }
-
         .breadboard::before {
             content: '';
             position: absolute;
-            top: 8px; left: 8px; right: 8px; bottom: 8px;
+            top: 18px; left: 8px; right: 8px; bottom: 18px;
             background:
-                repeating-linear-gradient(90deg, transparent, transparent 8px, rgba(0,0,0,0.04) 8px, rgba(0,0,0,0.04) 8.5px),
-                repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(0,0,0,0.04) 8px, rgba(0,0,0,0.04) 8.5px);
+                repeating-linear-gradient(90deg, transparent, transparent 7.5px, rgba(0,0,0,0.05) 7.5px, rgba(0,0,0,0.05) 8px),
+                repeating-linear-gradient(0deg, transparent, transparent 7.5px, rgba(0,0,0,0.05) 7.5px, rgba(0,0,0,0.05) 8px);
             border-radius: 2px;
         }
-
-        /* Power rails */
+        /* Power rail stripes */
         .breadboard::after {
             content: '';
             position: absolute;
-            left: 8px; right: 8px;
-            height: 2px;
-            top: 50%;
-            background: rgba(0,0,0,0.08);
+            left: 0; right: 0; top: 0; bottom: 0;
+            border-top: 3px solid #e74c3c;
+            border-bottom: 3px solid #2c3e50;
+            border-radius: 5px;
+            pointer-events: none;
         }
 
-        .bb-left { top: 30px; left: 20px; width: 430px; height: 460px; }
-        .bb-right { top: 30px; left: 470px; width: 430px; height: 460px; }
+        .bb-left  { top: 25px; left: 16px; width: 530px; height: 830px; }
+        .bb-right { top: 25px; left: 574px; width: 530px; height: 830px; }
 
-        /* Power rail labels */
         .rail-label {
             position: absolute;
             font-size: 8px;
-            font-weight: 700;
+            font-weight: 800;
             letter-spacing: 0.5px;
+            z-index: 3;
         }
         .rail-5v { color: #e74c3c; }
         .rail-gnd { color: #2c3e50; }
+        .bb-left .rail-5v-top { top: 5px; left: 10px; }
+        .bb-left .rail-gnd-top { top: 5px; right: 10px; }
+        .bb-right .rail-5v-top { top: 5px; left: 10px; }
+        .bb-right .rail-gnd-top { top: 5px; right: 10px; }
 
-        .bb-left .rail-5v-top { top: 4px; left: 12px; }
-        .bb-left .rail-gnd-top { top: 4px; right: 12px; }
-        .bb-left .rail-5v-bot { bottom: 4px; left: 12px; }
-        .bb-left .rail-gnd-bot { bottom: 4px; right: 12px; }
-
-        .bb-right .rail-5v-top { top: 4px; left: 12px; }
-        .bb-right .rail-gnd-top { top: 4px; right: 12px; }
-        .bb-right .rail-5v-bot { bottom: 4px; left: 12px; }
-        .bb-right .rail-gnd-bot { bottom: 4px; right: 12px; }
-
-        /* Components */
+        /* ==================== COMPONENTS ==================== */
         .component {
             position: absolute;
             display: flex;
@@ -140,92 +144,139 @@
             text-align: center;
             font-weight: 700;
             color: #fff;
-            z-index: 2;
+            z-index: 4;
         }
-
-        .component .comp-label {
+        .comp-label {
             position: absolute;
-            bottom: -14px;
+            bottom: -15px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 8px;
             font-weight: 700;
             color: #444;
             white-space: nowrap;
-            background: rgba(240,236,228,0.9);
-            padding: 1px 4px;
-            border-radius: 2px;
+            background: rgba(237,234,226,0.95);
+            padding: 1px 5px;
+            border-radius: 3px;
+            border: 1px solid rgba(0,0,0,0.06);
         }
-
-        .component .comp-label-top {
+        .comp-label-top {
             position: absolute;
-            top: -14px;
-            bottom: auto;
+            top: -15px; bottom: auto;
             left: 50%;
             transform: translateX(-50%);
             font-size: 8px;
             font-weight: 700;
             color: #444;
             white-space: nowrap;
-            background: rgba(240,236,228,0.9);
-            padding: 1px 4px;
-            border-radius: 2px;
+            background: rgba(237,234,226,0.95);
+            padding: 1px 5px;
+            border-radius: 3px;
+            border: 1px solid rgba(0,0,0,0.06);
         }
+        .comp-label-right {
+            position: absolute;
+            left: calc(100% + 6px);
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 8px;
+            font-weight: 700;
+            color: #444;
+            white-space: nowrap;
+            background: rgba(237,234,226,0.95);
+            padding: 1px 5px;
+            border-radius: 3px;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .chip-text { font-size: 7px; opacity: 0.7; }
 
-        /* Teensy 4.1 */
+        /* --- Teensy 4.1 --- */
         .teensy {
-            top: 100px; left: 60px;
-            width: 180px; height: 70px;
+            top: 65px; left: 40px;
+            width: 210px; height: 78px;
             background: linear-gradient(180deg, #2d8f4e 0%, #1a6b35 100%);
             border: 2px solid #155a2b;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            font-size: 10px;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+            font-size: 11px;
             letter-spacing: 0.5px;
             flex-direction: column;
             gap: 2px;
         }
-        .teensy .chip-text { font-size: 7px; opacity: 0.7; }
+        .teensy::before {
+            content: 'USB';
+            position: absolute;
+            left: -14px; top: 50%;
+            transform: translateY(-50%);
+            width: 14px; height: 18px;
+            background: #999;
+            border: 1px solid #777;
+            border-radius: 2px 0 0 2px;
+            font-size: 5px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .teensy::after {
+            content: 'SD';
+            position: absolute;
+            right: -12px; top: 50%;
+            transform: translateY(-50%);
+            width: 12px; height: 16px;
+            background: #777;
+            border: 1px solid #555;
+            border-radius: 0 2px 2px 0;
+            font-size: 5px;
+            color: #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-        /* Audio Shield (stacked on Teensy) */
+        /* --- Audio Shield (stacked above) --- */
         .audio-shield {
-            top: 82px; left: 72px;
-            width: 156px; height: 22px;
-            background: linear-gradient(180deg, #8b1a1a 0%, #6b1010 100%);
-            border: 1.5px solid #4a0a0a;
+            top: 45px; left: 52px;
+            width: 186px; height: 22px;
+            background: linear-gradient(180deg, #a82020 0%, #7b1515 100%);
+            border: 1.5px solid #5a0a0a;
             border-radius: 3px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.14);
             font-size: 8px;
             letter-spacing: 0.5px;
         }
 
-        /* ESP32 */
-        .esp32 {
-            top: 100px; left: 540px;
-            width: 140px; height: 55px;
-            background: linear-gradient(180deg, #1565c0 0%, #0d47a1 100%);
-            border: 2px solid #0a3580;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            font-size: 10px;
+        /* --- 5" LCD (SPI) --- */
+        .lcd-5in {
+            top: 55px; left: 600px;
+            width: 200px; height: 130px;
+            background: #0a0a0a;
+            border: 3px solid #333;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            flex-direction: column;
+            gap: 4px;
+        }
+        .lcd-5in-screen {
+            width: 175px; height: 100px;
+            background: linear-gradient(180deg, #001a33 0%, #002244 100%);
+            border: 1px solid #004488;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: #00ccff;
+            letter-spacing: 0.5px;
             flex-direction: column;
             gap: 2px;
         }
-        .esp32 .chip-text { font-size: 7px; opacity: 0.7; }
-        .esp32-antenna {
-            position: absolute;
-            top: 95px; left: 640px;
-            width: 30px; height: 14px;
-            background: repeating-linear-gradient(90deg, #c0c0c0, #c0c0c0 2px, transparent 2px, transparent 4px);
-            border: 1px solid #999;
-            border-radius: 2px 8px 8px 2px;
-            z-index: 2;
-        }
+        .lcd-5in-screen .lcd-res { font-size: 7px; color: #006699; }
 
-        /* OLED Display */
+        /* --- SSD1306 small OLED --- */
         .oled {
-            top: 42px; left: 160px;
-            width: 90px; height: 48px;
+            top: 55px; left: 830px;
+            width: 80px; height: 42px;
             background: #0a0a0a;
             border: 2px solid #333;
             border-radius: 3px;
@@ -234,7 +285,7 @@
             gap: 1px;
         }
         .oled-screen {
-            width: 72px; height: 28px;
+            width: 62px; height: 24px;
             background: #001a33;
             border: 1px solid #003366;
             border-radius: 2px;
@@ -243,153 +294,316 @@
             justify-content: center;
             font-size: 6px;
             color: #00ccff;
-            letter-spacing: 0.5px;
         }
         .oled .chip-text { font-size: 7px; color: #666; }
 
-        /* Rotary Encoders */
-        .encoder {
-            width: 34px; height: 34px;
-            background: radial-gradient(circle, #888 30%, #555 70%, #333 100%);
+        /* --- ESP32 --- */
+        .esp32 {
+            top: 200px; left: 600px;
+            width: 155px; height: 58px;
+            background: linear-gradient(180deg, #1565c0 0%, #0d47a1 100%);
+            border: 2px solid #0a3580;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+            font-size: 11px;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .esp32-antenna {
+            position: absolute;
+            top: 195px; left: 720px;
+            width: 30px; height: 14px;
+            background: repeating-linear-gradient(90deg, #c0c0c0, #c0c0c0 2px, transparent 2px, transparent 4px);
+            border: 1px solid #999;
+            border-radius: 2px 8px 8px 2px;
+            z-index: 4;
+        }
+
+        /* --- Encoders (generic) --- */
+        .enc {
+            width: 32px; height: 32px;
+            background: radial-gradient(circle, #999 20%, #666 60%, #444 100%);
             border: 2px solid #2a2a2a;
             border-radius: 50%;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.15);
-            font-size: 7px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.22), inset 0 1px 2px rgba(255,255,255,0.15);
         }
-        .encoder::after {
+        .enc::after {
             content: '';
             position: absolute;
             width: 2px; height: 10px;
             background: #ddd;
-            top: 5px; left: 50%;
+            top: 4px; left: 50%;
             transform: translateX(-50%);
             border-radius: 1px;
         }
-        .enc1 { top: 200px; left: 60px; }
-        .enc2 { top: 200px; left: 110px; }
-        .enc3 { top: 200px; left: 160px; }
-        .enc4 { top: 200px; left: 210px; }
 
-        /* Buttons */
-        .button {
-            width: 22px; height: 22px;
-            background: linear-gradient(180deg, #444 0%, #222 100%);
-            border: 1.5px solid #111;
+        /* 5 main encoders */
+        .enc-vol  { top: 190px; left: 42px; }
+        .enc-pan  { top: 190px; left: 90px; }
+        .enc-filt { top: 190px; left: 138px; }
+        .enc-fx   { top: 190px; left: 186px; }
+        .enc-dec  { top: 190px; left: 234px; }
+
+        /* 4 synth knobs */
+        .enc-cut  { top: 260px; left: 42px; }
+        .enc-res  { top: 260px; left: 90px; }
+        .enc-atk  { top: 260px; left: 138px; }
+        .enc-rel  { top: 260px; left: 186px; }
+
+        /* 4 FX knobs */
+        .enc-dly  { top: 330px; left: 42px; }
+        .enc-glt  { top: 330px; left: 90px; }
+        .enc-grn  { top: 330px; left: 138px; }
+        .enc-cru  { top: 330px; left: 186px; }
+
+        /* --- Buttons (generic) --- */
+        .btn {
+            width: 24px; height: 24px;
+            background: linear-gradient(180deg, #555 0%, #2a2a2a 100%);
+            border: 2px solid #111;
             border-radius: 3px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.22);
             font-size: 6px;
         }
-        .button::after {
+        .btn::after {
             content: '';
             position: absolute;
             width: 10px; height: 10px;
-            background: radial-gradient(circle, #666, #444);
+            background: radial-gradient(circle, #777, #555);
             border-radius: 2px;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
         }
-        .btn-mode  { top: 200px; left: 290px; }
-        .btn-shift { top: 200px; left: 322px; }
-        .btn-rec   { top: 200px; left: 354px; }
-        .btn-play  { top: 200px; left: 386px; }
 
-        /* MPR121 + pads */
-        .mpr121 {
-            top: 380px; left: 100px;
-            width: 60px; height: 36px;
-            background: linear-gradient(180deg, #7b1fa2 0%, #4a148c 100%);
-            border: 1.5px solid #38006b;
+        /* Transport (3) */
+        .btn-play { top: 405px; left: 42px; }
+        .btn-stop { top: 405px; left: 78px; }
+        .btn-rec  { top: 405px; left: 114px; }
+
+        /* Mode (4) */
+        .btn-pict { top: 405px; left: 170px; }
+        .btn-snd  { top: 405px; left: 206px; }
+        .btn-int  { top: 405px; left: 242px; }
+        .btn-jrn  { top: 405px; left: 278px; }
+
+        /* Nav (4) */
+        .btn-menu { top: 405px; left: 334px; }
+        .btn-back { top: 405px; left: 370px; }
+        .btn-shft { top: 405px; left: 406px; }
+        .btn-page { top: 405px; left: 442px; }
+
+        /* Func (5) */
+        .btn-dub  { top: 460px; left: 42px; }
+        .btn-fill { top: 460px; left: 78px; }
+        .btn-clr  { top: 460px; left: 114px; }
+        .btn-scn  { top: 460px; left: 150px; }
+        .btn-bank { top: 460px; left: 186px; }
+
+        /* --- 5-Way Joystick --- */
+        .joystick {
+            top: 290px; left: 600px;
+            width: 70px; height: 70px;
+            background: #222;
+            border: 2px solid #444;
+            border-radius: 50%;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+        .joy-center {
+            position: absolute;
+            width: 22px; height: 22px;
+            background: radial-gradient(circle, #888, #555);
+            border-radius: 50%;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid #333;
+        }
+        .joy-dir {
+            position: absolute;
+            width: 0; height: 0;
+        }
+        .joy-up    { top: 6px; left: 50%; transform: translateX(-50%); border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 6px solid #777; }
+        .joy-down  { bottom: 6px; left: 50%; transform: translateX(-50%); border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #777; }
+        .joy-left  { left: 6px; top: 50%; transform: translateY(-50%); border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-right: 6px solid #777; }
+        .joy-right { right: 6px; top: 50%; transform: translateY(-50%); border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 6px solid #777; }
+
+        /* PREV/NEXT buttons */
+        .btn-prev { top: 370px; left: 600px; }
+        .btn-next { top: 370px; left: 646px; }
+
+        /* --- 4 Mixer Faders --- */
+        .fader {
+            width: 18px; height: 72px;
+            background: #333;
+            border: 1.5px solid #555;
             border-radius: 3px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-            font-size: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+        .fader-thumb {
+            position: absolute;
+            width: 22px; height: 10px;
+            background: linear-gradient(180deg, #ccc, #999);
+            border: 1px solid #777;
+            border-radius: 2px;
+            left: -2px;
+            top: 25px;
+        }
+        .fader-mic { top: 290px; left: 730px; }
+        .fader-smp { top: 290px; left: 762px; }
+        .fader-syn { top: 290px; left: 794px; }
+        .fader-rad { top: 290px; left: 826px; }
+
+        /* --- Crossfader --- */
+        .crossfader {
+            top: 390px; left: 730px;
+            width: 115px; height: 22px;
+            background: #333;
+            border: 1.5px solid #555;
+            border-radius: 3px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+        .xfade-thumb {
+            position: absolute;
+            width: 14px; height: 26px;
+            background: linear-gradient(90deg, #ccc, #999);
+            border: 1px solid #777;
+            border-radius: 2px;
+            top: -2px;
+            left: 50px;
+        }
+
+        /* --- MPR121 + Pads --- */
+        .mpr121 {
+            top: 540px; left: 42px;
+            width: 68px; height: 40px;
+            background: linear-gradient(180deg, #7b1fa2 0%, #4a148c 100%);
+            border: 2px solid #38006b;
+            border-radius: 4px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            font-size: 9px;
         }
 
         .pad {
-            width: 32px; height: 32px;
-            background: linear-gradient(135deg, #d4883e, #c17030);
-            border: 1.5px solid #a05a20;
-            border-radius: 3px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,0.2);
-            font-size: 7px;
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, #d4883e 0%, #c17030 50%, #a86025 100%);
+            border: 2px solid #8a4a18;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.18), inset 0 1px 2px rgba(255,255,255,0.2);
+            font-size: 8px;
         }
-        .pad-1 { top: 380px; left: 180px; }
-        .pad-2 { top: 380px; left: 220px; }
-        .pad-3 { top: 380px; left: 260px; }
-        .pad-4 { top: 380px; left: 300px; }
-        .pad-5 { top: 420px; left: 180px; }
-        .pad-6 { top: 420px; left: 220px; }
-        .pad-7 { top: 420px; left: 260px; }
-        .pad-8 { top: 420px; left: 300px; }
+        .pad-1 { top: 530px; left: 130px; }
+        .pad-2 { top: 530px; left: 178px; }
+        .pad-3 { top: 530px; left: 226px; }
+        .pad-4 { top: 530px; left: 274px; }
+        .pad-5 { top: 578px; left: 130px; }
+        .pad-6 { top: 578px; left: 178px; }
+        .pad-7 { top: 578px; left: 226px; }
+        .pad-8 { top: 578px; left: 274px; }
 
-        /* LED Ring */
+        /* --- LED Ring --- */
         .led-ring {
-            top: 290px; left: 55px;
-            width: 56px; height: 56px;
+            top: 540px; left: 340px;
+            width: 58px; height: 58px;
             background: #1a1a1a;
             border: 2px solid #333;
             border-radius: 50%;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.18);
         }
         .led-ring-dot {
             position: absolute;
             width: 6px; height: 6px;
             border-radius: 50%;
-            box-shadow: 0 0 6px currentColor;
+            box-shadow: 0 0 7px currentColor;
         }
-        .led-ring-dot:nth-child(1) { top: 4px; left: 50%; transform: translateX(-50%); color: #00ff88; background: #00ff88; }
+        .led-ring-dot:nth-child(1) { top: 3px; left: 50%; transform: translateX(-50%); color: #00ff88; background: #00ff88; }
         .led-ring-dot:nth-child(2) { top: 8px; right: 8px; color: #00ccff; background: #00ccff; }
-        .led-ring-dot:nth-child(3) { top: 50%; right: 4px; transform: translateY(-50%); color: #ff6600; background: #ff6600; }
+        .led-ring-dot:nth-child(3) { top: 50%; right: 3px; transform: translateY(-50%); color: #ff6600; background: #ff6600; }
         .led-ring-dot:nth-child(4) { bottom: 8px; right: 8px; color: #ff0066; background: #ff0066; }
-        .led-ring-dot:nth-child(5) { bottom: 4px; left: 50%; transform: translateX(-50%); color: #9933ff; background: #9933ff; }
+        .led-ring-dot:nth-child(5) { bottom: 3px; left: 50%; transform: translateX(-50%); color: #9933ff; background: #9933ff; }
         .led-ring-dot:nth-child(6) { bottom: 8px; left: 8px; color: #ffcc00; background: #ffcc00; }
-        .led-ring-dot:nth-child(7) { top: 50%; left: 4px; transform: translateY(-50%); color: #00ff44; background: #00ff44; }
+        .led-ring-dot:nth-child(7) { top: 50%; left: 3px; transform: translateY(-50%); color: #00ff44; background: #00ff44; }
         .led-ring-dot:nth-child(8) { top: 8px; left: 8px; color: #0088ff; background: #0088ff; }
 
-        /* 3.5mm Jacks */
+        /* --- 3.5mm Jacks --- */
         .jack {
-            width: 28px; height: 38px;
-            background: linear-gradient(180deg, #888 0%, #555 100%);
-            border: 1.5px solid #333;
-            border-radius: 4px 4px 8px 8px;
+            width: 28px; height: 40px;
+            background: linear-gradient(180deg, #999 0%, #666 100%);
+            border: 2px solid #444;
+            border-radius: 4px 4px 10px 10px;
             font-size: 7px;
             flex-direction: column;
-            gap: 2px;
         }
         .jack::after {
             content: '';
             position: absolute;
-            bottom: 4px;
+            bottom: 5px;
             width: 12px; height: 12px;
             background: #222;
             border-radius: 50%;
-            border: 1px solid #444;
+            border: 1px solid #555;
         }
-        .jack-in  { top: 290px; left: 395px; }
-        .jack-out { top: 340px; left: 395px; }
+        .jack-out { top: 540px; left: 600px; }
+        .jack-hp  { top: 540px; left: 648px; }
+        .jack-in  { top: 540px; left: 696px; }
 
-        /* Wires */
+        /* --- Status LEDs --- */
+        .status-led-grp {
+            position: absolute;
+            top: 540px; left: 760px;
+            display: flex;
+            gap: 12px;
+            z-index: 4;
+        }
+        .sled {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            border: 1px solid rgba(0,0,0,0.2);
+            box-shadow: 0 0 6px currentColor;
+        }
+        .sled-gps  { background: #1aa167; color: #1aa167; }
+        .sled-wifi { background: #1270b8; color: #1270b8; }
+        .sled-err  { background: #c0392b; color: #c0392b; }
+
+        /* ==================== WIRES ==================== */
         .wire {
             position: absolute;
-            z-index: 1;
+            z-index: 2;
             pointer-events: none;
         }
-        .wire-h {
-            height: 2px;
-            border-radius: 1px;
-        }
-        .wire-v {
-            width: 2px;
-            border-radius: 1px;
-        }
+        .wire-h { height: 3px; border-radius: 2px; }
+        .wire-v { width: 3px; border-radius: 2px; }
 
         /* Wire colors */
-        .wire-5v { background: #e74c3c; }
-        .wire-gnd { background: #2c3e50; }
-        .wire-i2c { background: #3498db; }
-        .wire-spi { background: #27ae60; }
-        .wire-gpio { background: #e67e22; }
+        .wire-5v     { background: #e74c3c; }
+        .wire-gnd    { background: #2c3e50; }
+        .wire-i2c    { background: #3498db; }
+        .wire-spi    { background: #27ae60; }
+        .wire-gpio   { background: #e67e22; }
         .wire-serial { background: #9b59b6; }
-        .wire-data { background: #f1c40f; }
+        .wire-data   { background: #f1c40f; }
+        .wire-adc    { background: #e91e63; }
+
+        /* Connection dots */
+        .wire-dot {
+            position: absolute;
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            z-index: 5;
+            box-shadow: 0 0 3px rgba(0,0,0,0.3);
+        }
+
+        /* Wire pin annotations */
+        .wire-pin {
+            position: absolute;
+            font-size: 7px;
+            font-weight: 700;
+            padding: 1px 3px;
+            border-radius: 2px;
+            white-space: nowrap;
+            z-index: 6;
+            background: rgba(255,255,255,0.9);
+            border: 1px solid rgba(0,0,0,0.1);
+            color: #555;
+        }
 
         /* Wire legend */
         .wire-legend {
@@ -517,19 +731,32 @@
             font-size: 12px;
         }
 
+        /* Component count badge */
+        .count-badge {
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 12px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
         /* ==================== RESPONSIVE ==================== */
-        @media (max-width: 960px) {
+        @media (max-width: 1160px) {
             .proto-board {
-                transform: scale(0.7);
+                transform: scale(0.65);
                 transform-origin: top left;
-                margin-bottom: -150px;
+                margin-bottom: -300px;
             }
         }
-        @media (max-width: 640px) {
+        @media (max-width: 768px) {
             .proto-board {
-                transform: scale(0.45);
+                transform: scale(0.42);
                 transform-origin: top left;
-                margin-bottom: -280px;
+                margin-bottom: -500px;
             }
             .page-title { font-size: 24px; }
             .section-header { font-size: 20px; }
@@ -558,74 +785,171 @@
 
         <main class="page-content">
             <h1 class="page-title">Breadboard Prototype</h1>
-            <p class="page-subtitle">Build guide for the minimal working prototype &mdash; everything you need to get sound out this weekend</p>
+            <p class="page-subtitle">Build guide for the full hardware prototype &mdash; matching the interactive mockup on the <a href="index.html" style="color:var(--accent);">home page</a></p>
 
             <!-- ==================== BREADBOARD DIAGRAM ==================== -->
             <div class="diagram-wrapper">
                 <div class="proto-board">
+                    <!-- Zone labels -->
+                    <span class="zone-label" style="top:30px; left:42px;">BRAIN + AUDIO</span>
+                    <span class="zone-label" style="top:175px; left:42px;">ENCODERS (13)</span>
+                    <span class="zone-label" style="top:390px; left:42px;">BUTTONS (16)</span>
+                    <span class="zone-label" style="top:515px; left:42px;">PADS + LEDS</span>
+                    <span class="zone-label" style="top:30px; left:600px;">DISPLAYS + WIFI</span>
+                    <span class="zone-label" style="top:275px; left:600px;">NAV + MIXER</span>
+                    <span class="zone-label" style="top:515px; left:600px;">I/O + STATUS</span>
+
                     <!-- Left breadboard -->
                     <div class="breadboard bb-left">
                         <span class="rail-label rail-5v rail-5v-top">+5V</span>
                         <span class="rail-label rail-gnd rail-gnd-top">GND</span>
-                        <span class="rail-label rail-5v rail-5v-bot">+5V</span>
-                        <span class="rail-label rail-gnd rail-gnd-bot">GND</span>
                     </div>
-
                     <!-- Right breadboard -->
                     <div class="breadboard bb-right">
                         <span class="rail-label rail-5v rail-5v-top">+5V</span>
                         <span class="rail-label rail-gnd rail-gnd-top">GND</span>
-                        <span class="rail-label rail-5v rail-5v-bot">+5V</span>
-                        <span class="rail-label rail-gnd rail-gnd-bot">GND</span>
                     </div>
 
-                    <!-- Audio Shield (stacked on Teensy, drawn first = behind) -->
+                    <!-- ===== BRAIN ZONE ===== -->
+                    <!-- Audio Shield -->
                     <div class="component audio-shield">
                         AUDIO SHIELD
-                        <span class="comp-label-top">SGTL5000</span>
+                        <span class="comp-label-top">SGTL5000 (stacked)</span>
                     </div>
-
                     <!-- Teensy 4.1 -->
                     <div class="component teensy">
                         TEENSY 4.1
-                        <span class="chip-text">600MHz ARM</span>
-                        <span class="comp-label">Teensy 4.1 + Audio Shield</span>
+                        <span class="chip-text">600MHz ARM Cortex-M7</span>
+                        <span class="comp-label">Main MCU + SD card</span>
                     </div>
 
-                    <!-- OLED Display -->
+                    <!-- ===== ENCODER ZONE (13 total) ===== -->
+                    <!-- 5 main -->
+                    <div class="component enc enc-vol"><span class="comp-label">VOL</span></div>
+                    <div class="component enc enc-pan"><span class="comp-label">PAN</span></div>
+                    <div class="component enc enc-filt"><span class="comp-label">FILT</span></div>
+                    <div class="component enc enc-fx"><span class="comp-label">FX</span></div>
+                    <div class="component enc enc-dec"><span class="comp-label">DECAY</span></div>
+                    <!-- 4 synth -->
+                    <div class="component enc enc-cut"><span class="comp-label">CUT</span></div>
+                    <div class="component enc enc-res"><span class="comp-label">RES</span></div>
+                    <div class="component enc enc-atk"><span class="comp-label">ATK</span></div>
+                    <div class="component enc enc-rel"><span class="comp-label">REL</span></div>
+                    <!-- 4 FX -->
+                    <div class="component enc enc-dly"><span class="comp-label">DLY</span></div>
+                    <div class="component enc enc-glt"><span class="comp-label">GLT</span></div>
+                    <div class="component enc enc-grn"><span class="comp-label">GRN</span></div>
+                    <div class="component enc enc-cru"><span class="comp-label">CRU</span></div>
+
+                    <!-- Row labels for encoder groups -->
+                    <span class="wire-pin" style="top:198px; left:280px;">5x CTRL</span>
+                    <span class="wire-pin" style="top:268px; left:232px;">4x SYNTH</span>
+                    <span class="wire-pin" style="top:338px; left:232px;">4x FX</span>
+
+                    <!-- ===== BUTTON ZONE (16 total) ===== -->
+                    <!-- Transport -->
+                    <div class="component btn btn-play"><span class="comp-label">&#9654;</span></div>
+                    <div class="component btn btn-stop"><span class="comp-label">&#9632;</span></div>
+                    <div class="component btn btn-rec"><span class="comp-label">&#9679;</span></div>
+                    <!-- Mode -->
+                    <div class="component btn btn-pict"><span class="comp-label">PIC</span></div>
+                    <div class="component btn btn-snd"><span class="comp-label">SND</span></div>
+                    <div class="component btn btn-int"><span class="comp-label">INT</span></div>
+                    <div class="component btn btn-jrn"><span class="comp-label">JRN</span></div>
+                    <!-- Nav -->
+                    <div class="component btn btn-menu"><span class="comp-label">MENU</span></div>
+                    <div class="component btn btn-back"><span class="comp-label">BACK</span></div>
+                    <div class="component btn btn-shft"><span class="comp-label">SHFT</span></div>
+                    <div class="component btn btn-page"><span class="comp-label">PAGE</span></div>
+                    <!-- Func -->
+                    <div class="component btn btn-dub"><span class="comp-label">DUB</span></div>
+                    <div class="component btn btn-fill"><span class="comp-label">FILL</span></div>
+                    <div class="component btn btn-clr"><span class="comp-label">CLR</span></div>
+                    <div class="component btn btn-scn"><span class="comp-label">SCN</span></div>
+                    <div class="component btn btn-bank"><span class="comp-label">BANK</span></div>
+
+                    <!-- Row labels for button groups -->
+                    <span class="wire-pin" style="top:413px; left:480px;">TRANSPORT / MODE / NAV</span>
+                    <span class="wire-pin" style="top:468px; left:230px;">FUNC</span>
+
+                    <!-- ===== DISPLAYS + WIFI ZONE ===== -->
+                    <!-- 5" LCD -->
+                    <div class="component lcd-5in">
+                        <div class="lcd-5in-screen">
+                            5" IPS LCD
+                            <span class="lcd-res">800x480 SPI</span>
+                        </div>
+                        <span class="comp-label">Main Display (ILI9488)</span>
+                    </div>
+
+                    <!-- Small OLED -->
                     <div class="component oled">
                         <div class="oled-screen">128x64</div>
                         <span class="chip-text">SSD1306</span>
-                        <span class="comp-label">OLED I2C</span>
+                        <span class="comp-label">Map OLED</span>
                     </div>
 
-                    <!-- Encoders -->
-                    <div class="component encoder enc1">
-                        <span class="comp-label">MIX</span>
+                    <!-- ESP32 -->
+                    <div class="component esp32">
+                        ESP32
+                        <span class="chip-text">WiFi + BT + GPS</span>
+                        <span class="comp-label">ESP32-WROOM DevKit</span>
                     </div>
-                    <div class="component encoder enc2">
-                        <span class="comp-label">FX</span>
+                    <div class="esp32-antenna"></div>
+
+                    <!-- ===== NAV + MIXER ZONE ===== -->
+                    <!-- Joystick -->
+                    <div class="component joystick">
+                        <div class="joy-center"></div>
+                        <div class="joy-dir joy-up"></div>
+                        <div class="joy-dir joy-down"></div>
+                        <div class="joy-dir joy-left"></div>
+                        <div class="joy-dir joy-right"></div>
+                        <span class="comp-label">NAV Joystick</span>
                     </div>
-                    <div class="component encoder enc3">
-                        <span class="comp-label">MOD</span>
+                    <div class="component btn btn-prev"><span class="comp-label">PREV</span></div>
+                    <div class="component btn btn-next"><span class="comp-label">NEXT</span></div>
+
+                    <!-- 4 Mixer Faders -->
+                    <div class="component fader fader-mic">
+                        <div class="fader-thumb" style="top:20px;"></div>
+                        <span class="comp-label">MIC</span>
                     </div>
-                    <div class="component encoder enc4">
-                        <span class="comp-label">TIME</span>
+                    <div class="component fader fader-smp">
+                        <div class="fader-thumb" style="top:10px;"></div>
+                        <span class="comp-label">SMP</span>
+                    </div>
+                    <div class="component fader fader-syn">
+                        <div class="fader-thumb" style="top:30px;"></div>
+                        <span class="comp-label">SYN</span>
+                    </div>
+                    <div class="component fader fader-rad">
+                        <div class="fader-thumb" style="top:35px;"></div>
+                        <span class="comp-label">RAD</span>
                     </div>
 
-                    <!-- Buttons -->
-                    <div class="component button btn-mode">
-                        <span class="comp-label">MODE</span>
+                    <!-- Crossfader -->
+                    <div class="component crossfader">
+                        <div class="xfade-thumb"></div>
+                        <span class="comp-label">X-FADE</span>
                     </div>
-                    <div class="component button btn-shift">
-                        <span class="comp-label">SHIFT</span>
+
+                    <!-- ===== PADS + LEDS ZONE ===== -->
+                    <!-- MPR121 -->
+                    <div class="component mpr121">
+                        MPR121
+                        <span class="comp-label-top">Touch Sensor I2C</span>
                     </div>
-                    <div class="component button btn-rec">
-                        <span class="comp-label">REC</span>
-                    </div>
-                    <div class="component button btn-play">
-                        <span class="comp-label">PLAY</span>
-                    </div>
+
+                    <!-- 8 Copper Pads -->
+                    <div class="component pad pad-1"><span class="comp-label">1</span></div>
+                    <div class="component pad pad-2"><span class="comp-label">2</span></div>
+                    <div class="component pad pad-3"><span class="comp-label">3</span></div>
+                    <div class="component pad pad-4"><span class="comp-label">4</span></div>
+                    <div class="component pad pad-5"><span class="comp-label">5</span></div>
+                    <div class="component pad pad-6"><span class="comp-label">6</span></div>
+                    <div class="component pad pad-7"><span class="comp-label">7</span></div>
+                    <div class="component pad pad-8"><span class="comp-label">8</span></div>
 
                     <!-- LED Ring -->
                     <div class="component led-ring">
@@ -640,71 +964,81 @@
                         <span class="comp-label">WS2812B x8</span>
                     </div>
 
-                    <!-- 3.5mm Jacks -->
-                    <div class="component jack jack-in">
-                        IN
-                        <span class="comp-label">Line In</span>
-                    </div>
+                    <!-- ===== I/O ZONE ===== -->
+                    <!-- 3x 3.5mm Jacks -->
                     <div class="component jack jack-out">
                         OUT
+                        <span class="comp-label">Audio Out</span>
+                    </div>
+                    <div class="component jack jack-hp">
+                        HP
                         <span class="comp-label">Headphones</span>
                     </div>
-
-                    <!-- ESP32 -->
-                    <div class="component esp32">
-                        ESP32
-                        <span class="chip-text">WiFi + BT</span>
-                        <span class="comp-label">ESP32 DevKit</span>
-                    </div>
-                    <div class="esp32-antenna"></div>
-
-                    <!-- MPR121 + Pads -->
-                    <div class="component mpr121">
-                        MPR121
-                        <span class="comp-label-top">Touch Sensor</span>
+                    <div class="component jack jack-in">
+                        IN
+                        <span class="comp-label">Audio In</span>
                     </div>
 
-                    <div class="component pad pad-1"><span class="comp-label">1</span></div>
-                    <div class="component pad pad-2"><span class="comp-label">2</span></div>
-                    <div class="component pad pad-3"><span class="comp-label">3</span></div>
-                    <div class="component pad pad-4"><span class="comp-label">4</span></div>
-                    <div class="component pad pad-5"><span class="comp-label">5</span></div>
-                    <div class="component pad pad-6"><span class="comp-label">6</span></div>
-                    <div class="component pad pad-7"><span class="comp-label">7</span></div>
-                    <div class="component pad pad-8"><span class="comp-label">8</span></div>
+                    <!-- Status LEDs -->
+                    <div class="status-led-grp">
+                        <div class="sled sled-gps" title="GPS"></div>
+                        <div class="sled sled-wifi" title="WiFi"></div>
+                        <div class="sled sled-err" title="Error"></div>
+                        <span style="font-size:7px; color:#888; font-weight:700; align-self:center;">STATUS</span>
+                    </div>
 
-                    <!-- I2C bus wires (OLED + MPR121 to Teensy) -->
-                    <div class="wire wire-h wire-i2c" style="top:65px; left:150px; width:60px;" title="SDA (pin 18)"></div>
-                    <div class="wire wire-v wire-i2c" style="top:65px; left:150px; height:35px;" title="SDA to OLED"></div>
-                    <div class="wire wire-h wire-i2c" style="top:73px; left:150px; width:60px;" title="SCL (pin 19)"></div>
-                    <div class="wire wire-v wire-i2c" style="top:73px; left:150px; height:35px;" title="SCL to OLED"></div>
+                    <!-- ===== WIRES ===== -->
+                    <!-- I2C bus: Teensy → OLED + MPR121 (blue) -->
+                    <div class="wire wire-v wire-i2c" style="top:143px; left:105px; height:397px;" title="I2C SDA (pin 18)"></div>
+                    <div class="wire wire-v wire-i2c" style="top:143px; left:112px; height:397px;" title="I2C SCL (pin 19)"></div>
+                    <!-- I2C horizontal to OLED -->
+                    <div class="wire wire-h wire-i2c" style="top:72px; left:112px; width:718px;" title="I2C bus to OLED"></div>
+                    <div class="wire-dot wire-i2c" style="top:69px; left:827px;"></div>
+                    <!-- I2C horizontal to MPR121 -->
+                    <div class="wire-dot wire-i2c" style="top:557px; left:102px;"></div>
 
-                    <!-- I2C to MPR121 -->
-                    <div class="wire wire-v wire-i2c" style="top:170px; left:120px; height:210px;" title="I2C SDA to MPR121"></div>
-                    <div class="wire wire-v wire-i2c" style="top:170px; left:128px; height:210px;" title="I2C SCL to MPR121"></div>
+                    <!-- SPI bus: Teensy → 5" LCD (green) -->
+                    <div class="wire wire-h wire-spi" style="top:90px; left:262px; width:338px;" title="SPI to 5&quot; LCD"></div>
+                    <div class="wire-dot wire-spi" style="top:87px; left:260px;"></div>
+                    <div class="wire-dot wire-spi" style="top:87px; left:597px;"></div>
 
-                    <!-- Serial to ESP32 -->
-                    <div class="wire wire-h wire-serial" style="top:135px; left:240px; width:300px;" title="Serial2 TX (pin 17)"></div>
-                    <div class="wire wire-h wire-serial" style="top:143px; left:240px; width:300px;" title="Serial2 RX (pin 16)"></div>
+                    <!-- Serial: Teensy → ESP32 (purple) -->
+                    <div class="wire wire-h wire-serial" style="top:120px; left:262px; width:338px;" title="UART TX/RX (pins 16,17)"></div>
+                    <div class="wire-dot wire-serial" style="top:117px; left:260px;"></div>
+                    <div class="wire-dot wire-serial" style="top:117px; left:597px;"></div>
 
-                    <!-- GPIO wires to encoders -->
-                    <div class="wire wire-v wire-gpio" style="top:170px; left:75px; height:30px;" title="ENC1 (pins 3,4,5)"></div>
-                    <div class="wire wire-v wire-gpio" style="top:170px; left:125px; height:30px;" title="ENC2 (pins 6,14,8)"></div>
-                    <div class="wire wire-v wire-gpio" style="top:170px; left:175px; height:30px;" title="ENC3 (pins 9,10,11)"></div>
-                    <div class="wire wire-v wire-gpio" style="top:170px; left:225px; height:30px;" title="ENC4 (pins 12,24,25)"></div>
+                    <!-- GPIO: Teensy → Encoders (orange) -->
+                    <div class="wire wire-v wire-gpio" style="top:143px; left:148px; height:47px;" title="GPIO to encoders"></div>
+                    <div class="wire wire-h wire-gpio" style="top:190px; left:42px; width:222px;" title="Encoder row 1"></div>
+                    <div class="wire wire-h wire-gpio" style="top:260px; left:42px; width:174px;" title="Encoder row 2"></div>
+                    <div class="wire wire-h wire-gpio" style="top:330px; left:42px; width:174px;" title="Encoder row 3"></div>
+                    <div class="wire wire-v wire-gpio" style="top:190px; left:42px; height:140px;"></div>
 
-                    <!-- GPIO wires to buttons -->
-                    <div class="wire wire-v wire-gpio" style="top:170px; left:300px; height:30px;" title="BTN_MODE (pin 26)"></div>
-                    <div class="wire wire-v wire-gpio" style="top:170px; left:332px; height:30px;" title="BTN_SHIFT (pin 27)"></div>
-                    <div class="wire wire-v wire-gpio" style="top:170px; left:364px; height:30px;" title="BTN_REC (pin 28)"></div>
-                    <div class="wire wire-v wire-gpio" style="top:170px; left:396px; height:30px;" title="BTN_PLAY (pin 29)"></div>
+                    <!-- GPIO: Teensy → Buttons (orange) -->
+                    <div class="wire wire-v wire-gpio" style="top:143px; left:200px; height:262px;" title="GPIO to buttons"></div>
+                    <div class="wire wire-h wire-gpio" style="top:405px; left:42px; width:420px;" title="Button row 1"></div>
+                    <div class="wire wire-h wire-gpio" style="top:460px; left:42px; width:174px;" title="Button row 2"></div>
+                    <div class="wire wire-v wire-gpio" style="top:405px; left:42px; height:55px;"></div>
 
-                    <!-- LED data wire -->
-                    <div class="wire wire-v wire-data" style="top:170px; left:82px; height:120px;" title="NeoPixel data (pin 30)"></div>
+                    <!-- ADC: Faders + crossfader (pink) -->
+                    <div class="wire wire-h wire-adc" style="top:230px; left:262px; width:468px;" title="ADC to faders"></div>
+                    <div class="wire wire-v wire-adc" style="top:230px; left:730px; height:160px;" title="ADC fader bus"></div>
+                    <div class="wire-dot wire-adc" style="top:227px; left:260px;"></div>
 
-                    <!-- Power wires -->
-                    <div class="wire wire-h wire-5v" style="top:38px; left:20px; width:880px;" title="5V power rail"></div>
-                    <div class="wire wire-h wire-gnd" style="top:480px; left:20px; width:880px;" title="GND rail"></div>
+                    <!-- GPIO: Joystick (orange) -->
+                    <div class="wire wire-v wire-gpio" style="top:258px; left:634px; height:32px;" title="GPIO joystick"></div>
+
+                    <!-- NeoPixel data (yellow) -->
+                    <div class="wire wire-v wire-data" style="top:143px; left:90px; height:397px;" title="NeoPixel pin 30"></div>
+                    <div class="wire-dot wire-data" style="top:565px; left:337px;"></div>
+                    <div class="wire wire-h wire-data" style="top:568px; left:90px; width:247px;" title="NeoPixel data"></div>
+
+                    <!-- Power rails (red + black) -->
+                    <div class="wire wire-h wire-5v" style="top:32px; left:16px; width:1088px;" title="5V power rail"></div>
+                    <div class="wire wire-h wire-gnd" style="top:848px; left:16px; width:1088px;" title="GND rail"></div>
+                    <!-- Power bridge between boards -->
+                    <div class="wire wire-h wire-5v" style="top:640px; left:460px; width:114px;" title="5V bridge"></div>
+                    <div class="wire wire-h wire-gnd" style="top:648px; left:460px; width:114px;" title="GND bridge"></div>
                 </div>
             </div>
 
@@ -713,15 +1047,16 @@
                 <div class="wire-legend-item"><div class="wire-legend-color" style="background:#e74c3c;"></div> 5V Power</div>
                 <div class="wire-legend-item"><div class="wire-legend-color" style="background:#2c3e50;"></div> Ground</div>
                 <div class="wire-legend-item"><div class="wire-legend-color" style="background:#3498db;"></div> I2C (SDA/SCL)</div>
-                <div class="wire-legend-item"><div class="wire-legend-color" style="background:#27ae60;"></div> SPI</div>
-                <div class="wire-legend-item"><div class="wire-legend-color" style="background:#e67e22;"></div> GPIO</div>
-                <div class="wire-legend-item"><div class="wire-legend-color" style="background:#9b59b6;"></div> Serial (UART)</div>
+                <div class="wire-legend-item"><div class="wire-legend-color" style="background:#27ae60;"></div> SPI (LCD)</div>
+                <div class="wire-legend-item"><div class="wire-legend-color" style="background:#e67e22;"></div> GPIO (encoders/buttons)</div>
+                <div class="wire-legend-item"><div class="wire-legend-color" style="background:#e91e63;"></div> ADC (faders)</div>
+                <div class="wire-legend-item"><div class="wire-legend-color" style="background:#9b59b6;"></div> UART (ESP32)</div>
                 <div class="wire-legend-item"><div class="wire-legend-color" style="background:#f1c40f;"></div> NeoPixel Data</div>
             </div>
 
             <!-- ==================== WIRING ==================== -->
-            <h2 class="section-header">Wiring</h2>
-            <p style="margin-bottom:16px; color:#555; font-size:14px;">Pin assignments from <code>config.h</code>. All I2C devices share pins 18 (SDA) and 19 (SCL). Audio Shield I2S pins are reserved and must not be reused.</p>
+            <h2 class="section-header">Wiring <span class="count-badge">41 pins used</span></h2>
+            <p style="margin-bottom:16px; color:#555; font-size:14px;">Pin assignments matching the interactive mockup. I2C devices share pins 18/19. Audio Shield I2S pins are reserved. Encoders and faders connect via MCP23017 I/O expanders + ADS1115 ADCs on the I2C bus.</p>
 
             <table class="pin-table">
                 <thead>
@@ -740,64 +1075,58 @@
                         <td>SGTL5000 codec &mdash; RESERVED, do not reuse</td>
                     </tr>
                     <tr>
-                        <td>OLED SSD1306</td>
+                        <td>5" LCD (ILI9488)</td>
+                        <td><span class="pin-num">36</span> CS, <span class="pin-num">37</span> DC, <span class="pin-num">38</span> RST</td>
+                        <td>SPI</td>
+                        <td>800x480, shares SPI bus (MOSI=11, SCK=13)</td>
+                    </tr>
+                    <tr>
+                        <td>SSD1306 OLED</td>
                         <td><span class="pin-num">18</span> SDA, <span class="pin-num">19</span> SCL</td>
                         <td>I2C</td>
-                        <td>Address 0x3C, 128x64</td>
+                        <td>Address 0x3C, 128x64 map display</td>
                     </tr>
                     <tr>
                         <td>MPR121 Touch</td>
                         <td><span class="pin-num">18</span> SDA, <span class="pin-num">19</span> SCL, <span class="pin-num">15</span> IRQ</td>
                         <td>I2C</td>
-                        <td>Address 0x5A, 8 copper pads</td>
+                        <td>Address 0x5A, 8 copper tape pads</td>
                     </tr>
                     <tr>
-                        <td>Encoder 1 (MIX)</td>
-                        <td><span class="pin-num">3</span> CLK, <span class="pin-num">4</span> DT, <span class="pin-num">5</span> SW</td>
+                        <td>5x Main Encoders</td>
+                        <td><span class="pin-num">3-6, 8-12, 14, 24, 25</span></td>
                         <td>GPIO</td>
-                        <td>Volume / mix control</td>
+                        <td>VOL, PAN, FILT, FX, DECAY (3 pins each)</td>
                     </tr>
                     <tr>
-                        <td>Encoder 2 (FX)</td>
-                        <td><span class="pin-num">6</span> CLK, <span class="pin-num">14</span> DT, <span class="pin-num">8</span> SW</td>
-                        <td>GPIO</td>
-                        <td>Effect select / depth</td>
+                        <td>8x Synth/FX Encoders</td>
+                        <td>via <span class="pin-num">MCP23017</span></td>
+                        <td>I2C</td>
+                        <td>CUT, RES, ATK, REL, DLY, GLT, GRN, CRU</td>
                     </tr>
                     <tr>
-                        <td>Encoder 3 (MOD)</td>
-                        <td><span class="pin-num">9</span> CLK, <span class="pin-num">10</span> DT, <span class="pin-num">11</span> SW</td>
-                        <td>GPIO</td>
-                        <td>Modulation / filter</td>
+                        <td>16x Buttons</td>
+                        <td><span class="pin-num">26-29</span> + via <span class="pin-num">MCP23017</span></td>
+                        <td>GPIO/I2C</td>
+                        <td>Transport, Mode, Nav, Func (4 direct + 12 expanded)</td>
                     </tr>
                     <tr>
-                        <td>Encoder 4 (TIME)</td>
-                        <td><span class="pin-num">12</span> CLK, <span class="pin-num">24</span> DT, <span class="pin-num">25</span> SW</td>
-                        <td>GPIO</td>
-                        <td>Tempo / time stretch</td>
+                        <td>5-Way Joystick</td>
+                        <td>via <span class="pin-num">MCP23017</span></td>
+                        <td>I2C</td>
+                        <td>Up/Down/Left/Right/Select + PREV/NEXT</td>
                     </tr>
                     <tr>
-                        <td>BTN_MODE</td>
-                        <td><span class="pin-num">26</span></td>
-                        <td>GPIO</td>
-                        <td>Cycle modes (pull-up, active low)</td>
+                        <td>4x Mixer Faders</td>
+                        <td>via <span class="pin-num">ADS1115</span></td>
+                        <td>I2C/ADC</td>
+                        <td>MIC, SMP, SYN, RAD (10K linear pots)</td>
                     </tr>
                     <tr>
-                        <td>BTN_SHIFT</td>
-                        <td><span class="pin-num">27</span></td>
-                        <td>GPIO</td>
-                        <td>Modifier key</td>
-                    </tr>
-                    <tr>
-                        <td>BTN_REC</td>
-                        <td><span class="pin-num">28</span></td>
-                        <td>GPIO</td>
-                        <td>Record toggle</td>
-                    </tr>
-                    <tr>
-                        <td>BTN_PLAY</td>
-                        <td><span class="pin-num">29</span></td>
-                        <td>GPIO</td>
-                        <td>Play / stop sequencer</td>
+                        <td>Crossfader</td>
+                        <td>via <span class="pin-num">ADS1115</span></td>
+                        <td>I2C/ADC</td>
+                        <td>X-FADE (10K linear slide pot)</td>
                     </tr>
                     <tr>
                         <td>WS2812B LEDs</td>
@@ -809,25 +1138,31 @@
                         <td>ESP32 (Serial2)</td>
                         <td><span class="pin-num">16</span> RX, <span class="pin-num">17</span> TX</td>
                         <td>UART</td>
-                        <td>WiFi/BT @ 115200 baud</td>
+                        <td>WiFi/BT/GPS @ 115200 baud</td>
                     </tr>
                     <tr>
-                        <td>Status LED (GPS)</td>
-                        <td><span class="pin-num">31</span></td>
+                        <td>Status LEDs (3)</td>
+                        <td><span class="pin-num">31, 32, 33</span></td>
                         <td>GPIO</td>
-                        <td>Optional indicator</td>
+                        <td>GPS, WiFi, Error indicators</td>
                     </tr>
                     <tr>
-                        <td>Status LED (WiFi)</td>
-                        <td><span class="pin-num">32</span></td>
-                        <td>GPIO</td>
-                        <td>Optional indicator</td>
+                        <td>MCP23017 #1</td>
+                        <td><span class="pin-num">18</span> SDA, <span class="pin-num">19</span> SCL</td>
+                        <td>I2C</td>
+                        <td>Address 0x20 &mdash; 16 extra GPIO for encoders</td>
                     </tr>
                     <tr>
-                        <td>Status LED (Error)</td>
-                        <td><span class="pin-num">33</span></td>
-                        <td>GPIO</td>
-                        <td>Optional indicator</td>
+                        <td>MCP23017 #2</td>
+                        <td><span class="pin-num">18</span> SDA, <span class="pin-num">19</span> SCL</td>
+                        <td>I2C</td>
+                        <td>Address 0x21 &mdash; 16 extra GPIO for buttons + joystick</td>
+                    </tr>
+                    <tr>
+                        <td>ADS1115</td>
+                        <td><span class="pin-num">18</span> SDA, <span class="pin-num">19</span> SCL</td>
+                        <td>I2C</td>
+                        <td>Address 0x48 &mdash; 4-ch 16-bit ADC for faders</td>
                     </tr>
                 </tbody>
             </table>
@@ -848,7 +1183,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Core boards (not at Diotronic) -->
                     <tr class="bom-section"><td colspan="6">Core Boards (order online)</td></tr>
                     <tr>
                         <td>1</td>
@@ -882,11 +1216,42 @@
                         <td class="price">&euro;5.00</td>
                         <td class="price">&euro;5.00</td>
                     </tr>
-
-                    <!-- Diotronic items -->
-                    <tr class="bom-section"><td colspan="6">From Diotronic</td></tr>
                     <tr>
                         <td>5</td>
+                        <td>5" IPS LCD 800x480 (ILI9488 SPI)</td>
+                        <td class="bom-alt">AliExpress / Amazon</td>
+                        <td>1</td>
+                        <td class="price">&euro;28.00</td>
+                        <td class="price">&euro;28.00</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>MCP23017 I/O Expander</td>
+                        <td class="bom-alt">BricoGeek / AliExpress</td>
+                        <td>2</td>
+                        <td class="price">&euro;3.00</td>
+                        <td class="price">&euro;6.00</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>ADS1115 16-bit ADC</td>
+                        <td class="bom-alt">BricoGeek / AliExpress</td>
+                        <td>1</td>
+                        <td class="price">&euro;4.00</td>
+                        <td class="price">&euro;4.00</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>5-Way Joystick Module</td>
+                        <td class="bom-alt">AliExpress</td>
+                        <td>1</td>
+                        <td class="price">&euro;2.00</td>
+                        <td class="price">&euro;2.00</td>
+                    </tr>
+
+                    <tr class="bom-section"><td colspan="6">From Diotronic</td></tr>
+                    <tr>
+                        <td>9</td>
                         <td>Breadboard 830pts</td>
                         <td><a href="https://diotronic.com/modulos-proto-board/6081-vtbb2n-placa-board-830-puntos" target="_blank" rel="noopener noreferrer">VTBB2N</a></td>
                         <td>2</td>
@@ -894,15 +1259,15 @@
                         <td class="price">&euro;13.06</td>
                     </tr>
                     <tr>
-                        <td>6</td>
+                        <td>10</td>
                         <td>Jumper wires 140pcs</td>
                         <td><a href="https://diotronic.com/cablecillo-protoboard/5840-juego-de-cables-puente-140-uds" target="_blank" rel="noopener noreferrer">WJW140</a></td>
-                        <td>1</td>
+                        <td>2</td>
                         <td class="price">&euro;5.63</td>
-                        <td class="price">&euro;5.63</td>
+                        <td class="price">&euro;11.26</td>
                     </tr>
                     <tr>
-                        <td>7</td>
+                        <td>11</td>
                         <td>OLED SSD1306 0.96" I2C</td>
                         <td><a href="https://diotronic.com/accesorios-microbit/15073-pantalla-iic-oled-micro-bit" target="_blank" rel="noopener noreferrer">MDIO9092</a></td>
                         <td>1</td>
@@ -910,23 +1275,31 @@
                         <td class="price">&euro;8.29</td>
                     </tr>
                     <tr>
-                        <td>8</td>
+                        <td>12</td>
                         <td>Rotary encoder EC11 w/switch</td>
                         <td><a href="https://diotronic.com/encoder-reloj-rtc/19757-encoder-rotativo-24-pulsos-6mm" target="_blank" rel="noopener noreferrer">EC11E2020SW</a></td>
-                        <td>4</td>
+                        <td>13</td>
                         <td class="price">&euro;4.54</td>
-                        <td class="price">&euro;18.16</td>
+                        <td class="price">&euro;59.02</td>
                     </tr>
                     <tr>
-                        <td>9</td>
+                        <td>13</td>
                         <td>Tactile button 6x6mm</td>
                         <td><a href="https://diotronic.com/pulsadores-circuito-impreso-smd/12438-pulsador-6x6-4-3mm-11-522-a" target="_blank" rel="noopener noreferrer">DTS61N</a></td>
-                        <td>4</td>
+                        <td>16</td>
                         <td class="price">&euro;0.24</td>
-                        <td class="price">&euro;0.96</td>
+                        <td class="price">&euro;3.84</td>
                     </tr>
                     <tr>
-                        <td>10</td>
+                        <td>14</td>
+                        <td>Slide potentiometer 45mm 10K</td>
+                        <td class="bom-alt">Diotronic / AliExpress</td>
+                        <td>5</td>
+                        <td class="price">&euro;2.50</td>
+                        <td class="price">&euro;12.50</td>
+                    </tr>
+                    <tr>
+                        <td>15</td>
                         <td>WS2812B 8-LED NeoPixel ring</td>
                         <td><a href="https://diotronic.com/leds-rgb-neopixel/18092-tira-8-led-5050-neopixel-5vcc" target="_blank" rel="noopener noreferrer">MDIO3212</a></td>
                         <td>1</td>
@@ -934,7 +1307,7 @@
                         <td class="price">&euro;5.87</td>
                     </tr>
                     <tr>
-                        <td>11</td>
+                        <td>16</td>
                         <td>Copper tape 5mm x 25m</td>
                         <td><a href="https://diotronic.com/cable-esmaltado-retenci%C3%B3n/2586-cinta-adhesiva-cobre-5mm-x-25m" target="_blank" rel="noopener noreferrer">VTCFT1</a></td>
                         <td>1</td>
@@ -942,55 +1315,55 @@
                         <td class="price">&euro;8.45</td>
                     </tr>
                     <tr>
-                        <td>12</td>
+                        <td>17</td>
                         <td>Jack 3.5mm stereo chassis</td>
                         <td><a href="https://diotronic.com/conectores-jacks/11679-15-154-3-base-stereo-3-5" target="_blank" rel="noopener noreferrer">CBS35</a></td>
-                        <td>2</td>
-                        <td class="price">&euro;0.76</td>
-                        <td class="price">&euro;1.52</td>
-                    </tr>
-                    <tr>
-                        <td>13</td>
-                        <td>Pin header male 40-pin</td>
-                        <td><a href="https://diotronic.com/tiras-de-contactos/14143-cc078-tira-40pins-macho" target="_blank" rel="noopener noreferrer">40PY</a></td>
-                        <td>2</td>
-                        <td class="price">&euro;0.79</td>
-                        <td class="price">&euro;1.58</td>
-                    </tr>
-                    <tr>
-                        <td>14</td>
-                        <td>Pin header female 40-pin</td>
-                        <td><a href="https://diotronic.com/tiras-de-contactos/14151-tira-40-cts-hembra-pcb-aerea" target="_blank" rel="noopener noreferrer">40SYA</a></td>
-                        <td>2</td>
-                        <td class="price">&euro;0.99</td>
-                        <td class="price">&euro;1.98</td>
-                    </tr>
-                    <tr>
-                        <td>15</td>
-                        <td>Resistor 10K 1/4W (pull-ups)</td>
-                        <td><a href="https://diotronic.com/resistencias-de-carbono-1-4w-5/9918-resistencia-10k-1-4w-5" target="_blank" rel="noopener noreferrer">1035025</a></td>
-                        <td>10</td>
-                        <td class="price">&euro;0.02</td>
-                        <td class="price">&euro;0.20</td>
-                    </tr>
-                    <tr>
-                        <td>16</td>
-                        <td>Capacitor 100nF ceramic (decoupling)</td>
-                        <td><a href="https://diotronic.com/ceramicos/10296-cond-ceram-multiplaca-100n-50v" target="_blank" rel="noopener noreferrer">CER10463</a></td>
-                        <td>5</td>
-                        <td class="price">&euro;0.12</td>
-                        <td class="price">&euro;0.60</td>
-                    </tr>
-                    <tr>
-                        <td>17</td>
-                        <td>Capacitor 10uF electrolytic</td>
-                        <td><a href="https://diotronic.com/electroliticos-radiales/15800-condensador-electrolitico-rad-10uf-25v-105-5x11" target="_blank" rel="noopener noreferrer">ELR10025</a></td>
                         <td>3</td>
-                        <td class="price">&euro;0.05</td>
-                        <td class="price">&euro;0.15</td>
+                        <td class="price">&euro;0.76</td>
+                        <td class="price">&euro;2.28</td>
                     </tr>
                     <tr>
                         <td>18</td>
+                        <td>Pin header male 40-pin</td>
+                        <td><a href="https://diotronic.com/tiras-de-contactos/14143-cc078-tira-40pins-macho" target="_blank" rel="noopener noreferrer">40PY</a></td>
+                        <td>3</td>
+                        <td class="price">&euro;0.79</td>
+                        <td class="price">&euro;2.37</td>
+                    </tr>
+                    <tr>
+                        <td>19</td>
+                        <td>Pin header female 40-pin</td>
+                        <td><a href="https://diotronic.com/tiras-de-contactos/14151-tira-40-cts-hembra-pcb-aerea" target="_blank" rel="noopener noreferrer">40SYA</a></td>
+                        <td>3</td>
+                        <td class="price">&euro;0.99</td>
+                        <td class="price">&euro;2.97</td>
+                    </tr>
+                    <tr>
+                        <td>20</td>
+                        <td>Resistor 10K 1/4W (pull-ups)</td>
+                        <td><a href="https://diotronic.com/resistencias-de-carbono-1-4w-5/9918-resistencia-10k-1-4w-5" target="_blank" rel="noopener noreferrer">1035025</a></td>
+                        <td>20</td>
+                        <td class="price">&euro;0.02</td>
+                        <td class="price">&euro;0.40</td>
+                    </tr>
+                    <tr>
+                        <td>21</td>
+                        <td>Capacitor 100nF ceramic (decoupling)</td>
+                        <td><a href="https://diotronic.com/ceramicos/10296-cond-ceram-multiplaca-100n-50v" target="_blank" rel="noopener noreferrer">CER10463</a></td>
+                        <td>10</td>
+                        <td class="price">&euro;0.12</td>
+                        <td class="price">&euro;1.20</td>
+                    </tr>
+                    <tr>
+                        <td>22</td>
+                        <td>Capacitor 10uF electrolytic</td>
+                        <td><a href="https://diotronic.com/electroliticos-radiales/15800-condensador-electrolitico-rad-10uf-25v-105-5x11" target="_blank" rel="noopener noreferrer">ELR10025</a></td>
+                        <td>5</td>
+                        <td class="price">&euro;0.05</td>
+                        <td class="price">&euro;0.25</td>
+                    </tr>
+                    <tr>
+                        <td>23</td>
                         <td>USB cable A to Micro-B 1m</td>
                         <td><a href="https://diotronic.com/cables-usb-a-micromini-usb-lightning-/18353-cable-usb-a-20-micro-usb-b-18mts-mm-" target="_blank" rel="noopener noreferrer">AK300110010S</a></td>
                         <td>1</td>
@@ -998,10 +1371,9 @@
                         <td class="price">&euro;1.94</td>
                     </tr>
 
-                    <!-- Tools -->
                     <tr class="bom-section"><td colspan="6">Tools (if you don't have them)</td></tr>
                     <tr>
-                        <td>19</td>
+                        <td>24</td>
                         <td>Soldering station 48W</td>
                         <td><a href="https://diotronic.com/estacion-de-soldadura/6381-estacion-sold-reg-45w-150-450g" target="_blank" rel="noopener noreferrer">VTSS4N</a></td>
                         <td>1</td>
@@ -1009,7 +1381,7 @@
                         <td class="price">&euro;17.15</td>
                     </tr>
                     <tr>
-                        <td>20</td>
+                        <td>25</td>
                         <td>Solder wire 1mm 100g</td>
                         <td><a href="https://diotronic.com/de-ø-1mm/6552" target="_blank" rel="noopener noreferrer">HIF00637</a></td>
                         <td>1</td>
@@ -1017,7 +1389,7 @@
                         <td class="price">&euro;7.50</td>
                     </tr>
                     <tr>
-                        <td>21</td>
+                        <td>26</td>
                         <td>Flux paste</td>
                         <td><a href="https://diotronic.com/pasta-flux/6665-pasta-para-soldar" target="_blank" rel="noopener noreferrer">PDS</a></td>
                         <td>1</td>
@@ -1025,15 +1397,7 @@
                         <td class="price">&euro;3.18</td>
                     </tr>
                     <tr>
-                        <td>22</td>
-                        <td>Desoldering pump</td>
-                        <td><a href="https://diotronic.com/bombas-manuales/6518-bomba-desoldadora-potente" target="_blank" rel="noopener noreferrer">VTD7</a></td>
-                        <td>1</td>
-                        <td class="price">&euro;3.50</td>
-                        <td class="price">&euro;3.50</td>
-                    </tr>
-                    <tr>
-                        <td>23</td>
+                        <td>27</td>
                         <td>Third hand 4-arm + solder holder</td>
                         <td><a href="https://diotronic.com/soportes-placas-pcb/19638-tercera-mano-con-4-brazos-y-soporte-de-bobina-de-estaño" target="_blank" rel="noopener noreferrer">VTHH7</a></td>
                         <td>1</td>
@@ -1043,40 +1407,42 @@
 
                     <!-- Totals -->
                     <tr class="bom-total">
-                        <td colspan="5">Diotronic subtotal (items 5-18)</td>
-                        <td class="price">&euro;68.39</td>
+                        <td colspan="5">Core boards + modules (items 1-8)</td>
+                        <td class="price">&euro;96.50</td>
                     </tr>
                     <tr class="bom-total">
-                        <td colspan="5">Core boards (items 1-4, online)</td>
-                        <td class="price">&euro;56.50</td>
+                        <td colspan="5">Diotronic parts (items 9-23)</td>
+                        <td class="price">&euro;133.70</td>
                     </tr>
                     <tr class="bom-total">
-                        <td colspan="5">Tools (items 19-23, if needed)</td>
-                        <td class="price">&euro;56.28</td>
+                        <td colspan="5">Tools (items 24-27, if needed)</td>
+                        <td class="price">&euro;52.78</td>
                     </tr>
                     <tr class="bom-total" style="color:#27ae60; font-size:15px;">
-                        <td colspan="5">TOTAL (parts + tools)</td>
-                        <td class="price">&euro;181.17</td>
+                        <td colspan="5">TOTAL (parts only)</td>
+                        <td class="price">&euro;230.20</td>
                     </tr>
                 </tbody>
             </table>
-            <p class="bom-note">MPR121 breakout is not stocked at Diotronic. Order from <strong>BricoGeek</strong>, AliExpress, or Amazon. The Diotronic alternative is the XPAD module (EF03143, &euro;13.67) but it uses a different protocol.</p>
+            <p class="bom-note">MPR121 breakout is not stocked at Diotronic &mdash; order from BricoGeek, AliExpress, or Amazon. 5" LCD and MCP23017/ADS1115 modules also sourced online. Faders: look for 45mm 10K linear slide potentiometers at Diotronic or order from AliExpress (~&euro;2.50 each).</p>
 
             <!-- ==================== QUICK START ==================== -->
             <h2 class="section-header">Quick Start</h2>
 
             <ol class="steps">
-                <li><strong>Solder headers</strong> onto Teensy 4.1 and Audio Shield. Stack the Audio Shield on top of the Teensy (pins align). Solder headers onto the ESP32 DevKit.</li>
-                <li><strong>Place boards on breadboards.</strong> Teensy + Audio Shield on the left breadboard, ESP32 on the right. Connect the 5V and GND rails between both boards with jumper wires.</li>
-                <li><strong>Wire the I2C bus.</strong> Connect Teensy pin 18 (SDA) and pin 19 (SCL) to the OLED display and MPR121. Add 4.7K pull-up resistors on both lines to 3.3V.</li>
-                <li><strong>Wire the encoders.</strong> Each encoder has 3 connections (CLK, DT, SW) plus GND. Use 10K pull-up resistors on each signal line, or enable internal pull-ups in firmware.</li>
-                <li><strong>Wire the buttons.</strong> Connect MODE (pin 26), SHIFT (pin 27), REC (pin 28), PLAY (pin 29) to GND through tactile buttons. Internal pull-ups are enabled in firmware.</li>
-                <li><strong>Wire the LED ring.</strong> Connect WS2812B data-in to Teensy pin 30. Power the ring from the 5V rail. Add a 300-470&#8486; resistor on the data line and a 100&micro;F capacitor across the 5V/GND supply.</li>
-                <li><strong>Wire the 3.5mm jacks.</strong> Connect Line In and Headphone Out to the Audio Shield's built-in jack headers. If using external jacks, wire tip/ring/sleeve to the corresponding Audio Shield pins.</li>
-                <li><strong>Connect ESP32.</strong> Wire Teensy pin 17 (TX) to ESP32 RX, and Teensy pin 16 (RX) to ESP32 TX. Share 3.3V and GND. This provides WiFi/BT for GPS and location services.</li>
-                <li><strong>Prepare the SD card.</strong> Format a microSD card as FAT32. Create directories: <code>/samples/</code>, <code>/patterns/</code>, <code>/recordings/</code>, <code>/presets/</code>. Copy WAV samples (44.1kHz, 16-bit) into <code>/samples/</code>.</li>
-                <li><strong>Flash the firmware.</strong> Install PlatformIO, then run: <code>pio run -e teensy41 -t upload</code> from the <code>firmware/teensy/</code> directory. The Teensy Loader will flash automatically over USB.</li>
-                <li><strong>Power on and test.</strong> Connect headphones to the output jack. The OLED should show the boot screen. Tap pads to trigger samples, turn encoders to adjust mix and effects. Press PLAY to start the sequencer.</li>
+                <li><strong>Solder headers</strong> onto Teensy 4.1, Audio Shield, ESP32, MCP23017s, and ADS1115. Stack the Audio Shield on top of the Teensy.</li>
+                <li><strong>Place boards on breadboards.</strong> Teensy + Audio Shield on the left breadboard, ESP32 + displays on the right. Bridge 5V and GND rails between both boards.</li>
+                <li><strong>Wire the I2C bus.</strong> Connect Teensy pin 18 (SDA) and pin 19 (SCL) to: SSD1306 OLED, MPR121, both MCP23017s, and the ADS1115. Add 4.7K pull-ups on SDA/SCL to 3.3V.</li>
+                <li><strong>Wire the 5" LCD.</strong> Connect via SPI: CS to pin 36, DC to pin 37, RST to pin 38, MOSI to pin 11, SCK to pin 13. Power from 3.3V.</li>
+                <li><strong>Wire the 5 main encoders</strong> directly to Teensy GPIO (VOL: 3/4/5, PAN: 6/14/8, FILT: 9/10/11, FX: 12/24/25, DECAY: via MCP). Use internal pull-ups.</li>
+                <li><strong>Wire the 8 synth/FX encoders</strong> to MCP23017 #1 (addr 0x20). Each encoder needs CLK + DT + SW on MCP port pins.</li>
+                <li><strong>Wire the buttons.</strong> 4 direct to Teensy (MODE: 26, SHIFT: 27, REC: 28, PLAY: 29), remaining 12 + joystick via MCP23017 #2 (addr 0x21).</li>
+                <li><strong>Wire the 4 faders + crossfader.</strong> Connect wiper pins to ADS1115 channels A0-A3 (addr 0x48). Crossfader on A3 or second ADS1115. Power from 3.3V reference.</li>
+                <li><strong>Wire the touch pads.</strong> 8 copper tape strips to MPR121 channels 0-7. Add a ground plane of copper tape underneath for better sensitivity.</li>
+                <li><strong>Wire the LED ring + jacks.</strong> WS2812B data to pin 30 with 330&#8486; series resistor. Connect the 3 jacks (Audio Out, Headphones, Audio In) to the Audio Shield headers.</li>
+                <li><strong>Connect ESP32.</strong> Teensy pin 17 (TX) to ESP32 RX, pin 16 (RX) to ESP32 TX. Share 3.3V and GND.</li>
+                <li><strong>Prepare the SD card.</strong> Format microSD as FAT32. Create: <code>/samples/</code>, <code>/patterns/</code>, <code>/recordings/</code>, <code>/presets/</code>. Add WAV files (44.1kHz, 16-bit) to <code>/samples/</code>.</li>
+                <li><strong>Flash and test.</strong> Run <code>pio run -e teensy41 -t upload</code>. Both displays should light up. Test pads, encoders, faders, and buttons. Press PLAY to start the sequencer.</li>
             </ol>
         </main>
 
