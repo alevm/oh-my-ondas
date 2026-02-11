@@ -61,5 +61,8 @@ firmware/.pio/
 # LibreOffice lock files
 .~lock.*
 
+# Large binaries
+*.AppImage
+
 # Claude Code internal
 .claude/
