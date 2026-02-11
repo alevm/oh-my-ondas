@@ -38,6 +38,7 @@ InputManager::InputManager()
     , touchLast(0), touchReady(false)
     , mcpAReady(false), mcpBReady(false)
     , adsReady(false), adsCurrentChannel(0)
+    , i2cErrorCount(0), mcpALastGood(0xFFFF), mcpBLastGood(0xFFFF)
     , lastEncoderPoll(0), lastButtonPoll(0), lastFaderPoll(0)
 {
     memset(directEncPositions, 0, sizeof(directEncPositions));
@@ -48,6 +49,8 @@ InputManager::InputManager()
     memset(buttonDebounce, 0, sizeof(buttonDebounce));
     memset(faderValues, 0, sizeof(faderValues));
     memset(faderLastValues, 0, sizeof(faderLastValues));
+
+    memset(adsLastGood, 0, sizeof(adsLastGood));
 
     for (int i = 0; i < NUM_DIRECT_ENCODERS; i++) {
         directEncoders[i] = nullptr;
@@ -133,10 +136,13 @@ void InputManager::initMCP23017() {
         mcpAReady = true;
 
         // Read initial state for encoders
-        uint16_t pins = mcpRead16(ADDR_MCP23017A, MCP_GPIOA);
-        for (int i = 0; i < NUM_MCP_ENCODERS; i++) {
-            int bitPos = i * 2;
-            mcpEncLastState[i] = (pins >> bitPos) & 0x03;
+        uint16_t pins;
+        if (mcpRead16(ADDR_MCP23017A, MCP_GPIOA, pins)) {
+            mcpALastGood = pins;
+            for (int i = 0; i < NUM_MCP_ENCODERS; i++) {
+                int bitPos = i * 2;
+                mcpEncLastState[i] = (pins >> bitPos) & 0x03;
+            }
         }
         DEBUG_PRINTLN("  MCP23017 #1 (encoders): OK");
     } else {
@@ -221,7 +227,12 @@ void InputManager::pollDirectEncoders() {
 
 void InputManager::pollMCPEncoders() {
     // Read all 16 pins in one I2C transaction
-    uint16_t pins = mcpRead16(ADDR_MCP23017A, MCP_GPIOA);
+    uint16_t pins;
+    if (!mcpRead16(ADDR_MCP23017A, MCP_GPIOA, pins)) {
+        pins = mcpALastGood;  // same state → quadrature decode yields 0 = safe
+    } else {
+        mcpALastGood = pins;
+    }
 
     for (int i = 0; i < NUM_MCP_ENCODERS; i++) {
         int bitPos = i * 2;
@@ -265,7 +276,12 @@ void InputManager::pollDirectButtons() {
 
 void InputManager::pollMCPButtons() {
     unsigned long now = millis();
-    uint16_t pins = mcpRead16(ADDR_MCP23017B, MCP_GPIOA);
+    uint16_t pins;
+    if (!mcpRead16(ADDR_MCP23017B, MCP_GPIOA, pins)) {
+        pins = mcpBLastGood;  // no state change → no spurious button events
+    } else {
+        mcpBLastGood = pins;
+    }
 
     // MCP#2 Port A (bits 0-7): STOP, PIC, SND, INT, JRN, MENU, BACK, PAGE
     // MCP#2 Port B (bits 8-13): DUB, FILL, CLR, SCN, BANK, JOY_CENTER
@@ -303,7 +319,12 @@ void InputManager::pollFaders() {
     // ADS1115: 4 mixer faders (channels 0-3)
     if (adsReady) {
         for (int ch = 0; ch < NUM_FADERS; ch++) {
-            int16_t raw = adsReadChannel(ch);
+            int16_t raw;
+            if (!adsReadChannel(ch, raw)) {
+                raw = adsLastGood[ch];  // hold last position on error
+            } else {
+                adsLastGood[ch] = raw;
+            }
             float value = constrain((float)raw / 32767.0f, 0.0f, 1.0f);
 
             if (fabsf(value - faderLastValues[ch]) > FADER_THRESHOLD) {
@@ -389,25 +410,35 @@ uint8_t InputManager::getJoystickState() {
 // I2C HELPERS
 // ============================================
 
-uint16_t InputManager::mcpRead16(uint8_t addr, uint8_t reg) {
+bool InputManager::mcpRead16(uint8_t addr, uint8_t reg, uint16_t& outVal) {
     Wire.beginTransmission(addr);
     Wire.write(reg);
-    Wire.endTransmission(false);
-    Wire.requestFrom(addr, (uint8_t)2);
-    uint16_t val = Wire.read();
-    val |= (uint16_t)Wire.read() << 8;
-    return val;
+    if (Wire.endTransmission(false) != 0) {
+        i2cErrorCount++;
+        return false;
+    }
+    if (Wire.requestFrom(addr, (uint8_t)2) < 2) {
+        i2cErrorCount++;
+        return false;
+    }
+    outVal = Wire.read();
+    outVal |= (uint16_t)Wire.read() << 8;
+    return true;
 }
 
-void InputManager::mcpWrite8(uint8_t addr, uint8_t reg, uint8_t value) {
+bool InputManager::mcpWrite8(uint8_t addr, uint8_t reg, uint8_t value) {
     Wire.beginTransmission(addr);
     Wire.write(reg);
     Wire.write(value);
-    Wire.endTransmission();
+    if (Wire.endTransmission() != 0) {
+        i2cErrorCount++;
+        return false;
+    }
+    return true;
 }
 
-int16_t InputManager::adsReadChannel(uint8_t channel) {
-    if (channel > 3) return 0;
+bool InputManager::adsReadChannel(uint8_t channel, int16_t& outVal) {
+    if (channel > 3) return false;
 
     // Configure ADS1115 for single-ended read on specified channel
     uint16_t config = ADS_CONFIG_OS
@@ -422,7 +453,10 @@ int16_t InputManager::adsReadChannel(uint8_t channel) {
     Wire.write(ADS_REG_CONFIG);
     Wire.write((uint8_t)(config >> 8));
     Wire.write((uint8_t)(config & 0xFF));
-    Wire.endTransmission();
+    if (Wire.endTransmission() != 0) {
+        i2cErrorCount++;
+        return false;
+    }
 
     // Wait for conversion (860 SPS ≈ 1.2ms)
     delayMicroseconds(1200);
@@ -430,11 +464,17 @@ int16_t InputManager::adsReadChannel(uint8_t channel) {
     // Read result
     Wire.beginTransmission(ADDR_ADS1115);
     Wire.write(ADS_REG_CONVERT);
-    Wire.endTransmission(false);
-    Wire.requestFrom(ADDR_ADS1115, (uint8_t)2);
-    int16_t val = (int16_t)Wire.read() << 8;
-    val |= Wire.read();
-    return val;
+    if (Wire.endTransmission(false) != 0) {
+        i2cErrorCount++;
+        return false;
+    }
+    if (Wire.requestFrom((uint8_t)ADDR_ADS1115, (uint8_t)2) < 2) {
+        i2cErrorCount++;
+        return false;
+    }
+    outVal = (int16_t)Wire.read() << 8;
+    outVal |= Wire.read();
+    return true;
 }
 
 int8_t InputManager::decodeQuadrature(uint8_t oldState, uint8_t newState) {

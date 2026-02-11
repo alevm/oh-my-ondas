@@ -147,6 +147,7 @@ void setup() {
     // I2C (shared: OLED, MPR121, MCP23017×2, ADS1115)
     Wire.begin();
     Wire.setClock(400000);
+    Wire.setTimeout(1000);  // 1ms I2C timeout — prevents bus hangs
 
     // LED ring
     ledRing.begin();

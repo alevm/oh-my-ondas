@@ -43,6 +43,7 @@ public:
     float getFaderValue(int faderID);
     bool  isButtonPressed(int buttonID);
     uint8_t getJoystickState();
+    uint32_t getI2CErrorCount() const { return i2cErrorCount; }
 
 private:
     // Callbacks
@@ -86,6 +87,12 @@ private:
     bool     adsReady;
     uint8_t  adsCurrentChannel;
 
+    // ── I2C error handling ──
+    uint32_t i2cErrorCount;
+    uint16_t mcpALastGood;     // last good MCP#1 read (encoders)
+    uint16_t mcpBLastGood;     // last good MCP#2 read (buttons)
+    int16_t  adsLastGood[4];   // last good ADS1115 per-channel
+
     // ── Timing ──
     unsigned long lastEncoderPoll;
     unsigned long lastButtonPoll;
@@ -107,10 +114,10 @@ private:
     void pollJoystick();
     void pollTouch();
 
-    // I2C helpers
-    uint16_t mcpRead16(uint8_t addr, uint8_t reg);
-    void     mcpWrite8(uint8_t addr, uint8_t reg, uint8_t value);
-    int16_t  adsReadChannel(uint8_t channel);
+    // I2C helpers (return false on bus error, increment i2cErrorCount)
+    bool mcpRead16(uint8_t addr, uint8_t reg, uint16_t& outVal);
+    bool mcpWrite8(uint8_t addr, uint8_t reg, uint8_t value);
+    bool adsReadChannel(uint8_t channel, int16_t& outVal);
 
     // Quadrature decode helper
     int8_t   decodeQuadrature(uint8_t oldState, uint8_t newState);

@@ -223,6 +223,18 @@ enum FaderID {
 #define ADDR_MCP23017B 0x21  // I/O expander #2 (buttons)
 #define ADDR_ADS1115   0x48  // 16-bit ADC (faders)
 
+// ── Bus Architecture Notes ──────────────────────────────────
+// SPI0 (pins 11,12,13): ILI9488 LCD only
+// SD card: uses SDIO (dedicated 4-bit bus on Teensy 4.1), NOT SPI0 — no LCD contention
+// I2S: dedicated audio peripheral (pins 7,20,21,23) — no bus sharing
+//
+// I2C bus (400kHz, Wire.setTimeout 1ms):
+//   0x20 MCP23017A — 8 encoders,  polled every 2ms
+//   0x21 MCP23017B — 14 buttons,  polled every 10ms
+//   0x48 ADS1115   — 4 faders,    polled every 20ms
+//   0x5A MPR121    — 8 touch pads, polled every loop (~1ms)
+//   0x3C SSD1306   — OLED map,    updated every 200ms
+
 // ============================================
 // AUDIO ROUTING
 // ============================================
@@ -243,7 +255,7 @@ enum FXType {
     FX_WAVEFOLD,
     FX_GLITCH,
     FX_GRAIN,
-    FX_RINGMOD,
+    FX_RINGMOD,     // NOT IMPLEMENTED — no dedicated audio object; kept for preset compatibility
     FX_COMB,
     FX_TAPE,
     FX_CHORUS,

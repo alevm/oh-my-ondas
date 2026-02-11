@@ -172,6 +172,55 @@ void FXEngine::applyEffect() {
             }
             break;
 
+        case FX_GLITCH:
+            // Extreme bitcrusher: low sample rate + low bit depth
+            if (crusherFX) {
+                // param1 = sample rate (2000-8000Hz), param2 = bits (4-8)
+                int glitchSR = 2000 + (int)(currentParams.param1 * 6000);
+                int glitchBits = 4 + (int)(currentParams.param2 * 4);
+                crusherFX->sampleRate(glitchSR);
+                crusherFX->bits(glitchBits);
+                fxReturnMix->gain(2, mix);  // ch2 = bitcrusher
+            }
+            break;
+
+        case FX_COMB:
+            // Comb filter via very short delay + high feedback
+            if (delayFX) {
+                // param1 = delay time (1-30ms), param2 = feedback (0.5-0.95)
+                int combMs = 1 + (int)(currentParams.param1 * 29);
+                float combFb = 0.5f + currentParams.param2 * 0.45f;
+                delayFX->delay(0, combMs);
+                if (fxSendMix) {
+                    fxSendMix->gain(1, combFb);
+                }
+                fxReturnMix->gain(1, mix);  // ch1 = delay
+            }
+            break;
+
+        case FX_TAPE:
+            // Tape: mild 12-bit crush + LFO-modulated short delay (wow/flutter)
+            if (crusherFX && delayFX) {
+                crusherFX->bits(12);
+                crusherFX->sampleRate(22050);
+                // param1 = wow amount (5-30ms delay), param2 = flutter depth
+                float lfo = sinf(lfoPhase * 2.0f * PI);
+                int tapeDelay = 5 + (int)(currentParams.param1 * 25
+                                + currentParams.param2 * 10.0f * lfo);
+                if (tapeDelay < 1) tapeDelay = 1;
+                delayFX->delay(0, tapeDelay);
+                if (fxSendMix) {
+                    fxSendMix->gain(1, 0.3f);  // mild feedback
+                }
+                fxReturnMix->gain(1, mix * 0.6f);  // delay return
+                fxReturnMix->gain(2, mix * 0.4f);  // crush return
+            }
+            break;
+
+        case FX_RINGMOD:
+            // Not implemented — no dedicated audio object
+            break;
+
         case FX_NONE:
         default:
             // No effect — feedback path off
@@ -187,6 +236,12 @@ void FXEngine::selectEffect(int delta) {
     int newEffect = (int)currentEffect + delta;
     if (newEffect < 0) newEffect = FX_COUNT - 1;
     if (newEffect >= FX_COUNT) newEffect = 0;
+    // Skip FX_RINGMOD (not implemented — no dedicated audio object)
+    if (newEffect == FX_RINGMOD) {
+        newEffect += (delta >= 0) ? 1 : -1;
+        if (newEffect < 0) newEffect = FX_COUNT - 1;
+        if (newEffect >= FX_COUNT) newEffect = 0;
+    }
     currentEffect = (FXType)newEffect;
 
     // Enable mix when selecting a new effect
@@ -211,7 +266,7 @@ const char* FXEngine::getEffectName(FXType type) {
         case FX_WAVEFOLD: return "FOLD";
         case FX_GLITCH:   return "GLITCH";
         case FX_GRAIN:    return "GRAIN";
-        case FX_RINGMOD:  return "RING";
+        case FX_RINGMOD:  return "RING-";
         case FX_COMB:     return "COMB";
         case FX_TAPE:     return "TAPE";
         case FX_CHORUS:   return "CHORUS";
