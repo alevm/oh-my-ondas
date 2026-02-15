@@ -203,6 +203,12 @@
       // ════════════════════════════════════════════════════════════
       console.log('[demo] PHASE 1: LISTEN');
 
+      // Force GPS display — Barcelona, Llotja de Mar
+      const gpsText = $('#gpsText');
+      const gpsTextE = $('#gpsTextE');
+      if (gpsText) gpsText.textContent = '41.3818, 2.1685';
+      if (gpsTextE) gpsTextE.textContent = '41.3818, 2.1685';
+
       // Set tempo 85 BPM
       window.sequencer?.setTempo(85);
       const ts = $('#tempoSlider');
@@ -431,11 +437,28 @@
       // Stop radio
       try { window.radioPlayer?.stop(); } catch {}
 
-      // Stop session recorder
-      try { window.sessionRecorder?.stop(); } catch {}
+      // Stop session recorder and auto-download
+      try {
+        const sr = window.sessionRecorder;
+        if (sr?.isRecording()) {
+          sr.stop();
+          // Wait for recording to finalize, then trigger download
+          await sleep(1500);
+          const recs = sr.getRecordings?.() || sr.recordings || [];
+          if (recs.length > 0) {
+            const latest = recs[0];
+            sr.downloadRecording(latest.id);
+            caption('Recording saved', { fontSize: '16px' });
+          }
+        }
+      } catch (e) { console.warn('[demo] Recording download failed:', e); }
 
-      await sleep(500);
+      await sleep(2000);
       caption('');
+
+      // Refresh the recordings list in the UI
+      window.app?.updateRecCount?.();
+      window.app?.updateFilesList?.();
 
       console.log('[demo] DONE');
 
