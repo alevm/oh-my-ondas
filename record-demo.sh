@@ -331,6 +331,12 @@ CHROME_FLAGS=(
   --no-default-browser-check
 )
 
+# Force X11 rendering when using x11grab capture (Wayland windows are invisible to x11grab)
+if [[ "$CAPTURE_METHOD" == "x11grab" ]]; then
+  CHROME_FLAGS+=(--ozone-platform=x11)
+  info "Forcing Chrome X11 mode (needed for x11grab capture)"
+fi
+
 # PipeWire support
 if [[ "$AUDIO_SYSTEM" == "pipewire" ]]; then
   CHROME_FLAGS+=(--enable-features=WebRTCPipeWireCapturer)

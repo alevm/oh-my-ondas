@@ -254,6 +254,9 @@
       // ════════════════════════════════════════════════════════════
       console.log('[demo] PHASE 1: LISTEN');
 
+      // Start on mixer tile — mic is the instrument
+      showPanel('mixer');
+
       // Force GPS display — Barcelona, Llotja de Mar
       const gpsText = $('#gpsText');
       const gpsTextE = $('#gpsTextE');
@@ -455,22 +458,40 @@
       sweep($('#sceneCrossfader'), 0, 1500);
       await sleep(1700);
 
-      // ── 2f (5s): GPS stamp + Journey + AI ──
-      console.log('[demo] PHASE 2f: GPS + Journey + AI');
-      caption('This sound belongs to this place', { fontSize: '17px' });
+      // ── 2f (5s): CLIMAX — all tiles converge ──
+      console.log('[demo] PHASE 2f: CLIMAX');
+      caption('All elements converging', { fontSize: '17px' });
 
-      showPanel('journey');
-      await sleep(300);
-      tap('#journeyStart');
-      await sleep(1500);
-      tap('#journeyWaypoint');
-      await sleep(1000);
+      // Push everything to peak
+      sweep($('#faderSamples'), 80, 800);
+      sweep($('#faderSynth'), 70, 800);
+      sweep($('#faderRadio'), 65, 800);
+      sweep($('#faderMic'), 40, 800);
 
-      // AI generate
+      // Rapid tile showcase — every panel lights up
+      for (const p of ['seq', 'mixer', 'pads', 'knobs', 'fx', 'radio']) {
+        showPanel(p);
+        await sleep(400);
+      }
+
+      // Scenes crossfade at peak
+      showPanel('scenes');
+      await sleep(500);
+
+      // AI fires
       showPanel('ai');
-      await sleep(300);
       tap('#aiGenerate');
-      await sleep(2000);
+      await sleep(500);
+
+      // Journey stamps this place
+      showPanel('journey');
+      tap('#journeyStart');
+      await sleep(300);
+      tap('#journeyWaypoint');
+      await sleep(400);
+
+      caption('This sound belongs to this place', { fontSize: '17px' });
+      await sleep(800);
 
       // ════════════════════════════════════════════════════════════
       // PHASE 3 — RETURN (0:35 → 0:40)
@@ -478,7 +499,10 @@
       console.log('[demo] PHASE 3: RETURN');
       caption('Returning to the room...');
 
-      // Sweep all faders to zero EXCEPT mic (stays at 90)
+      // Show mixer — watch everything fade down
+      showPanel('mixer');
+
+      // Sweep all faders to zero EXCEPT mic
       sweep($('#faderSamples'), 0, 2500);
       sweep($('#faderSynth'), 0, 2500);
       sweep($('#faderRadio'), 0, 2500);
@@ -493,16 +517,22 @@
 
       await sleep(3500);
 
+      // Show seq tile — watch it empty
+      showPanel('seq');
+      await sleep(300);
+
       // ── HARD STOP — prevent any looping ──
-      // Stop sequencer first
       try { window.sequencer?.stop(); } catch {}
       tap('#btnStop');
       await sleep(300);
 
-      // Clear all sequencer steps so nothing can retrigger
+      // Clear all sequencer steps — tiles empty
       for (let t = 0; t < 3; t++)
         for (let s = 0; s < 16; s++)
           try { window.sequencer?.setStep(t, s, false); } catch {}
+      window.app?.refreshSequencerUI?.();
+
+      await sleep(500);
 
       // Fade mic to zero
       await sweep($('#faderMic'), 0, 1500);
@@ -510,24 +540,27 @@
       // Fade master to zero
       await sweep($('#faderMaster'), 0, 500);
 
-      // End journey
-      tap('#journeyEnd');
-
       // Stop radio
       try { window.radioPlayer?.stop(); } catch {}
+
+      // Focus on location — the place this sound belongs to
+      showPanel('journey');
+      tap('#journeyEnd');
+      const endCoords = gps
+        ? `${gps.latitude.toFixed(4)}° N, ${gps.longitude.toFixed(4)}° E`
+        : '41.3818° N, 2.1685° E';
+      caption(endCoords, { fontSize: '17px' });
 
       // Stop session recorder and auto-download
       try {
         const sr = window.sessionRecorder;
         if (sr?.isRecording()) {
           sr.stop();
-          // Wait for recording to finalize, then trigger download
           await sleep(1500);
           const recs = sr.getRecordings?.() || sr.recordings || [];
           if (recs.length > 0) {
             const latest = recs[0];
             sr.downloadRecording(latest.id);
-            caption('Recording saved', { fontSize: '16px' });
           }
         }
       } catch (e) { console.warn('[demo] Recording download failed:', e); }
