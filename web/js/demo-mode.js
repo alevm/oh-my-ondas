@@ -51,6 +51,54 @@
   const $ = (sel) => document.querySelector(sel);
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
+  /** Feedback detection — monitors audio level, ducks mic if too hot */
+  let feedbackGuard = null;
+  function startFeedbackGuard() {
+    if (!window.audioEngine?.ctx) return;
+    const ctx = window.audioEngine.ctx;
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 256;
+    // Connect to the destination (master output)
+    try {
+      const dest = window.audioEngine.masterGain || window.audioEngine.master;
+      if (dest) dest.connect(analyser);
+    } catch {}
+    const data = new Float32Array(analyser.frequencyBinCount);
+    let ducked = false;
+    const micFader = $('#faderMic');
+    feedbackGuard = setInterval(() => {
+      analyser.getFloatTimeDomainData(data);
+      let peak = 0;
+      for (let i = 0; i < data.length; i++) {
+        const v = Math.abs(data[i]);
+        if (v > peak) peak = v;
+      }
+      // If peak is very hot (near clipping), duck the mic
+      if (peak > 0.85 && !ducked && micFader) {
+        const cur = parseFloat(micFader.value) || 0;
+        if (cur > 20) {
+          micFader.value = Math.max(10, cur * 0.4);
+          micFader.dispatchEvent(new Event('input', { bubbles: true }));
+          ducked = true;
+          console.log(`[demo] Feedback guard: ducked mic from ${cur} to ${micFader.value}`);
+        }
+      }
+      // Recover slowly when level drops
+      if (peak < 0.5 && ducked && micFader) {
+        const cur = parseFloat(micFader.value) || 0;
+        if (cur < 35) {
+          micFader.value = Math.min(35, cur + 3);
+          micFader.dispatchEvent(new Event('input', { bubbles: true }));
+        } else {
+          ducked = false;
+        }
+      }
+    }, 100);
+  }
+  function stopFeedbackGuard() {
+    if (feedbackGuard) { clearInterval(feedbackGuard); feedbackGuard = null; }
+  }
+
   /** Smoothly animate a range input from current to target */
   async function sweep(el, target, durationMs) {
     if (!el) return;
@@ -187,6 +235,9 @@
         if (window.audioEngine.ctx?.state === 'suspended') await window.audioEngine.ctx.resume();
       }
 
+      // Start feedback detection
+      startFeedbackGuard();
+
       // Request real mic
       try {
         await window.micInput?.ensureActive();
@@ -216,15 +267,27 @@
       if (ts) ts.value = 85;
       if (tv) tv.textContent = '85';
 
-      // All faders to zero except mic
+      // Make sure sequencer is stopped and clear any previous patterns
+      try { window.sequencer?.stop(); } catch {}
+      for (let t = 0; t < 3; t++)
+        for (let s = 0; s < 16; s++)
+          try { window.sequencer?.setStep(t, s, false); } catch {}
+
+      // All faders to zero except mic (start low, will ramp)
       for (const [id, val] of [
-        ['faderSamples', 0], ['faderSynth', 0], ['faderRadio', 0], ['faderMaster', 85]
+        ['faderSamples', 0], ['faderSynth', 0], ['faderRadio', 0],
+        ['faderMic', 0], ['faderMaster', 80]
       ]) {
         const el = $(`#${id}`);
         if (el) { el.value = val; el.dispatchEvent(new Event('input', { bubbles: true })); }
       }
-      // Mic hot
-      await sweep($('#faderMic'), 90, 800);
+
+      // Filter wide open — let the mic sound natural in this phase
+      const filterEl = $('#filterCutoff');
+      if (filterEl) { filterEl.value = 12000; filterEl.dispatchEvent(new Event('input', { bubbles: true })); }
+
+      // Mic fades in gently — NOT slamming to max
+      await sweep($('#faderMic'), 55, 2000);
 
       // GPS coords visible
       const gps = window.gpsTracker?.getPosition?.();
@@ -255,6 +318,10 @@
 
       // ── 2a (5s): Sequence the captured room sample ──
       console.log('[demo] PHASE 2a: Sequence room sample');
+
+      // Pull mic down as other elements enter — prevent feedback
+      sweep($('#faderMic'), 25, 1500);
+
       caption('Room → sampler → sequencer');
       showPanel('seq');
       await sleep(300);
@@ -271,9 +338,8 @@
       if (fxD) { fxD.value = 15; fxD.dispatchEvent(new Event('input', { bubbles: true })); }
       if (fxG) { fxG.value = 20; fxG.dispatchEvent(new Event('input', { bubbles: true })); }
 
-      // Filter low to start
-      const fc = $('#filterCutoff');
-      if (fc) { fc.value = 300; fc.dispatchEvent(new Event('input', { bubbles: true })); }
+      // Filter low to start — darken the texture
+      if (filterEl) { filterEl.value = 300; filterEl.dispatchEvent(new Event('input', { bubbles: true })); }
 
       // Sweep samples fader up
       sweep($('#faderSamples'), 72, 2000); // non-blocking
@@ -339,7 +405,7 @@
       // Sweep filter from low to high over 4s
       showPanel('knobs');
       await sleep(200);
-      await sweep($('#filterCutoff'), 6000, 4000);
+      await sweep(filterEl, 6000, 4000);
       await sleep(500);
 
       // ── 2e (6s): Effects + scene crossfade ──
@@ -422,14 +488,27 @@
       sweep($('#fxGlitch'), 0, 1500);
       sweep($('#fxCrush'), 16, 1500);
 
-      // Mic stays hot — room sound resurfaces
-      sweep($('#faderMic'), 95, 1500);
+      // Mic comes back gently — room resurfaces
+      sweep($('#faderMic'), 65, 2000);
 
-      await sleep(3000);
+      await sleep(3500);
 
-      // Stop
+      // ── HARD STOP — prevent any looping ──
+      // Stop sequencer first
+      try { window.sequencer?.stop(); } catch {}
       tap('#btnStop');
-      await sleep(500);
+      await sleep(300);
+
+      // Clear all sequencer steps so nothing can retrigger
+      for (let t = 0; t < 3; t++)
+        for (let s = 0; s < 16; s++)
+          try { window.sequencer?.setStep(t, s, false); } catch {}
+
+      // Fade mic to zero
+      await sweep($('#faderMic'), 0, 1500);
+
+      // Fade master to zero
+      await sweep($('#faderMaster'), 0, 500);
 
       // End journey
       tap('#journeyEnd');
@@ -465,6 +544,7 @@
     } catch (err) {
       console.error('[demo] Error:', err);
     } finally {
+      stopFeedbackGuard();
       // Restore button
       running = false;
       btn.textContent = 'DEMO';
