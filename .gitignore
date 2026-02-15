@@ -64,5 +64,8 @@ firmware/.pio/
 # Large binaries
 *.AppImage
 
+# Demo output files (recordings, intermediates)
+demo/output/
+
 # Claude Code internal
 .claude/
