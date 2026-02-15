@@ -186,22 +186,27 @@ elif command -v pw-cli &>/dev/null && pw-cli info 2>/dev/null; then
 fi
 info "Audio system: $AUDIO_SYSTEM"
 
-# Find monitor source (for capturing system audio output)
+# Find audio sources
 MONITOR_SOURCE=""
+MIC_SOURCE=""
 if command -v pactl &>/dev/null; then
-  # Get the default sink's monitor
+  # System audio monitor (what Chrome outputs through speakers)
   DEFAULT_SINK=$(pactl get-default-sink 2>/dev/null || echo "")
   if [[ -n "$DEFAULT_SINK" ]]; then
     MONITOR_SOURCE="${DEFAULT_SINK}.monitor"
-    ok "Audio monitor: $MONITOR_SOURCE"
+    ok "System audio: $MONITOR_SOURCE"
+  fi
+
+  # Mic source (raw room sound)
+  MIC_SOURCE=$(pactl get-default-source 2>/dev/null || echo "")
+  # If default source is a monitor, find a real mic instead
+  if [[ "$MIC_SOURCE" == *monitor* ]] || [[ -z "$MIC_SOURCE" ]]; then
+    MIC_SOURCE=$(pactl list short sources 2>/dev/null | grep -v monitor | head -1 | awk '{print $2}')
+  fi
+  if [[ -n "$MIC_SOURCE" ]]; then
+    ok "Mic source: $MIC_SOURCE"
   else
-    # Fallback: find any monitor source
-    MONITOR_SOURCE=$(pactl list short sources 2>/dev/null | grep monitor | head -1 | awk '{print $2}')
-    if [[ -n "$MONITOR_SOURCE" ]]; then
-      ok "Audio monitor (fallback): $MONITOR_SOURCE"
-    else
-      warn "No audio monitor found — recording will be video-only"
-    fi
+    warn "No mic source found"
   fi
 fi
 
@@ -394,9 +399,30 @@ elif [[ "$CAPTURE_METHOD" == "x11grab" ]]; then
   FFMPEG_CMD=(ffmpeg -y
     -f x11grab -r 25 -video_size 1920x1080 -i "$X11_DISPLAY"
   )
-  [[ -n "$MONITOR_SOURCE" ]] && FFMPEG_CMD+=(-f pulse -i "$MONITOR_SOURCE")
+
+  # Audio: mix raw mic + system audio output together
+  AUDIO_INPUTS=0
+  if [[ -n "$MIC_SOURCE" ]]; then
+    FFMPEG_CMD+=(-f pulse -i "$MIC_SOURCE")
+    ((AUDIO_INPUTS++))
+  fi
+  if [[ -n "$MONITOR_SOURCE" ]]; then
+    FFMPEG_CMD+=(-f pulse -i "$MONITOR_SOURCE")
+    ((AUDIO_INPUTS++))
+  fi
+
   FFMPEG_CMD+=(-c:v libx264 -preset fast -crf 18 -pix_fmt yuv420p)
-  [[ -n "$MONITOR_SOURCE" ]] && FFMPEG_CMD+=(-c:a aac -b:a 192k) || FFMPEG_CMD+=(-an)
+
+  if [[ "$AUDIO_INPUTS" -eq 2 ]]; then
+    # Mix mic + system audio into one stereo track
+    FFMPEG_CMD+=(-filter_complex "[1:a][2:a]amix=inputs=2:duration=longest[aout]" -map 0:v -map "[aout]")
+    FFMPEG_CMD+=(-c:a aac -b:a 192k)
+  elif [[ "$AUDIO_INPUTS" -eq 1 ]]; then
+    FFMPEG_CMD+=(-c:a aac -b:a 192k)
+  else
+    FFMPEG_CMD+=(-an)
+  fi
+
   FFMPEG_CMD+=(-movflags +faststart "$RAW_FILE")
 
   "${FFMPEG_CMD[@]}" &>/dev/null &
