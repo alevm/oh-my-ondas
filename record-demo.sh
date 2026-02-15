@@ -404,11 +404,11 @@ elif [[ "$CAPTURE_METHOD" == "x11grab" ]]; then
   AUDIO_INPUTS=0
   if [[ -n "$MIC_SOURCE" ]]; then
     FFMPEG_CMD+=(-f pulse -i "$MIC_SOURCE")
-    ((AUDIO_INPUTS++))
+    AUDIO_INPUTS=$((AUDIO_INPUTS + 1))
   fi
   if [[ -n "$MONITOR_SOURCE" ]]; then
     FFMPEG_CMD+=(-f pulse -i "$MONITOR_SOURCE")
-    ((AUDIO_INPUTS++))
+    AUDIO_INPUTS=$((AUDIO_INPUTS + 1))
   fi
 
   FFMPEG_CMD+=(-c:v libx264 -preset fast -crf 18 -pix_fmt yuv420p)
