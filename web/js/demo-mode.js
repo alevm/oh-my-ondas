@@ -560,10 +560,23 @@
 
   // ─── Init ───
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', createDemoButton);
-  } else {
+  function initDemo() {
     createDemoButton();
+
+    // Auto-start if ?demo=auto in URL
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('demo') === 'auto') {
+      setTimeout(() => {
+        const btn = $('#btnDemo');
+        if (btn) btn.click();
+      }, 4000); // 4s delay for audio engine + mic init
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDemo);
+  } else {
+    initDemo();
   }
 
 })();

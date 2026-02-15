@@ -14,6 +14,8 @@
 #   6. Report       — file stats, audio analysis
 #
 # Usage: ./record-demo.sh [OPTIONS]
+#   --auto            Auto-start demo (opens ?demo=auto, no prompts)
+#   --manual          Manual mode (default): prompts, you click DEMO
 #   --mic-test-only   Run mic test and exit
 #   --no-record       Launch app + Chrome but skip recording
 #   --fake-mic FILE   Use a WAV file as fake mic input
@@ -49,6 +51,7 @@ OUTPUT=""
 NO_RECORD=false
 NO_TRIM=false
 MIC_TEST_ONLY=false
+AUTO_MODE=false
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 RAW_FILE="/tmp/ohmyondas-raw-${TIMESTAMP}.mp4"
 TRIMMED_FILE=""
@@ -59,6 +62,8 @@ FFMPEG_PID=""
 # ─── Parse args ───
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --auto) AUTO_MODE=true; shift ;;
+    --manual) AUTO_MODE=false; shift ;;
     --mic-test-only) MIC_TEST_ONLY=true; shift ;;
     --no-record) NO_RECORD=true; shift ;;
     --fake-mic) FAKE_MIC="$2"; shift 2 ;;
@@ -346,8 +351,12 @@ if [[ -n "$FAKE_MIC" ]]; then
 fi
 
 # Launch Chrome
+APP_URL="${BASE}/app.html"
+if $AUTO_MODE; then
+  APP_URL="${APP_URL}?demo=auto"
+fi
 info "Launching Chrome..."
-"$CHROME_BIN" "${CHROME_FLAGS[@]}" "${BASE}/app.html" &>/dev/null &
+"$CHROME_BIN" "${CHROME_FLAGS[@]}" "$APP_URL" &>/dev/null &
 CHROME_PID=$!
 info "Chrome PID $CHROME_PID"
 sleep 4
@@ -382,10 +391,15 @@ mkdir -p "$(dirname "$RAW_FILE")"
 mkdir -p "$(dirname "$OUTPUT")"
 
 # Build recording command based on capture method
-echo ""
-echo -e "  ${YELLOW}Press Enter when ready, then click DEMO in the app.${NC}"
-echo -e "  ${CYAN}Recording will run for ${DURATION}s.${NC}"
-read -r
+if $AUTO_MODE; then
+  info "Auto mode — waiting 5s for audio engine + mic to settle..."
+  sleep 5
+else
+  echo ""
+  echo -e "  ${YELLOW}Press Enter when ready, then click DEMO in the app.${NC}"
+  echo -e "  ${CYAN}Recording will run for ${DURATION}s.${NC}"
+  read -r
+fi
 
 info "Starting recording ($CAPTURE_METHOD)..."
 
@@ -437,7 +451,9 @@ info "Recorder PID $FFMPEG_PID"
 header "PHASE 4: WAITING"
 
 info "Waiting ${DURATION}s for demo to complete..."
-info "Click DEMO in the app now!"
+if ! $AUTO_MODE; then
+  info "Click DEMO in the app now!"
+fi
 for ((i = 0; i < DURATION; i++)); do
   if ! kill -0 "$FFMPEG_PID" 2>/dev/null; then
     warn "Recorder stopped early"
