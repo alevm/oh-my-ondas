@@ -87,6 +87,7 @@ cleanup() {
   # Kill any leftover server on our port
   fuser -k "${PORT}/tcp" 2>/dev/null || true
   rm -f /tmp/ohmyondas-mic-test.wav
+  rm -rf /tmp/ohmyondas-chrome-profile 2>/dev/null || true
 }
 trap cleanup EXIT
 
@@ -275,9 +276,23 @@ if ! kill -0 "$SERVER_PID" 2>/dev/null; then
 fi
 ok "Server running at $BASE"
 
+# Use isolated profile so Chrome doesn't just hand off to existing instance
+CHROME_PROFILE="/tmp/ohmyondas-chrome-profile"
+mkdir -p "$CHROME_PROFILE"
+
+# Prefer chromium (stays alive as separate process) over google-chrome
+# google-chrome-stable delegates to existing instance and exits
+for name in chromium chromium-browser google-chrome-stable google-chrome; do
+  if command -v "$name" &>/dev/null; then
+    CHROME_BIN="$name"
+    break
+  fi
+done
+
 # Build Chrome flags
 CHROME_FLAGS=(
   --autoplay-policy=no-user-gesture-required
+  "--user-data-dir=$CHROME_PROFILE"
   --window-size=1920,1080
   --window-position=0,0
   --disable-infobars
@@ -312,11 +327,18 @@ CHROME_PID=$!
 info "Chrome PID $CHROME_PID"
 sleep 4
 
-if ! kill -0 "$CHROME_PID" 2>/dev/null; then
-  fail "Chrome failed to start"
-  exit 1
+if kill -0 "$CHROME_PID" 2>/dev/null; then
+  ok "Chrome running (PID $CHROME_PID)"
+else
+  # Chrome may have delegated to existing instance — check if page is reachable
+  if curl -s -o /dev/null -w "%{http_code}" "${BASE}/app.html" 2>/dev/null | grep -q "200"; then
+    warn "Chrome process exited (delegated to existing instance) — app is reachable"
+    CHROME_PID=""
+  else
+    fail "Chrome failed to start and app is not reachable"
+    exit 1
+  fi
 fi
-ok "Chrome running"
 
 if $NO_RECORD; then
   echo ""
