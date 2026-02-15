@@ -136,24 +136,44 @@ if [[ "$MISSING" -gt 0 ]]; then
   exit 1
 fi
 
-# Detect display server
-if [[ "${XDG_SESSION_TYPE:-}" == "wayland" ]]; then
-  DISPLAY_TYPE="wayland"
-elif [[ -n "${DISPLAY:-}" ]]; then
-  DISPLAY_TYPE="x11"
-elif [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
-  DISPLAY_TYPE="wayland"
+# Detect display server and screen capture method
+DISPLAY_TYPE="unknown"
+CAPTURE_METHOD=""
+
+# Check for XWayland / X11 (DISPLAY set = x11grab works)
+if [[ -n "${DISPLAY:-}" ]]; then
+  X11_DISPLAY="$DISPLAY"
 else
-  # Try to detect
-  if loginctl show-session "$(loginctl | grep "$(whoami)" | awk '{print $1}' | head -1)" -p Type 2>/dev/null | grep -qi wayland; then
-    DISPLAY_TYPE="wayland"
-  else
-    DISPLAY_TYPE="x11"
-    # Set DISPLAY if not set (common in some terminals)
-    export DISPLAY="${DISPLAY:-:0}"
-  fi
+  # Try common XWayland displays
+  for d in :1 :0; do
+    if xrandr --display "$d" --listmonitors &>/dev/null; then
+      X11_DISPLAY="$d"
+      break
+    fi
+  done
 fi
+
+if [[ "${XDG_SESSION_TYPE:-}" == "wayland" ]] || [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
+  DISPLAY_TYPE="wayland"
+  if command -v wf-recorder &>/dev/null; then
+    CAPTURE_METHOD="wf-recorder"
+  elif [[ -n "${X11_DISPLAY:-}" ]]; then
+    CAPTURE_METHOD="x11grab"
+    info "Wayland detected but using XWayland (DISPLAY=$X11_DISPLAY) for capture"
+  fi
+elif [[ -n "${X11_DISPLAY:-}" ]]; then
+  DISPLAY_TYPE="x11"
+  CAPTURE_METHOD="x11grab"
+fi
+
+if [[ -z "$CAPTURE_METHOD" ]]; then
+  fail "No screen capture method available."
+  fail "Install wf-recorder (zypper install wf-recorder) or ensure XWayland is running."
+  exit 1
+fi
+
 info "Display server: $DISPLAY_TYPE"
+info "Capture method: $CAPTURE_METHOD"
 
 # Detect audio system
 AUDIO_SYSTEM="unknown"
@@ -356,107 +376,62 @@ header "PHASE 3: RECORD"
 mkdir -p "$(dirname "$RAW_FILE")"
 mkdir -p "$(dirname "$OUTPUT")"
 
-# Build ffmpeg command based on display type
-FFMPEG_CMD=(ffmpeg -y)
+# Build recording command based on capture method
+echo ""
+echo -e "  ${YELLOW}Press Enter when ready, then click DEMO in the app.${NC}"
+echo -e "  ${CYAN}Recording will run for ${DURATION}s.${NC}"
+read -r
 
-if [[ "$DISPLAY_TYPE" == "x11" ]]; then
-  FFMPEG_CMD+=(
-    -f x11grab -r 25 -video_size 1920x1080 -i "${DISPLAY:-:0}"
+info "Starting recording ($CAPTURE_METHOD)..."
+
+if [[ "$CAPTURE_METHOD" == "wf-recorder" ]]; then
+  WF_ARGS=(-f "$RAW_FILE")
+  [[ -n "$MONITOR_SOURCE" ]] && WF_ARGS+=(--audio="$MONITOR_SOURCE")
+  wf-recorder "${WF_ARGS[@]}" &>/dev/null &
+  FFMPEG_PID=$!
+
+elif [[ "$CAPTURE_METHOD" == "x11grab" ]]; then
+  FFMPEG_CMD=(ffmpeg -y
+    -f x11grab -r 25 -video_size 1920x1080 -i "$X11_DISPLAY"
   )
-elif [[ "$DISPLAY_TYPE" == "wayland" ]]; then
-  # Wayland is tricky — use wf-recorder if available, else try pipewire screen capture
-  if command -v wf-recorder &>/dev/null; then
-    warn "Wayland detected. Using wf-recorder instead of ffmpeg for video."
-    warn "Audio capture on Wayland may require manual setup."
-    # For wayland, we'll use a different approach
-    WF_RAW="/tmp/ohmyondas-wf-${TIMESTAMP}.mp4"
-    echo ""
-    echo -e "  ${YELLOW}Press Enter when ready, then click DEMO in the app.${NC}"
-    read -r
-    wf-recorder -f "$WF_RAW" --audio="${MONITOR_SOURCE:-}" -g "0,0 1920x1080" &
-    FFMPEG_PID=$!
-    info "wf-recorder PID $FFMPEG_PID"
-    sleep "$DURATION"
-    kill -INT "$FFMPEG_PID" 2>/dev/null || true
-    wait "$FFMPEG_PID" 2>/dev/null || true
-    RAW_FILE="$WF_RAW"
-    # Skip the normal ffmpeg path
-    FFMPEG_CMD=()
-  fi
-fi
-
-# Standard ffmpeg recording (X11 or fallback)
-if [[ ${#FFMPEG_CMD[@]} -gt 0 ]]; then
-  # Add audio
-  if [[ -n "$MONITOR_SOURCE" ]]; then
-    FFMPEG_CMD+=(
-      -f pulse -i "$MONITOR_SOURCE"
-    )
-  fi
-
-  FFMPEG_CMD+=(
-    -c:v libx264 -preset fast -crf 18 -pix_fmt yuv420p
-  )
-
-  if [[ -n "$MONITOR_SOURCE" ]]; then
-    FFMPEG_CMD+=(-c:a aac -b:a 192k)
-  else
-    FFMPEG_CMD+=(-an)
-  fi
-
+  [[ -n "$MONITOR_SOURCE" ]] && FFMPEG_CMD+=(-f pulse -i "$MONITOR_SOURCE")
+  FFMPEG_CMD+=(-c:v libx264 -preset fast -crf 18 -pix_fmt yuv420p)
+  [[ -n "$MONITOR_SOURCE" ]] && FFMPEG_CMD+=(-c:a aac -b:a 192k) || FFMPEG_CMD+=(-an)
   FFMPEG_CMD+=(-movflags +faststart "$RAW_FILE")
 
-  echo ""
-  echo -e "  ${YELLOW}Press Enter when ready, then click DEMO in the app.${NC}"
-  echo -e "  ${CYAN}Recording will run for ${DURATION}s.${NC}"
-  read -r
-
-  info "Starting recording..."
   "${FFMPEG_CMD[@]}" &>/dev/null &
   FFMPEG_PID=$!
-  info "ffmpeg PID $FFMPEG_PID"
-
-  # ══════════════════════════════════════════════════════════════
-  # PHASE 4: WAIT
-  # ══════════════════════════════════════════════════════════════
-  header "PHASE 4: WAITING"
-
-  # Optional: auto-click DEMO button
-  if command -v xdotool &>/dev/null && [[ -z "$FAKE_MIC" ]]; then
-    info "Tip: Click DEMO in the app now (or let xdotool try in 3s)..."
-    sleep 3
-    # Try to find and click the DEMO button
-    # This is best-effort — xdotool window search is unreliable
-    WID=$(xdotool search --name "Oh My Ondas" 2>/dev/null | head -1 || echo "")
-    if [[ -n "$WID" ]]; then
-      info "Found app window $WID — attempting auto-click..."
-      # DEMO button is roughly in the sidebar transport area
-      # This is fragile — better to click manually
-    fi
-  fi
-
-  info "Waiting ${DURATION}s for demo to complete..."
-  for ((i = 0; i < DURATION; i++)); do
-    if ! kill -0 "$FFMPEG_PID" 2>/dev/null; then
-      warn "ffmpeg stopped early"
-      break
-    fi
-    if (( i % 10 == 0 )); then
-      echo -ne "\r  ${CYAN}→${NC} ${i}s / ${DURATION}s"
-    fi
-    sleep 1
-  done
-  echo -e "\r  ${GREEN}✓${NC} Recording complete (${DURATION}s)      "
-
-  # Stop ffmpeg cleanly
-  if kill -0 "$FFMPEG_PID" 2>/dev/null; then
-    kill -INT "$FFMPEG_PID" 2>/dev/null || true
-    sleep 2
-    kill -9 "$FFMPEG_PID" 2>/dev/null || true
-  fi
-  wait "$FFMPEG_PID" 2>/dev/null || true
-  FFMPEG_PID=""
 fi
+
+info "Recorder PID $FFMPEG_PID"
+
+# ══════════════════════════════════════════════════════════════
+# PHASE 4: WAIT
+# ══════════════════════════════════════════════════════════════
+header "PHASE 4: WAITING"
+
+info "Waiting ${DURATION}s for demo to complete..."
+info "Click DEMO in the app now!"
+for ((i = 0; i < DURATION; i++)); do
+  if ! kill -0 "$FFMPEG_PID" 2>/dev/null; then
+    warn "Recorder stopped early"
+    break
+  fi
+  if (( i % 10 == 0 )); then
+    echo -ne "\r  ${CYAN}→${NC} ${i}s / ${DURATION}s"
+  fi
+  sleep 1
+done
+echo -e "\r  ${GREEN}✓${NC} Recording complete (${DURATION}s)      "
+
+# Stop recorder cleanly
+if kill -0 "$FFMPEG_PID" 2>/dev/null; then
+  kill -INT "$FFMPEG_PID" 2>/dev/null || true
+  sleep 2
+  kill -9 "$FFMPEG_PID" 2>/dev/null || true
+fi
+wait "$FFMPEG_PID" 2>/dev/null || true
+FFMPEG_PID=""
 
 # Check raw file
 if [[ ! -f "$RAW_FILE" ]] || [[ $(stat -c%s "$RAW_FILE" 2>/dev/null || echo 0) -lt 10000 ]]; then
