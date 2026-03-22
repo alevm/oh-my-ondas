@@ -271,12 +271,11 @@
 
                     <div class="step">
                         <div class="step-head">1.1 &mdash; Solder Audio Shield Headers</div>
-                        <ol>
-                            <li>Cut 2&times; female 40-pin headers to <strong>14 pins</strong> each.</li>
-                            <li>Place through Audio Shield bottom-side holes.</li>
-                            <li>Stack onto Teensy as alignment jig.</li>
-                            <li>Solder while seated. Let cool. Separate.</li>
-                        </ol>
+                        <div class="diagram-frame">
+                            <object id="svg-p1-solder" type="image/svg+xml" data="svg/phase1-soldering.svg">Soldering guide</object>
+                            <p class="diagram-label">Animated: How to solder the Audio Shield &mdash; 6 steps, cross-section view <button class="replay-btn" onclick="document.getElementById('svg-p1-solder').data='svg/phase1-soldering.svg?t='+Date.now()">&#8635; Replay</button></p>
+                        </div>
+                        <div class="callout-warn">The Teensy is your alignment jig. Stack the Audio Shield onto it BEFORE soldering &mdash; this guarantees all 28 pins line up. Solder on the <strong>top side</strong> of the Audio Shield. Do NOT solder to the Teensy itself.</div>
                     </div>
 
                     <div class="step">

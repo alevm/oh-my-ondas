@@ -1,0 +1,255 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700">
+<style>
+    text { font-family: 'Courier New', monospace; }
+    .fade { opacity: 0; }
+    .s1 { animation: fadeIn 0.8s ease forwards 0.5s; }
+    .s2 { animation: fadeIn 0.8s ease forwards 3.0s; }
+    .s3 { animation: fadeIn 0.8s ease forwards 5.5s; }
+    .s4 { animation: fadeIn 0.8s ease forwards 8.0s; }
+    .s5 { animation: fadeIn 0.8s ease forwards 10.5s; }
+    .s6 { animation: fadeIn 0.8s ease forwards 13.0s; }
+    .cut { animation: cutSnap 0.4s ease forwards 1.8s; opacity: 0; }
+    .drop { animation: dropDown 0.6s ease forwards 4.0s; opacity: 0; }
+    .stack { animation: stackDown 0.8s ease forwards 6.5s; opacity: 0; }
+    .iron { animation: solderMove 2s ease-in-out infinite 9.0s; }
+    .solder-dot { animation: solderAppear 0.3s ease forwards; opacity: 0; }
+    .sd1 { animation: solderAppear 0.3s ease forwards 9.5s; opacity: 0; }
+    .sd2 { animation: solderAppear 0.3s ease forwards 9.9s; opacity: 0; }
+    .sd3 { animation: solderAppear 0.3s ease forwards 10.3s; opacity: 0; }
+    .sd4 { animation: solderAppear 0.3s ease forwards 10.7s; opacity: 0; }
+    .sd5 { animation: solderAppear 0.3s ease forwards 11.1s; opacity: 0; }
+    .sd6 { animation: solderAppear 0.3s ease forwards 11.5s; opacity: 0; }
+    .sd7 { animation: solderAppear 0.3s ease forwards 11.9s; opacity: 0; }
+    .sep { animation: separate 1.0s ease forwards 13.5s; }
+    .blink { animation: blink 1s ease infinite 15.0s; opacity: 0; }
+    @keyframes fadeIn { to { opacity: 1; } }
+    @keyframes cutSnap { 0% { opacity: 0; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
+    @keyframes dropDown { 0% { opacity: 0; transform: translateY(-20px); } 100% { opacity: 1; transform: translateY(0); } }
+    @keyframes stackDown { 0% { opacity: 0; transform: translateY(-40px); } 100% { opacity: 1; transform: translateY(0); } }
+    @keyframes solderMove { 0%,100% { transform: translateX(0); } 50% { transform: translateX(80px); } }
+    @keyframes solderAppear { to { opacity: 1; } }
+    @keyframes separate { /* handled per element */ }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+</style>
+<rect width="900" height="700" fill="#0d0d0d"/>
+
+<!-- Title -->
+<text x="450" y="30" fill="#f39c12" font-size="20" font-weight="bold" text-anchor="middle">HOW TO SOLDER: Audio Shield onto Teensy 4.1</text>
+<text x="450" y="50" fill="#555" font-size="12" text-anchor="middle">The most critical step &mdash; alignment determines everything</text>
+
+<!-- ==================== STEP 1: Cut headers ==================== -->
+<g class="fade s1">
+    <rect x="30" y="70" width="840" height="90" rx="8" fill="#111" stroke="#333" stroke-width="1"/>
+    <text x="50" y="95" fill="#f39c12" font-size="14" font-weight="bold">STEP 1: Cut Female Headers</text>
+
+    <!-- Full 40-pin header strip -->
+    <rect x="80" y="110" width="320" height="16" rx="2" fill="#1a1a1a" stroke="#666" stroke-width="1"/>
+    <!-- Individual pin sockets shown -->
+    <g fill="#333" stroke="#555" stroke-width="0.5">
+        <rect x="82" y="112" width="6" height="12" rx="1"/>
+        <rect x="90" y="112" width="6" height="12" rx="1"/>
+        <rect x="98" y="112" width="6" height="12" rx="1"/>
+        <rect x="106" y="112" width="6" height="12" rx="1"/>
+        <rect x="114" y="112" width="6" height="12" rx="1"/>
+        <rect x="122" y="112" width="6" height="12" rx="1"/>
+        <rect x="130" y="112" width="6" height="12" rx="1"/>
+        <rect x="138" y="112" width="6" height="12" rx="1"/>
+        <rect x="146" y="112" width="6" height="12" rx="1"/>
+        <rect x="154" y="112" width="6" height="12" rx="1"/>
+        <rect x="162" y="112" width="6" height="12" rx="1"/>
+        <rect x="170" y="112" width="6" height="12" rx="1"/>
+        <rect x="178" y="112" width="6" height="12" rx="1"/>
+        <rect x="186" y="112" width="6" height="12" rx="1"/>
+        <!-- cut mark -->
+        <rect x="194" y="112" width="6" height="12" rx="1"/>
+        <rect x="202" y="112" width="6" height="12" rx="1"/>
+    </g>
+    <text x="82" y="142" fill="#888" font-size="9">|&lt;&mdash;&mdash;&mdash;&mdash;&mdash; 14 pins &mdash;&mdash;&mdash;&mdash;&mdash;&gt;|</text>
+
+    <!-- Cut line -->
+    <line x1="192" y1="105" x2="192" y2="135" stroke="#e74c3c" stroke-width="2" stroke-dasharray="4"/>
+    <text x="200" y="148" fill="#e74c3c" font-size="9">&#9986; cut here</text>
+
+    <!-- Result -->
+    <text x="440" y="115" fill="#888" font-size="11">&rarr;</text>
+
+    <!-- Cut piece x2 -->
+    <rect x="480" y="110" width="112" height="16" rx="2" fill="#1a1a1a" stroke="#27ae60" stroke-width="1.5"/>
+    <text x="536" y="123" fill="#27ae60" font-size="8" text-anchor="middle">14-pin female</text>
+    <text x="610" y="123" fill="#888" font-size="11">&times;2</text>
+
+    <rect x="640" y="110" width="112" height="16" rx="2" fill="#1a1a1a" stroke="#27ae60" stroke-width="1.5"/>
+    <text x="696" y="123" fill="#27ae60" font-size="8" text-anchor="middle">14-pin female</text>
+
+    <text x="480" y="148" fill="#666" font-size="9">Cut or snap 2 strips from 40-pin female headers</text>
+</g>
+
+<!-- ==================== STEP 2: Insert headers into Audio Shield ==================== -->
+<g class="fade s2">
+    <rect x="30" y="175" width="840" height="130" rx="8" fill="#111" stroke="#333" stroke-width="1"/>
+    <text x="50" y="200" fill="#f39c12" font-size="14" font-weight="bold">STEP 2: Insert Headers into Audio Shield (from bottom)</text>
+
+    <!-- Audio Shield PCB - top view showing holes -->
+    <rect x="200" y="215" width="500" height="70" rx="4" fill="#1a3a1a" stroke="#2ecc71" stroke-width="2"/>
+    <text x="450" y="245" fill="#2ecc71" font-size="13" font-weight="bold" text-anchor="middle">AUDIO SHIELD Rev D2</text>
+    <text x="450" y="262" fill="#888" font-size="10" text-anchor="middle">&#8593; top side (components) &#8593;</text>
+
+    <!-- Header holes - left row -->
+    <g fill="none" stroke="#f39c12" stroke-width="1.5">
+        <circle cx="220" cy="275" r="3"/><circle cx="232" cy="275" r="3"/><circle cx="244" cy="275" r="3"/>
+        <circle cx="256" cy="275" r="3"/><circle cx="268" cy="275" r="3"/><circle cx="280" cy="275" r="3"/>
+        <circle cx="292" cy="275" r="3"/><circle cx="304" cy="275" r="3"/><circle cx="316" cy="275" r="3"/>
+        <circle cx="328" cy="275" r="3"/><circle cx="340" cy="275" r="3"/><circle cx="352" cy="275" r="3"/>
+        <circle cx="364" cy="275" r="3"/><circle cx="376" cy="275" r="3"/>
+    </g>
+    <!-- Header holes - right row -->
+    <g fill="none" stroke="#f39c12" stroke-width="1.5">
+        <circle cx="520" cy="275" r="3"/><circle cx="532" cy="275" r="3"/><circle cx="544" cy="275" r="3"/>
+        <circle cx="556" cy="275" r="3"/><circle cx="568" cy="275" r="3"/><circle cx="580" cy="275" r="3"/>
+        <circle cx="592" cy="275" r="3"/><circle cx="604" cy="275" r="3"/><circle cx="616" cy="275" r="3"/>
+        <circle cx="628" cy="275" r="3"/><circle cx="640" cy="275" r="3"/><circle cx="652" cy="275" r="3"/>
+        <circle cx="664" cy="275" r="3"/><circle cx="676" cy="275" r="3"/>
+    </g>
+
+    <text x="298" y="295" fill="#f39c12" font-size="8" text-anchor="middle">14 holes (left row)</text>
+    <text x="598" y="295" fill="#f39c12" font-size="8" text-anchor="middle">14 holes (right row)</text>
+
+    <!-- Arrows showing insertion direction -->
+    <text x="80" y="250" fill="#5dade2" font-size="10">Push headers</text>
+    <text x="80" y="265" fill="#5dade2" font-size="10">through from</text>
+    <text x="80" y="280" fill="#5dade2" font-size="10" font-weight="bold">BOTTOM side</text>
+    <text x="130" y="255" fill="#5dade2" font-size="16">&rarr;</text>
+
+    <!-- Female header being inserted (shown below) -->
+    <g class="drop">
+        <rect x="210" y="275" width="172" height="10" rx="2" fill="#555" stroke="#888" stroke-width="1"/>
+        <text x="296" y="298" fill="#888" font-size="8" text-anchor="middle">&#8593; female header inserted from below</text>
+    </g>
+</g>
+
+<!-- ==================== STEP 3: Stack onto Teensy as jig ==================== -->
+<g class="fade s3">
+    <rect x="30" y="320" width="840" height="140" rx="8" fill="#111" stroke="#333" stroke-width="1"/>
+    <text x="50" y="345" fill="#f39c12" font-size="14" font-weight="bold">STEP 3: Use Teensy as Alignment Jig</text>
+
+    <!-- Teensy with male pins sticking up -->
+    <rect x="200" y="400" width="500" height="40" rx="4" fill="#1a5c1a" stroke="#27ae60" stroke-width="2"/>
+    <text x="450" y="425" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">TEENSY 4.1 (pre-soldered male pins pointing UP)</text>
+    <!-- Male pins -->
+    <g stroke="#c0c0c0" stroke-width="2">
+        <line x1="220" y1="400" x2="220" y2="385"/><line x1="232" y1="400" x2="232" y2="385"/>
+        <line x1="244" y1="400" x2="244" y2="385"/><line x1="256" y1="400" x2="256" y2="385"/>
+        <line x1="268" y1="400" x2="268" y2="385"/><line x1="280" y1="400" x2="280" y2="385"/>
+        <line x1="292" y1="400" x2="292" y2="385"/><line x1="304" y1="400" x2="304" y2="385"/>
+        <line x1="520" y1="400" x2="520" y2="385"/><line x1="532" y1="400" x2="532" y2="385"/>
+        <line x1="544" y1="400" x2="544" y2="385"/><line x1="556" y1="400" x2="556" y2="385"/>
+        <line x1="568" y1="400" x2="568" y2="385"/><line x1="580" y1="400" x2="580" y2="385"/>
+    </g>
+
+    <!-- Audio Shield stacking on top -->
+    <g class="stack">
+        <rect x="200" y="355" width="500" height="30" rx="4" fill="#1a3a1a" stroke="#2ecc71" stroke-width="2"/>
+        <text x="450" y="375" fill="#2ecc71" font-size="11" font-weight="bold" text-anchor="middle">AUDIO SHIELD + female headers mate onto male pins</text>
+        <!-- Female headers (dark squares matching onto male pins) -->
+        <g fill="#444">
+            <rect x="216" y="385" width="92" height="8" rx="1"/>
+            <rect x="516" y="385" width="68" height="8" rx="1"/>
+        </g>
+    </g>
+
+    <text x="760" y="370" fill="#5dade2" font-size="10">Male pins from</text>
+    <text x="760" y="385" fill="#5dade2" font-size="10">Teensy slide into</text>
+    <text x="760" y="400" fill="#5dade2" font-size="10">female headers =</text>
+    <text x="760" y="415" fill="#5dade2" font-size="10" font-weight="bold">perfect alignment</text>
+
+    <text x="50" y="450" fill="#27ae60" font-size="10">&#9733; This is the KEY trick: Teensy acts as a jig so all pins align perfectly</text>
+</g>
+
+<!-- ==================== STEP 4: Solder while stacked ==================== -->
+<g class="fade s4">
+    <rect x="30" y="475" width="840" height="110" rx="8" fill="#111" stroke="#333" stroke-width="1"/>
+    <text x="50" y="500" fill="#f39c12" font-size="14" font-weight="bold">STEP 4: Solder Headers to Audio Shield (while on Teensy)</text>
+
+    <!-- Cross-section view -->
+    <text x="80" y="525" fill="#888" font-size="10">Side view (cross-section):</text>
+
+    <!-- Audio Shield PCB cross-section -->
+    <rect x="200" y="515" width="400" height="8" rx="1" fill="#1a3a1a" stroke="#2ecc71" stroke-width="1"/>
+    <text x="610" y="523" fill="#2ecc71" font-size="9">Audio Shield PCB</text>
+
+    <!-- Female header bodies -->
+    <rect x="220" y="523" width="8" height="18" rx="1" fill="#444" stroke="#666" stroke-width="0.5"/>
+    <rect x="250" y="523" width="8" height="18" rx="1" fill="#444" stroke="#666" stroke-width="0.5"/>
+    <rect x="280" y="523" width="8" height="18" rx="1" fill="#444" stroke="#666" stroke-width="0.5"/>
+    <rect x="310" y="523" width="8" height="18" rx="1" fill="#444" stroke="#666" stroke-width="0.5"/>
+    <rect x="340" y="523" width="8" height="18" rx="1" fill="#444" stroke="#666" stroke-width="0.5"/>
+    <rect x="370" y="523" width="8" height="18" rx="1" fill="#444" stroke="#666" stroke-width="0.5"/>
+    <rect x="400" y="523" width="8" height="18" rx="1" fill="#444" stroke="#666" stroke-width="0.5"/>
+    <text x="610" y="537" fill="#888" font-size="9">Female headers</text>
+
+    <!-- Male pins from Teensy going through -->
+    <line x1="224" y1="541" x2="224" y2="560" stroke="#c0c0c0" stroke-width="2"/>
+    <line x1="254" y1="541" x2="254" y2="560" stroke="#c0c0c0" stroke-width="2"/>
+    <line x1="284" y1="541" x2="284" y2="560" stroke="#c0c0c0" stroke-width="2"/>
+    <line x1="314" y1="541" x2="314" y2="560" stroke="#c0c0c0" stroke-width="2"/>
+    <line x1="344" y1="541" x2="344" y2="560" stroke="#c0c0c0" stroke-width="2"/>
+    <line x1="374" y1="541" x2="374" y2="560" stroke="#c0c0c0" stroke-width="2"/>
+    <line x1="404" y1="541" x2="404" y2="560" stroke="#c0c0c0" stroke-width="2"/>
+    <text x="610" y="555" fill="#c0c0c0" font-size="9">Teensy male pins</text>
+
+    <!-- Teensy PCB -->
+    <rect x="200" y="560" width="400" height="8" rx="1" fill="#1a5c1a" stroke="#27ae60" stroke-width="1"/>
+    <text x="610" y="567" fill="#27ae60" font-size="9">Teensy PCB</text>
+
+    <!-- Solder joints on TOP of Audio Shield -->
+    <circle class="sd1" cx="224" cy="515" r="4" fill="#c0c0c0" opacity="0.8"/>
+    <circle class="sd2" cx="254" cy="515" r="4" fill="#c0c0c0" opacity="0.8"/>
+    <circle class="sd3" cx="284" cy="515" r="4" fill="#c0c0c0" opacity="0.8"/>
+    <circle class="sd4" cx="314" cy="515" r="4" fill="#c0c0c0" opacity="0.8"/>
+    <circle class="sd5" cx="344" cy="515" r="4" fill="#c0c0c0" opacity="0.8"/>
+    <circle class="sd6" cx="374" cy="515" r="4" fill="#c0c0c0" opacity="0.8"/>
+    <circle class="sd7" cx="404" cy="515" r="4" fill="#c0c0c0" opacity="0.8"/>
+
+    <!-- Soldering iron -->
+    <g class="iron">
+        <line x1="210" y1="495" x2="224" y2="513" stroke="#e74c3c" stroke-width="3" stroke-linecap="round"/>
+        <polygon points="224,513 220,510 228,510" fill="#ff6600"/>
+        <text x="195" y="493" fill="#e74c3c" font-size="9">48W iron</text>
+    </g>
+
+    <!-- Arrow pointing to where solder goes -->
+    <text x="80" y="550" fill="#e74c3c" font-size="10" font-weight="bold">Solder HERE</text>
+    <text x="80" y="565" fill="#e74c3c" font-size="10">&#8594; top side of</text>
+    <text x="80" y="578" fill="#e74c3c" font-size="10">Audio Shield</text>
+</g>
+
+<!-- ==================== STEP 5: Cool and separate ==================== -->
+<g class="fade s5">
+    <rect x="30" y="598" width="410" height="80" rx="8" fill="#111" stroke="#333" stroke-width="1"/>
+    <text x="50" y="623" fill="#f39c12" font-size="14" font-weight="bold">STEP 5: Cool &amp; Separate</text>
+
+    <!-- Two boards separated -->
+    <rect x="60" y="638" width="150" height="25" rx="4" fill="#1a3a1a" stroke="#2ecc71" stroke-width="1.5"/>
+    <text x="135" y="655" fill="#2ecc71" font-size="9" text-anchor="middle">Audio Shield</text>
+    <text x="220" y="655" fill="#888" font-size="14">&#8596;</text>
+    <rect x="240" y="638" width="150" height="25" rx="4" fill="#1a5c1a" stroke="#27ae60" stroke-width="1.5"/>
+    <text x="315" y="655" fill="#27ae60" font-size="9" text-anchor="middle">Teensy 4.1</text>
+
+    <text x="50" y="672" fill="#888" font-size="9">Let cool 30 sec. Gently pull apart. Don't force.</text>
+</g>
+
+<!-- ==================== STEP 6: Verify ==================== -->
+<g class="fade s6">
+    <rect x="460" y="598" width="410" height="80" rx="8" fill="#111" stroke="#333" stroke-width="1"/>
+    <text x="480" y="623" fill="#f39c12" font-size="14" font-weight="bold">STEP 6: Verify</text>
+    <text x="480" y="643" fill="#888" font-size="10">&#10003; All 28 solder joints shiny (not dull/cold)</text>
+    <text x="480" y="658" fill="#888" font-size="10">&#10003; No bridges between adjacent pins</text>
+    <text x="480" y="673" fill="#888" font-size="10">&#10003; Headers sit flush against PCB</text>
+</g>
+
+<!-- Validation -->
+<g class="blink">
+    <rect x="150" y="690" width="600" height="0" rx="0" fill="none"/>
+    <text x="450" y="696" fill="#27ae60" font-size="14" font-weight="bold" text-anchor="middle">&#10003; Audio Shield ready to stack onto Teensy for testing</text>
+</g>
+</svg>
