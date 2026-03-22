@@ -3,138 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Oh My Ondas assembly instructions: 8-phase build guide from core audio to full integration.">
-    <meta property="og:title" content="Assembly Instructions - Oh My Ondas">
-    <meta property="og:description" content="Step-by-step build guide for the Oh My Ondas hardware prototype. 8 phases, validated at every step.">
-    <title>Assembly Instructions - Oh My Ondas</title>
+    <meta name="description" content="Oh My Ondas assembly manual: visual step-by-step build guide with wiring diagrams for all 8 phases.">
+    <meta property="og:title" content="Assembly Manual - Oh My Ondas">
+    <meta property="og:description" content="Visual assembly manual for the Oh My Ondas hardware prototype. Wiring diagrams, pin maps, and validation for every phase.">
+    <title>Assembly Manual - Oh My Ondas</title>
     <link rel="stylesheet" href="css/style.css?v=254">
     <style>
-        body { overflow: auto; }
+        body { overflow: auto; background: #111; }
         .page-container {
             position: relative; z-index: 1; min-height: 100vh;
-            background: rgba(255,255,255,0.75); display: flex; flex-direction: column;
+            background: #111; display: flex; flex-direction: column;
+            color: #ccc;
         }
-        .page-content {
-            max-width: 900px; margin: 0 auto; padding: 40px 24px; flex: 1;
+        .manual {
+            max-width: 1100px; margin: 0 auto; padding: 40px 24px; flex: 1;
         }
-        .page-title {
-            font-size: 32px; font-weight: 800; color: var(--accent);
-            margin-bottom: 32px; border-bottom: 3px solid var(--border); padding-bottom: 16px;
+        .manual-title {
+            font-size: 36px; font-weight: 800; color: #27ae60; text-align: center;
+            margin-bottom: 4px; letter-spacing: 2px; text-transform: uppercase;
         }
-        .page-content h2 {
-            font-size: 22px; font-weight: 700; color: var(--text); margin: 40px 0 12px 0;
+        .manual-subtitle {
+            font-size: 14px; color: #666; text-align: center; margin-bottom: 40px;
+            font-family: 'Courier New', monospace;
         }
-        .page-content h3 {
-            font-size: 16px; font-weight: 700; color: var(--text); margin: 24px 0 8px 0;
-        }
-        .page-content p, .page-content li {
-            font-size: 15px; line-height: 1.75; color: var(--text); margin-bottom: 8px;
-        }
-        .page-content ul, .page-content ol {
-            margin: 8px 0 16px 24px;
-        }
-        .page-content a { color: var(--accent); text-decoration: none; font-weight: 600; }
-        .page-content a:hover { text-decoration: underline; }
-        .page-content code {
-            background: #f0f0f0; padding: 2px 6px; border-radius: 3px;
-            font-family: 'Courier New', monospace; font-size: 13px;
-        }
-        .page-content pre {
-            background: #1a1a1a; color: #e0e0e0; padding: 16px; border-radius: 6px;
-            overflow-x: auto; margin: 12px 0 16px 0; font-size: 13px; line-height: 1.5;
-        }
-        .page-content pre code {
-            background: none; padding: 0; color: inherit;
-        }
-        .page-content strong { font-weight: 700; }
 
-        /* Phase cards */
+        /* Phase sections */
         .phase {
-            border: 2px solid var(--border); border-radius: 8px;
-            padding: 24px; margin: 24px 0; background: rgba(255,255,255,0.6);
+            margin: 48px 0; border: 1px solid #2a2a2a; border-radius: 12px;
+            background: #161616; overflow: hidden;
         }
-        .phase-header {
-            display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+        .phase-banner {
+            display: flex; align-items: center; gap: 16px;
+            padding: 20px 28px; background: #1a1a1a; border-bottom: 1px solid #2a2a2a;
         }
-        .phase-number {
-            background: var(--accent); color: #fff; font-weight: 800;
-            width: 36px; height: 36px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+        .phase-num {
+            background: #27ae60; color: #111; font-weight: 900; font-size: 22px;
+            width: 48px; height: 48px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .phase-title { font-size: 20px; font-weight: 700; color: var(--text); margin: 0; }
-        .phase-goal {
-            background: #e8f5e9; border-left: 4px solid #27ae60;
-            padding: 8px 12px; margin-bottom: 16px; font-size: 14px; color: #2e7d32;
+        .phase-info { flex: 1; }
+        .phase-name { font-size: 22px; font-weight: 700; color: #eee; margin: 0; }
+        .phase-goal-text { font-size: 13px; color: #27ae60; margin: 4px 0 0 0; font-family: 'Courier New', monospace; }
+        .phase-parts-bar {
+            display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 28px;
+            background: #131313; border-bottom: 1px solid #2a2a2a;
         }
-        .phase-parts {
-            display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;
+        .phase-parts-bar span {
+            background: #1e3a50; color: #5dade2; padding: 3px 10px;
+            border-radius: 12px; font-size: 11px; font-weight: 600;
         }
-        .phase-parts span {
-            background: #e3f2fd; color: #1565c0; padding: 3px 10px;
-            border-radius: 12px; font-size: 12px; font-weight: 600;
+        .phase-body { padding: 24px 28px; }
+
+        /* Diagram area — the hero */
+        .diagram-frame {
+            background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 8px;
+            padding: 8px; margin: 16px 0 20px 0; text-align: center;
         }
-        .pin-conflict {
-            background: #fff3e0; border-left: 4px solid #e67e22;
-            padding: 8px 12px; margin: 12px 0; font-size: 14px; color: #e65100;
+        .diagram-frame img {
+            width: 100%; border-radius: 4px; display: block;
         }
-        .validation {
-            background: #f3e5f5; border-left: 4px solid #8e24aa;
-            padding: 8px 12px; margin-top: 16px; font-size: 14px; color: #6a1b9a;
+        .diagram-frame svg {
+            width: 100%; height: auto; display: block;
+        }
+        .diagram-label {
+            font-size: 11px; color: #555; text-align: center; margin-top: 8px;
+            font-family: 'Courier New', monospace;
         }
 
-        /* Before You Start */
-        .prereq {
-            background: #fff8e1; border: 2px solid #f9a825; border-radius: 8px;
-            padding: 20px 24px; margin: 24px 0;
+        /* Steps */
+        .step { margin: 20px 0; }
+        .step-head {
+            font-size: 15px; font-weight: 700; color: #ddd; margin-bottom: 8px;
+            padding-left: 8px; border-left: 3px solid #27ae60;
         }
-        .prereq h3 { color: #f57f17; margin-top: 0; }
+        .step p, .step li {
+            font-size: 14px; line-height: 1.7; color: #aaa; margin-bottom: 6px;
+        }
+        .step ul, .step ol { margin: 6px 0 12px 20px; }
+        .step code {
+            background: #222; padding: 2px 6px; border-radius: 3px;
+            font-family: 'Courier New', monospace; font-size: 12px; color: #5dade2;
+        }
+        .step pre {
+            background: #0a0a0a; color: #ccc; padding: 14px; border-radius: 6px;
+            overflow-x: auto; margin: 8px 0 12px 0; font-size: 12px; line-height: 1.5;
+            border: 1px solid #222;
+        }
+        .step pre code { background: none; padding: 0; color: inherit; }
+        .step strong { color: #ddd; }
 
-        /* Bus map */
-        .bus-map {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0;
+        /* Callouts */
+        .callout-warn {
+            background: #2a1f00; border-left: 4px solid #e67e22;
+            padding: 10px 14px; margin: 12px 0; border-radius: 0 6px 6px 0;
+            font-size: 13px; color: #e6a44c;
+        }
+        .callout-tip {
+            background: #0a2a1a; border-left: 4px solid #27ae60;
+            padding: 10px 14px; margin: 12px 0; border-radius: 0 6px 6px 0;
+            font-size: 13px; color: #6abf8a;
+        }
+        .validation-bar {
+            background: #1a0a2a; border: 1px solid #8e24aa; border-radius: 6px;
+            padding: 12px 16px; margin-top: 20px; font-size: 13px; color: #ce93d8;
+            font-family: 'Courier New', monospace; text-align: center;
+        }
+
+        /* Wiring table */
+        .wire-table {
+            width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px;
+        }
+        .wire-table th {
+            background: #222; color: #888; padding: 8px 12px; text-align: left;
+            font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .wire-table td { padding: 8px 12px; border-bottom: 1px solid #222; color: #aaa; }
+        .wire-table .pin { color: #f39c12; font-family: 'Courier New', monospace; font-weight: 700; }
+        .wire-table .addr { color: #5dade2; font-family: 'Courier New', monospace; }
+
+        /* Prereq box */
+        .prereq-box {
+            border: 1px solid #2a2a2a; border-radius: 12px; background: #161616;
+            padding: 24px 28px; margin: 24px 0;
+        }
+        .prereq-box h2 { font-size: 18px; color: #f39c12; margin: 0 0 12px 0; }
+        .prereq-box h3 { font-size: 14px; color: #aaa; margin: 16px 0 8px 0; }
+        .prereq-box p, .prereq-box li { font-size: 14px; color: #888; line-height: 1.6; }
+        .prereq-box ul, .prereq-box ol { margin: 6px 0 12px 20px; }
+
+        /* Full-width diagrams */
+        .hero-diagram {
+            margin: 32px 0; background: #0d0d0d; border: 1px solid #2a2a2a;
+            border-radius: 12px; padding: 16px; text-align: center;
+        }
+        .hero-diagram img { width: 100%; border-radius: 6px; }
+        .hero-diagram .diagram-label { margin-top: 12px; }
+
+        /* Bus map grid */
+        .bus-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0;
         }
         .bus-card {
-            border: 2px solid var(--border); border-radius: 8px; padding: 16px;
-            background: rgba(255,255,255,0.6);
+            border: 1px solid #2a2a2a; border-radius: 8px; padding: 16px; background: #1a1a1a;
         }
-        .bus-card h4 {
-            font-size: 14px; font-weight: 700; margin: 0 0 8px 0; color: var(--accent);
-        }
+        .bus-card h4 { font-size: 14px; color: #5dade2; margin: 0 0 6px 0; }
         .bus-card .bus-pins {
-            font-family: 'Courier New', monospace; font-size: 13px;
-            color: #888; margin-bottom: 8px;
+            font-family: 'Courier New', monospace; font-size: 12px; color: #666; margin-bottom: 8px;
         }
         .bus-device {
-            display: flex; justify-content: space-between; font-size: 13px;
-            padding: 4px 0; border-bottom: 1px solid #eee;
+            display: flex; justify-content: space-between; font-size: 12px;
+            padding: 4px 0; border-bottom: 1px solid #222; color: #aaa;
         }
         .bus-device:last-child { border-bottom: none; }
-        .bus-addr { font-family: 'Courier New', monospace; color: #888; }
+        .bus-addr { font-family: 'Courier New', monospace; color: #f39c12; }
 
         /* Still needed */
         .still-needed {
-            background: #fce4ec; border: 2px solid #e57373; border-radius: 8px;
-            padding: 20px 24px; margin: 24px 0;
+            border: 1px solid #c0392b; border-radius: 12px; background: #1a0a0a;
+            padding: 20px 28px; margin: 32px 0;
         }
-        .still-needed h3 { color: #c62828; margin-top: 0; }
+        .still-needed h3 { color: #e74c3c; margin: 0 0 10px 0; font-size: 16px; }
+        .still-needed li { font-size: 13px; color: #c0a0a0; line-height: 1.7; }
 
-        .assembly-diagram {
-            width: 100%; border-radius: 8px; margin: 16px 0;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-        }
-        .diagram-caption {
-            font-size: 12px; color: #888; text-align: center;
-            margin: -8px 0 16px 0;
-        }
+        /* Set aside */
+        .set-aside { margin: 24px 0; }
+        .set-aside h2 { font-size: 18px; color: #666; margin-bottom: 10px; }
+        .set-aside li { font-size: 13px; color: #666; line-height: 1.7; }
+        .set-aside strong { color: #888; }
+
+        /* SVG styling */
+        .svg-diagram text { font-family: 'Courier New', monospace; }
+
+        /* Footer override */
+        .page-footer { background: #111; border-top: 1px solid #222; }
+        .page-footer span, .page-footer a { color: #555; }
+
+        /* Nav override for dark bg */
+        .page-header { background: #111; border-bottom: 1px solid #222; }
+        .logo { color: #27ae60 !important; }
+        .nav-link { color: #888 !important; }
+        .nav-link:hover { color: #ccc !important; }
+        .nav-link.active, .nav-link.secondary.active { background: #27ae60 !important; color: #111 !important; }
 
         @media (max-width: 700px) {
-            .bus-map { grid-template-columns: 1fr; }
+            .bus-grid { grid-template-columns: 1fr; }
+            .phase-banner { padding: 16px 18px; }
+            .phase-body { padding: 18px; }
+            .manual { padding: 20px 12px; }
         }
     </style>
 </head>
 <body>
-    <div id="mapBackground" class="map-bg"></div>
-
     <div class="page-container">
         <header class="page-header">
             <a href="index.html" class="logo">OH MY ONDAS</a>
@@ -150,422 +209,719 @@
             </nav>
         </header>
 
-        <main class="page-content">
-            <h1 class="page-title">Assembly Instructions</h1>
-            <p style="color:#888; font-size:13px; margin-bottom:24px;">Based on verified hardware in hand &mdash; March 2026, Barcelona</p>
+        <main class="manual">
+            <h1 class="manual-title">Assembly Manual</h1>
+            <p class="manual-subtitle">Oh My Ondas Hardware Prototype &mdash; March 2026 &mdash; Barcelona</p>
 
-            <!-- Before You Start -->
-            <div class="prereq">
-                <h3>Before You Start</h3>
+            <!-- PIN MAP -->
+            <div class="hero-diagram">
+                <img src="images/assembly-pin-map.png" alt="Teensy 4.1 complete pin assignment">
+                <p class="diagram-label">TEENSY 4.1 &mdash; COMPLETE PIN ASSIGNMENT &mdash; Pins 7, 8, 20, 21, 23 RESERVED by Audio Shield I2S</p>
+            </div>
+
+            <!-- PREREQS -->
+            <div class="prereq-box">
+                <h2>Before You Start</h2>
                 <p>Confirm these counts. If anything is short, note it before beginning.</p>
                 <ul>
-                    <li>Slide pots 45mm (P4272): ordered 5, confirm you have 5</li>
-                    <li>Wire Kit 22AWG (P3174): check Adafruit box &mdash; not visible in photos</li>
-                    <li>Helping Third Hand (P291): check Adafruit box &mdash; not visible in photos</li>
+                    <li>Slide pots 45mm (P4272): ordered 5 &mdash; confirm you have 5</li>
+                    <li>Wire Kit 22AWG (P3174): check Adafruit box</li>
+                    <li>Helping Third Hand (P291): check Adafruit box</li>
                 </ul>
-
                 <h3>Key Decisions</h3>
                 <ol>
-                    <li>Use the <strong>Teensy 4.1 built-in SD card</strong> (SanDisk Ultra 32GB already inserted). The Audio Shield&rsquo;s SD slot goes unused &mdash; avoids SPI bus conflict with the LCD.</li>
-                    <li>LCD is a <strong>2.8&Prime; ILI9341</strong> (P1770), not the originally spec&rsquo;d 3.5&Prime; HXD8357D. Better &mdash; ILI9341_t3 is the most optimized display library for Teensy with DMA support.</li>
-                    <li>Split I2C across two buses: <strong>Wire (18/19)</strong> for audio-path devices, <strong>Wire1 (16/17)</strong> for UI-polling devices.</li>
-                    <li>Wire the 4 main buttons <strong>directly to Teensy pins</strong> (not through MCP23017) for latency and interrupt capability.</li>
-                    <li>Power the <strong>ESP32-S2 from 5V</strong> through its own regulator, not from Teensy&rsquo;s 3.3V.</li>
+                    <li>Use <strong>Teensy built-in SD</strong> (SanDisk Ultra 32GB). Audio Shield SD slot unused.</li>
+                    <li>LCD is <strong>2.8&Prime; ILI9341</strong> (P1770) &mdash; DMA-optimized ILI9341_t3 library.</li>
+                    <li>Dual I2C: <strong>Wire (18/19)</strong> audio-path, <strong>Wire1 (16/17)</strong> UI-polling.</li>
+                    <li>4 main buttons <strong>direct to Teensy pins</strong> for latency + interrupts.</li>
+                    <li>ESP32-S2 powered from <strong>5V</strong>, not Teensy 3.3V.</li>
                 </ol>
-
-                <h3>Tools Needed</h3>
-                <ul>
-                    <li>Soldering station (Diotronic 48W)</li>
-                    <li>Solder wire 1mm</li>
-                    <li>Flux paste</li>
-                    <li>Breadboard &times;2</li>
-                    <li>Jumper wires (2 &times; 140pc)</li>
-                    <li>Helping third hand (check if received)</li>
-                    <li>Micro-USB cable for Teensy</li>
-                    <li>Headphones with 3.5mm jack</li>
-                </ul>
+                <h3>Tools</h3>
+                <p>Soldering station 48W, solder 1mm, flux, 2&times; breadboard, jumper wires, helping hand, micro-USB cable, 3.5mm headphones.</p>
             </div>
 
-            <!-- Pin Map -->
-            <h2>Teensy 4.1 Pin Assignment</h2>
-            <img src="images/assembly-pin-map.png" alt="Teensy 4.1 complete pin assignment diagram" class="assembly-diagram">
-            <p class="diagram-caption">Complete pin map &mdash; color-coded by bus. Pins 7, 8, 20, 21, 23 are RESERVED by Audio Shield I2S.</p>
-
+            <!-- ============================================================ -->
             <!-- PHASE 1 -->
+            <!-- ============================================================ -->
             <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">1</div>
-                    <h2 class="phase-title">Core Audio &mdash; Hear Sound</h2>
+                <div class="phase-banner">
+                    <div class="phase-num">1</div>
+                    <div class="phase-info">
+                        <h2 class="phase-name">Core Audio</h2>
+                        <p class="phase-goal-text">GOAL: Hear a WAV file through headphones</p>
+                    </div>
                 </div>
-                <div class="phase-goal">Goal: WAV file plays through headphones</div>
-                <div class="phase-parts">
-                    <span>Teensy 4.1</span><span>Audio Shield Rev D2</span><span>SD Card</span><span>Headphones</span>
+                <div class="phase-parts-bar">
+                    <span>Teensy 4.1</span><span>Audio Shield Rev D2</span><span>SD Card (32GB)</span><span>Headphones</span>
                 </div>
+                <div class="phase-body">
+                    <div class="diagram-frame">
+                        <img src="images/assembly-phase1-wiring.png" alt="Phase 1: Core Audio Stack wiring">
+                        <p class="diagram-label">Teensy + Audio Shield stack on 830pt breadboard &mdash; no wires needed, all via stacking headers</p>
+                    </div>
 
-                <h3>Step 1.1 &mdash; Prepare the Audio Shield</h3>
-                <p>The Audio Shield has no headers soldered. Attach female headers to its underside so it mates with the Teensy&rsquo;s pre-soldered male pins.</p>
-                <ol>
-                    <li>Take 2&times; female 40-pin header strips from Diotronic.</li>
-                    <li>Snap or cut each to 14 pins (the Audio Shield uses 2 rows of 14).</li>
-                    <li>Place the female headers through the Audio Shield&rsquo;s bottom-side holes.</li>
-                    <li>Stack the Audio Shield onto the Teensy to align everything &mdash; use the Teensy as a jig.</li>
-                    <li>Solder the female headers to the Audio Shield while sitting on the Teensy.</li>
-                    <li>Let cool. Separate the boards.</li>
-                </ol>
-                <p><strong>Note:</strong> Standard female headers are fine for breadboard prototyping &mdash; you&rsquo;ll access all pins from the breadboard rows.</p>
+                    <div class="step">
+                        <div class="step-head">1.1 &mdash; Solder Audio Shield Headers</div>
+                        <ol>
+                            <li>Cut 2&times; female 40-pin headers to <strong>14 pins</strong> each.</li>
+                            <li>Place through Audio Shield bottom-side holes.</li>
+                            <li>Stack onto Teensy as alignment jig.</li>
+                            <li>Solder while seated. Let cool. Separate.</li>
+                        </ol>
+                    </div>
 
-                <h3>Step 1.2 &mdash; Prepare the SD Card</h3>
-                <ol>
-                    <li>Remove SD card from Teensy.</li>
-                    <li>Format as <strong>FAT32</strong> (not exFAT).</li>
-                    <li>Create <code>/samples/</code> folder on the root.</li>
-                    <li>Download PJRC test WAV files from the Audio data files page.</li>
-                    <li>Copy to SD card root (not inside /samples/).</li>
-                    <li>Re-insert into Teensy&rsquo;s <strong>built-in slot</strong> (NOT the Audio Shield&rsquo;s slot).</li>
-                </ol>
+                    <div class="step">
+                        <div class="step-head">1.2 &mdash; Prepare SD Card</div>
+                        <ol>
+                            <li>Format as <strong>FAT32</strong> (not exFAT).</li>
+                            <li>Copy PJRC test WAV files to root.</li>
+                            <li>Insert into Teensy <strong>built-in slot</strong> (not Audio Shield slot).</li>
+                        </ol>
+                    </div>
 
-                <h3>Step 1.3 &mdash; Stack and Connect</h3>
-                <ol>
-                    <li>Insert Teensy into breadboard #1 (spans the center gap).</li>
-                    <li>Stack Audio Shield on top via the soldered headers.</li>
-                    <li>Plug headphones into Audio Shield&rsquo;s 3.5mm jack.</li>
-                    <li>Connect Teensy to computer via micro-USB.</li>
-                </ol>
+                    <div class="step">
+                        <div class="step-head">1.3 &mdash; Stack and Connect</div>
+                        <ol>
+                            <li>Teensy into breadboard (spans center gap).</li>
+                            <li>Audio Shield on top via headers.</li>
+                            <li>Headphones into Audio Shield 3.5mm jack.</li>
+                            <li>USB to computer.</li>
+                        </ol>
+                    </div>
 
-                <img src="images/assembly-phase1-wiring.png" alt="Phase 1 core audio stack wiring diagram" class="assembly-diagram">
-                <p class="diagram-caption">Phase 1 &mdash; Teensy + Audio Shield stack on breadboard. No wires needed &mdash; all connections via stacking headers.</p>
-
-                <h3>Step 1.4 &mdash; Flash and Test</h3>
-                <ol>
-                    <li>Select Board: Teensy 4.1, USB Type: Serial, CPU: 600MHz.</li>
-                    <li>Open: File &rarr; Examples &rarr; Audio &rarr; WavFilePlayer</li>
-                    <li>Set SD card pin:</li>
-                </ol>
+                    <div class="step">
+                        <div class="step-head">1.4 &mdash; Flash and Test</div>
 <pre><code>#define SDCARD_CS_PIN    BUILTIN_SDCARD
-// Comment out the Audio Shield SD lines:
-// #define SDCARD_CS_PIN  10
-// #define SDCARD_MOSI_PIN 7
-// #define SDCARD_SCK_PIN  14</code></pre>
-                <p>Upload. Open Serial Monitor at 9600 baud. You should hear WAV files through headphones.</p>
-                <p><strong>If no sound:</strong> Check Serial Monitor for &ldquo;Unable to access SD card&rdquo; (format issue or wrong CS pin). Check headphone jack is fully inserted. Check Audio Shield is properly seated.</p>
-                <div class="validation">Phase 1 complete when: you hear audio in headphones.</div>
+// DO NOT use pins 10/7/14 for SD
+// Those are Audio Shield SD (unused)</code></pre>
+                        <p>Open WavFilePlayer example. Set CS pin as above. Upload. Serial Monitor 9600 baud.</p>
+                        <div class="callout-warn">If no sound: check Serial Monitor for &ldquo;Unable to access SD card&rdquo;. Verify FAT32 format, correct slot, headphone jack fully inserted.</div>
+                    </div>
+
+                    <div class="validation-bar">&#10003; VALIDATION: Hear WAV audio through headphones</div>
+                </div>
             </div>
 
+            <!-- ============================================================ -->
             <!-- PHASE 2 -->
+            <!-- ============================================================ -->
             <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">2</div>
-                    <h2 class="phase-title">Touch Sensing &mdash; Trigger Samples</h2>
+                <div class="phase-banner">
+                    <div class="phase-num">2</div>
+                    <div class="phase-info">
+                        <h2 class="phase-name">Touch Sensing</h2>
+                        <p class="phase-goal-text">GOAL: Touch copper pads to trigger audio samples</p>
+                    </div>
                 </div>
-                <div class="phase-goal">Goal: Touching copper pads triggers audio samples</div>
-                <div class="phase-parts">
-                    <span>CAP1188</span><span>Copper Tape</span><span>Jumper Wires</span>
+                <div class="phase-parts-bar">
+                    <span>CAP1188 Breakout</span><span>Copper Tape 5mm</span><span>10K&ohm; Resistors &times;2</span><span>Jumper Wires</span>
                 </div>
+                <div class="phase-body">
+                    <div class="diagram-frame">
+                        <img src="images/assembly-phase2-touch.png" alt="Phase 2: CAP1188 Touch Wiring">
+                        <p class="diagram-label">CAP1188 on Wire1 (pins 16/17) with 10K pull-ups &mdash; 8 copper tape pads on C1&ndash;C8</p>
+                    </div>
 
-                <h3>Step 2.1 &mdash; Wire CAP1188 to I2C1</h3>
-                <p>The CAP1188 goes on the <strong>second I2C bus</strong> (Wire1), not the same bus as the Audio Shield.</p>
-                <ol>
-                    <li>Solder header pins onto the CAP1188 breakout if not pre-soldered.</li>
-                    <li>Insert into breadboard.</li>
-                    <li>Wire: SDA &rarr; pin <strong>17</strong> (SDA1), SCL &rarr; pin <strong>16</strong> (SCL1), VIN &rarr; 3.3V, GND &rarr; GND</li>
-                    <li><strong>Add I2C1 pull-up resistors</strong> (no built-in pull-ups on this bus): 10K&ohm; from pin 17 to 3.3V, 10K&ohm; from pin 16 to 3.3V. (2.2K would be better &mdash; grab from Diotronic next visit.)</li>
-                </ol>
+                    <div class="step">
+                        <div class="step-head">2.1 &mdash; Wire CAP1188 to I2C1</div>
+                        <table class="wire-table">
+                            <tr><th>CAP1188 Pin</th><th>Teensy Pin</th><th>Notes</th></tr>
+                            <tr><td>SDA</td><td class="pin">17 (SDA1)</td><td>Wire1 bus</td></tr>
+                            <tr><td>SCL</td><td class="pin">16 (SCL1)</td><td>Wire1 bus</td></tr>
+                            <tr><td>VIN</td><td class="pin">3.3V</td><td></td></tr>
+                            <tr><td>GND</td><td class="pin">GND</td><td></td></tr>
+                        </table>
+                        <div class="callout-warn">Wire1 has NO built-in pull-ups. Add <strong>10K&ohm;</strong> from pin 17 to 3.3V and from pin 16 to 3.3V. (2.2K better &mdash; next Diotronic visit.)</div>
+                    </div>
 
-                <h3>Step 2.2 &mdash; Make Touch Pads</h3>
-                <ol>
-                    <li>Cut 8 pieces of copper tape, ~20mm &times; 20mm each.</li>
-                    <li>Stick onto cardboard or acrylic, spaced ~5mm apart in a 2&times;4 grid.</li>
-                    <li>Solder a short wire to each pad.</li>
-                    <li>Connect each wire to CAP1188 inputs C1&ndash;C8.</li>
-                </ol>
+                    <div class="step">
+                        <div class="step-head">2.2 &mdash; Make Touch Pads</div>
+                        <p>Cut 8 pieces of copper tape (~20&times;20mm). Stick on cardboard in 2&times;4 grid, 5mm spacing. Solder wire to each. Connect to C1&ndash;C8.</p>
+                    </div>
 
-                <img src="images/assembly-phase2-touch.png" alt="Phase 2 CAP1188 touch wiring diagram" class="assembly-diagram">
-                <p class="diagram-caption">Phase 2 &mdash; CAP1188 on Wire1 (pins 16/17) with 10K pull-ups and 8 copper tape touch pads.</p>
-
-                <h3>Step 2.3 &mdash; Test</h3>
-<pre><code>Adafruit_CAP1188 cap = Adafruit_CAP1188();
-// In setup():
-Wire1.begin();
-cap.begin(0x29, &amp;Wire1);  // Address 0x29 on Wire1</code></pre>
-                <p>Open Serial Monitor. Touch each pad &mdash; you should see touch events.</p>
-
-                <h3>Step 2.4 &mdash; Integrate with Audio</h3>
-                <p>Modify audio code: when pad N is touched, trigger sample N from SD card using <code>AudioPlaySdWav</code> objects.</p>
-                <div class="validation">Phase 2 complete when: touching copper pads triggers different audio samples.</div>
-            </div>
-
-            <!-- PHASE 3 -->
-            <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">3</div>
-                    <h2 class="phase-title">Display &mdash; See What&rsquo;s Happening</h2>
-                </div>
-                <div class="phase-goal">Goal: OLED shows status, LCD shows waveforms/UI</div>
-                <div class="phase-parts">
-                    <span>SSD1306 OLED 0.96&Prime;</span><span>ILI9341 2.8&Prime; TFT</span><span>WS2812B NeoPixels</span>
-                </div>
-
-                <h3>Step 3.1 &mdash; Wire OLED</h3>
-                <ol>
-                    <li>Insert OLED into breadboard.</li>
-                    <li>Wire: SDA &rarr; pin <strong>18</strong> (SDA0), SCL &rarr; pin <strong>19</strong> (SCL0), VCC &rarr; 3.3V, GND &rarr; GND</li>
-                    <li>Run I2C scanner on Wire &mdash; should show: 0x0A (SGTL5000) and 0x3C (SSD1306).</li>
-                    <li>Flash SSD1306 example. Display &ldquo;Oh My Ondas&rdquo; on screen.</li>
-                </ol>
-
-                <h3>Step 3.2 &mdash; Wire 2.8&Prime; ILI9341 LCD (SPI)</h3>
-                <div class="pin-conflict">
-                    <strong>PIN CONFLICT:</strong> Pin 8 is claimed by Audio Shield I2S. Use pin 15 for LCD RST instead.
-                </div>
-                <p>Wiring:</p>
-                <ul>
-                    <li>CLK &rarr; pin <strong>13</strong> (SCK)</li>
-                    <li>MOSI &rarr; pin <strong>11</strong></li>
-                    <li>MISO &rarr; pin <strong>12</strong></li>
-                    <li>CS &rarr; pin <strong>10</strong> (freed from Audio Shield SD)</li>
-                    <li>D/C &rarr; pin <strong>9</strong></li>
-                    <li>RST &rarr; pin <strong>15</strong></li>
-                    <li>VIN &rarr; 3.3V, GND &rarr; GND</li>
-                    <li>LITE &rarr; 3.3V (always on) or free PWM pin</li>
-                </ul>
-<pre><code>#include &lt;ILI9341_t3.h&gt;
-#define TFT_CS   10
-#define TFT_DC   9
-#define TFT_RST  15
-ILI9341_t3 tft = ILI9341_t3(TFT_CS, TFT_DC, TFT_RST);</code></pre>
-
-                <h3>Step 3.3 &mdash; Wire NeoPixel Strip</h3>
-                <ol>
-                    <li>Data pin &rarr; pin <strong>6</strong></li>
-                    <li>VCC &rarr; 5V, GND &rarr; GND</li>
-                    <li>Add 470&ohm; resistor in series on data line.</li>
-                </ol>
-                <p><strong>If audio glitches:</strong> Switch to WS2812Serial library with a Serial TX pin instead of pin 6.</p>
-                <div class="validation">Phase 3 complete when: OLED shows text, LCD shows graphics, NeoPixels light up &mdash; audio still clean.</div>
-            </div>
-
-            <!-- PHASE 4 -->
-            <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">4</div>
-                    <h2 class="phase-title">Analog Inputs &mdash; Faders Work</h2>
-                </div>
-                <div class="phase-goal">Goal: Slide pots control parameters, read by ADS1115</div>
-                <div class="phase-parts">
-                    <span>ADS1115</span><span>Slide Pots &times;5</span><span>100nF Caps</span>
-                </div>
-
-                <h3>Step 4.1 &mdash; Wire ADS1115</h3>
-                <ul>
-                    <li>SDA &rarr; pin <strong>18</strong> (SDA0, shared bus)</li>
-                    <li>SCL &rarr; pin <strong>19</strong> (SCL0)</li>
-                    <li>VDD &rarr; 3.3V, GND &rarr; GND</li>
-                    <li>ADDR &rarr; GND (address 0x48)</li>
-                </ul>
-
-                <h3>Step 4.2 &mdash; Wire Slide Pots</h3>
-                <p>Each pot has 3 pins: left end, wiper (center), right end.</p>
-                <p><strong>Pots 1&ndash;4:</strong> Left &rarr; GND, Right &rarr; <strong>3.3V</strong> (NOT 5V), Wiper &rarr; ADS1115 A0&ndash;A3. Add 100nF cap from each wiper to GND.</p>
-                <p><strong>Pot 5:</strong> Same wiring, wiper &rarr; Teensy pin <strong>14 (A0)</strong> directly. Add 100nF cap.</p>
-
-                <h3>Step 4.3 &mdash; Test</h3>
-<pre><code>#include &lt;Adafruit_ADS1X15.h&gt;
-Adafruit_ADS1115 ads;
-void setup() {
-  Serial.begin(115200);
-  ads.begin(0x48, &amp;Wire);
-}
-void loop() {
-  Serial.print("A0: "); Serial.print(ads.readADC_SingleEnded(0));
-  Serial.print("  A1: "); Serial.println(ads.readADC_SingleEnded(1));
-  delay(100);
-}</code></pre>
-                <p>Values should sweep cleanly from near 0 to near 26000. If jumpy: check 100nF caps, check wiring isn&rsquo;t near SPI lines.</p>
-                <div class="validation">Phase 4 complete when: all slide pots read smoothly with no jitter.</div>
-            </div>
-
-            <!-- PHASE 5 -->
-            <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">5</div>
-                    <h2 class="phase-title">I/O Expansion &mdash; Encoders and Buttons</h2>
-                </div>
-                <div class="phase-goal">Goal: Rotary encoders and buttons respond via MCP23017</div>
-                <div class="phase-parts">
-                    <span>MCP23017 &times;2</span><span>DIP Sockets &times;2</span><span>EC11 Encoders &times;7</span>
-                    <span>Tactile Buttons &times;4</span><span>5-Way Nav Switch</span>
-                </div>
-
-                <h3>Step 5.1 &mdash; Wire Buttons Directly to Teensy</h3>
-                <p>4 primary buttons go direct for lowest latency + interrupt capability:</p>
-                <ul>
-                    <li>MODE &rarr; pin <strong>2</strong></li>
-                    <li>SHIFT &rarr; pin <strong>3</strong></li>
-                    <li>REC &rarr; pin <strong>4</strong></li>
-                    <li>PLAY &rarr; pin <strong>5</strong></li>
-                </ul>
-<pre><code>pinMode(2, INPUT_PULLUP);  // MODE
-pinMode(3, INPUT_PULLUP);  // SHIFT
-pinMode(4, INPUT_PULLUP);  // REC
-pinMode(5, INPUT_PULLUP);  // PLAY
-// Pressed = LOW, Released = HIGH. Use Bounce2 for debouncing.</code></pre>
-
-                <h3>Step 5.2 &mdash; Install MCP23017s</h3>
-                <ol>
-                    <li>Press MCP23017 chips into DIP sockets. <strong>Watch the notch &mdash; pin 1 at notch end.</strong></li>
-                    <li>Both on <strong>I2C1</strong> (same bus as CAP1188):</li>
-                </ol>
-                <p><strong>MCP23017 #1:</strong> SDA (chip pin 13) &rarr; Teensy pin <strong>17</strong> (SDA1), SCL (chip pin 12) &rarr; pin <strong>16</strong> (SCL1), VDD &rarr; 3.3V, VSS &rarr; GND, A0/A1/A2 &rarr; GND (address <code>0x20</code>), RESET &rarr; 3.3V</p>
-                <p><strong>MCP23017 #2:</strong> Same wiring, A0 &rarr; 3.3V (address <code>0x21</code>). Add 100nF cap across VDD&ndash;VSS on each.</p>
-
-                <h3>Step 5.3 &mdash; Wire Encoders</h3>
-                <p>Each EC11 has pins: A, B, C (common), switch. Connect C to GND, A/B/SW to MCP23017 GPIOs.</p>
-                <p><strong>MCP #1 (16 GPIO):</strong> 5 encoders (15 pins: A, B, SW each). 1 spare.</p>
-                <p><strong>MCP #2 (16 GPIO):</strong> 2 encoders (6 pins) + 5-way nav (5 pins) = 11 used, 5 spare.</p>
-
-                <h3>Step 5.4 &mdash; Wire 5-Way Nav Switch</h3>
-                <p>Common &rarr; GND. Up/Down/Left/Right/Select &rarr; MCP23017 #2 GPIOs. Enable internal pull-ups in firmware.</p>
-
-                <h3>Step 5.5 &mdash; Test</h3>
+                    <div class="step">
+                        <div class="step-head">2.3 &mdash; Test</div>
 <pre><code>Wire1.begin();
-// I2C scanner on Wire1...
-// Should see: 0x20 (MCP #1), 0x21 (MCP #2), 0x29 (CAP1188)</code></pre>
-                <p>If devices don&rsquo;t appear: check pull-ups on SDA1/SCL1, check RESET tied high, check address jumpers.</p>
-                <div class="validation">Phase 5 complete when: all 7 encoders rotate and click, nav switch responds in 5 directions, buttons work.</div>
+Adafruit_CAP1188 cap = Adafruit_CAP1188();
+cap.begin(0x29, &amp;Wire1);  // I2C1 at 0x29</code></pre>
+                        <p>Serial Monitor: touch each pad &rarr; see event. Then integrate: pad N triggers sample N via <code>AudioPlaySdWav</code>.</p>
+                    </div>
+
+                    <div class="validation-bar">&#10003; VALIDATION: Touch each pad &rarr; hear different sample</div>
+                </div>
             </div>
 
+            <!-- ============================================================ -->
+            <!-- PHASE 3 -->
+            <!-- ============================================================ -->
+            <div class="phase">
+                <div class="phase-banner">
+                    <div class="phase-num">3</div>
+                    <div class="phase-info">
+                        <h2 class="phase-name">Displays + LEDs</h2>
+                        <p class="phase-goal-text">GOAL: OLED shows status, LCD shows UI, NeoPixels animate &mdash; audio still clean</p>
+                    </div>
+                </div>
+                <div class="phase-parts-bar">
+                    <span>SSD1306 OLED 0.96&Prime;</span><span>ILI9341 2.8&Prime; TFT</span><span>WS2812B NeoPixel &times;8</span><span>470&ohm; Resistor</span>
+                </div>
+                <div class="phase-body">
+                    <!-- SVG Diagram: Phase 3 -->
+                    <div class="diagram-frame">
+                        <svg class="svg-diagram" viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="900" height="520" fill="#0d0d0d"/>
+                            <text x="450" y="30" fill="#27ae60" font-size="18" font-weight="bold" text-anchor="middle">PHASE 3: Displays + NeoPixels</text>
+
+                            <!-- Teensy -->
+                            <rect x="320" y="60" width="260" height="60" rx="6" fill="#1a5c1a" stroke="#27ae60" stroke-width="2"/>
+                            <text x="450" y="87" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">TEENSY 4.1</text>
+                            <text x="450" y="107" fill="#aaa" font-size="11" text-anchor="middle">600MHz ARM Cortex-M7</text>
+
+                            <!-- OLED (I2C0) -->
+                            <rect x="40" y="180" width="200" height="100" rx="6" fill="#1a1a2e" stroke="#3498db" stroke-width="2"/>
+                            <text x="140" y="210" fill="#5dade2" font-size="13" font-weight="bold" text-anchor="middle">SSD1306 OLED</text>
+                            <text x="140" y="228" fill="#888" font-size="11" text-anchor="middle">0.96" I2C &mdash; 0x3C</text>
+                            <text x="140" y="248" fill="#666" font-size="10" text-anchor="middle">SDA &rarr; pin 18 (SDA0)</text>
+                            <text x="140" y="263" fill="#666" font-size="10" text-anchor="middle">SCL &rarr; pin 19 (SCL0)</text>
+                            <!-- wire -->
+                            <line x1="240" y1="220" x2="320" y2="90" stroke="#3498db" stroke-width="1.5" stroke-dasharray="4"/>
+                            <text x="270" y="150" fill="#3498db" font-size="10" transform="rotate(-30,270,150)">I2C0 Wire</text>
+
+                            <!-- ILI9341 LCD (SPI) -->
+                            <rect x="350" y="180" width="200" height="160" rx="6" fill="#2a1a00" stroke="#e67e22" stroke-width="2"/>
+                            <text x="450" y="210" fill="#f39c12" font-size="13" font-weight="bold" text-anchor="middle">ILI9341 2.8" TFT</text>
+                            <text x="450" y="228" fill="#888" font-size="11" text-anchor="middle">320&times;240 SPI + DMA</text>
+                            <text x="450" y="252" fill="#666" font-size="10" text-anchor="middle">CLK &rarr; pin 13 (SCK)</text>
+                            <text x="450" y="267" fill="#666" font-size="10" text-anchor="middle">MOSI &rarr; pin 11</text>
+                            <text x="450" y="282" fill="#666" font-size="10" text-anchor="middle">MISO &rarr; pin 12</text>
+                            <text x="450" y="297" fill="#666" font-size="10" text-anchor="middle">CS &rarr; pin 10</text>
+                            <text x="450" y="312" fill="#666" font-size="10" text-anchor="middle">DC &rarr; pin 9 &middot; RST &rarr; pin 15</text>
+                            <text x="450" y="330" fill="#e67e22" font-size="10" text-anchor="middle">LITE &rarr; 3.3V (always on)</text>
+                            <!-- wire -->
+                            <line x1="450" y1="180" x2="450" y2="120" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="4"/>
+                            <text x="460" y="155" fill="#e67e22" font-size="10">SPI</text>
+
+                            <!-- NeoPixel -->
+                            <rect x="660" y="180" width="200" height="100" rx="6" fill="#0a2a1a" stroke="#27ae60" stroke-width="2"/>
+                            <text x="760" y="210" fill="#27ae60" font-size="13" font-weight="bold" text-anchor="middle">WS2812B &times;8</text>
+                            <text x="760" y="228" fill="#888" font-size="11" text-anchor="middle">NeoPixel Strip</text>
+                            <text x="760" y="252" fill="#666" font-size="10" text-anchor="middle">DIN &rarr; pin 6 (via 470&Omega;)</text>
+                            <text x="760" y="267" fill="#666" font-size="10" text-anchor="middle">VCC &rarr; 5V &middot; GND &rarr; GND</text>
+                            <!-- wire -->
+                            <line x1="660" y1="220" x2="580" y2="90" stroke="#27ae60" stroke-width="1.5" stroke-dasharray="4"/>
+                            <text x="625" y="150" fill="#27ae60" font-size="10" transform="rotate(30,625,150)">Pin 6</text>
+
+                            <!-- Pin conflict warning -->
+                            <rect x="100" y="380" width="700" height="50" rx="6" fill="#2a1500" stroke="#e67e22" stroke-width="1"/>
+                            <text x="450" y="400" fill="#e67e22" font-size="12" font-weight="bold" text-anchor="middle">&#9888; PIN CONFLICT: Pin 8 is Audio Shield I2S RX</text>
+                            <text x="450" y="418" fill="#c68600" font-size="11" text-anchor="middle">LCD RST must use pin 15 (not pin 8). Pin 10 freed because Audio Shield SD is unused.</text>
+
+                            <!-- Code snippet -->
+                            <rect x="150" y="450" width="600" height="55" rx="4" fill="#0a0a0a" stroke="#333" stroke-width="1"/>
+                            <text x="170" y="470" fill="#5dade2" font-size="11">#include &lt;ILI9341_t3.h&gt;</text>
+                            <text x="170" y="487" fill="#ccc" font-size="11">ILI9341_t3 tft = ILI9341_t3(10, 9, 15);  // CS, DC, RST</text>
+                        </svg>
+                        <p class="diagram-label">3 devices: OLED on I2C0, LCD on SPI (DMA), NeoPixels on GPIO pin 6</p>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-head">3.1 &mdash; Wire OLED</div>
+                        <table class="wire-table">
+                            <tr><th>OLED Pin</th><th>Teensy Pin</th><th>Bus</th></tr>
+                            <tr><td>SDA</td><td class="pin">18 (SDA0)</td><td>Wire &mdash; shared with Audio Shield</td></tr>
+                            <tr><td>SCL</td><td class="pin">19 (SCL0)</td><td>Wire</td></tr>
+                            <tr><td>VCC</td><td class="pin">3.3V</td><td></td></tr>
+                            <tr><td>GND</td><td class="pin">GND</td><td></td></tr>
+                        </table>
+                        <p>I2C scan on Wire should show: <code>0x0A</code> (SGTL5000) + <code>0x3C</code> (SSD1306).</p>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-head">3.2 &mdash; Wire ILI9341 LCD</div>
+                        <table class="wire-table">
+                            <tr><th>LCD Pin</th><th>Teensy Pin</th><th>Notes</th></tr>
+                            <tr><td>CLK</td><td class="pin">13 (SCK)</td><td>SPI clock</td></tr>
+                            <tr><td>MOSI</td><td class="pin">11</td><td>SPI data out</td></tr>
+                            <tr><td>MISO</td><td class="pin">12</td><td>SPI data in</td></tr>
+                            <tr><td>CS</td><td class="pin">10</td><td>Chip select</td></tr>
+                            <tr><td>DC</td><td class="pin">9</td><td>Data/Command</td></tr>
+                            <tr><td>RST</td><td class="pin">15</td><td>Reset (NOT pin 8!)</td></tr>
+                            <tr><td>LITE</td><td class="pin">3.3V</td><td>Backlight always on</td></tr>
+                        </table>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-head">3.3 &mdash; Wire NeoPixels</div>
+                        <p>Data &rarr; pin <strong>6</strong> via <strong>470&ohm;</strong> series resistor. VCC &rarr; 5V. GND &rarr; GND.</p>
+                        <div class="callout-tip">If audio glitches when NeoPixels update: switch to WS2812Serial library with a Serial TX pin.</div>
+                    </div>
+
+                    <div class="validation-bar">&#10003; VALIDATION: OLED text + LCD graphics + NeoPixels animate &mdash; audio still clean</div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- PHASE 4 -->
+            <!-- ============================================================ -->
+            <div class="phase">
+                <div class="phase-banner">
+                    <div class="phase-num">4</div>
+                    <div class="phase-info">
+                        <h2 class="phase-name">Analog Inputs</h2>
+                        <p class="phase-goal-text">GOAL: Slide pots control parameters, smooth 0&ndash;26000 readings</p>
+                    </div>
+                </div>
+                <div class="phase-parts-bar">
+                    <span>ADS1115 16-bit ADC</span><span>Slide Pots &times;5</span><span>100nF Caps &times;5</span>
+                </div>
+                <div class="phase-body">
+                    <!-- SVG Diagram: Phase 4 -->
+                    <div class="diagram-frame">
+                        <svg class="svg-diagram" viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="900" height="420" fill="#0d0d0d"/>
+                            <text x="450" y="30" fill="#27ae60" font-size="18" font-weight="bold" text-anchor="middle">PHASE 4: ADS1115 + Slide Faders</text>
+
+                            <!-- Teensy -->
+                            <rect x="350" y="55" width="200" height="50" rx="6" fill="#1a5c1a" stroke="#27ae60" stroke-width="2"/>
+                            <text x="450" y="82" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">TEENSY 4.1</text>
+
+                            <!-- ADS1115 -->
+                            <rect x="340" y="150" width="220" height="90" rx="6" fill="#1a1a2e" stroke="#3498db" stroke-width="2"/>
+                            <text x="450" y="178" fill="#5dade2" font-size="13" font-weight="bold" text-anchor="middle">ADS1115 16-bit ADC</text>
+                            <text x="450" y="196" fill="#888" font-size="11" text-anchor="middle">I2C0 Wire &mdash; 0x48</text>
+                            <text x="450" y="214" fill="#666" font-size="10" text-anchor="middle">SDA &rarr; 18 &middot; SCL &rarr; 19 &middot; ADDR &rarr; GND</text>
+                            <text x="450" y="230" fill="#666" font-size="10" text-anchor="middle">VDD &rarr; 3.3V &middot; GND &rarr; GND</text>
+
+                            <!-- Wire to Teensy -->
+                            <line x1="450" y1="150" x2="450" y2="105" stroke="#3498db" stroke-width="1.5" stroke-dasharray="4"/>
+                            <text x="460" y="130" fill="#3498db" font-size="10">I2C0</text>
+
+                            <!-- 5 Faders -->
+                            <g>
+                                <rect x="80" y="290" width="120" height="55" rx="4" fill="#1a1a1a" stroke="#f39c12" stroke-width="1.5"/>
+                                <text x="140" y="313" fill="#f39c12" font-size="11" font-weight="bold" text-anchor="middle">Pot 1</text>
+                                <text x="140" y="330" fill="#666" font-size="10" text-anchor="middle">Wiper &rarr; A0</text>
+                                <line x1="140" y1="290" x2="380" y2="240" stroke="#f39c12" stroke-width="1" stroke-dasharray="3"/>
+                            </g>
+                            <g>
+                                <rect x="220" y="290" width="120" height="55" rx="4" fill="#1a1a1a" stroke="#f39c12" stroke-width="1.5"/>
+                                <text x="280" y="313" fill="#f39c12" font-size="11" font-weight="bold" text-anchor="middle">Pot 2</text>
+                                <text x="280" y="330" fill="#666" font-size="10" text-anchor="middle">Wiper &rarr; A1</text>
+                                <line x1="280" y1="290" x2="420" y2="240" stroke="#f39c12" stroke-width="1" stroke-dasharray="3"/>
+                            </g>
+                            <g>
+                                <rect x="360" y="290" width="120" height="55" rx="4" fill="#1a1a1a" stroke="#f39c12" stroke-width="1.5"/>
+                                <text x="420" y="313" fill="#f39c12" font-size="11" font-weight="bold" text-anchor="middle">Pot 3</text>
+                                <text x="420" y="330" fill="#666" font-size="10" text-anchor="middle">Wiper &rarr; A2</text>
+                                <line x1="420" y1="290" x2="460" y2="240" stroke="#f39c12" stroke-width="1" stroke-dasharray="3"/>
+                            </g>
+                            <g>
+                                <rect x="500" y="290" width="120" height="55" rx="4" fill="#1a1a1a" stroke="#f39c12" stroke-width="1.5"/>
+                                <text x="560" y="313" fill="#f39c12" font-size="11" font-weight="bold" text-anchor="middle">Pot 4</text>
+                                <text x="560" y="330" fill="#666" font-size="10" text-anchor="middle">Wiper &rarr; A3</text>
+                                <line x1="560" y1="290" x2="500" y2="240" stroke="#f39c12" stroke-width="1" stroke-dasharray="3"/>
+                            </g>
+                            <g>
+                                <rect x="660" y="290" width="140" height="55" rx="4" fill="#1a1a1a" stroke="#e74c3c" stroke-width="1.5"/>
+                                <text x="730" y="313" fill="#e74c3c" font-size="11" font-weight="bold" text-anchor="middle">Pot 5 (Xfade)</text>
+                                <text x="730" y="330" fill="#666" font-size="10" text-anchor="middle">Wiper &rarr; Teensy A0</text>
+                                <line x1="700" y1="290" x2="550" y2="90" stroke="#e74c3c" stroke-width="1" stroke-dasharray="3"/>
+                                <text x="640" y="180" fill="#e74c3c" font-size="9" transform="rotate(50,640,180)">pin 14 direct</text>
+                            </g>
+
+                            <!-- Legend -->
+                            <text x="140" y="380" fill="#666" font-size="10">All pots: Left &rarr; GND, Right &rarr; 3.3V (NOT 5V!)</text>
+                            <text x="140" y="395" fill="#666" font-size="10">Add 100nF ceramic cap from each wiper to GND (filter noise)</text>
+                        </svg>
+                        <p class="diagram-label">4 faders via ADS1115 (I2C0) + crossfader direct to Teensy A0 &mdash; 100nF filter caps on every wiper</p>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-head">4.1 &mdash; Wire ADS1115</div>
+                        <table class="wire-table">
+                            <tr><th>ADS1115 Pin</th><th>Teensy Pin</th><th>Notes</th></tr>
+                            <tr><td>SDA</td><td class="pin">18 (SDA0)</td><td>Shared I2C0 bus</td></tr>
+                            <tr><td>SCL</td><td class="pin">19 (SCL0)</td><td></td></tr>
+                            <tr><td>VDD</td><td class="pin">3.3V</td><td></td></tr>
+                            <tr><td>GND</td><td class="pin">GND</td><td></td></tr>
+                            <tr><td>ADDR</td><td class="pin">GND</td><td>Sets address to <span class="addr">0x48</span></td></tr>
+                        </table>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-head">4.2 &mdash; Wire Slide Pots</div>
+                        <p>Each pot: Left &rarr; GND, Right &rarr; <strong>3.3V</strong>, Wiper &rarr; ADS1115 A0&ndash;A3. Pot 5 wiper &rarr; Teensy <strong>pin 14 (A0)</strong>.</p>
+                        <div class="callout-warn">Pots to 3.3V only! The ADS1115 and Teensy ADC are 3.3V max. 5V will damage them.</div>
+                        <p>Add <strong>100nF ceramic cap</strong> from each wiper to GND, close to the ADC input.</p>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-head">4.3 &mdash; Test</div>
+<pre><code>Adafruit_ADS1115 ads;
+ads.begin(0x48, &amp;Wire);
+// ads.readADC_SingleEnded(0) ... sweep 0 to ~26000</code></pre>
+                        <p>If jumpy: check 100nF caps, keep wiper wires away from SPI lines.</p>
+                    </div>
+
+                    <div class="validation-bar">&#10003; VALIDATION: All 5 faders sweep smoothly &mdash; no jitter</div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- PHASE 5 -->
+            <!-- ============================================================ -->
+            <div class="phase">
+                <div class="phase-banner">
+                    <div class="phase-num">5</div>
+                    <div class="phase-info">
+                        <h2 class="phase-name">I/O Expansion</h2>
+                        <p class="phase-goal-text">GOAL: Encoders rotate, buttons click, nav switch responds in all 5 directions</p>
+                    </div>
+                </div>
+                <div class="phase-parts-bar">
+                    <span>MCP23017 &times;2</span><span>DIP Sockets &times;2</span><span>EC11 Encoders &times;7</span>
+                    <span>Buttons &times;4</span><span>5-Way Nav Switch</span><span>100nF Caps &times;2</span>
+                </div>
+                <div class="phase-body">
+                    <!-- SVG Diagram: Phase 5 -->
+                    <div class="diagram-frame">
+                        <svg class="svg-diagram" viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="900" height="500" fill="#0d0d0d"/>
+                            <text x="450" y="30" fill="#27ae60" font-size="18" font-weight="bold" text-anchor="middle">PHASE 5: Buttons + MCP23017 + Encoders + Nav</text>
+
+                            <!-- Teensy -->
+                            <rect x="320" y="55" width="260" height="55" rx="6" fill="#1a5c1a" stroke="#27ae60" stroke-width="2"/>
+                            <text x="450" y="82" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">TEENSY 4.1</text>
+                            <text x="450" y="100" fill="#aaa" font-size="10" text-anchor="middle">Direct buttons: pins 2, 3, 4, 5 (INPUT_PULLUP)</text>
+
+                            <!-- 4 Direct Buttons -->
+                            <g>
+                                <rect x="30" y="60" width="70" height="40" rx="4" fill="#1a1a1a" stroke="#888" stroke-width="1.5"/>
+                                <text x="65" y="82" fill="#ccc" font-size="10" font-weight="bold" text-anchor="middle">MODE</text>
+                                <text x="65" y="108" fill="#888" font-size="9" text-anchor="middle">pin 2</text>
+                            </g>
+                            <g>
+                                <rect x="110" y="60" width="70" height="40" rx="4" fill="#1a1a1a" stroke="#888" stroke-width="1.5"/>
+                                <text x="145" y="82" fill="#ccc" font-size="10" font-weight="bold" text-anchor="middle">SHIFT</text>
+                                <text x="145" y="108" fill="#888" font-size="9" text-anchor="middle">pin 3</text>
+                            </g>
+                            <g>
+                                <rect x="190" y="60" width="70" height="40" rx="4" fill="#1a1a1a" stroke="#888" stroke-width="1.5"/>
+                                <text x="225" y="82" fill="#ccc" font-size="10" font-weight="bold" text-anchor="middle">REC</text>
+                                <text x="225" y="108" fill="#888" font-size="9" text-anchor="middle">pin 4</text>
+                            </g>
+                            <g>
+                                <rect x="270" y="60" width="70" height="40" rx="4" fill="#1a1a1a" stroke="#888" stroke-width="1.5"/>
+                                <text x="305" y="82" fill="#ccc" font-size="10" font-weight="bold" text-anchor="middle">PLAY</text>
+                                <text x="305" y="108" fill="#888" font-size="9" text-anchor="middle">pin 5</text>
+                            </g>
+                            <line x1="100" y1="80" x2="320" y2="80" stroke="#888" stroke-width="1" stroke-dasharray="3"/>
+
+                            <!-- MCP23017 #1 -->
+                            <rect x="100" y="180" width="280" height="130" rx="6" fill="#2a1a00" stroke="#e67e22" stroke-width="2"/>
+                            <text x="240" y="208" fill="#f39c12" font-size="13" font-weight="bold" text-anchor="middle">MCP23017 #1</text>
+                            <text x="240" y="226" fill="#888" font-size="11" text-anchor="middle">I2C1 Wire1 &mdash; 0x20</text>
+                            <text x="240" y="248" fill="#666" font-size="10" text-anchor="middle">A0=GND A1=GND A2=GND &middot; RESET=3.3V</text>
+                            <text x="240" y="265" fill="#aaa" font-size="10" text-anchor="middle">5 encoders (A, B, SW) = 15 pins</text>
+                            <text x="240" y="280" fill="#666" font-size="10" text-anchor="middle">GPA0-7: Enc 1-2 (A,B,SW) + Enc 3 A,B</text>
+                            <text x="240" y="295" fill="#666" font-size="10" text-anchor="middle">GPB0-7: Enc 3 SW + Enc 4-5 (A,B,SW) + 1 spare</text>
+                            <!-- wire to teensy -->
+                            <line x1="240" y1="180" x2="400" y2="110" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="4"/>
+                            <text x="310" y="140" fill="#e67e22" font-size="10">I2C1 (16/17)</text>
+
+                            <!-- MCP23017 #2 -->
+                            <rect x="520" y="180" width="280" height="130" rx="6" fill="#2a1a00" stroke="#e67e22" stroke-width="2"/>
+                            <text x="660" y="208" fill="#f39c12" font-size="13" font-weight="bold" text-anchor="middle">MCP23017 #2</text>
+                            <text x="660" y="226" fill="#888" font-size="11" text-anchor="middle">I2C1 Wire1 &mdash; 0x21</text>
+                            <text x="660" y="248" fill="#666" font-size="10" text-anchor="middle">A0=3.3V A1=GND A2=GND &middot; RESET=3.3V</text>
+                            <text x="660" y="265" fill="#aaa" font-size="10" text-anchor="middle">2 encoders + 5-way nav = 11 pins</text>
+                            <text x="660" y="280" fill="#666" font-size="10" text-anchor="middle">GPA0-5: Enc 6-7 (A,B,SW)</text>
+                            <text x="660" y="295" fill="#666" font-size="10" text-anchor="middle">GPA6-GPB2: Nav U,D,L,R,Sel &middot; 5 spare</text>
+                            <!-- wire to teensy -->
+                            <line x1="660" y1="180" x2="520" y2="110" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="4"/>
+
+                            <!-- 5 Encoders for MCP#1 -->
+                            <g>
+                                <rect x="50" y="360" width="340" height="50" rx="4" fill="#1a1a1a" stroke="#888" stroke-width="1"/>
+                                <text x="220" y="382" fill="#ccc" font-size="11" text-anchor="middle">Encoders 1&ndash;5 &rarr; MCP #1 (GPA0&ndash;GPB6)</text>
+                                <text x="220" y="398" fill="#666" font-size="10" text-anchor="middle">Each: A, B to GPIO + C (common) to GND + SW to GPIO</text>
+                            </g>
+                            <line x1="220" y1="360" x2="220" y2="310" stroke="#888" stroke-width="1" stroke-dasharray="3"/>
+
+                            <!-- 2 Encoders + Nav for MCP#2 -->
+                            <g>
+                                <rect x="510" y="360" width="340" height="50" rx="4" fill="#1a1a1a" stroke="#888" stroke-width="1"/>
+                                <text x="680" y="382" fill="#ccc" font-size="11" text-anchor="middle">Encoders 6&ndash;7 + 5-Way Nav &rarr; MCP #2</text>
+                                <text x="680" y="398" fill="#666" font-size="10" text-anchor="middle">Nav: common &rarr; GND, U/D/L/R/Sel &rarr; GPIO</text>
+                            </g>
+                            <line x1="680" y1="360" x2="680" y2="310" stroke="#888" stroke-width="1" stroke-dasharray="3"/>
+
+                            <!-- 100nF note -->
+                            <text x="450" y="450" fill="#888" font-size="10" text-anchor="middle">Add 100nF cap across VDD&ndash;VSS on each MCP23017 &middot; Enable internal pull-ups in firmware</text>
+                            <text x="450" y="468" fill="#5dade2" font-size="10" text-anchor="middle">I2C1 scan: 0x20 (MCP#1) + 0x21 (MCP#2) + 0x29 (CAP1188)</text>
+                        </svg>
+                        <p class="diagram-label">4 direct buttons + 7 encoders via 2&times; MCP23017 on I2C1 + 5-way nav switch</p>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-head">5.1 &mdash; Wire 4 Direct Buttons</div>
+                        <table class="wire-table">
+                            <tr><th>Button</th><th>Teensy Pin</th><th>Wiring</th></tr>
+                            <tr><td>MODE</td><td class="pin">2</td><td>Button between pin and GND, INPUT_PULLUP</td></tr>
+                            <tr><td>SHIFT</td><td class="pin">3</td><td>Same</td></tr>
+                            <tr><td>REC</td><td class="pin">4</td><td>Same</td></tr>
+                            <tr><td>PLAY</td><td class="pin">5</td><td>Same &mdash; Pressed=LOW, Released=HIGH</td></tr>
+                        </table>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-head">5.2 &mdash; Install MCP23017s into DIP Sockets</div>
+                        <p><strong>Watch the notch</strong> &mdash; pin 1 at the notch end. Both on I2C1 (16/17). #1 at <code>0x20</code> (A0/A1/A2 = GND). #2 at <code>0x21</code> (A0 = 3.3V). RESET pins &rarr; 3.3V. 100nF cap on each VDD&ndash;VSS.</p>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-head">5.3 &mdash; Wire Encoders</div>
+                        <p>Each EC11: C (common) &rarr; GND, A + B &rarr; MCP GPIO, SW &rarr; MCP GPIO. Enable MCP internal pull-ups in firmware. 5 encoders on MCP#1, 2 on MCP#2.</p>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-head">5.4 &mdash; Wire 5-Way Nav</div>
+                        <p>Common &rarr; GND. Up/Down/Left/Right/Select &rarr; MCP#2 GPIOs. Internal pull-ups.</p>
+                    </div>
+
+                    <div class="validation-bar">&#10003; VALIDATION: 7 encoders rotate + click, 4 buttons respond, nav switch 5 directions</div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
             <!-- PHASE 6 -->
+            <!-- ============================================================ -->
             <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">6</div>
-                    <h2 class="phase-title">GPS &mdash; Location Stamps</h2>
+                <div class="phase-banner">
+                    <div class="phase-num">6</div>
+                    <div class="phase-info">
+                        <h2 class="phase-name">GPS</h2>
+                        <p class="phase-goal-text">GOAL: Barcelona coordinates on the OLED</p>
+                    </div>
                 </div>
-                <div class="phase-goal">Goal: GPS acquires fix, coordinates appear on display</div>
-                <div class="phase-parts"><span>PA1010D GPS (STEMMA QT)</span></div>
+                <div class="phase-parts-bar">
+                    <span>PA1010D GPS (STEMMA QT)</span>
+                </div>
+                <div class="phase-body">
+                    <!-- SVG Diagram: Phase 6 -->
+                    <div class="diagram-frame">
+                        <svg class="svg-diagram" viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="900" height="300" fill="#0d0d0d"/>
+                            <text x="450" y="30" fill="#27ae60" font-size="18" font-weight="bold" text-anchor="middle">PHASE 6: PA1010D GPS on I2C0</text>
 
-                <h3>Step 6.1 &mdash; Wire GPS</h3>
-                <ul>
-                    <li>SDA &rarr; pin <strong>18</strong> (SDA0, shared with Audio Shield + OLED + ADS1115)</li>
-                    <li>SCL &rarr; pin <strong>19</strong> (SCL0)</li>
-                    <li>VIN &rarr; 3.3V, GND &rarr; GND</li>
-                </ul>
-                <p>I2C scanner on Wire should now show: 0x0A (SGTL5000), 0x10 (PA1010D), 0x3C (OLED), 0x48 (ADS1115).</p>
+                            <!-- Teensy -->
+                            <rect x="320" y="60" width="260" height="50" rx="6" fill="#1a5c1a" stroke="#27ae60" stroke-width="2"/>
+                            <text x="450" y="90" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">TEENSY 4.1</text>
 
-                <h3>Step 6.2 &mdash; Test GPS</h3>
-<pre><code>#include &lt;Adafruit_GPS.h&gt;
-Adafruit_GPS GPS(&amp;Wire);
-void setup() {
-  Serial.begin(115200);
-  GPS.begin(0x10);
-  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);
-}</code></pre>
-                <p><strong>Test outdoors or near a window.</strong> PA1010D built-in antenna needs sky view. First fix: 30&ndash;60 seconds.</p>
+                            <!-- GPS -->
+                            <rect x="100" y="160" width="250" height="90" rx="6" fill="#0a1a2a" stroke="#3498db" stroke-width="2"/>
+                            <text x="225" y="188" fill="#5dade2" font-size="13" font-weight="bold" text-anchor="middle">PA1010D GPS</text>
+                            <text x="225" y="206" fill="#888" font-size="11" text-anchor="middle">STEMMA QT &mdash; 0x10</text>
+                            <text x="225" y="226" fill="#666" font-size="10" text-anchor="middle">SDA &rarr; 18 &middot; SCL &rarr; 19 &middot; VIN &rarr; 3.3V</text>
+                            <text x="225" y="241" fill="#666" font-size="10" text-anchor="middle">Built-in antenna &middot; GPS + GLONASS</text>
+                            <line x1="225" y1="160" x2="380" y2="110" stroke="#3498db" stroke-width="1.5" stroke-dasharray="4"/>
 
-                <h3>Step 6.3 &mdash; Display GPS on OLED</h3>
-<pre><code>display.setCursor(0, 0);
-display.print("Lat: "); display.println(GPS.latitudeDegrees, 6);
-display.print("Lon: "); display.println(GPS.longitudeDegrees, 6);
-display.print("Sats: "); display.println(GPS.satellites);</code></pre>
-                <div class="validation">Phase 6 complete when: GPS shows Barcelona coordinates on OLED.</div>
+                            <!-- OLED showing coords -->
+                            <rect x="550" y="160" width="250" height="90" rx="6" fill="#1a1a2e" stroke="#8e24aa" stroke-width="2"/>
+                            <text x="675" y="185" fill="#ce93d8" font-size="12" font-weight="bold" text-anchor="middle">SSD1306 OLED Output</text>
+                            <text x="675" y="208" fill="#ccc" font-size="12" text-anchor="middle">Lat: 41.385063</text>
+                            <text x="675" y="225" fill="#ccc" font-size="12" text-anchor="middle">Lon: 2.173404</text>
+                            <text x="675" y="242" fill="#27ae60" font-size="12" text-anchor="middle">Sats: 8</text>
+                            <line x1="675" y1="160" x2="520" y2="110" stroke="#8e24aa" stroke-width="1.5" stroke-dasharray="4"/>
+
+                            <!-- I2C0 scan -->
+                            <text x="450" y="280" fill="#5dade2" font-size="10" text-anchor="middle">I2C0 Wire scan: 0x0A (SGTL5000) + 0x10 (PA1010D) + 0x3C (SSD1306) + 0x48 (ADS1115)</text>
+                        </svg>
+                        <p class="diagram-label">GPS on shared I2C0 bus &mdash; test outdoors, first fix 30&ndash;60 seconds</p>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-head">6.1 &mdash; Wire GPS</div>
+                        <table class="wire-table">
+                            <tr><th>PA1010D Pin</th><th>Teensy Pin</th><th>Notes</th></tr>
+                            <tr><td>SDA</td><td class="pin">18 (SDA0)</td><td>Shared I2C0</td></tr>
+                            <tr><td>SCL</td><td class="pin">19 (SCL0)</td><td></td></tr>
+                            <tr><td>VIN</td><td class="pin">3.3V</td><td></td></tr>
+                            <tr><td>GND</td><td class="pin">GND</td><td></td></tr>
+                        </table>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-head">6.2 &mdash; Test GPS</div>
+<pre><code>Adafruit_GPS GPS(&amp;Wire);
+GPS.begin(0x10);
+GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);</code></pre>
+                        <div class="callout-tip">Test outdoors or near a window. PA1010D built-in antenna needs sky view.</div>
+                    </div>
+
+                    <div class="validation-bar">&#10003; VALIDATION: OLED shows Barcelona lat/lon and satellite count</div>
+                </div>
             </div>
 
+            <!-- ============================================================ -->
             <!-- PHASE 7 -->
+            <!-- ============================================================ -->
             <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">7</div>
-                    <h2 class="phase-title">WiFi Link &mdash; AI Connection</h2>
+                <div class="phase-banner">
+                    <div class="phase-num">7</div>
+                    <div class="phase-info">
+                        <h2 class="phase-name">WiFi Link</h2>
+                        <p class="phase-goal-text">GOAL: ESP32 and Teensy communicate over UART</p>
+                    </div>
                 </div>
-                <div class="phase-goal">Goal: ESP32 connects to WiFi and communicates with Teensy via UART</div>
-                <div class="phase-parts"><span>SparkFun ESP32-S2 Thing Plus</span></div>
+                <div class="phase-parts-bar">
+                    <span>SparkFun ESP32-S2 Thing Plus</span>
+                </div>
+                <div class="phase-body">
+                    <!-- SVG Diagram: Phase 7 -->
+                    <div class="diagram-frame">
+                        <svg class="svg-diagram" viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="900" height="320" fill="#0d0d0d"/>
+                            <text x="450" y="30" fill="#27ae60" font-size="18" font-weight="bold" text-anchor="middle">PHASE 7: ESP32-S2 UART Link</text>
 
-                <h3>Step 7.1 &mdash; Program ESP32 Separately</h3>
-                <p>Flash a WiFi test via its own USB port <strong>before</strong> connecting to the Teensy.</p>
-<pre><code>#include &lt;WiFi.h&gt;
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
-void setup() {
-  Serial.begin(115200);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
-  Serial.println("\nConnected!");
-  Serial.println(WiFi.localIP());
+                            <!-- Teensy -->
+                            <rect x="80" y="90" width="300" height="100" rx="6" fill="#1a5c1a" stroke="#27ae60" stroke-width="2"/>
+                            <text x="230" y="120" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">TEENSY 4.1</text>
+                            <text x="230" y="142" fill="#aaa" font-size="11" text-anchor="middle">Serial1.begin(115200)</text>
+                            <text x="230" y="162" fill="#666" font-size="10" text-anchor="middle">Pin 0 = RX1 (receives from ESP32 TX)</text>
+                            <text x="230" y="177" fill="#666" font-size="10" text-anchor="middle">Pin 1 = TX1 (sends to ESP32 RX)</text>
+
+                            <!-- ESP32 -->
+                            <rect x="520" y="90" width="300" height="100" rx="6" fill="#2a0a2a" stroke="#8e24aa" stroke-width="2"/>
+                            <text x="670" y="120" fill="#ce93d8" font-size="14" font-weight="bold" text-anchor="middle">ESP32-S2 Thing Plus</text>
+                            <text x="670" y="142" fill="#aaa" font-size="11" text-anchor="middle">Own USB for programming</text>
+                            <text x="670" y="162" fill="#666" font-size="10" text-anchor="middle">TX &rarr; Teensy Pin 0 (RX1)</text>
+                            <text x="670" y="177" fill="#666" font-size="10" text-anchor="middle">RX &larr; Teensy Pin 1 (TX1)</text>
+
+                            <!-- UART wires -->
+                            <line x1="380" y1="125" x2="520" y2="125" stroke="#ce93d8" stroke-width="2"/>
+                            <text x="450" y="120" fill="#ce93d8" font-size="11" font-weight="bold" text-anchor="middle">UART 115200</text>
+                            <line x1="380" y1="155" x2="520" y2="155" stroke="#ce93d8" stroke-width="2"/>
+                            <polygon points="520,125 510,120 510,130" fill="#ce93d8"/>
+                            <polygon points="380,155 390,150 390,160" fill="#ce93d8"/>
+
+                            <!-- Power warning -->
+                            <rect x="150" y="230" width="600" height="55" rx="6" fill="#2a1500" stroke="#e67e22" stroke-width="1"/>
+                            <text x="450" y="252" fill="#e67e22" font-size="12" font-weight="bold" text-anchor="middle">&#9888; POWER: ESP32 5V/VBUS &rarr; Teensy VIN (shared 5V USB rail)</text>
+                            <text x="450" y="272" fill="#c68600" font-size="11" text-anchor="middle">DO NOT connect ESP32 3.3V to Teensy 3.3V &mdash; each has its own regulator</text>
+                        </svg>
+                        <p class="diagram-label">UART Serial1 (pins 0/1) &mdash; program ESP32 via its own USB BEFORE connecting to Teensy</p>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-head">7.1 &mdash; Program ESP32 Separately First</div>
+                        <p>Flash WiFi test via its own USB port before wiring to Teensy. Verify it connects to your network.</p>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-head">7.2 &mdash; Wire ESP32 to Teensy</div>
+                        <table class="wire-table">
+                            <tr><th>ESP32 Pin</th><th>Teensy Pin</th><th>Notes</th></tr>
+                            <tr><td>TX</td><td class="pin">0 (RX1)</td><td>ESP32 sends &rarr; Teensy receives</td></tr>
+                            <tr><td>RX</td><td class="pin">1 (TX1)</td><td>Teensy sends &rarr; ESP32 receives</td></tr>
+                            <tr><td>5V / VBUS</td><td class="pin">VIN</td><td>Shared 5V from USB</td></tr>
+                            <tr><td>GND</td><td class="pin">GND</td><td></td></tr>
+                        </table>
+                        <div class="callout-warn">Do NOT connect ESP32 3.3V to Teensy 3.3V. Each board uses its own regulator.</div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-head">7.3 &mdash; Test UART</div>
+<pre><code>// Teensy:
+Serial1.begin(115200);
+if (Serial1.available()) {
+  String msg = Serial1.readStringUntil('\n');
+  Serial.print("From ESP32: ");
+  Serial.println(msg);
 }</code></pre>
+                    </div>
 
-                <h3>Step 7.2 &mdash; Wire ESP32 to Teensy</h3>
-                <p><strong>Power from 5V, NOT from Teensy&rsquo;s 3.3V.</strong> Do NOT connect ESP32 3.3V to Teensy 3.3V &mdash; each board has its own regulator.</p>
-                <ul>
-                    <li>ESP32 5V/VBUS &rarr; Teensy <strong>VIN</strong> (shared 5V rail from USB)</li>
-                    <li>ESP32 GND &rarr; Teensy GND</li>
-                    <li>ESP32 TX &rarr; Teensy pin <strong>0</strong> (RX1)</li>
-                    <li>ESP32 RX &rarr; Teensy pin <strong>1</strong> (TX1)</li>
-                </ul>
-
-                <h3>Step 7.3 &mdash; Test UART</h3>
-<pre><code>// Teensy side:
-void setup() {
-  Serial.begin(115200);   // USB serial for debug
-  Serial1.begin(115200);  // UART to ESP32
-}
-void loop() {
-  if (Serial1.available()) {
-    String msg = Serial1.readStringUntil('\n');
-    Serial.print("From ESP32: ");
-    Serial.println(msg);
-  }
-}</code></pre>
-                <div class="validation">Phase 7 complete when: Teensy receives messages from ESP32 over UART, audio still clean.</div>
+                    <div class="validation-bar">&#10003; VALIDATION: Teensy receives ESP32 messages &mdash; audio still clean</div>
+                </div>
             </div>
 
+            <!-- ============================================================ -->
             <!-- PHASE 8 -->
+            <!-- ============================================================ -->
             <div class="phase">
-                <div class="phase-header">
-                    <div class="phase-number">8</div>
-                    <h2 class="phase-title">Full Integration Test</h2>
+                <div class="phase-banner">
+                    <div class="phase-num">8</div>
+                    <div class="phase-info">
+                        <h2 class="phase-name">Full Integration</h2>
+                        <p class="phase-goal-text">GOAL: Everything runs simultaneously &mdash; CPU &lt;70%, no I2C errors, audio clean</p>
+                    </div>
                 </div>
-                <div class="phase-goal">Goal: Everything runs simultaneously without conflicts</div>
-                <div class="phase-parts"><span>Everything</span></div>
+                <div class="phase-parts-bar"><span>Everything</span></div>
+                <div class="phase-body">
+                    <!-- SVG Diagram: Phase 8 integration checklist -->
+                    <div class="diagram-frame">
+                        <svg class="svg-diagram" viewBox="0 0 900 350" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="900" height="350" fill="#0d0d0d"/>
+                            <text x="450" y="30" fill="#27ae60" font-size="18" font-weight="bold" text-anchor="middle">PHASE 8: Integration Checklist</text>
 
-                <h3>Integration Checklist</h3>
-                <ol>
-                    <li>Audio plays from SD card through headphones</li>
-                    <li>Touch pads trigger samples</li>
-                    <li>OLED shows status</li>
-                    <li>LCD shows waveform/UI</li>
-                    <li>NeoPixels animate without audio glitches</li>
-                    <li>Slide pots read smoothly</li>
-                    <li>Encoders rotate and click</li>
-                    <li>Buttons respond</li>
-                    <li>Nav switch works in all directions</li>
-                    <li>GPS acquires fix outdoors</li>
-                    <li>ESP32 connects to WiFi</li>
-                    <li>UART between ESP32 and Teensy works</li>
-                </ol>
+                            <!-- Two columns -->
+                            <g transform="translate(60,55)">
+                                <text x="0" y="0" fill="#27ae60" font-size="12" font-weight="bold">AUDIO</text>
+                                <text x="0" y="22" fill="#aaa" font-size="11">&#9744; SD card plays through headphones</text>
+                                <text x="0" y="42" fill="#aaa" font-size="11">&#9744; Touch pads trigger samples</text>
+                                <text x="0" y="62" fill="#aaa" font-size="11">&#9744; No glitches with NeoPixels</text>
+                                <text x="0" y="82" fill="#aaa" font-size="11">&#9744; Faders adjust params smoothly</text>
 
-                <h3>Monitor System Health</h3>
-<pre><code>void loop() {
-  Serial.print("CPU: ");
-  Serial.print(AudioProcessorUsage());
-  Serial.print("%  Mem: ");
-  Serial.print(AudioMemoryUsage());
-  Serial.print("/");
-  Serial.println(AudioMemoryUsageMax());
-}</code></pre>
-                <p>CPU usage should stay below 70%.</p>
-                <div class="validation">Phase 8 complete when: CPU &lt;70%, no I2C errors, audio clean, GPS fix, WiFi connected.</div>
+                                <text x="0" y="115" fill="#5dade2" font-size="12" font-weight="bold">DISPLAY</text>
+                                <text x="0" y="137" fill="#aaa" font-size="11">&#9744; OLED shows GPS + status</text>
+                                <text x="0" y="157" fill="#aaa" font-size="11">&#9744; LCD shows waveform/UI</text>
+                                <text x="0" y="177" fill="#aaa" font-size="11">&#9744; NeoPixels animate steps</text>
+                            </g>
+
+                            <g transform="translate(460,55)">
+                                <text x="0" y="0" fill="#f39c12" font-size="12" font-weight="bold">INTERFACE</text>
+                                <text x="0" y="22" fill="#aaa" font-size="11">&#9744; 7 encoders rotate + click</text>
+                                <text x="0" y="42" fill="#aaa" font-size="11">&#9744; 4 buttons respond</text>
+                                <text x="0" y="62" fill="#aaa" font-size="11">&#9744; Nav switch 5 directions</text>
+                                <text x="0" y="82" fill="#aaa" font-size="11">&#9744; 5 faders sweep clean</text>
+
+                                <text x="0" y="115" fill="#ce93d8" font-size="12" font-weight="bold">CONNECTIVITY</text>
+                                <text x="0" y="137" fill="#aaa" font-size="11">&#9744; GPS fix outdoors</text>
+                                <text x="0" y="157" fill="#aaa" font-size="11">&#9744; ESP32 WiFi connected</text>
+                                <text x="0" y="177" fill="#aaa" font-size="11">&#9744; UART messages flowing</text>
+                            </g>
+
+                            <!-- Health monitor -->
+                            <rect x="100" y="260" width="700" height="60" rx="6" fill="#0a0a0a" stroke="#333" stroke-width="1"/>
+                            <text x="130" y="283" fill="#5dade2" font-size="11">Serial.print("CPU: "); Serial.print(AudioProcessorUsage());</text>
+                            <text x="130" y="300" fill="#5dade2" font-size="11">Serial.print("%  Mem: "); Serial.print(AudioMemoryUsage());</text>
+                            <text x="130" y="317" fill="#e74c3c" font-size="10">Target: CPU &lt; 70% &middot; No I2C errors &middot; Audio clean &middot; GPS fix &middot; WiFi up</text>
+                        </svg>
+                        <p class="diagram-label">All 12 validation checks must pass simultaneously</p>
+                    </div>
+
+                    <div class="callout-tip">Run health monitor in loop() &mdash; print CPU% and memory every 5 seconds. If CPU exceeds 70%, check which audio objects are running.</div>
+
+                    <div class="validation-bar">&#10003; VALIDATION: All 12 checks pass &mdash; prototype complete</div>
+                </div>
             </div>
 
-            <!-- I2C Bus Map -->
-            <h2>I2C Bus Architecture</h2>
-            <img src="images/assembly-diagram-i2c-bus.png" alt="I2C bus architecture diagram showing Wire and Wire1 buses" class="assembly-diagram">
-            <p class="diagram-caption">Dual I2C bus split &mdash; Wire (audio-path devices) and Wire1 (UI-polling devices, external pull-ups required).</p>
+            <!-- ============================================================ -->
+            <!-- BUS MAP + POWER -->
+            <!-- ============================================================ -->
+            <div class="hero-diagram">
+                <img src="images/assembly-diagram-i2c-bus.png" alt="I2C Bus Architecture">
+                <p class="diagram-label">I2C BUS ARCHITECTURE &mdash; Wire (audio-path) and Wire1 (UI-polling, external pull-ups required)</p>
+            </div>
 
-            <h2>Power Distribution</h2>
-            <img src="images/assembly-power-distribution.png" alt="Power distribution diagram" class="assembly-diagram">
-            <p class="diagram-caption">USB 5V powers Teensy (3.3V LDO for peripherals) and ESP32-S2 (own regulator). Total 3.3V external draw ~60mA typical.</p>
+            <div class="hero-diagram">
+                <img src="images/assembly-power-distribution.png" alt="Power Distribution">
+                <p class="diagram-label">POWER DISTRIBUTION &mdash; USB 5V &rarr; Teensy LDO 3.3V (~60mA external) + ESP32-S2 (own regulator)</p>
+            </div>
 
-            <h2>I2C Bus Map (Final State)</h2>
-            <div class="bus-map">
+            <h2 style="color:#5dade2; font-size:20px; margin:32px 0 16px 0;">Bus Map &mdash; Final State</h2>
+            <div class="bus-grid">
                 <div class="bus-card">
                     <h4>Wire &mdash; I2C0</h4>
                     <div class="bus-pins">Pins 18 (SDA), 19 (SCL)</div>
@@ -576,7 +932,7 @@ void loop() {
                 </div>
                 <div class="bus-card">
                     <h4>Wire1 &mdash; I2C1</h4>
-                    <div class="bus-pins">Pins 16 (SCL1), 17 (SDA1) &mdash; 10K pull-ups to 3.3V required</div>
+                    <div class="bus-pins">Pins 16 (SCL1), 17 (SDA1) &mdash; 10K pull-ups required</div>
                     <div class="bus-device"><span>MCP23017 #1</span><span class="bus-addr">0x20</span></div>
                     <div class="bus-device"><span>MCP23017 #2</span><span class="bus-addr">0x21</span></div>
                     <div class="bus-device"><span>CAP1188 Touch</span><span class="bus-addr">0x29</span></div>
@@ -585,7 +941,7 @@ void loop() {
                     <h4>SPI</h4>
                     <div class="bus-pins">Pins 10 (CS), 11 (MOSI), 12 (MISO), 13 (SCK)</div>
                     <div class="bus-device"><span>ILI9341 2.8&Prime; LCD</span><span class="bus-addr">DC=9, RST=15</span></div>
-                    <p style="font-size:12px; color:#888; margin-top:4px;">Audio Shield SD NOT used &mdash; Teensy built-in SDIO instead</p>
+                    <p style="font-size:11px; color:#555; margin-top:4px;">Audio Shield SD NOT used &mdash; Teensy SDIO instead</p>
                 </div>
                 <div class="bus-card">
                     <h4>UART &mdash; Serial1</h4>
@@ -594,28 +950,28 @@ void loop() {
                 </div>
             </div>
 
-            <!-- Parts Not Used -->
-            <h2>Parts Set Aside</h2>
-            <p>Arrived but not part of the core prototype:</p>
-            <ul>
-                <li><strong>KB2040</strong> (P5302) &mdash; RP2040 keyboard MCU. Future projects.</li>
-                <li><strong>RFM95W LoRa</strong> (P3072) &mdash; 900MHz long-range radio. Future: device-to-device field communication.</li>
-                <li><strong>USB Type C Plug</strong> (P5978) &mdash; Bare connector for enclosure phase.</li>
-                <li><strong>Vertical USB-C Port</strong> (P5993) &mdash; Same category, enclosure phase.</li>
-                <li><strong>Backup Teensy 4.1</strong> &mdash; In the drawer, untouched.</li>
-                <li><strong>Backup Audio Shield</strong> (P4384) &mdash; In the drawer, untouched.</li>
-            </ul>
-
-            <!-- Still needed -->
+            <!-- STILL NEEDED -->
             <div class="still-needed">
-                <h3>Next Diotronic Visit &mdash; Pick Up</h3>
+                <h3>Next Diotronic Visit</h3>
                 <ul>
-                    <li>2.2K&ohm; resistors &times;4 (replace the 10K I2C1 pull-ups with proper values)</li>
-                    <li>1K&ohm; resistors &times;5 (RC filter series resistors for slide pots)</li>
-                    <li>470&ohm; resistor &times;1 (NeoPixel data line &mdash; check your assortment first)</li>
-                    <li>EC11 rotary encoders &times;6 (complete the 13-encoder interface)</li>
+                    <li>2.2K&ohm; resistors &times;4 &mdash; replace 10K I2C1 pull-ups with proper values</li>
+                    <li>1K&ohm; resistors &times;5 &mdash; RC filter series resistors for slide pots</li>
+                    <li>470&ohm; resistor &times;1 &mdash; NeoPixel data line (check your assortment first)</li>
+                    <li>EC11 rotary encoders &times;6 &mdash; complete the 13-encoder interface</li>
                 </ul>
             </div>
+
+            <!-- SET ASIDE -->
+            <div class="set-aside">
+                <h2>Parts Set Aside</h2>
+                <ul>
+                    <li><strong>KB2040</strong> (P5302) &mdash; RP2040 keyboard MCU</li>
+                    <li><strong>RFM95W LoRa</strong> (P3072) &mdash; 900MHz radio, future device-to-device</li>
+                    <li><strong>USB-C Plug + Vertical Port</strong> (P5978, P5993) &mdash; enclosure phase</li>
+                    <li><strong>Backup Teensy 4.1 + Audio Shield</strong> &mdash; in the drawer</li>
+                </ul>
+            </div>
+
         </main>
 
         <footer class="page-footer">
