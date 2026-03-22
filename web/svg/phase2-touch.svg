@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520">
+<style>
+    text { font-family: 'Courier New', monospace; }
+    .fade { opacity: 0; }
+    .s1 { animation: fadeIn 0.6s ease forwards 0.5s; }
+    .s2 { animation: fadeIn 0.6s ease forwards 1.8s; }
+    .s3 { animation: fadeIn 0.6s ease forwards 3.0s; }
+    .s4 { animation: fadeIn 0.6s ease forwards 4.2s; }
+    .s5 { animation: fadeIn 0.6s ease forwards 5.4s; }
+    .s6 { animation: fadeIn 0.6s ease forwards 6.6s; }
+    .w1 { stroke-dasharray: 300; stroke-dashoffset: 300; animation: draw 0.8s ease forwards 2.0s; }
+    .w2 { stroke-dasharray: 300; stroke-dashoffset: 300; animation: draw 0.8s ease forwards 2.4s; }
+    .w3 { stroke-dasharray: 300; stroke-dashoffset: 300; animation: draw 0.8s ease forwards 2.8s; }
+    .w4 { stroke-dasharray: 300; stroke-dashoffset: 300; animation: draw 0.8s ease forwards 3.2s; }
+    .wr { stroke-dasharray: 100; stroke-dashoffset: 100; animation: draw 0.6s ease forwards 3.8s; }
+    .wp { stroke-dasharray: 400; stroke-dashoffset: 400; animation: draw 1.0s ease forwards 5.0s; }
+    .blink { animation: blink 1s ease infinite 7.0s; opacity: 0; }
+    @keyframes fadeIn { to { opacity: 1; } }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+</style>
+<rect width="900" height="520" fill="#0d0d0d"/>
+
+<text x="450" y="35" fill="#27ae60" font-size="20" font-weight="bold" text-anchor="middle">PHASE 2: CAP1188 Touch Sensing</text>
+<text x="450" y="55" fill="#555" font-size="12" text-anchor="middle">Touch copper pads to trigger audio samples</text>
+
+<!-- Teensy (always visible as context) -->
+<rect x="50" y="100" width="220" height="70" rx="6" fill="#1a5c1a" stroke="#27ae60" stroke-width="2"/>
+<text x="160" y="130" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">TEENSY 4.1</text>
+<text x="160" y="150" fill="#8fce8f" font-size="10" text-anchor="middle">Pin 17 = SDA1 | Pin 16 = SCL1</text>
+
+<!-- Step 1: CAP1188 appears -->
+<g class="fade s1">
+    <rect x="450" y="85" width="280" height="100" rx="6" fill="#2a1a00" stroke="#e67e22" stroke-width="2"/>
+    <text x="590" y="115" fill="#f39c12" font-size="14" font-weight="bold" text-anchor="middle">CAP1188</text>
+    <text x="590" y="135" fill="#888" font-size="11" text-anchor="middle">8-Channel Capacitive Touch</text>
+    <text x="590" y="152" fill="#666" font-size="10" text-anchor="middle">I2C Address: 0x29</text>
+    <text x="590" y="172" fill="#666" font-size="10" text-anchor="middle">SDA | SCL | VIN | GND | C1-C8</text>
+    <text x="50" y="210" fill="#444" font-size="10">STEP 1: Insert CAP1188 breakout into breadboard (solder headers if needed)</text>
+</g>
+
+<!-- Step 2: I2C1 wires connect -->
+<g class="fade s2">
+    <text x="50" y="230" fill="#444" font-size="10">STEP 2: Wire to I2C1 (Wire1) &mdash; NOT the same bus as Audio Shield</text>
+</g>
+<!-- SDA wire -->
+<line class="w1" x1="270" y1="120" x2="450" y2="120" stroke="#e67e22" stroke-width="2.5"/>
+<text class="fade s2" x="360" y="112" fill="#e67e22" font-size="10" text-anchor="middle">SDA1 (pin 17)</text>
+<!-- SCL wire -->
+<line class="w2" x1="270" y1="140" x2="450" y2="140" stroke="#f39c12" stroke-width="2.5"/>
+<text class="fade s2" x="360" y="158" fill="#f39c12" font-size="10" text-anchor="middle">SCL1 (pin 16)</text>
+<!-- VIN wire -->
+<line class="w3" x1="270" y1="155" x2="350" y2="155" stroke="#e74c3c" stroke-width="1.5"/>
+<line class="w3" x1="350" y1="155" x2="350" y2="100" stroke="#e74c3c" stroke-width="1.5"/>
+<line class="w3" x1="350" y1="100" x2="450" y2="100" stroke="#e74c3c" stroke-width="1.5"/>
+<text class="fade s2" x="395" y="95" fill="#e74c3c" font-size="9">3.3V</text>
+<!-- GND wire -->
+<line class="w4" x1="270" y1="160" x2="330" y2="160" stroke="#666" stroke-width="1.5"/>
+<line class="w4" x1="330" y1="160" x2="330" y2="172" stroke="#666" stroke-width="1.5"/>
+<line class="w4" x1="330" y1="172" x2="450" y2="172" stroke="#666" stroke-width="1.5"/>
+<text class="fade s2" x="395" y="180" fill="#666" font-size="9">GND</text>
+
+<!-- Step 3: Pull-up resistors -->
+<g class="fade s3">
+    <rect x="300" y="70" width="80" height="22" rx="3" fill="#2a2a00" stroke="#f1c40f" stroke-width="1.5"/>
+    <text x="340" y="85" fill="#f1c40f" font-size="9" font-weight="bold" text-anchor="middle">10K</text>
+    <text x="340" y="62" fill="#f1c40f" font-size="9" text-anchor="middle">pull-up to 3.3V</text>
+    <line class="wr" x1="340" y1="70" x2="340" y2="55" stroke="#f1c40f" stroke-width="1.5"/>
+    <text x="340" y="50" fill="#e74c3c" font-size="8" text-anchor="middle">3.3V</text>
+    <rect x="300" y="92" width="80" height="22" rx="3" fill="#2a2a00" stroke="#f1c40f" stroke-width="1.5"/>
+    <text x="340" y="107" fill="#f1c40f" font-size="9" font-weight="bold" text-anchor="middle">10K</text>
+    <text x="50" y="250" fill="#444" font-size="10">STEP 3: Add 10K pull-ups on SDA1 and SCL1 to 3.3V (Wire1 has NO built-in pull-ups!)</text>
+</g>
+
+<!-- Step 4: 8 Copper tape pads -->
+<g class="fade s4">
+    <text x="450" y="260" fill="#e67e22" font-size="12" font-weight="bold" text-anchor="middle">8 Copper Tape Touch Pads</text>
+    <g>
+        <rect x="140" y="280" width="70" height="50" rx="4" fill="#1a1a1a" stroke="#cd7f32" stroke-width="2"/>
+        <text x="175" y="305" fill="#cd7f32" font-size="11" font-weight="bold" text-anchor="middle">C1</text>
+        <text x="175" y="322" fill="#666" font-size="8" text-anchor="middle">Pad 1</text>
+    </g>
+    <g>
+        <rect x="220" y="280" width="70" height="50" rx="4" fill="#1a1a1a" stroke="#cd7f32" stroke-width="2"/>
+        <text x="255" y="305" fill="#cd7f32" font-size="11" font-weight="bold" text-anchor="middle">C2</text>
+        <text x="255" y="322" fill="#666" font-size="8" text-anchor="middle">Pad 2</text>
+    </g>
+    <g>
+        <rect x="300" y="280" width="70" height="50" rx="4" fill="#1a1a1a" stroke="#cd7f32" stroke-width="2"/>
+        <text x="335" y="305" fill="#cd7f32" font-size="11" font-weight="bold" text-anchor="middle">C3</text>
+        <text x="335" y="322" fill="#666" font-size="8" text-anchor="middle">Pad 3</text>
+    </g>
+    <g>
+        <rect x="380" y="280" width="70" height="50" rx="4" fill="#1a1a1a" stroke="#cd7f32" stroke-width="2"/>
+        <text x="415" y="305" fill="#cd7f32" font-size="11" font-weight="bold" text-anchor="middle">C4</text>
+        <text x="415" y="322" fill="#666" font-size="8" text-anchor="middle">Pad 4</text>
+    </g>
+    <g>
+        <rect x="460" y="280" width="70" height="50" rx="4" fill="#1a1a1a" stroke="#cd7f32" stroke-width="2"/>
+        <text x="495" y="305" fill="#cd7f32" font-size="11" font-weight="bold" text-anchor="middle">C5</text>
+        <text x="495" y="322" fill="#666" font-size="8" text-anchor="middle">Pad 5</text>
+    </g>
+    <g>
+        <rect x="540" y="280" width="70" height="50" rx="4" fill="#1a1a1a" stroke="#cd7f32" stroke-width="2"/>
+        <text x="575" y="305" fill="#cd7f32" font-size="11" font-weight="bold" text-anchor="middle">C6</text>
+        <text x="575" y="322" fill="#666" font-size="8" text-anchor="middle">Pad 6</text>
+    </g>
+    <g>
+        <rect x="620" y="280" width="70" height="50" rx="4" fill="#1a1a1a" stroke="#cd7f32" stroke-width="2"/>
+        <text x="655" y="305" fill="#cd7f32" font-size="11" font-weight="bold" text-anchor="middle">C7</text>
+        <text x="655" y="322" fill="#666" font-size="8" text-anchor="middle">Pad 7</text>
+    </g>
+    <g>
+        <rect x="700" y="280" width="70" height="50" rx="4" fill="#1a1a1a" stroke="#cd7f32" stroke-width="2"/>
+        <text x="735" y="305" fill="#cd7f32" font-size="11" font-weight="bold" text-anchor="middle">C8</text>
+        <text x="735" y="322" fill="#666" font-size="8" text-anchor="middle">Pad 8</text>
+    </g>
+    <text x="50" y="365" fill="#444" font-size="10">STEP 4: Cut 8 copper tape pads (20x20mm), stick on cardboard, solder wire to each, connect C1-C8</text>
+</g>
+
+<!-- Step 5: Wires from pads to CAP1188 -->
+<g class="fade s5">
+    <line class="wp" x1="175" y1="280" x2="490" y2="185" stroke="#cd7f32" stroke-width="1" stroke-dasharray="3"/>
+    <line class="wp" x1="255" y1="280" x2="510" y2="185" stroke="#cd7f32" stroke-width="1" stroke-dasharray="3"/>
+    <line class="wp" x1="335" y1="280" x2="530" y2="185" stroke="#cd7f32" stroke-width="1" stroke-dasharray="3"/>
+    <line class="wp" x1="415" y1="280" x2="560" y2="185" stroke="#cd7f32" stroke-width="1" stroke-dasharray="3"/>
+    <line class="wp" x1="495" y1="280" x2="600" y2="185" stroke="#cd7f32" stroke-width="1" stroke-dasharray="3"/>
+    <line class="wp" x1="575" y1="280" x2="640" y2="185" stroke="#cd7f32" stroke-width="1" stroke-dasharray="3"/>
+    <line class="wp" x1="655" y1="280" x2="680" y2="185" stroke="#cd7f32" stroke-width="1" stroke-dasharray="3"/>
+    <line class="wp" x1="735" y1="280" x2="720" y2="185" stroke="#cd7f32" stroke-width="1" stroke-dasharray="3"/>
+</g>
+
+<!-- Step 6: Firmware -->
+<g class="fade s6">
+    <rect x="100" y="385" width="700" height="60" rx="6" fill="#0a0a0a" stroke="#333" stroke-width="1"/>
+    <text x="120" y="405" fill="#5dade2" font-size="11">Wire1.begin();</text>
+    <text x="120" y="422" fill="#5dade2" font-size="11">cap.begin(0x29, &amp;Wire1);  // I2C1 at address 0x29</text>
+    <text x="120" y="439" fill="#666" font-size="11">// Touch pad N -> trigger sample N via AudioPlaySdWav</text>
+</g>
+
+<!-- Validation -->
+<g class="blink">
+    <rect x="200" y="465" width="500" height="40" rx="8" fill="#0a2a0a" stroke="#27ae60" stroke-width="2"/>
+    <text x="450" y="491" fill="#27ae60" font-size="14" font-weight="bold" text-anchor="middle">&#10003; TOUCH EACH PAD -> HEAR DIFFERENT SAMPLE</text>
+</g>
+</svg>

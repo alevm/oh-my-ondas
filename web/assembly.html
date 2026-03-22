@@ -65,6 +65,15 @@
         .diagram-frame svg {
             width: 100%; height: auto; display: block;
         }
+        .diagram-frame object {
+            width: 100%; border-radius: 4px; display: block;
+        }
+        .replay-btn {
+            display: inline-block; margin-top: 8px; padding: 4px 14px;
+            background: #222; border: 1px solid #444; border-radius: 4px;
+            color: #888; font-size: 11px; cursor: pointer; font-family: 'Courier New', monospace;
+        }
+        .replay-btn:hover { background: #333; color: #ccc; }
         .diagram-label {
             font-size: 11px; color: #555; text-align: center; margin-top: 8px;
             font-family: 'Courier New', monospace;
@@ -256,8 +265,8 @@
                 </div>
                 <div class="phase-body">
                     <div class="diagram-frame">
-                        <img src="images/assembly-phase1-wiring.png" alt="Phase 1: Core Audio Stack wiring">
-                        <p class="diagram-label">Teensy + Audio Shield stack on 830pt breadboard &mdash; no wires needed, all via stacking headers</p>
+                        <object id="svg-p1" type="image/svg+xml" data="svg/phase1-core-audio.svg">Phase 1 diagram</object>
+                        <p class="diagram-label">Animated: Teensy + Audio Shield stack &mdash; 7 steps <button class="replay-btn" onclick="document.getElementById('svg-p1').data='svg/phase1-core-audio.svg?t='+Date.now()">&#8635; Replay</button></p>
                     </div>
 
                     <div class="step">
@@ -318,8 +327,8 @@
                 </div>
                 <div class="phase-body">
                     <div class="diagram-frame">
-                        <img src="images/assembly-phase2-touch.png" alt="Phase 2: CAP1188 Touch Wiring">
-                        <p class="diagram-label">CAP1188 on Wire1 (pins 16/17) with 10K pull-ups &mdash; 8 copper tape pads on C1&ndash;C8</p>
+                        <object id="svg-p2" type="image/svg+xml" data="svg/phase2-touch.svg">Phase 2 diagram</object>
+                        <p class="diagram-label">Animated: CAP1188 wiring + touch pads &mdash; 6 steps <button class="replay-btn" onclick="document.getElementById('svg-p2').data='svg/phase2-touch.svg?t='+Date.now()">&#8635; Replay</button></p>
                     </div>
 
                     <div class="step">
@@ -366,62 +375,9 @@ cap.begin(0x29, &amp;Wire1);  // I2C1 at 0x29</code></pre>
                     <span>SSD1306 OLED 0.96&Prime;</span><span>ILI9341 2.8&Prime; TFT</span><span>WS2812B NeoPixel &times;8</span><span>470&ohm; Resistor</span>
                 </div>
                 <div class="phase-body">
-                    <!-- SVG Diagram: Phase 3 -->
                     <div class="diagram-frame">
-                        <svg class="svg-diagram" viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="900" height="520" fill="#0d0d0d"/>
-                            <text x="450" y="30" fill="#27ae60" font-size="18" font-weight="bold" text-anchor="middle">PHASE 3: Displays + NeoPixels</text>
-
-                            <!-- Teensy -->
-                            <rect x="320" y="60" width="260" height="60" rx="6" fill="#1a5c1a" stroke="#27ae60" stroke-width="2"/>
-                            <text x="450" y="87" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">TEENSY 4.1</text>
-                            <text x="450" y="107" fill="#aaa" font-size="11" text-anchor="middle">600MHz ARM Cortex-M7</text>
-
-                            <!-- OLED (I2C0) -->
-                            <rect x="40" y="180" width="200" height="100" rx="6" fill="#1a1a2e" stroke="#3498db" stroke-width="2"/>
-                            <text x="140" y="210" fill="#5dade2" font-size="13" font-weight="bold" text-anchor="middle">SSD1306 OLED</text>
-                            <text x="140" y="228" fill="#888" font-size="11" text-anchor="middle">0.96" I2C &mdash; 0x3C</text>
-                            <text x="140" y="248" fill="#666" font-size="10" text-anchor="middle">SDA &rarr; pin 18 (SDA0)</text>
-                            <text x="140" y="263" fill="#666" font-size="10" text-anchor="middle">SCL &rarr; pin 19 (SCL0)</text>
-                            <!-- wire -->
-                            <line x1="240" y1="220" x2="320" y2="90" stroke="#3498db" stroke-width="1.5" stroke-dasharray="4"/>
-                            <text x="270" y="150" fill="#3498db" font-size="10" transform="rotate(-30,270,150)">I2C0 Wire</text>
-
-                            <!-- ILI9341 LCD (SPI) -->
-                            <rect x="350" y="180" width="200" height="160" rx="6" fill="#2a1a00" stroke="#e67e22" stroke-width="2"/>
-                            <text x="450" y="210" fill="#f39c12" font-size="13" font-weight="bold" text-anchor="middle">ILI9341 2.8" TFT</text>
-                            <text x="450" y="228" fill="#888" font-size="11" text-anchor="middle">320&times;240 SPI + DMA</text>
-                            <text x="450" y="252" fill="#666" font-size="10" text-anchor="middle">CLK &rarr; pin 13 (SCK)</text>
-                            <text x="450" y="267" fill="#666" font-size="10" text-anchor="middle">MOSI &rarr; pin 11</text>
-                            <text x="450" y="282" fill="#666" font-size="10" text-anchor="middle">MISO &rarr; pin 12</text>
-                            <text x="450" y="297" fill="#666" font-size="10" text-anchor="middle">CS &rarr; pin 10</text>
-                            <text x="450" y="312" fill="#666" font-size="10" text-anchor="middle">DC &rarr; pin 9 &middot; RST &rarr; pin 15</text>
-                            <text x="450" y="330" fill="#e67e22" font-size="10" text-anchor="middle">LITE &rarr; 3.3V (always on)</text>
-                            <!-- wire -->
-                            <line x1="450" y1="180" x2="450" y2="120" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="4"/>
-                            <text x="460" y="155" fill="#e67e22" font-size="10">SPI</text>
-
-                            <!-- NeoPixel -->
-                            <rect x="660" y="180" width="200" height="100" rx="6" fill="#0a2a1a" stroke="#27ae60" stroke-width="2"/>
-                            <text x="760" y="210" fill="#27ae60" font-size="13" font-weight="bold" text-anchor="middle">WS2812B &times;8</text>
-                            <text x="760" y="228" fill="#888" font-size="11" text-anchor="middle">NeoPixel Strip</text>
-                            <text x="760" y="252" fill="#666" font-size="10" text-anchor="middle">DIN &rarr; pin 6 (via 470&Omega;)</text>
-                            <text x="760" y="267" fill="#666" font-size="10" text-anchor="middle">VCC &rarr; 5V &middot; GND &rarr; GND</text>
-                            <!-- wire -->
-                            <line x1="660" y1="220" x2="580" y2="90" stroke="#27ae60" stroke-width="1.5" stroke-dasharray="4"/>
-                            <text x="625" y="150" fill="#27ae60" font-size="10" transform="rotate(30,625,150)">Pin 6</text>
-
-                            <!-- Pin conflict warning -->
-                            <rect x="100" y="380" width="700" height="50" rx="6" fill="#2a1500" stroke="#e67e22" stroke-width="1"/>
-                            <text x="450" y="400" fill="#e67e22" font-size="12" font-weight="bold" text-anchor="middle">&#9888; PIN CONFLICT: Pin 8 is Audio Shield I2S RX</text>
-                            <text x="450" y="418" fill="#c68600" font-size="11" text-anchor="middle">LCD RST must use pin 15 (not pin 8). Pin 10 freed because Audio Shield SD is unused.</text>
-
-                            <!-- Code snippet -->
-                            <rect x="150" y="450" width="600" height="55" rx="4" fill="#0a0a0a" stroke="#333" stroke-width="1"/>
-                            <text x="170" y="470" fill="#5dade2" font-size="11">#include &lt;ILI9341_t3.h&gt;</text>
-                            <text x="170" y="487" fill="#ccc" font-size="11">ILI9341_t3 tft = ILI9341_t3(10, 9, 15);  // CS, DC, RST</text>
-                        </svg>
-                        <p class="diagram-label">3 devices: OLED on I2C0, LCD on SPI (DMA), NeoPixels on GPIO pin 6</p>
+                        <object id="svg-p3" type="image/svg+xml" data="svg/phase3-displays.svg">Phase 3 diagram</object>
+                        <p class="diagram-label">Animated: OLED + LCD + NeoPixels wiring &mdash; 5 steps <button class="replay-btn" onclick="document.getElementById('svg-p3').data='svg/phase3-displays.svg?t='+Date.now()">&#8635; Replay</button></p>
                     </div>
 
                     <div class="step">
@@ -477,63 +433,8 @@ cap.begin(0x29, &amp;Wire1);  // I2C1 at 0x29</code></pre>
                 <div class="phase-body">
                     <!-- SVG Diagram: Phase 4 -->
                     <div class="diagram-frame">
-                        <svg class="svg-diagram" viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="900" height="420" fill="#0d0d0d"/>
-                            <text x="450" y="30" fill="#27ae60" font-size="18" font-weight="bold" text-anchor="middle">PHASE 4: ADS1115 + Slide Faders</text>
-
-                            <!-- Teensy -->
-                            <rect x="350" y="55" width="200" height="50" rx="6" fill="#1a5c1a" stroke="#27ae60" stroke-width="2"/>
-                            <text x="450" y="82" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">TEENSY 4.1</text>
-
-                            <!-- ADS1115 -->
-                            <rect x="340" y="150" width="220" height="90" rx="6" fill="#1a1a2e" stroke="#3498db" stroke-width="2"/>
-                            <text x="450" y="178" fill="#5dade2" font-size="13" font-weight="bold" text-anchor="middle">ADS1115 16-bit ADC</text>
-                            <text x="450" y="196" fill="#888" font-size="11" text-anchor="middle">I2C0 Wire &mdash; 0x48</text>
-                            <text x="450" y="214" fill="#666" font-size="10" text-anchor="middle">SDA &rarr; 18 &middot; SCL &rarr; 19 &middot; ADDR &rarr; GND</text>
-                            <text x="450" y="230" fill="#666" font-size="10" text-anchor="middle">VDD &rarr; 3.3V &middot; GND &rarr; GND</text>
-
-                            <!-- Wire to Teensy -->
-                            <line x1="450" y1="150" x2="450" y2="105" stroke="#3498db" stroke-width="1.5" stroke-dasharray="4"/>
-                            <text x="460" y="130" fill="#3498db" font-size="10">I2C0</text>
-
-                            <!-- 5 Faders -->
-                            <g>
-                                <rect x="80" y="290" width="120" height="55" rx="4" fill="#1a1a1a" stroke="#f39c12" stroke-width="1.5"/>
-                                <text x="140" y="313" fill="#f39c12" font-size="11" font-weight="bold" text-anchor="middle">Pot 1</text>
-                                <text x="140" y="330" fill="#666" font-size="10" text-anchor="middle">Wiper &rarr; A0</text>
-                                <line x1="140" y1="290" x2="380" y2="240" stroke="#f39c12" stroke-width="1" stroke-dasharray="3"/>
-                            </g>
-                            <g>
-                                <rect x="220" y="290" width="120" height="55" rx="4" fill="#1a1a1a" stroke="#f39c12" stroke-width="1.5"/>
-                                <text x="280" y="313" fill="#f39c12" font-size="11" font-weight="bold" text-anchor="middle">Pot 2</text>
-                                <text x="280" y="330" fill="#666" font-size="10" text-anchor="middle">Wiper &rarr; A1</text>
-                                <line x1="280" y1="290" x2="420" y2="240" stroke="#f39c12" stroke-width="1" stroke-dasharray="3"/>
-                            </g>
-                            <g>
-                                <rect x="360" y="290" width="120" height="55" rx="4" fill="#1a1a1a" stroke="#f39c12" stroke-width="1.5"/>
-                                <text x="420" y="313" fill="#f39c12" font-size="11" font-weight="bold" text-anchor="middle">Pot 3</text>
-                                <text x="420" y="330" fill="#666" font-size="10" text-anchor="middle">Wiper &rarr; A2</text>
-                                <line x1="420" y1="290" x2="460" y2="240" stroke="#f39c12" stroke-width="1" stroke-dasharray="3"/>
-                            </g>
-                            <g>
-                                <rect x="500" y="290" width="120" height="55" rx="4" fill="#1a1a1a" stroke="#f39c12" stroke-width="1.5"/>
-                                <text x="560" y="313" fill="#f39c12" font-size="11" font-weight="bold" text-anchor="middle">Pot 4</text>
-                                <text x="560" y="330" fill="#666" font-size="10" text-anchor="middle">Wiper &rarr; A3</text>
-                                <line x1="560" y1="290" x2="500" y2="240" stroke="#f39c12" stroke-width="1" stroke-dasharray="3"/>
-                            </g>
-                            <g>
-                                <rect x="660" y="290" width="140" height="55" rx="4" fill="#1a1a1a" stroke="#e74c3c" stroke-width="1.5"/>
-                                <text x="730" y="313" fill="#e74c3c" font-size="11" font-weight="bold" text-anchor="middle">Pot 5 (Xfade)</text>
-                                <text x="730" y="330" fill="#666" font-size="10" text-anchor="middle">Wiper &rarr; Teensy A0</text>
-                                <line x1="700" y1="290" x2="550" y2="90" stroke="#e74c3c" stroke-width="1" stroke-dasharray="3"/>
-                                <text x="640" y="180" fill="#e74c3c" font-size="9" transform="rotate(50,640,180)">pin 14 direct</text>
-                            </g>
-
-                            <!-- Legend -->
-                            <text x="140" y="380" fill="#666" font-size="10">All pots: Left &rarr; GND, Right &rarr; 3.3V (NOT 5V!)</text>
-                            <text x="140" y="395" fill="#666" font-size="10">Add 100nF ceramic cap from each wiper to GND (filter noise)</text>
-                        </svg>
-                        <p class="diagram-label">4 faders via ADS1115 (I2C0) + crossfader direct to Teensy A0 &mdash; 100nF filter caps on every wiper</p>
+                        <object id="svg-p4" type="image/svg+xml" data="svg/phase4-faders.svg">Phase diagram</object>
+                        <p class="diagram-label">Animated: ADS1115 + Slide Faders wiring &mdash; 5 steps <button class="replay-btn" onclick="document.getElementById('svg-p4').data='svg/phase4-faders.svg?t='+Date.now()">&#8635; Replay</button></p>
                     </div>
 
                     <div class="step">
@@ -585,82 +486,8 @@ ads.begin(0x48, &amp;Wire);
                 <div class="phase-body">
                     <!-- SVG Diagram: Phase 5 -->
                     <div class="diagram-frame">
-                        <svg class="svg-diagram" viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="900" height="500" fill="#0d0d0d"/>
-                            <text x="450" y="30" fill="#27ae60" font-size="18" font-weight="bold" text-anchor="middle">PHASE 5: Buttons + MCP23017 + Encoders + Nav</text>
-
-                            <!-- Teensy -->
-                            <rect x="320" y="55" width="260" height="55" rx="6" fill="#1a5c1a" stroke="#27ae60" stroke-width="2"/>
-                            <text x="450" y="82" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">TEENSY 4.1</text>
-                            <text x="450" y="100" fill="#aaa" font-size="10" text-anchor="middle">Direct buttons: pins 2, 3, 4, 5 (INPUT_PULLUP)</text>
-
-                            <!-- 4 Direct Buttons -->
-                            <g>
-                                <rect x="30" y="60" width="70" height="40" rx="4" fill="#1a1a1a" stroke="#888" stroke-width="1.5"/>
-                                <text x="65" y="82" fill="#ccc" font-size="10" font-weight="bold" text-anchor="middle">MODE</text>
-                                <text x="65" y="108" fill="#888" font-size="9" text-anchor="middle">pin 2</text>
-                            </g>
-                            <g>
-                                <rect x="110" y="60" width="70" height="40" rx="4" fill="#1a1a1a" stroke="#888" stroke-width="1.5"/>
-                                <text x="145" y="82" fill="#ccc" font-size="10" font-weight="bold" text-anchor="middle">SHIFT</text>
-                                <text x="145" y="108" fill="#888" font-size="9" text-anchor="middle">pin 3</text>
-                            </g>
-                            <g>
-                                <rect x="190" y="60" width="70" height="40" rx="4" fill="#1a1a1a" stroke="#888" stroke-width="1.5"/>
-                                <text x="225" y="82" fill="#ccc" font-size="10" font-weight="bold" text-anchor="middle">REC</text>
-                                <text x="225" y="108" fill="#888" font-size="9" text-anchor="middle">pin 4</text>
-                            </g>
-                            <g>
-                                <rect x="270" y="60" width="70" height="40" rx="4" fill="#1a1a1a" stroke="#888" stroke-width="1.5"/>
-                                <text x="305" y="82" fill="#ccc" font-size="10" font-weight="bold" text-anchor="middle">PLAY</text>
-                                <text x="305" y="108" fill="#888" font-size="9" text-anchor="middle">pin 5</text>
-                            </g>
-                            <line x1="100" y1="80" x2="320" y2="80" stroke="#888" stroke-width="1" stroke-dasharray="3"/>
-
-                            <!-- MCP23017 #1 -->
-                            <rect x="100" y="180" width="280" height="130" rx="6" fill="#2a1a00" stroke="#e67e22" stroke-width="2"/>
-                            <text x="240" y="208" fill="#f39c12" font-size="13" font-weight="bold" text-anchor="middle">MCP23017 #1</text>
-                            <text x="240" y="226" fill="#888" font-size="11" text-anchor="middle">I2C1 Wire1 &mdash; 0x20</text>
-                            <text x="240" y="248" fill="#666" font-size="10" text-anchor="middle">A0=GND A1=GND A2=GND &middot; RESET=3.3V</text>
-                            <text x="240" y="265" fill="#aaa" font-size="10" text-anchor="middle">5 encoders (A, B, SW) = 15 pins</text>
-                            <text x="240" y="280" fill="#666" font-size="10" text-anchor="middle">GPA0-7: Enc 1-2 (A,B,SW) + Enc 3 A,B</text>
-                            <text x="240" y="295" fill="#666" font-size="10" text-anchor="middle">GPB0-7: Enc 3 SW + Enc 4-5 (A,B,SW) + 1 spare</text>
-                            <!-- wire to teensy -->
-                            <line x1="240" y1="180" x2="400" y2="110" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="4"/>
-                            <text x="310" y="140" fill="#e67e22" font-size="10">I2C1 (16/17)</text>
-
-                            <!-- MCP23017 #2 -->
-                            <rect x="520" y="180" width="280" height="130" rx="6" fill="#2a1a00" stroke="#e67e22" stroke-width="2"/>
-                            <text x="660" y="208" fill="#f39c12" font-size="13" font-weight="bold" text-anchor="middle">MCP23017 #2</text>
-                            <text x="660" y="226" fill="#888" font-size="11" text-anchor="middle">I2C1 Wire1 &mdash; 0x21</text>
-                            <text x="660" y="248" fill="#666" font-size="10" text-anchor="middle">A0=3.3V A1=GND A2=GND &middot; RESET=3.3V</text>
-                            <text x="660" y="265" fill="#aaa" font-size="10" text-anchor="middle">2 encoders + 5-way nav = 11 pins</text>
-                            <text x="660" y="280" fill="#666" font-size="10" text-anchor="middle">GPA0-5: Enc 6-7 (A,B,SW)</text>
-                            <text x="660" y="295" fill="#666" font-size="10" text-anchor="middle">GPA6-GPB2: Nav U,D,L,R,Sel &middot; 5 spare</text>
-                            <!-- wire to teensy -->
-                            <line x1="660" y1="180" x2="520" y2="110" stroke="#e67e22" stroke-width="1.5" stroke-dasharray="4"/>
-
-                            <!-- 5 Encoders for MCP#1 -->
-                            <g>
-                                <rect x="50" y="360" width="340" height="50" rx="4" fill="#1a1a1a" stroke="#888" stroke-width="1"/>
-                                <text x="220" y="382" fill="#ccc" font-size="11" text-anchor="middle">Encoders 1&ndash;5 &rarr; MCP #1 (GPA0&ndash;GPB6)</text>
-                                <text x="220" y="398" fill="#666" font-size="10" text-anchor="middle">Each: A, B to GPIO + C (common) to GND + SW to GPIO</text>
-                            </g>
-                            <line x1="220" y1="360" x2="220" y2="310" stroke="#888" stroke-width="1" stroke-dasharray="3"/>
-
-                            <!-- 2 Encoders + Nav for MCP#2 -->
-                            <g>
-                                <rect x="510" y="360" width="340" height="50" rx="4" fill="#1a1a1a" stroke="#888" stroke-width="1"/>
-                                <text x="680" y="382" fill="#ccc" font-size="11" text-anchor="middle">Encoders 6&ndash;7 + 5-Way Nav &rarr; MCP #2</text>
-                                <text x="680" y="398" fill="#666" font-size="10" text-anchor="middle">Nav: common &rarr; GND, U/D/L/R/Sel &rarr; GPIO</text>
-                            </g>
-                            <line x1="680" y1="360" x2="680" y2="310" stroke="#888" stroke-width="1" stroke-dasharray="3"/>
-
-                            <!-- 100nF note -->
-                            <text x="450" y="450" fill="#888" font-size="10" text-anchor="middle">Add 100nF cap across VDD&ndash;VSS on each MCP23017 &middot; Enable internal pull-ups in firmware</text>
-                            <text x="450" y="468" fill="#5dade2" font-size="10" text-anchor="middle">I2C1 scan: 0x20 (MCP#1) + 0x21 (MCP#2) + 0x29 (CAP1188)</text>
-                        </svg>
-                        <p class="diagram-label">4 direct buttons + 7 encoders via 2&times; MCP23017 on I2C1 + 5-way nav switch</p>
+                        <object id="svg-p5" type="image/svg+xml" data="svg/phase5-io-expansion.svg">Phase diagram</object>
+                        <p class="diagram-label">Animated: Buttons + MCP23017 + Encoders + Nav &mdash; 5 steps <button class="replay-btn" onclick="document.getElementById('svg-p5').data='svg/phase5-io-expansion.svg?t='+Date.now()">&#8635; Replay</button></p>
                     </div>
 
                     <div class="step">
@@ -710,34 +537,8 @@ ads.begin(0x48, &amp;Wire);
                 <div class="phase-body">
                     <!-- SVG Diagram: Phase 6 -->
                     <div class="diagram-frame">
-                        <svg class="svg-diagram" viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="900" height="300" fill="#0d0d0d"/>
-                            <text x="450" y="30" fill="#27ae60" font-size="18" font-weight="bold" text-anchor="middle">PHASE 6: PA1010D GPS on I2C0</text>
-
-                            <!-- Teensy -->
-                            <rect x="320" y="60" width="260" height="50" rx="6" fill="#1a5c1a" stroke="#27ae60" stroke-width="2"/>
-                            <text x="450" y="90" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">TEENSY 4.1</text>
-
-                            <!-- GPS -->
-                            <rect x="100" y="160" width="250" height="90" rx="6" fill="#0a1a2a" stroke="#3498db" stroke-width="2"/>
-                            <text x="225" y="188" fill="#5dade2" font-size="13" font-weight="bold" text-anchor="middle">PA1010D GPS</text>
-                            <text x="225" y="206" fill="#888" font-size="11" text-anchor="middle">STEMMA QT &mdash; 0x10</text>
-                            <text x="225" y="226" fill="#666" font-size="10" text-anchor="middle">SDA &rarr; 18 &middot; SCL &rarr; 19 &middot; VIN &rarr; 3.3V</text>
-                            <text x="225" y="241" fill="#666" font-size="10" text-anchor="middle">Built-in antenna &middot; GPS + GLONASS</text>
-                            <line x1="225" y1="160" x2="380" y2="110" stroke="#3498db" stroke-width="1.5" stroke-dasharray="4"/>
-
-                            <!-- OLED showing coords -->
-                            <rect x="550" y="160" width="250" height="90" rx="6" fill="#1a1a2e" stroke="#8e24aa" stroke-width="2"/>
-                            <text x="675" y="185" fill="#ce93d8" font-size="12" font-weight="bold" text-anchor="middle">SSD1306 OLED Output</text>
-                            <text x="675" y="208" fill="#ccc" font-size="12" text-anchor="middle">Lat: 41.385063</text>
-                            <text x="675" y="225" fill="#ccc" font-size="12" text-anchor="middle">Lon: 2.173404</text>
-                            <text x="675" y="242" fill="#27ae60" font-size="12" text-anchor="middle">Sats: 8</text>
-                            <line x1="675" y1="160" x2="520" y2="110" stroke="#8e24aa" stroke-width="1.5" stroke-dasharray="4"/>
-
-                            <!-- I2C0 scan -->
-                            <text x="450" y="280" fill="#5dade2" font-size="10" text-anchor="middle">I2C0 Wire scan: 0x0A (SGTL5000) + 0x10 (PA1010D) + 0x3C (SSD1306) + 0x48 (ADS1115)</text>
-                        </svg>
-                        <p class="diagram-label">GPS on shared I2C0 bus &mdash; test outdoors, first fix 30&ndash;60 seconds</p>
+                        <object id="svg-p6" type="image/svg+xml" data="svg/phase6-gps.svg">Phase diagram</object>
+                        <p class="diagram-label">Animated: PA1010D GPS wiring &mdash; 4 steps <button class="replay-btn" onclick="document.getElementById('svg-p6').data='svg/phase6-gps.svg?t='+Date.now()">&#8635; Replay</button></p>
                     </div>
 
                     <div class="step">
@@ -781,37 +582,8 @@ GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);</code></pre>
                 <div class="phase-body">
                     <!-- SVG Diagram: Phase 7 -->
                     <div class="diagram-frame">
-                        <svg class="svg-diagram" viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="900" height="320" fill="#0d0d0d"/>
-                            <text x="450" y="30" fill="#27ae60" font-size="18" font-weight="bold" text-anchor="middle">PHASE 7: ESP32-S2 UART Link</text>
-
-                            <!-- Teensy -->
-                            <rect x="80" y="90" width="300" height="100" rx="6" fill="#1a5c1a" stroke="#27ae60" stroke-width="2"/>
-                            <text x="230" y="120" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">TEENSY 4.1</text>
-                            <text x="230" y="142" fill="#aaa" font-size="11" text-anchor="middle">Serial1.begin(115200)</text>
-                            <text x="230" y="162" fill="#666" font-size="10" text-anchor="middle">Pin 0 = RX1 (receives from ESP32 TX)</text>
-                            <text x="230" y="177" fill="#666" font-size="10" text-anchor="middle">Pin 1 = TX1 (sends to ESP32 RX)</text>
-
-                            <!-- ESP32 -->
-                            <rect x="520" y="90" width="300" height="100" rx="6" fill="#2a0a2a" stroke="#8e24aa" stroke-width="2"/>
-                            <text x="670" y="120" fill="#ce93d8" font-size="14" font-weight="bold" text-anchor="middle">ESP32-S2 Thing Plus</text>
-                            <text x="670" y="142" fill="#aaa" font-size="11" text-anchor="middle">Own USB for programming</text>
-                            <text x="670" y="162" fill="#666" font-size="10" text-anchor="middle">TX &rarr; Teensy Pin 0 (RX1)</text>
-                            <text x="670" y="177" fill="#666" font-size="10" text-anchor="middle">RX &larr; Teensy Pin 1 (TX1)</text>
-
-                            <!-- UART wires -->
-                            <line x1="380" y1="125" x2="520" y2="125" stroke="#ce93d8" stroke-width="2"/>
-                            <text x="450" y="120" fill="#ce93d8" font-size="11" font-weight="bold" text-anchor="middle">UART 115200</text>
-                            <line x1="380" y1="155" x2="520" y2="155" stroke="#ce93d8" stroke-width="2"/>
-                            <polygon points="520,125 510,120 510,130" fill="#ce93d8"/>
-                            <polygon points="380,155 390,150 390,160" fill="#ce93d8"/>
-
-                            <!-- Power warning -->
-                            <rect x="150" y="230" width="600" height="55" rx="6" fill="#2a1500" stroke="#e67e22" stroke-width="1"/>
-                            <text x="450" y="252" fill="#e67e22" font-size="12" font-weight="bold" text-anchor="middle">&#9888; POWER: ESP32 5V/VBUS &rarr; Teensy VIN (shared 5V USB rail)</text>
-                            <text x="450" y="272" fill="#c68600" font-size="11" text-anchor="middle">DO NOT connect ESP32 3.3V to Teensy 3.3V &mdash; each has its own regulator</text>
-                        </svg>
-                        <p class="diagram-label">UART Serial1 (pins 0/1) &mdash; program ESP32 via its own USB BEFORE connecting to Teensy</p>
+                        <object id="svg-p7" type="image/svg+xml" data="svg/phase7-wifi.svg">Phase diagram</object>
+                        <p class="diagram-label">Animated: ESP32-S2 UART link &mdash; 4 steps <button class="replay-btn" onclick="document.getElementById('svg-p7').data='svg/phase7-wifi.svg?t='+Date.now()">&#8635; Replay</button></p>
                     </div>
 
                     <div class="step">
@@ -861,44 +633,8 @@ if (Serial1.available()) {
                 <div class="phase-body">
                     <!-- SVG Diagram: Phase 8 integration checklist -->
                     <div class="diagram-frame">
-                        <svg class="svg-diagram" viewBox="0 0 900 350" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="900" height="350" fill="#0d0d0d"/>
-                            <text x="450" y="30" fill="#27ae60" font-size="18" font-weight="bold" text-anchor="middle">PHASE 8: Integration Checklist</text>
-
-                            <!-- Two columns -->
-                            <g transform="translate(60,55)">
-                                <text x="0" y="0" fill="#27ae60" font-size="12" font-weight="bold">AUDIO</text>
-                                <text x="0" y="22" fill="#aaa" font-size="11">&#9744; SD card plays through headphones</text>
-                                <text x="0" y="42" fill="#aaa" font-size="11">&#9744; Touch pads trigger samples</text>
-                                <text x="0" y="62" fill="#aaa" font-size="11">&#9744; No glitches with NeoPixels</text>
-                                <text x="0" y="82" fill="#aaa" font-size="11">&#9744; Faders adjust params smoothly</text>
-
-                                <text x="0" y="115" fill="#5dade2" font-size="12" font-weight="bold">DISPLAY</text>
-                                <text x="0" y="137" fill="#aaa" font-size="11">&#9744; OLED shows GPS + status</text>
-                                <text x="0" y="157" fill="#aaa" font-size="11">&#9744; LCD shows waveform/UI</text>
-                                <text x="0" y="177" fill="#aaa" font-size="11">&#9744; NeoPixels animate steps</text>
-                            </g>
-
-                            <g transform="translate(460,55)">
-                                <text x="0" y="0" fill="#f39c12" font-size="12" font-weight="bold">INTERFACE</text>
-                                <text x="0" y="22" fill="#aaa" font-size="11">&#9744; 7 encoders rotate + click</text>
-                                <text x="0" y="42" fill="#aaa" font-size="11">&#9744; 4 buttons respond</text>
-                                <text x="0" y="62" fill="#aaa" font-size="11">&#9744; Nav switch 5 directions</text>
-                                <text x="0" y="82" fill="#aaa" font-size="11">&#9744; 5 faders sweep clean</text>
-
-                                <text x="0" y="115" fill="#ce93d8" font-size="12" font-weight="bold">CONNECTIVITY</text>
-                                <text x="0" y="137" fill="#aaa" font-size="11">&#9744; GPS fix outdoors</text>
-                                <text x="0" y="157" fill="#aaa" font-size="11">&#9744; ESP32 WiFi connected</text>
-                                <text x="0" y="177" fill="#aaa" font-size="11">&#9744; UART messages flowing</text>
-                            </g>
-
-                            <!-- Health monitor -->
-                            <rect x="100" y="260" width="700" height="60" rx="6" fill="#0a0a0a" stroke="#333" stroke-width="1"/>
-                            <text x="130" y="283" fill="#5dade2" font-size="11">Serial.print("CPU: "); Serial.print(AudioProcessorUsage());</text>
-                            <text x="130" y="300" fill="#5dade2" font-size="11">Serial.print("%  Mem: "); Serial.print(AudioMemoryUsage());</text>
-                            <text x="130" y="317" fill="#e74c3c" font-size="10">Target: CPU &lt; 70% &middot; No I2C errors &middot; Audio clean &middot; GPS fix &middot; WiFi up</text>
-                        </svg>
-                        <p class="diagram-label">All 12 validation checks must pass simultaneously</p>
+                        <object id="svg-p8" type="image/svg+xml" data="svg/phase8-integration.svg">Phase diagram</object>
+                        <p class="diagram-label">Animated: Integration checklist &mdash; 12 checks <button class="replay-btn" onclick="document.getElementById('svg-p8').data='svg/phase8-integration.svg?t='+Date.now()">&#8635; Replay</button></p>
                     </div>
 
                     <div class="callout-tip">Run health monitor in loop() &mdash; print CPU% and memory every 5 seconds. If CPU exceeds 70%, check which audio objects are running.</div>

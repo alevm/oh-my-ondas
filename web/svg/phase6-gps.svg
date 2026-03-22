@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 380">
+<style>
+    text { font-family: 'Courier New', monospace; }
+    .fade { opacity: 0; }
+    .s1 { animation: fadeIn 0.6s ease forwards 0.5s; }
+    .s2 { animation: fadeIn 0.6s ease forwards 2.0s; }
+    .s3 { animation: fadeIn 0.6s ease forwards 3.5s; }
+    .s4 { animation: fadeIn 0.6s ease forwards 5.0s; }
+    .w1 { stroke-dasharray: 300; stroke-dashoffset: 300; animation: draw 0.8s ease forwards 1.5s; }
+    .pulse { animation: pulse 2s ease infinite 4.0s; }
+    .blink { animation: blink 1s ease infinite 6.5s; opacity: 0; }
+    @keyframes fadeIn { to { opacity: 1; } }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    @keyframes pulse { 0%,100% { r: 4; opacity: 1; } 50% { r: 8; opacity: 0.4; } }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+</style>
+<rect width="900" height="380" fill="#0d0d0d"/>
+
+<text x="450" y="35" fill="#27ae60" font-size="20" font-weight="bold" text-anchor="middle">PHASE 6: GPS Location Stamps</text>
+<text x="450" y="55" fill="#555" font-size="12" text-anchor="middle">PA1010D with built-in antenna on I2C0</text>
+
+<!-- Teensy -->
+<rect x="300" y="75" width="300" height="50" rx="6" fill="#1a5c1a" stroke="#27ae60" stroke-width="2"/>
+<text x="450" y="102" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">TEENSY 4.1</text>
+
+<!-- Step 1: GPS module -->
+<g class="fade s1">
+    <rect x="60" y="170" width="260" height="110" rx="8" fill="#0a1a2a" stroke="#3498db" stroke-width="2"/>
+    <!-- Antenna patch -->
+    <rect x="80" y="185" width="50" height="50" rx="4" fill="#1a2a3a" stroke="#2980b9" stroke-width="1"/>
+    <text x="105" y="215" fill="#2980b9" font-size="20" text-anchor="middle">&#9737;</text>
+    <text x="190" y="210" fill="#5dade2" font-size="16" font-weight="bold" text-anchor="middle">PA1010D</text>
+    <text x="190" y="230" fill="#888" font-size="11" text-anchor="middle">GPS + GLONASS</text>
+    <text x="190" y="250" fill="#666" font-size="10" text-anchor="middle">I2C0: 0x10</text>
+    <text x="190" y="268" fill="#666" font-size="9" text-anchor="middle">SDA=18 SCL=19 VIN=3.3V</text>
+    <!-- Satellite signals -->
+    <circle class="pulse" cx="105" cy="175" r="4" fill="#3498db" opacity="0.8"/>
+    <circle class="pulse" cx="85" cy="165" r="4" fill="#3498db" opacity="0.6" style="animation-delay:4.5s"/>
+    <circle class="pulse" cx="125" cy="168" r="4" fill="#3498db" opacity="0.7" style="animation-delay:5.0s"/>
+</g>
+<line class="w1" x1="320" y1="210" x2="380" y2="125" stroke="#3498db" stroke-width="2"/>
+
+<!-- Step 2: OLED showing coords -->
+<g class="fade s2">
+    <rect x="560" y="160" width="280" height="140" rx="8" fill="#1a1a2e" stroke="#8e24aa" stroke-width="2"/>
+    <!-- OLED screen content -->
+    <rect x="580" y="175" width="240" height="90" rx="3" fill="#000" stroke="#333" stroke-width="1"/>
+    <text x="700" y="195" fill="#fff" font-size="11" text-anchor="middle">OH MY ONDAS</text>
+    <text x="700" y="215" fill="#27ae60" font-size="12" text-anchor="middle">Lat: 41.385063</text>
+    <text x="700" y="233" fill="#27ae60" font-size="12" text-anchor="middle">Lon:  2.173404</text>
+    <text x="700" y="251" fill="#f39c12" font-size="11" text-anchor="middle">Sats: 8 | Fix: 3D</text>
+    <text x="700" y="282" fill="#ce93d8" font-size="10" text-anchor="middle">SSD1306 OLED</text>
+    <text x="700" y="295" fill="#666" font-size="9" text-anchor="middle">Barcelona coordinates</text>
+</g>
+<g class="fade s2">
+    <line x1="560" y1="220" x2="520" y2="125" stroke="#8e24aa" stroke-width="1.5" stroke-dasharray="4"/>
+</g>
+
+<!-- Step 3: I2C0 bus scan -->
+<g class="fade s3">
+    <rect x="100" y="310" width="700" height="30" rx="4" fill="#0a0a0a" stroke="#333" stroke-width="1"/>
+    <text x="450" y="330" fill="#5dade2" font-size="11" text-anchor="middle">I2C0 scan: 0x0A (SGTL5000) + 0x10 (PA1010D) + 0x3C (SSD1306) + 0x48 (ADS1115) &mdash; 4 devices</text>
+</g>
+
+<!-- Step 4: outdoor note -->
+<g class="fade s4">
+    <rect x="250" y="310" width="400" height="25" rx="4" fill="#0a2a1a" stroke="#27ae60" stroke-width="1"/>
+    <text x="450" y="328" fill="#27ae60" font-size="10" text-anchor="middle">&#9888; Test OUTDOORS or near window &mdash; first fix 30-60 seconds</text>
+</g>
+
+<!-- Validation -->
+<g class="blink">
+    <rect x="200" y="348" width="500" height="30" rx="8" fill="#0a2a0a" stroke="#27ae60" stroke-width="2"/>
+    <text x="450" y="368" fill="#27ae60" font-size="14" font-weight="bold" text-anchor="middle">&#10003; BARCELONA COORDS ON OLED</text>
+</g>
+</svg>
