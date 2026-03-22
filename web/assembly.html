@@ -62,18 +62,6 @@
         .diagram-frame img {
             width: 100%; border-radius: 4px; display: block;
         }
-        .diagram-frame svg {
-            width: 100%; height: auto; display: block;
-        }
-        .diagram-frame object {
-            width: 100%; border-radius: 4px; display: block;
-        }
-        .replay-btn {
-            display: inline-block; margin-top: 8px; padding: 4px 14px;
-            background: #222; border: 1px solid #444; border-radius: 4px;
-            color: #888; font-size: 11px; cursor: pointer; font-family: 'Courier New', monospace;
-        }
-        .replay-btn:hover { background: #333; color: #ccc; }
         .diagram-label {
             font-size: 11px; color: #555; text-align: center; margin-top: 8px;
             font-family: 'Courier New', monospace;
@@ -180,9 +168,6 @@
         .set-aside li { font-size: 13px; color: #666; line-height: 1.7; }
         .set-aside strong { color: #888; }
 
-        /* SVG styling */
-        .svg-diagram text { font-family: 'Courier New', monospace; }
-
         /* Footer override */
         .page-footer { background: #111; border-top: 1px solid #222; }
         .page-footer span, .page-footer a { color: #555; }
@@ -264,18 +249,22 @@
                     <span>Teensy 4.1</span><span>Audio Shield Rev D2</span><span>SD Card (32GB)</span><span>Headphones</span>
                 </div>
                 <div class="phase-body">
-                    <div class="diagram-frame">
-                        <object id="svg-p1" type="image/svg+xml" data="svg/phase1-core-audio.svg">Phase 1 diagram</object>
-                        <p class="diagram-label">Animated: Teensy + Audio Shield stack &mdash; 7 steps <button class="replay-btn" onclick="document.getElementById('svg-p1').data='svg/phase1-core-audio.svg?t='+Date.now()">&#8635; Replay</button></p>
-                    </div>
-
                     <div class="step">
                         <div class="step-head">1.1 &mdash; Solder Audio Shield Headers</div>
-                        <div class="diagram-frame">
-                            <object id="svg-p1-solder" type="image/svg+xml" data="svg/phase1-soldering.svg">Soldering guide</object>
-                            <p class="diagram-label">Animated: How to solder the Audio Shield &mdash; 6 steps, cross-section view <button class="replay-btn" onclick="document.getElementById('svg-p1-solder').data='svg/phase1-soldering.svg?t='+Date.now()">&#8635; Replay</button></p>
-                        </div>
-                        <div class="callout-warn">The Teensy is your alignment jig. Stack the Audio Shield onto it BEFORE soldering &mdash; this guarantees all 28 pins line up. Solder on the <strong>top side</strong> of the Audio Shield. Do NOT solder to the Teensy itself.</div>
+                        <p>The Audio Shield Rev D2 stacks directly on top of the Teensy 4.1 via two rows of female headers. You need <strong>2 &times; 14-pin female headers</strong> (cut from a 40-pin strip).</p>
+
+                        <ol>
+                            <li><strong>Cut headers:</strong> Count 14 pins on the strip and cut with flush cutters. You need two 14-pin pieces. Cut on the 15th socket to avoid cracking pin 14.</li>
+                            <li><strong>Insert headers into Teensy:</strong> Push the two 14-pin female headers onto the Teensy's outer male pin rows (the two long rows of pins along each edge). The headers sit on top of the Teensy, sockets facing up.</li>
+                            <li><strong>Stack the Audio Shield on top:</strong> Place the Audio Shield board onto the headers so the shield's through-holes line up with all 28 header pins. The Audio Shield's 3.5mm jack should face the same end as the Teensy's USB port. <strong>The Teensy is your alignment jig</strong> &mdash; stacking before soldering guarantees all pins are straight and spaced correctly.</li>
+                            <li><strong>Solder from the TOP of the Audio Shield:</strong> Flip the stack so the Audio Shield PCB is on the bottom. The header pins now poke through the Audio Shield's top surface. Solder each pin where it comes through the Audio Shield PCB. Do NOT solder anything to the Teensy itself.</li>
+                            <li><strong>Technique:</strong> Heat the pad and pin together for 2 seconds, feed solder until it flows around the pin and wets the pad. Move to the next pin. Do corners first to lock alignment, then fill in the rest.</li>
+                            <li><strong>Separate:</strong> After all 28 joints cool, gently pull the Audio Shield off the Teensy. Inspect every joint &mdash; look for bridges between adjacent pins and cold joints (dull/blobby). Reflow any bad joints.</li>
+                        </ol>
+
+                        <div class="callout-warn">The Audio Shield connects to the Teensy through these pins: <strong>I2S audio</strong> (7, 20, 21, 23), <strong>I2C control</strong> (18, 19 &mdash; SGTL5000 codec at 0x0A), and <strong>power</strong> (3.3V, GND, VIN). All of these are on the outer pin rows you just soldered. No extra wiring needed &mdash; the header connection carries everything.</div>
+
+                        <div class="callout-tip">If you've never soldered headers before: practice on a spare piece of perfboard first. The key mistakes are (1) not heating long enough so solder blobs instead of flowing, and (2) moving the board while the joint cools, creating a cold joint. PJRC has photos of the correct stack at <code>pjrc.com/store/teensy3_audio.html</code>.</div>
                     </div>
 
                     <div class="step">
@@ -325,11 +314,6 @@
                     <span>CAP1188 Breakout</span><span>Copper Tape 5mm</span><span>10K&ohm; Resistors &times;2</span><span>Jumper Wires</span>
                 </div>
                 <div class="phase-body">
-                    <div class="diagram-frame">
-                        <object id="svg-p2" type="image/svg+xml" data="svg/phase2-touch.svg">Phase 2 diagram</object>
-                        <p class="diagram-label">Animated: CAP1188 wiring + touch pads &mdash; 6 steps <button class="replay-btn" onclick="document.getElementById('svg-p2').data='svg/phase2-touch.svg?t='+Date.now()">&#8635; Replay</button></p>
-                    </div>
-
                     <div class="step">
                         <div class="step-head">2.1 &mdash; Wire CAP1188 to I2C1</div>
                         <table class="wire-table">
@@ -374,11 +358,6 @@ cap.begin(0x29, &amp;Wire1);  // I2C1 at 0x29</code></pre>
                     <span>SSD1306 OLED 0.96&Prime;</span><span>ILI9341 2.8&Prime; TFT</span><span>WS2812B NeoPixel &times;8</span><span>470&ohm; Resistor</span>
                 </div>
                 <div class="phase-body">
-                    <div class="diagram-frame">
-                        <object id="svg-p3" type="image/svg+xml" data="svg/phase3-displays.svg">Phase 3 diagram</object>
-                        <p class="diagram-label">Animated: OLED + LCD + NeoPixels wiring &mdash; 5 steps <button class="replay-btn" onclick="document.getElementById('svg-p3').data='svg/phase3-displays.svg?t='+Date.now()">&#8635; Replay</button></p>
-                    </div>
-
                     <div class="step">
                         <div class="step-head">3.1 &mdash; Wire OLED</div>
                         <table class="wire-table">
@@ -430,12 +409,6 @@ cap.begin(0x29, &amp;Wire1);  // I2C1 at 0x29</code></pre>
                     <span>ADS1115 16-bit ADC</span><span>Slide Pots &times;5</span><span>100nF Caps &times;5</span>
                 </div>
                 <div class="phase-body">
-                    <!-- SVG Diagram: Phase 4 -->
-                    <div class="diagram-frame">
-                        <object id="svg-p4" type="image/svg+xml" data="svg/phase4-faders.svg">Phase diagram</object>
-                        <p class="diagram-label">Animated: ADS1115 + Slide Faders wiring &mdash; 5 steps <button class="replay-btn" onclick="document.getElementById('svg-p4').data='svg/phase4-faders.svg?t='+Date.now()">&#8635; Replay</button></p>
-                    </div>
-
                     <div class="step">
                         <div class="step-head">4.1 &mdash; Wire ADS1115</div>
                         <table class="wire-table">
@@ -483,12 +456,6 @@ ads.begin(0x48, &amp;Wire);
                     <span>Buttons &times;4</span><span>5-Way Nav Switch</span><span>100nF Caps &times;2</span>
                 </div>
                 <div class="phase-body">
-                    <!-- SVG Diagram: Phase 5 -->
-                    <div class="diagram-frame">
-                        <object id="svg-p5" type="image/svg+xml" data="svg/phase5-io-expansion.svg">Phase diagram</object>
-                        <p class="diagram-label">Animated: Buttons + MCP23017 + Encoders + Nav &mdash; 5 steps <button class="replay-btn" onclick="document.getElementById('svg-p5').data='svg/phase5-io-expansion.svg?t='+Date.now()">&#8635; Replay</button></p>
-                    </div>
-
                     <div class="step">
                         <div class="step-head">5.1 &mdash; Wire 4 Direct Buttons</div>
                         <table class="wire-table">
@@ -534,12 +501,6 @@ ads.begin(0x48, &amp;Wire);
                     <span>PA1010D GPS (STEMMA QT)</span>
                 </div>
                 <div class="phase-body">
-                    <!-- SVG Diagram: Phase 6 -->
-                    <div class="diagram-frame">
-                        <object id="svg-p6" type="image/svg+xml" data="svg/phase6-gps.svg">Phase diagram</object>
-                        <p class="diagram-label">Animated: PA1010D GPS wiring &mdash; 4 steps <button class="replay-btn" onclick="document.getElementById('svg-p6').data='svg/phase6-gps.svg?t='+Date.now()">&#8635; Replay</button></p>
-                    </div>
-
                     <div class="step">
                         <div class="step-head">6.1 &mdash; Wire GPS</div>
                         <table class="wire-table">
@@ -579,12 +540,6 @@ GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);</code></pre>
                     <span>SparkFun ESP32-S2 Thing Plus</span>
                 </div>
                 <div class="phase-body">
-                    <!-- SVG Diagram: Phase 7 -->
-                    <div class="diagram-frame">
-                        <object id="svg-p7" type="image/svg+xml" data="svg/phase7-wifi.svg">Phase diagram</object>
-                        <p class="diagram-label">Animated: ESP32-S2 UART link &mdash; 4 steps <button class="replay-btn" onclick="document.getElementById('svg-p7').data='svg/phase7-wifi.svg?t='+Date.now()">&#8635; Replay</button></p>
-                    </div>
-
                     <div class="step">
                         <div class="step-head">7.1 &mdash; Program ESP32 Separately First</div>
                         <p>Flash WiFi test via its own USB port before wiring to Teensy. Verify it connects to your network.</p>
@@ -630,12 +585,6 @@ if (Serial1.available()) {
                 </div>
                 <div class="phase-parts-bar"><span>Everything</span></div>
                 <div class="phase-body">
-                    <!-- SVG Diagram: Phase 8 integration checklist -->
-                    <div class="diagram-frame">
-                        <object id="svg-p8" type="image/svg+xml" data="svg/phase8-integration.svg">Phase diagram</object>
-                        <p class="diagram-label">Animated: Integration checklist &mdash; 12 checks <button class="replay-btn" onclick="document.getElementById('svg-p8').data='svg/phase8-integration.svg?t='+Date.now()">&#8635; Replay</button></p>
-                    </div>
-
                     <div class="callout-tip">Run health monitor in loop() &mdash; print CPU% and memory every 5 seconds. If CPU exceeds 70%, check which audio objects are running.</div>
 
                     <div class="validation-bar">&#10003; VALIDATION: All 12 checks pass &mdash; prototype complete</div>
