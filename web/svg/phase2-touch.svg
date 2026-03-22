@@ -41,7 +41,7 @@
 
 <!-- Step 2: I2C1 wires connect -->
 <g class="fade s2">
-    <text x="50" y="230" fill="#444" font-size="10">STEP 2: Wire to I2C1 (Wire1) &mdash; NOT the same bus as Audio Shield</text>
+    <text x="50" y="230" fill="#444" font-size="10">STEP 2: Wire to I2C1 (Wire1) — NOT the same bus as Audio Shield</text>
 </g>
 <!-- SDA wire -->
 <line class="w1" x1="270" y1="120" x2="450" y2="120" stroke="#e67e22" stroke-width="2.5"/>

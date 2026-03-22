@@ -141,6 +141,6 @@
 <!-- Validation -->
 <g class="blink">
     <rect x="130" y="478" width="640" height="36" rx="8" fill="#0a2a0a" stroke="#27ae60" stroke-width="2"/>
-    <text x="450" y="501" fill="#27ae60" font-size="13" font-weight="bold" text-anchor="middle">&#10003; 7 ENCODERS + 4 BUTTONS + NAV SWITCH &mdash; ALL RESPOND</text>
+    <text x="450" y="501" fill="#27ae60" font-size="13" font-weight="bold" text-anchor="middle">&#10003; 7 ENCODERS + 4 BUTTONS + NAV SWITCH — ALL RESPOND</text>
 </g>
 </svg>

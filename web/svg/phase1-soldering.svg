@@ -35,7 +35,7 @@
 
 <!-- Title -->
 <text x="450" y="30" fill="#f39c12" font-size="20" font-weight="bold" text-anchor="middle">HOW TO SOLDER: Audio Shield onto Teensy 4.1</text>
-<text x="450" y="50" fill="#555" font-size="12" text-anchor="middle">The most critical step &mdash; alignment determines everything</text>
+<text x="450" y="50" fill="#555" font-size="12" text-anchor="middle">The most critical step — alignment determines everything</text>
 
 <!-- ==================== STEP 1: Cut headers ==================== -->
 <g class="fade s1">
@@ -64,19 +64,19 @@
         <rect x="194" y="112" width="6" height="12" rx="1"/>
         <rect x="202" y="112" width="6" height="12" rx="1"/>
     </g>
-    <text x="82" y="142" fill="#888" font-size="9">|&lt;&mdash;&mdash;&mdash;&mdash;&mdash; 14 pins &mdash;&mdash;&mdash;&mdash;&mdash;&gt;|</text>
+    <text x="82" y="142" fill="#888" font-size="9">|&lt;————— 14 pins —————&gt;|</text>
 
     <!-- Cut line -->
     <line x1="192" y1="105" x2="192" y2="135" stroke="#e74c3c" stroke-width="2" stroke-dasharray="4"/>
     <text x="200" y="148" fill="#e74c3c" font-size="9">&#9986; cut here</text>
 
     <!-- Result -->
-    <text x="440" y="115" fill="#888" font-size="11">&rarr;</text>
+    <text x="440" y="115" fill="#888" font-size="11">→</text>
 
     <!-- Cut piece x2 -->
     <rect x="480" y="110" width="112" height="16" rx="2" fill="#1a1a1a" stroke="#27ae60" stroke-width="1.5"/>
     <text x="536" y="123" fill="#27ae60" font-size="8" text-anchor="middle">14-pin female</text>
-    <text x="610" y="123" fill="#888" font-size="11">&times;2</text>
+    <text x="610" y="123" fill="#888" font-size="11">×2</text>
 
     <rect x="640" y="110" width="112" height="16" rx="2" fill="#1a1a1a" stroke="#27ae60" stroke-width="1.5"/>
     <text x="696" y="123" fill="#27ae60" font-size="8" text-anchor="middle">14-pin female</text>
@@ -118,7 +118,7 @@
     <text x="80" y="250" fill="#5dade2" font-size="10">Push headers</text>
     <text x="80" y="265" fill="#5dade2" font-size="10">through from</text>
     <text x="80" y="280" fill="#5dade2" font-size="10" font-weight="bold">BOTTOM side</text>
-    <text x="130" y="255" fill="#5dade2" font-size="16">&rarr;</text>
+    <text x="130" y="255" fill="#5dade2" font-size="16">→</text>
 
     <!-- Female header being inserted (shown below) -->
     <g class="drop">

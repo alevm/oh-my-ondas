@@ -37,7 +37,7 @@
 </g>
 <line class="w1" x1="240" y1="230" x2="300" y2="110" stroke="#3498db" stroke-width="2"/>
 <g class="fade s1">
-    <text x="40" y="340" fill="#444" font-size="10">STEP 1: OLED &rarr; SDA=pin 18, SCL=pin 19, VCC=3.3V, GND</text>
+    <text x="40" y="340" fill="#444" font-size="10">STEP 1: OLED → SDA=pin 18, SCL=pin 19, VCC=3.3V, GND</text>
     <text x="40" y="355" fill="#3498db" font-size="9">I2C0 scan: 0x0A (audio) + 0x3C (OLED)</text>
 </g>
 
@@ -100,6 +100,6 @@
 <!-- Validation -->
 <g class="blink">
     <rect x="150" y="500" width="600" height="40" rx="8" fill="#0a2a0a" stroke="#27ae60" stroke-width="2"/>
-    <text x="450" y="525" fill="#27ae60" font-size="14" font-weight="bold" text-anchor="middle">&#10003; OLED + LCD + NeoPixels &mdash; AUDIO STILL CLEAN</text>
+    <text x="450" y="525" fill="#27ae60" font-size="14" font-weight="bold" text-anchor="middle">&#10003; OLED + LCD + NeoPixels — AUDIO STILL CLEAN</text>
 </g>
 </svg>

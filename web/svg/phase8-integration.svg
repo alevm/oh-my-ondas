@@ -30,13 +30,13 @@
 <rect width="900" height="480" fill="#0d0d0d"/>
 
 <text x="450" y="35" fill="#27ae60" font-size="22" font-weight="bold" text-anchor="middle">PHASE 8: Full Integration Test</text>
-<text x="450" y="55" fill="#555" font-size="12" text-anchor="middle">All systems running simultaneously &mdash; no conflicts</text>
+<text x="450" y="55" fill="#555" font-size="12" text-anchor="middle">All systems running simultaneously — no conflicts</text>
 
 <!-- Central Teensy -->
 <g class="fade s1">
     <rect x="320" y="75" width="260" height="60" rx="8" fill="#1a5c1a" stroke="#27ae60" stroke-width="3"/>
     <text x="450" y="105" fill="#fff" font-size="16" font-weight="bold" text-anchor="middle">TEENSY 4.1</text>
-    <text x="450" y="125" fill="#8fce8f" font-size="10" text-anchor="middle">600MHz &mdash; Target: CPU &lt; 70%</text>
+    <text x="450" y="125" fill="#8fce8f" font-size="10" text-anchor="middle">600MHz — Target: CPU &lt; 70%</text>
 </g>
 
 <!-- Surrounding subsystems with connections -->
