@@ -857,6 +857,8 @@
             <a href="architecture.html" class="nav-link secondary">Arch</a>
             <a href="analysis.html" class="nav-link secondary">Analysis</a>
             <a href="sdlc.html" class="nav-link secondary">SDLC</a>
+            <a href="assembly.html" class="nav-link secondary">Assembly</a>
+            <a href="build-log.html" class="nav-link secondary">Build Log</a>
         </nav>
     </header>
 
@@ -1156,8 +1158,9 @@
             <div class="diy-col">
                 <h4>Brain + Display</h4>
                 <ul>
-                    <li>Raspberry Pi 4 (4GB) <span class="cost">~$55</span></li>
-                    <li>5" HDMI LCD (non-touch) <span class="cost">~$28</span></li>
+                    <li>Teensy 4.1 (Main CPU) <span class="cost">~$32</span></li>
+                    <li>ESP32 (WiFi/GPS Module) <span class="cost">~$8</span></li>
+                    <li>5" ILI9341 LCD (non-touch) <span class="cost">~$28</span></li>
                     <li>I2S DAC (PCM5102A) <span class="cost">~$8</span></li>
                     <li>USB/MEMS Microphone <span class="cost">~$10</span></li>
                     <li>Piezo Contact Mic <span class="cost">~$5</span></li>
@@ -1180,14 +1183,14 @@
                 <ul>
                     <li>3D Printed Case (PLA) <span class="cost">~$15</span></li>
                     <li>Wires, Headers, Standoffs <span class="cost">~$10</span></li>
-                    <li class="diy-total">Estimated Total <span class="cost">~$201</span></li>
+                    <li class="diy-total">Estimated Total <span class="cost">~$196</span></li>
                 </ul>
                 <div class="diy-badge">FEASIBILITY: HIGH</div>
                 <ul style="margin-top: 8px;">
                     <li>No custom PCB required</li>
                     <li>Through-hole soldering only</li>
-                    <li>Pi GPIO + MCP23017 expanders</li>
-                    <li>Chromium kiosk for the UI</li>
+                    <li>Teensy GPIO + MCP23017 expanders</li>
+                    <li>ESP32 handles WiFi + GPS</li>
                 </ul>
             </div>
         </div>
@@ -1195,7 +1198,7 @@
 
     <footer class="page-footer">
         <span>Oh My Ondas v2.5.2</span>
-        <span>GPL-3.0 License</span>
+        <span>AGPL-3.0 License</span>
         <a href="https://github.com/alevm/oh-my-ondas" target="_blank" rel="noopener noreferrer">GitHub</a>
     </footer>
 

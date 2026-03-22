@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Oh My Ondas build log: all hardware components received in Barcelona, March 2026. Three orders, three countries, one workbench.">
+    <meta property="og:title" content="Build Log - Oh My Ondas">
+    <meta property="og:description" content="All components received for the Oh My Ondas prototype. Teensy 4.1, Audio Shield, GPS, touch sensing, displays, and more.">
+    <title>Build Log - Oh My Ondas</title>
+    <link rel="stylesheet" href="css/style.css?v=254">
+    <style>
+        body { overflow: auto; }
+        .page-container {
+            position: relative; z-index: 1; min-height: 100vh;
+            background: rgba(255,255,255,0.75); display: flex; flex-direction: column;
+        }
+        .page-content {
+            max-width: 800px; margin: 0 auto; padding: 40px 24px; flex: 1;
+        }
+        .page-title {
+            font-size: 32px; font-weight: 800; color: var(--accent);
+            margin-bottom: 8px; border-bottom: 3px solid var(--border); padding-bottom: 16px;
+        }
+        .page-subtitle {
+            font-size: 14px; color: #888; margin-bottom: 32px;
+        }
+        .page-content h2 {
+            font-size: 22px; font-weight: 700; color: var(--text); margin: 36px 0 12px 0;
+        }
+        .page-content p {
+            font-size: 15px; line-height: 1.75; color: var(--text); margin-bottom: 16px;
+        }
+        .page-content a { color: var(--accent); text-decoration: none; font-weight: 600; }
+        .page-content a:hover { text-decoration: underline; }
+        .page-content strong { font-weight: 700; }
+        .page-content em { font-style: italic; }
+        .page-content code {
+            background: #f0f0f0; padding: 2px 6px; border-radius: 3px;
+            font-family: 'Courier New', monospace; font-size: 13px;
+        }
+
+        /* Photo collages */
+        .blog-image {
+            width: 100%; border-radius: 8px; margin: 24px 0;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+        }
+        .blog-image-caption {
+            font-size: 12px; color: #888; text-align: center;
+            margin: -16px 0 24px 0;
+        }
+
+        /* Build phases list */
+        .build-phases {
+            counter-reset: phase;
+            list-style: none; padding: 0; margin: 16px 0;
+        }
+        .build-phases li {
+            counter-increment: phase;
+            padding: 8px 0 8px 40px; position: relative;
+            font-size: 15px; line-height: 1.6; color: var(--text);
+            border-bottom: 1px solid #eee;
+        }
+        .build-phases li:last-child { border-bottom: none; }
+        .build-phases li::before {
+            content: counter(phase);
+            position: absolute; left: 0; top: 8px;
+            background: var(--accent); color: #fff; font-weight: 700;
+            width: 28px; height: 28px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 13px;
+        }
+        .build-phases li strong { font-weight: 700; }
+
+        /* What's next callout */
+        .whats-next {
+            background: #e8f5e9; border-left: 4px solid #27ae60;
+            padding: 16px 20px; margin: 24px 0; border-radius: 0 8px 8px 0;
+        }
+        .whats-next p { margin-bottom: 8px; }
+        .whats-next p:last-child { margin-bottom: 0; }
+
+        /* License footer */
+        .blog-license {
+            margin-top: 40px; padding-top: 20px; border-top: 2px solid var(--border);
+            font-size: 13px; color: #888; font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div id="mapBackground" class="map-bg"></div>
+
+    <div class="page-container">
+        <header class="page-header">
+            <a href="index.html" class="logo">OH MY ONDAS</a>
+            <nav class="nav-links" aria-label="Main navigation">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="app.html" class="nav-link">App</a>
+                <a href="about.html" class="nav-link">About</a>
+                <a href="design.html" class="nav-link secondary">Design</a>
+                <a href="prototype.html" class="nav-link secondary">Prototype</a>
+                <a href="architecture.html" class="nav-link secondary">Arch</a>
+                <a href="assembly.html" class="nav-link secondary">Assembly</a>
+                <a href="build-log.html" class="nav-link secondary active">Build Log</a>
+            </nav>
+        </header>
+
+        <main class="page-content">
+            <h1 class="page-title">All Components Received &mdash; Build Begins</h1>
+            <p class="page-subtitle">March 2026 &middot; Barcelona</p>
+
+            <p>After months of sourcing components across three countries and four suppliers, every part for the Oh My Ondas prototype is now on the workbench in Barcelona. The wooden drawer organizer is loaded, the soldering station is warm, and the breadboards are fresh out of the packaging.</p>
+
+            <img src="images/oh-my-ondas-components-overview.jpg" alt="All components laid out on the workbench" class="blog-image">
+            <p class="blog-image-caption">All components across three orders &mdash; Teensy, Audio Shield, ESP32, GPS, touch, displays, encoders, faders, and prototyping supplies</p>
+
+            <h2>What Arrived</h2>
+
+            <p>The components came from three separate orders, timed around travel between Barcelona and Brussels, with a US stopover in Denver:</p>
+
+            <p><strong>Antratek Belgium</strong> delivered the core brain: a Teensy 4.1 with pre-soldered pins, the Audio Shield Rev D2 (SGTL5000 codec with headphone amp), and a SparkFun ESP32-S2 Thing Plus for WiFi connectivity. These arrived in Brussels in January and traveled to Barcelona by hand.</p>
+
+            <p><strong>Diotronic Barcelona</strong> provided the interface components and all the prototyping supplies &mdash; rotary encoders, tactile buttons, a 0.96&Prime; OLED display, copper tape for capacitive touch pads, NeoPixel strip, 3.5mm audio jacks, pin headers, DIP sockets, passives, breadboards, jumper wires, and soldering supplies. A single walk-in visit to their shop on Carrer de Muntaner.</p>
+
+            <p><strong>Adafruit</strong> (shipped to the US, carried back) filled the gaps Diotronic couldn&rsquo;t: GPS module (PA1010D with built-in antenna), CAP1188 capacitive touch breakout, ADS1115 16-bit ADC for reading slide faders, MCP23017 I/O expanders for the encoder matrix, a 5-way navigation switch, slide potentiometers, rainbow encoder knobs, and a 2.8&Prime; ILI9341 TFT LCD with touchscreen. Plus a backup Teensy and Audio Shield.</p>
+
+            <img src="images/oh-my-ondas-core-brain.jpg" alt="Core brain: Teensy 4.1, Audio Shield Rev D2, ESP32-S2 Thing Plus" class="blog-image">
+            <p class="blog-image-caption">Core Brain Stack &mdash; Teensy 4.1 (Primary), Audio Shield Rev D2, ESP32-S2 Thing Plus</p>
+
+            <h2>The Core Stack</h2>
+
+            <p>The heart of Oh My Ondas is a Teensy 4.1 running at 600MHz with the PJRC Audio Library &mdash; a real-time DSP toolkit that handles sample playback, effects, mixing, and recording simultaneously. The Audio Shield sits directly on top, providing the SGTL5000 codec for CD-quality 16-bit/44.1kHz audio in and out through a 3.5mm headphone jack.</p>
+
+            <p>The SanDisk Ultra 32GB SD card is already seated in the Teensy&rsquo;s built-in SDIO slot &mdash; faster and more reliable than the SPI-based slot on the Audio Shield, and it frees up the SPI bus for the display.</p>
+
+            <p>The ESP32-S2 Thing Plus handles all WiFi communication. It runs independently with its own firmware, talking to the Teensy over UART. In the final device, it connects to the Claude API for AI-assisted composition &mdash; but that&rsquo;s a later phase.</p>
+
+            <img src="images/oh-my-ondas-interface-components.jpg" alt="Interface and sensing components" class="blog-image">
+            <p class="blog-image-caption">Interface &amp; Sensing &mdash; CAP1188 Touch, ADS1115 ADC, Slide Pots, Rainbow Knobs, 5-Way Nav, 2.8&Prime; ILI9341</p>
+
+            <h2>Sensing the World</h2>
+
+            <p>The interface layer is where Oh My Ondas becomes a proper instrument:</p>
+
+            <p>The <strong>CAP1188</strong> provides 8 capacitive touch channels &mdash; each connected to a copper tape pad that becomes a sample trigger. Touch a pad, hear a sound. The copper tape from Diotronic is 5mm wide and 25 meters long &mdash; enough for dozens of pad iterations.</p>
+
+            <p>The <strong>ADS1115</strong> is a 16-bit ADC that reads the five 45mm slide potentiometers. Four pots connect directly to its four channels; the fifth reads through the Teensy&rsquo;s built-in ADC. Each fader controls a different parameter &mdash; mix level, effect depth, modulation, tempo, and crossfade.</p>
+
+            <p>The <strong>PA1010D GPS</strong> has a built-in patch antenna and supports GPS + GLONASS. Every recording gets stamped with exact coordinates and time &mdash; the core of the place-time binding philosophy. First fix takes about 30 seconds outdoors, which is fine for pedestrian exploration.</p>
+
+            <p>Two <strong>MCP23017</strong> I/O expanders add 32 GPIO pins over I2C, enough to read 7 rotary encoders (with push switches) and the 5-way navigation switch. The encoders use the colorful Adafruit Rainbow Micro Knobs &mdash; each a different color for quick visual identification of function.</p>
+
+            <p>The <strong>2.8&Prime; ILI9341 TFT</strong> with resistive touch replaces the originally planned 3.5&Prime; display. Smaller, but the ILI9341_t3 library is the gold standard for Teensy &mdash; DMA-accelerated, extremely fast screen updates with zero CPU overhead. It&rsquo;ll show waveforms, GPS status, pattern grids, and menu navigation.</p>
+
+            <img src="images/oh-my-ondas-workshop.jpg" alt="Workshop setup with organizer and supplies" class="blog-image">
+            <p class="blog-image-caption">Workshop &amp; Supplies &mdash; wooden organizer, breadboards, Diotronic haul, headers &amp; sockets, copper tape, solder wire</p>
+
+            <h2>The Workshop</h2>
+
+            <p>The build station is set up on the desk in Barcelona. A wooden multi-drawer organizer keeps components sorted by type. The Diotronic soldering station (48W, temperature controlled) is ready alongside solder wire, flux paste, and two 830-point breadboards for prototyping.</p>
+
+            <p>The build follows an iterative validate-then-expand approach &mdash; eight phases, each ending with a working test before adding the next layer:</p>
+
+            <ol class="build-phases">
+                <li><strong>Core Audio</strong> &mdash; Teensy + Audio Shield + SD card + headphones. Goal: hear a WAV file.</li>
+                <li><strong>Touch Sensing</strong> &mdash; CAP1188 + copper pads. Goal: touch triggers samples.</li>
+                <li><strong>Display</strong> &mdash; OLED + LCD + NeoPixels. Goal: see status while hearing audio.</li>
+                <li><strong>Analog Inputs</strong> &mdash; ADS1115 + slide pots. Goal: faders control parameters.</li>
+                <li><strong>I/O Expansion</strong> &mdash; MCP23017 + encoders + buttons + nav switch. Goal: full interface.</li>
+                <li><strong>GPS</strong> &mdash; PA1010D. Goal: coordinates on display.</li>
+                <li><strong>WiFi</strong> &mdash; ESP32 UART link. Goal: Teensy and ESP32 communicate.</li>
+                <li><strong>Integration</strong> &mdash; everything running simultaneously. Goal: no conflicts.</li>
+            </ol>
+
+            <div class="whats-next">
+                <p><strong>What&rsquo;s Next</strong></p>
+                <p>Phase 1 starts now. The Audio Shield needs female headers soldered to its underside so it can stack onto the Teensy&rsquo;s pre-soldered male pins. Then it&rsquo;s SD card, headphones, flash the WavFilePlayer example, and listen.</p>
+                <p>The design reviews (hardware architecture, pin allocation, electrical analysis) are complete. Every pin conflict, I2C bus split, power budget issue, and signal integrity concern has been documented and resolved on paper. Now it&rsquo;s time to find out what the breadboard thinks about all that planning.</p>
+                <p>Step-by-step wiring and code for each phase: <a href="assembly.html">Assembly Instructions</a></p>
+            </div>
+
+            <p class="blog-license">Oh My Ondas is a GPS-location-aware portable field recording and sampling instrument for pedestrian urban exploration. Licensed under AGPL v3 (firmware), CERN OHL-S v2 (hardware), CC BY-NC-SA 4.0 (documentation).</p>
+        </main>
+
+        <footer class="page-footer">
+            <span>Oh My Ondas v2.5.2</span>
+            <span>AGPL-3.0 License</span>
+            <a href="https://github.com/alevm/oh-my-ondas" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </footer>
+    </div>
+</body>
+</html>

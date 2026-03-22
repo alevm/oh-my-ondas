@@ -1023,6 +1023,8 @@
                 <a href="architecture.html" class="nav-link secondary">Arch</a>
                 <a href="analysis.html" class="nav-link secondary">Analysis</a>
                 <a href="sdlc.html" class="nav-link secondary">SDLC</a>
+                <a href="assembly.html" class="nav-link secondary">Assembly</a>
+                <a href="build-log.html" class="nav-link secondary">Build Log</a>
             </nav>
         </header>
 
@@ -1544,7 +1546,7 @@
                     <ul>
                         <li>Size: <code>300 x 200 x 50mm</code></li>
                         <li>Weight: <code>~800g</code></li>
-                        <li>Display: 5" IPS LCD (800x480, SPI)</li>
+                        <li>Display: 2.8" ILI9341 TFT (320x240, SPI DMA)</li>
                         <li>Battery: 3-4 hours (3500mAh)</li>
                     </ul>
                 </div>
@@ -1558,66 +1560,85 @@
                 </thead>
                 <tbody>
                     <tr><td>Audio Shield (I2S)</td><td><span class="pin-num">2, 7, 20, 21, 23</span></td><td>I2S</td><td>SGTL5000 codec (RESERVED)</td></tr>
-                    <tr><td>Touch Sensor (MPR121)</td><td><span class="pin-num">18, 19, 15</span></td><td>I2C + IRQ</td><td>Address: 0x5A, IRQ on pin 15</td></tr>
-                    <tr><td>5" LCD Display</td><td><span class="pin-num">36, 37, 38</span></td><td>SPI</td><td>ILI9488/RA8875 (CS, DC, RST)</td></tr>
-                    <tr><td>Encoders 1-4</td><td><span class="pin-num">3-6, 8-12, 14, 24-25</span></td><td>GPIO</td><td>CLK, DT, SW per encoder</td></tr>
-                    <tr><td>Buttons</td><td><span class="pin-num">26-29</span></td><td>GPIO</td><td>MODE, SHIFT, REC, PLAY</td></tr>
-                    <tr><td>NeoPixel LEDs</td><td><span class="pin-num">30</span></td><td>WS2812</td><td>8x RGB</td></tr>
-                    <tr><td>ESP32</td><td><span class="pin-num">16, 17</span></td><td>UART</td><td>Serial2 @ 115200</td></tr>
-                    <tr><td>GPIO Expander</td><td><span class="pin-num">18, 19</span></td><td>I2C</td><td>2x MCP23017 for extra encoders</td></tr>
+                    <tr><td>Touch Sensor (CAP1188)</td><td><span class="pin-num">16, 17</span></td><td>I2C1</td><td>Address: 0x29 on Wire1</td></tr>
+                    <tr><td>2.8" ILI9341 LCD</td><td><span class="pin-num">10, 11, 12, 13, 9, 15</span></td><td>SPI</td><td>CS=10, DC=9, RST=15 (DMA)</td></tr>
+                    <tr><td>Buttons (direct)</td><td><span class="pin-num">2, 3, 4, 5</span></td><td>GPIO</td><td>MODE, SHIFT, REC, PLAY</td></tr>
+                    <tr><td>NeoPixel LEDs</td><td><span class="pin-num">6</span></td><td>WS2812</td><td>8x RGB (470&ohm; series)</td></tr>
+                    <tr><td>ESP32-S2</td><td><span class="pin-num">0, 1</span></td><td>UART</td><td>Serial1 @ 115200</td></tr>
+                    <tr><td>MCP23017 &times;2</td><td><span class="pin-num">16, 17</span></td><td>I2C1</td><td>0x20 + 0x21 on Wire1 (encoders + nav)</td></tr>
+                    <tr><td>GPS (PA1010D)</td><td><span class="pin-num">18, 19</span></td><td>I2C</td><td>Address: 0x10 on Wire</td></tr>
+                    <tr><td>ADS1115 ADC</td><td><span class="pin-num">18, 19</span></td><td>I2C</td><td>Address: 0x48 on Wire (faders)</td></tr>
                     <tr><td>SD Card</td><td><span class="pin-num">Built-in</span></td><td>SDIO</td><td>64GB for samples</td></tr>
                 </tbody>
             </table>
 
             <!-- Bill of Materials -->
-            <h2 class="section-header">Bill of Materials v3.1</h2>
-            <p style="color:#888; font-size:12px; margin-bottom:10px;">European suppliers (Mouser.es, Farnell, Bricogeek) &mdash; prices verified Feb 2026</p>
+            <h2 class="section-header">Bill of Materials v3.2 &mdash; Actual Hardware Received</h2>
+            <p style="color:#888; font-size:12px; margin-bottom:10px;">Verified March 2026 &mdash; 3 orders from Antratek (BE), Diotronic (BCN), Adafruit (US)</p>
             <table class="bom-table">
                 <thead>
-                    <tr><th>Component</th><th>Description</th><th>Qty</th><th>Price</th></tr>
+                    <tr><th>#</th><th>Component</th><th>Source</th><th>Qty</th><th>Price</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td colspan="4" style="background:#1a1a1a;color:#27ae60;font-weight:700;">PROCESSORS & AUDIO</td></tr>
-                    <tr><td>Teensy 4.1</td><td>600MHz ARM Cortex-M7</td><td>1</td><td class="price">$29.75</td></tr>
-                    <tr><td>Audio Shield</td><td>SGTL5000 codec</td><td>1</td><td class="price">$13.75</td></tr>
-                    <tr><td>ESP32-WROOM</td><td>WiFi/BT module</td><td>1</td><td class="price">$8.00</td></tr>
-                    <tr><td>microSD Card</td><td>64GB sample storage</td><td>1</td><td class="price">$12.00</td></tr>
-                    <tr><td colspan="4" style="background:#1a1a1a;color:#3498db;font-weight:700;">DISPLAY</td></tr>
-                    <tr><td>5" IPS Display</td><td>800x480 SPI LCD (ILI9488)</td><td>1</td><td class="price">$55.00</td></tr>
-                    <tr><td colspan="4" style="background:#1a1a1a;color:#1270b8;font-weight:700;">USER INTERFACE</td></tr>
-                    <tr><td>MPR121 Breakout</td><td>12-ch touch sensor</td><td>1</td><td class="price">$7.95</td></tr>
-                    <tr><td>Copper Tape</td><td>Conductive, for pads</td><td>1</td><td class="price">$6.00</td></tr>
-                    <tr><td>Rotary Encoders</td><td>With push button</td><td>13</td><td class="price">$20.00</td></tr>
-                    <tr><td>Encoder Knobs</td><td>Aluminum 18mm</td><td>13</td><td class="price">$18.00</td></tr>
-                    <tr><td>Slide Faders</td><td>45mm mixer faders</td><td>4</td><td class="price">$12.00</td></tr>
-                    <tr><td>Tactile Buttons</td><td>Mode/Nav/Func (6x6mm)</td><td>16</td><td class="price">$5.00</td></tr>
-                    <tr><td>DJ Crossfader</td><td>45mm slide</td><td>1</td><td class="price">$12.00</td></tr>
-                    <tr><td>5-Way Joystick</td><td>Navigation module</td><td>1</td><td class="price">$2.00</td></tr>
-                    <tr><td colspan="4" style="background:#1a1a1a;color:#e67e22;font-weight:700;">CONNECTIVITY & POWER</td></tr>
-                    <tr><td>GPS Module</td><td>NEO-6M with antenna</td><td>1</td><td class="price">$12.00</td></tr>
-                    <tr><td>Audio Jacks</td><td>3.5mm stereo</td><td>3</td><td class="price">$4.50</td></tr>
-                    <tr><td>USB-C Connector</td><td>Power + data</td><td>1</td><td class="price">$2.00</td></tr>
-                    <tr><td>LiPo Battery</td><td>3500mAh 3.7V</td><td>1</td><td class="price">$18.00</td></tr>
-                    <tr><td>TP4056 Charger</td><td>USB-C charging</td><td>1</td><td class="price">$2.00</td></tr>
-                    <tr><td>5V Boost</td><td>Battery converter</td><td>1</td><td class="price">$3.00</td></tr>
-                    <tr><td>MCP23017</td><td>I2C GPIO expander</td><td>2</td><td class="price">$4.00</td></tr>
-                    <tr><td colspan="4" style="background:#1a1a1a;color:#95a5a6;font-weight:700;">ENCLOSURE & MISC</td></tr>
-                    <tr><td>Enclosure</td><td>Aluminum 300x200x50mm</td><td>1</td><td class="price">$35.00</td></tr>
-                    <tr><td>Acrylic Panel</td><td>Laser-cut faceplate</td><td>1</td><td class="price">$18.00</td></tr>
-                    <tr><td>Prototype PCB</td><td>Custom 2-layer PCB</td><td>1</td><td class="price">$80.00</td></tr>
-                    <tr><td>Passives Kit</td><td>Caps, resistors, ferrites</td><td>-</td><td class="price">$15.00</td></tr>
-                    <tr><td>Hardware</td><td>Screws, standoffs, feet</td><td>-</td><td class="price">$8.00</td></tr>
-                    <tr><td>Wire/Connectors</td><td>Internal wiring, headers</td><td>-</td><td class="price">$12.00</td></tr>
-                    <tr class="bom-total"><td colspan="3">TOTAL (Parts)</td><td>~$420</td></tr>
-                    <tr><td colspan="3" style="color:#888;">+ Shipping/Tax (EU)</td><td style="color:#888;">~$60</td></tr>
-                    <tr class="bom-total" style="color:#27ae60;"><td colspan="3">GRAND TOTAL</td><td>~$480</td></tr>
+                    <tr class="bom-section"><td colspan="5" style="background:#1a1a1a;color:#27ae60;">PROCESSORS &amp; AUDIO</td></tr>
+                    <tr><td>1</td><td>Teensy 4.1 w/pins (600MHz Cortex-M7)</td><td>Antratek</td><td>1</td><td class="price">&euro;42.96</td></tr>
+                    <tr><td>2</td><td>Audio Shield Rev D2 (SGTL5000 codec)</td><td>Antratek</td><td>1</td><td class="price">&euro;11.85</td></tr>
+                    <tr><td>3</td><td>SparkFun ESP32-S2 Thing Plus (WiFi)</td><td>Antratek</td><td>1</td><td class="price">&euro;18.09</td></tr>
+                    <tr><td>4</td><td>microSD Card 32GB (SanDisk Ultra)</td><td>&mdash;</td><td>1</td><td class="price">&mdash;</td></tr>
+                    <tr><td>5</td><td>Teensy 4.1 w/pins (backup)</td><td>Adafruit</td><td>1</td><td class="price">$31.50</td></tr>
+                    <tr><td>6</td><td>Audio Shield Rev D (backup)</td><td>Adafruit</td><td>1</td><td class="price">$9.95</td></tr>
+
+                    <tr class="bom-section"><td colspan="5" style="background:#1a1a1a;color:#3498db;">DISPLAY</td></tr>
+                    <tr><td>7</td><td>2.8" ILI9341 TFT LCD w/touch (P1770)</td><td>Adafruit</td><td>1</td><td class="price">$39.95</td></tr>
+                    <tr><td>8</td><td>OLED SSD1306 0.96" I2C</td><td>Diotronic</td><td>1</td><td class="price">&mdash;</td></tr>
+
+                    <tr class="bom-section"><td colspan="5" style="background:#1a1a1a;color:#1270b8;">USER INTERFACE</td></tr>
+                    <tr><td>9</td><td>CAP1188 8-ch capacitive touch (P1602)</td><td>Adafruit</td><td>1</td><td class="price">$7.95</td></tr>
+                    <tr><td>10</td><td>Copper tape 5mm &times; 25m (touch pads)</td><td>Diotronic</td><td>1</td><td class="price">&mdash;</td></tr>
+                    <tr><td>11</td><td>Rotary encoder EC11 w/push switch</td><td>Diotronic</td><td>7</td><td class="price">&mdash;</td></tr>
+                    <tr><td>12</td><td>Rainbow Micro Knobs 10-pack (P5542)</td><td>Adafruit</td><td>2</td><td class="price">$9.90</td></tr>
+                    <tr><td>13</td><td>Slide pot 45mm B10K (P4272)</td><td>Adafruit</td><td>5</td><td class="price">$12.50</td></tr>
+                    <tr><td>14</td><td>Tactile button 6&times;5mm DTS61N</td><td>Diotronic</td><td>16</td><td class="price">&mdash;</td></tr>
+                    <tr><td>15</td><td>5-way navigation switch (P504)</td><td>Adafruit</td><td>1</td><td class="price">$2.50</td></tr>
+                    <tr><td>16</td><td>WS2812B 8-LED NeoPixel strip</td><td>Diotronic</td><td>1</td><td class="price">&mdash;</td></tr>
+
+                    <tr class="bom-section"><td colspan="5" style="background:#1a1a1a;color:#e67e22;">CONNECTIVITY &amp; SENSING</td></tr>
+                    <tr><td>17</td><td>GPS PA1010D STEMMA QT (P4415)</td><td>Adafruit</td><td>1</td><td class="price">$29.95</td></tr>
+                    <tr><td>18</td><td>ADS1115 16-bit ADC 4-ch (P1085)</td><td>Adafruit</td><td>1</td><td class="price">$14.95</td></tr>
+                    <tr><td>19</td><td>MCP23017 I/O expander DIP-28 (P732)</td><td>Adafruit</td><td>2</td><td class="price">$5.00</td></tr>
+                    <tr><td>20</td><td>Audio jack 3.5mm stereo chassis</td><td>Diotronic</td><td>3</td><td class="price">&mdash;</td></tr>
+
+                    <tr class="bom-section"><td colspan="5" style="background:#1a1a1a;color:#95a5a6;">PROTOTYPING &amp; WIRING</td></tr>
+                    <tr><td>21</td><td>Breadboard 830pts</td><td>Diotronic</td><td>2</td><td class="price">&mdash;</td></tr>
+                    <tr><td>22</td><td>Jumper wires 140pc</td><td>Diotronic</td><td>2</td><td class="price">&mdash;</td></tr>
+                    <tr><td>23</td><td>Pin header male 40-pin</td><td>Diotronic</td><td>3</td><td class="price">&mdash;</td></tr>
+                    <tr><td>24</td><td>Pin header female 40-pin</td><td>Diotronic</td><td>3</td><td class="price">&mdash;</td></tr>
+                    <tr><td>25</td><td>28-pin DIP IC socket</td><td>Diotronic</td><td>2</td><td class="price">&mdash;</td></tr>
+                    <tr><td>26</td><td>Resistor 10K 1/4W</td><td>Diotronic</td><td>20</td><td class="price">&mdash;</td></tr>
+                    <tr><td>27</td><td>Capacitor 100nF ceramic</td><td>Diotronic</td><td>10</td><td class="price">&mdash;</td></tr>
+                    <tr><td>28</td><td>Capacitor 10&micro;F electrolytic</td><td>Diotronic</td><td>5</td><td class="price">&mdash;</td></tr>
+                    <tr><td>29</td><td>Wire kit 22AWG (P3174)</td><td>Adafruit</td><td>1</td><td class="price">$15.95</td></tr>
+                    <tr><td>30</td><td>Soldering station 48W</td><td>Diotronic</td><td>1</td><td class="price">&mdash;</td></tr>
+                    <tr><td>31</td><td>Solder wire 1mm 100g + flux paste</td><td>Diotronic</td><td>1</td><td class="price">&mdash;</td></tr>
+                    <tr><td>32</td><td>Helping third hand (P291)</td><td>Adafruit</td><td>1</td><td class="price">$6.00</td></tr>
+
+                    <tr class="bom-section"><td colspan="5" style="background:#1a1a1a;color:#8e44ad;">FUTURE / SET ASIDE</td></tr>
+                    <tr><td>33</td><td>RFM95W LoRa 900MHz (P3072)</td><td>Adafruit</td><td>1</td><td class="price">&mdash;</td></tr>
+                    <tr><td>34</td><td>KB2040 (P5302)</td><td>Adafruit</td><td>1</td><td class="price">&mdash;</td></tr>
+                    <tr><td>35</td><td>USB Type C Plug + Vertical Port</td><td>Adafruit</td><td>2</td><td class="price">&mdash;</td></tr>
+
+                    <!-- Totals -->
+                    <tr class="bom-total" style="color:#27ae60; font-size:15px;"><td colspan="4">ANTRATEK (Belgium, Jan 2026)</td><td class="price">&euro;78.05</td></tr>
+                    <tr class="bom-total" style="color:#3498db; font-size:15px;"><td colspan="4">DIOTRONIC (Barcelona, Feb 2026)</td><td class="price">~&euro;80</td></tr>
+                    <tr class="bom-total" style="color:#e67e22; font-size:15px;"><td colspan="4">ADAFRUIT (US, Mar 2026)</td><td class="price">~$194</td></tr>
                 </tbody>
             </table>
+            <p class="bom-note" style="margin-top:12px; color:#888; font-size:13px;">USB-powered prototype &mdash; battery system deferred to portable phase. Still needed: 6&times; EC11 encoders, 2.2K&ohm; &times;4, 1K&ohm; &times;5, 470&ohm; &times;1 resistors (next Diotronic visit).</p>
         </main>
 
         <footer class="page-footer">
             <span>Oh My Ondas v2.5.2</span>
-            <span>GPL-3.0 License</span>
+            <span>AGPL-3.0 License</span>
             <a href="https://github.com/alevm/oh-my-ondas" target="_blank" rel="noopener noreferrer">GitHub</a>
         </footer>
     </div>
