@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bill of Materials for the Oh My Ondas prototype. All components received from Antratek, Diotronic, and Adafruit.">
+    <meta property="og:title" content="Bill of Materials - Oh My Ondas">
+    <meta property="og:description" content="Complete hardware component list for the Oh My Ondas GPS field recording instrument.">
+    <title>Bill of Materials - Oh My Ondas</title>
+    <link rel="stylesheet" href="css/style.css?v=254">
+    <style>
+        body { overflow: auto; }
+        .page-container {
+            position: relative; z-index: 1; min-height: 100vh;
+            background: rgba(255,255,255,0.75); display: flex; flex-direction: column;
+        }
+        .page-content {
+            max-width: 960px; margin: 0 auto; padding: 40px 24px; flex: 1;
+        }
+        .page-title {
+            font-size: 32px; font-weight: 800; color: var(--accent);
+            margin-bottom: 8px; border-bottom: 3px solid var(--border); padding-bottom: 16px;
+        }
+        .page-subtitle {
+            font-size: 14px; color: #888; margin-bottom: 32px;
+        }
+        .page-content h2 {
+            font-size: 22px; font-weight: 700; color: var(--text); margin: 36px 0 12px 0;
+        }
+        .page-content h3 {
+            font-size: 17px; font-weight: 700; color: var(--text); margin: 24px 0 8px 0;
+        }
+        .page-content p {
+            font-size: 15px; line-height: 1.75; color: var(--text); margin-bottom: 16px;
+        }
+
+        .order-header {
+            display: flex; align-items: baseline; gap: 12px;
+            margin: 32px 0 4px 0; flex-wrap: wrap;
+        }
+        .order-header h3 { margin: 0; }
+        .order-meta {
+            font-size: 13px; color: #888;
+        }
+        .order-total {
+            font-size: 14px; font-weight: 700; color: var(--accent);
+            margin-left: auto;
+        }
+
+        .bom-table {
+            width: 100%; border-collapse: collapse; margin: 8px 0 24px 0;
+            font-size: 14px;
+        }
+        .bom-table th {
+            background: #f0f0f0; color: var(--text); padding: 10px 12px;
+            text-align: left; font-weight: 700; font-size: 12px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border);
+        }
+        .bom-table td {
+            padding: 8px 12px; border-bottom: 1px solid #eee;
+            color: var(--text); vertical-align: top;
+        }
+        .bom-table tr:hover { background: #fafafa; }
+        .bom-table .part-num {
+            font-family: 'Courier New', monospace; font-size: 12px; color: #888;
+        }
+        .bom-table .role {
+            font-size: 13px; color: #666; font-style: italic;
+        }
+        .bom-table .note {
+            font-size: 12px; color: var(--accent);
+        }
+        .bom-table .qty { text-align: center; font-weight: 700; }
+        .bom-table .price { text-align: right; white-space: nowrap; }
+
+        .still-needed {
+            background: #fff8e1; border-left: 4px solid #f9a825;
+            padding: 16px 20px; margin: 24px 0; border-radius: 0 8px 8px 0;
+        }
+        .still-needed h3 {
+            margin: 0 0 12px 0; font-size: 16px; color: #e65100;
+        }
+        .still-needed table { margin: 0; }
+        .still-needed .bom-table th { background: #fff3e0; }
+
+        .bom-summary {
+            background: #e8f5e9; border-left: 4px solid #27ae60;
+            padding: 16px 20px; margin: 24px 0; border-radius: 0 8px 8px 0;
+            font-size: 14px; line-height: 1.8;
+        }
+        .bom-summary strong { font-weight: 700; }
+
+        .blog-license {
+            margin-top: 40px; padding-top: 20px; border-top: 2px solid var(--border);
+            font-size: 13px; color: #888; font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            .bom-table { font-size: 12px; }
+            .bom-table th, .bom-table td { padding: 6px 8px; }
+            .order-header { flex-direction: column; gap: 4px; }
+            .order-total { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="mapBackground" class="map-bg"></div>
+
+    <div class="page-container">
+        <header class="page-header">
+            <a href="index.html" class="logo">OH MY ONDAS</a>
+            <nav class="nav-links" aria-label="Main navigation">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="app.html" class="nav-link">App</a>
+                <a href="about.html" class="nav-link">About</a>
+                <a href="design.html" class="nav-link secondary">Design</a>
+                <a href="prototype.html" class="nav-link secondary">Prototype</a>
+                <a href="architecture.html" class="nav-link secondary">Arch</a>
+                <a href="assembly.html" class="nav-link secondary">Assembly</a>
+                <a href="build-log.html" class="nav-link secondary">Build Log</a>
+                <a href="bom.html" class="nav-link secondary active">BOM</a>
+            </nav>
+        </header>
+
+        <main class="page-content">
+            <h1 class="page-title">Bill of Materials</h1>
+            <p class="page-subtitle">Actual received hardware &middot; v3.0 &middot; March 2026</p>
+
+            <div class="bom-summary">
+                <strong>Status:</strong> All core components received across 3 orders from 3 countries.<br>
+                <strong>Total spent:</strong> ~&euro;158 + ~$194 (~&euro;340 equivalent)<br>
+                <strong>Assembly phase:</strong> Phase 1 (Core Audio) &mdash; see <a href="assembly.html">Assembly Manual</a>
+            </div>
+
+            <!-- Order 1: Antratek -->
+            <div class="order-header">
+                <h3>Antratek Belgium</h3>
+                <span class="order-meta">January 2026 &middot; shipped to Brussels</span>
+                <span class="order-total">&euro;78.05</span>
+            </div>
+            <table class="bom-table">
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Part #</th>
+                        <th class="qty">Qty</th>
+                        <th class="price">Price</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Teensy 4.1 with pins</td>
+                        <td class="part-num">TEENSY41_PINS</td>
+                        <td class="qty">1</td>
+                        <td class="price">&euro;42.96</td>
+                        <td class="role">Main MCU</td>
+                    </tr>
+                    <tr>
+                        <td>Audio Shield Rev D2</td>
+                        <td class="part-num">SF15845</td>
+                        <td class="qty">1</td>
+                        <td class="price">&euro;11.85</td>
+                        <td class="role">SGTL5000 audio codec</td>
+                    </tr>
+                    <tr>
+                        <td>SparkFun Thing Plus ESP32-S2</td>
+                        <td class="part-num">WRL-17743</td>
+                        <td class="qty">1</td>
+                        <td class="price">&euro;18.09</td>
+                        <td class="role">WiFi bridge</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Order 2: Diotronic -->
+            <div class="order-header">
+                <h3>Diotronic Barcelona</h3>
+                <span class="order-meta">February 2026 &middot; walk-in purchase, Carrer de Muntaner</span>
+                <span class="order-total">~&euro;80</span>
+            </div>
+            <table class="bom-table">
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Part #</th>
+                        <th class="qty">Qty</th>
+                        <th class="price">Price</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Rotary Encoder EC11 w/switch</td>
+                        <td class="part-num">&mdash;</td>
+                        <td class="qty">7</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Parameter control <span class="note">(7 of 13 needed)</span></td>
+                    </tr>
+                    <tr>
+                        <td>Tactile Button 6x5mm</td>
+                        <td class="part-num">DTS61N</td>
+                        <td class="qty">16</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">MODE/SHIFT/REC/PLAY + spares</td>
+                    </tr>
+                    <tr>
+                        <td>OLED SSD1306 0.96" I2C</td>
+                        <td class="part-num">MDIO9092</td>
+                        <td class="qty">1</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Status display <span class="note">(spec was 1.3")</span></td>
+                    </tr>
+                    <tr>
+                        <td>Copper Tape 5mm &times; 25m</td>
+                        <td class="part-num">VTCFT1</td>
+                        <td class="qty">1</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Touch pad surfaces</td>
+                    </tr>
+                    <tr>
+                        <td>WS2812B 8-LED NeoPixel Strip</td>
+                        <td class="part-num">MDIO3212</td>
+                        <td class="qty">1</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Step/status LEDs</td>
+                    </tr>
+                    <tr>
+                        <td>3.5mm Stereo Jack Chassis</td>
+                        <td class="part-num">CBS35</td>
+                        <td class="qty">3</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Audio I/O</td>
+                    </tr>
+                    <tr>
+                        <td>Pin Header Male 40-pin</td>
+                        <td class="part-num">&mdash;</td>
+                        <td class="qty">3</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Interconnects</td>
+                    </tr>
+                    <tr>
+                        <td>Pin Header Female 40-pin</td>
+                        <td class="part-num">&mdash;</td>
+                        <td class="qty">3</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Stacking headers</td>
+                    </tr>
+                    <tr>
+                        <td>28-pin DIP IC Socket</td>
+                        <td class="part-num">&mdash;</td>
+                        <td class="qty">2</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">MCP23017 sockets</td>
+                    </tr>
+                    <tr>
+                        <td>Resistor 10K 1/4W</td>
+                        <td class="part-num">&mdash;</td>
+                        <td class="qty">20</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Pull-ups, dividers</td>
+                    </tr>
+                    <tr>
+                        <td>Cap 100nF Ceramic</td>
+                        <td class="part-num">&mdash;</td>
+                        <td class="qty">10</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Decoupling</td>
+                    </tr>
+                    <tr>
+                        <td>Cap 10&micro;F Electrolytic</td>
+                        <td class="part-num">&mdash;</td>
+                        <td class="qty">5</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Power filtering</td>
+                    </tr>
+                    <tr>
+                        <td>Breadboard 830pts</td>
+                        <td class="part-num">VTBB2N</td>
+                        <td class="qty">2</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Prototyping</td>
+                    </tr>
+                    <tr>
+                        <td>Jumper Wires 140pc</td>
+                        <td class="part-num">WJW140</td>
+                        <td class="qty">2</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Prototyping</td>
+                    </tr>
+                    <tr>
+                        <td>Soldering Station 48W</td>
+                        <td class="part-num">VTSS4N</td>
+                        <td class="qty">1</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Tool</td>
+                    </tr>
+                    <tr>
+                        <td>Solder Wire 1mm 100g</td>
+                        <td class="part-num">&mdash;</td>
+                        <td class="qty">1</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Consumable</td>
+                    </tr>
+                    <tr>
+                        <td>Flux Paste</td>
+                        <td class="part-num">PDS</td>
+                        <td class="qty">1</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Consumable</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Order 3: Adafruit -->
+            <div class="order-header">
+                <h3>Adafruit (US)</h3>
+                <span class="order-meta">March 2026 &middot; shipped to Denver, carried to Barcelona</span>
+                <span class="order-total">~$194</span>
+            </div>
+            <table class="bom-table">
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Part #</th>
+                        <th class="qty">Qty</th>
+                        <th class="price">Price</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Teensy 4.1 with pins (backup)</td>
+                        <td class="part-num">P4622</td>
+                        <td class="qty">1</td>
+                        <td class="price">$31.50</td>
+                        <td class="role">Spare MCU</td>
+                    </tr>
+                    <tr>
+                        <td>Audio Shield Rev D (backup)</td>
+                        <td class="part-num">P4384</td>
+                        <td class="qty">1</td>
+                        <td class="price">$9.95</td>
+                        <td class="role">Spare codec</td>
+                    </tr>
+                    <tr>
+                        <td>GPS PA1010D STEMMA QT</td>
+                        <td class="part-num">P4415</td>
+                        <td class="qty">1</td>
+                        <td class="price">$29.95</td>
+                        <td class="role">Location stamping</td>
+                    </tr>
+                    <tr>
+                        <td>CAP1188 8-Ch Touch Breakout</td>
+                        <td class="part-num">P1602</td>
+                        <td class="qty">1</td>
+                        <td class="price">$7.95</td>
+                        <td class="role">Touch sensing</td>
+                    </tr>
+                    <tr>
+                        <td>ADS1115 16-bit ADC 4-Ch</td>
+                        <td class="part-num">P1085</td>
+                        <td class="qty">1</td>
+                        <td class="price">$14.95</td>
+                        <td class="role">Fader reading</td>
+                    </tr>
+                    <tr>
+                        <td>MCP23017 I/O Expander DIP-28</td>
+                        <td class="part-num">P732</td>
+                        <td class="qty">2</td>
+                        <td class="price">$5.00</td>
+                        <td class="role">GPIO expansion</td>
+                    </tr>
+                    <tr>
+                        <td>5-Way Navigation Switch</td>
+                        <td class="part-num">P504</td>
+                        <td class="qty">1</td>
+                        <td class="price">$2.50</td>
+                        <td class="role">Menu navigation</td>
+                    </tr>
+                    <tr>
+                        <td>Slide Pot 45mm B10K</td>
+                        <td class="part-num">P4272</td>
+                        <td class="qty">5</td>
+                        <td class="price">$12.50</td>
+                        <td class="role">Faders</td>
+                    </tr>
+                    <tr>
+                        <td>Rainbow Micro Knobs 10-pack</td>
+                        <td class="part-num">P5542</td>
+                        <td class="qty">2</td>
+                        <td class="price">$9.90</td>
+                        <td class="role">Encoder knobs</td>
+                    </tr>
+                    <tr>
+                        <td>2.8" TFT LCD ILI9341 w/Touch</td>
+                        <td class="part-num">P1770</td>
+                        <td class="qty">1</td>
+                        <td class="price">$39.95</td>
+                        <td class="role">Main display</td>
+                    </tr>
+                    <tr>
+                        <td>RFM95W LoRa 900MHz</td>
+                        <td class="part-num">P3072</td>
+                        <td class="qty">1</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Future: device-to-device radio</td>
+                    </tr>
+                    <tr>
+                        <td>KB2040</td>
+                        <td class="part-num">P5302</td>
+                        <td class="qty">1</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Future: keyboard input</td>
+                    </tr>
+                    <tr>
+                        <td>USB Type C Plug</td>
+                        <td class="part-num">P5978</td>
+                        <td class="qty">1</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Enclosure port</td>
+                    </tr>
+                    <tr>
+                        <td>Vertical USB-C Port</td>
+                        <td class="part-num">P5993</td>
+                        <td class="qty">1</td>
+                        <td class="price">&mdash;</td>
+                        <td class="role">Enclosure port</td>
+                    </tr>
+                    <tr>
+                        <td>Wire Kit 22AWG</td>
+                        <td class="part-num">P3174</td>
+                        <td class="qty">1</td>
+                        <td class="price">$15.95</td>
+                        <td class="role">Internal wiring</td>
+                    </tr>
+                    <tr>
+                        <td>Helping Third Hand</td>
+                        <td class="part-num">P291</td>
+                        <td class="qty">1</td>
+                        <td class="price">$6.00</td>
+                        <td class="role">Tool</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Still Needed -->
+            <div class="still-needed">
+                <h3>Still Needed</h3>
+                <p>Pick up on next Diotronic visit:</p>
+                <table class="bom-table">
+                    <thead>
+                        <tr>
+                            <th>Component</th>
+                            <th class="qty">Qty</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Rotary Encoder EC11</td>
+                            <td class="qty">6</td>
+                            <td>Complete 13-encoder interface</td>
+                        </tr>
+                        <tr>
+                            <td>2.2k&Omega; Resistors</td>
+                            <td class="qty">4</td>
+                            <td>I2C1 pull-ups (replace 10K)</td>
+                        </tr>
+                        <tr>
+                            <td>1k&Omega; Resistors</td>
+                            <td class="qty">5</td>
+                            <td>Analog input RC filters</td>
+                        </tr>
+                        <tr>
+                            <td>470&Omega; Resistor</td>
+                            <td class="qty">1</td>
+                            <td>NeoPixel data line</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="blog-license">
+                Oh My Ondas is a GPS-location-aware portable field recording and sampling instrument.
+                Licensed under AGPL v3 (firmware), CERN OHL-S v2 (hardware), CC BY-NC-SA 4.0 (documentation).
+            </p>
+        </main>
+
+        <footer class="page-footer">
+            <span>Oh My Ondas v3.0.0</span>
+            <span>AGPL-3.0 License</span>
+            <a href="https://github.com/alevm/oh-my-box" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </footer>
+    </div>
+</body>
+</html>
