@@ -262,6 +262,7 @@
             }
         }
     </style>
+    <script defer src="https://analytics.levm.eu/script.js" data-website-id="efecfc31-cd39-46d0-88c4-3a063ee7ec78"></script>
 </head>
 <body>
     <div id="mapBackground" class="map-bg"></div>
@@ -550,7 +551,7 @@
                     <div class="review-card">
                         <h4 class="alternative">Better Alternatives</h4>
                         <ul>
-                            <li><strong>Raspberry Pi kiosk</strong> &mdash; Run the web app in Chromium fullscreen on a 5" touchscreen with GPIO for hardware controls (~$187 BOM)</li>
+                            <li><strong>Teensy 4.1 + ESP32</strong> &mdash; Purpose-built hardware with ILI9341 display, GPIO controls, WiFi/GPS via ESP32 (~$196 BOM)</li>
                             <li><strong>Teensy 4.1 firmware</strong> &mdash; Purpose-built hardware with &lt;5ms latency, direct I2C/SPI, analog inputs (already designed)</li>
                             <li><strong>iOS companion app</strong> &mdash; Lightweight remote control via BLE/WiFi to the hardware device (scene recall, GPS share, monitoring)</li>
                             <li><strong>PWA enhancement</strong> &mdash; Improve the existing web app as Progressive Web App: offline support, home screen install, Web MIDI for external controllers</li>
@@ -568,7 +569,7 @@
                             synth app on the App Store" rather than a location-aware <em>hardware instrument</em>.
                         </p>
                         <p style="margin-top: 12px;">
-                            <strong>Recommended path:</strong> Build the Teensy/Raspberry Pi hardware device.
+                            <strong>Recommended path:</strong> Build the Teensy 4.1 + ESP32 hardware device.
                             Use the existing web app as the development/testing prototype. If mobile access is
                             needed, create a lightweight iOS <em>companion</em> app that communicates with
                             the hardware via BLE &mdash; for remote monitoring, scene management, and GPS
@@ -581,7 +582,7 @@
 
         <footer class="page-footer">
             <span>Oh My Ondas v2.5.2</span>
-            <span>GPL-3.0 License</span>
+            <span>AGPL-3.0 License</span>
             <a href="https://github.com/alevm/oh-my-ondas" target="_blank" rel="noopener noreferrer">GitHub</a>
         </footer>
     </div>
