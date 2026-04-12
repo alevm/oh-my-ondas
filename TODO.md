@@ -77,7 +77,7 @@ Merged from branches: `fix/css-a11y`, `fix/runtime-bugs`, `fix/website`
 
 ### Security
 
-- [ ] **XSS via innerHTML** — Replace `innerHTML` with `textContent` in `landmark.js:873` and `app.js:2795-2799` (radio station names).
+- [x] **XSS via innerHTML** — Audited: `landmark.js:880` already uses `escapeHtml()` on location data; `app.js:3242,3277` already use `escapeHtml()` on station names/URLs; `app.js:2795` is FX preset code with no external data. All other innerHTML uses in `analysis.js` inject only internal/hardcoded state. No unescaped external data flows into innerHTML sinks.
 - [ ] **No rate limiting on Nominatim** — Add throttle (1 req/sec max) in `journey.js` and `landmark.js`.
 - [ ] **PostMessage uses wildcard origin** — Restrict to same-origin in `app.js:1335` and `index.html:861`.
 

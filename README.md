@@ -2,10 +2,10 @@
 
 [![Lint](https://github.com/alevm/oh-my-ondas/actions/workflows/lint.yml/badge.svg)](https://github.com/alevm/oh-my-ondas/actions/workflows/lint.yml)
 [![Tests](https://github.com/alevm/oh-my-ondas/actions/workflows/test.yml/badge.svg)](https://github.com/alevm/oh-my-ondas/actions/workflows/test.yml)
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/alevm/oh-my-ondas)
 
-A location-aware portable music instrument combining professional sequencing, audio mangling, AI composition, and GPS-bound recordings. Includes a fully functional web prototype.
+A location-aware portable music instrument combining sequencing, audio mangling, and GPS-aware features. Includes a web prototype and ESP32 firmware scaffolding.
 
 **[Live Demo](https://alevm.github.io/oh-my-ondas/)**
 
@@ -44,14 +44,19 @@ cd firmware && pio run -e teensy41
 ## Key Features
 
 - 8-track sequencer with parameter locks
-- 16 sample pads with audio mangling
+- 8 sample pads with audio mangling (16 pads planned)
 - Synthesizer with ADSR envelope
-- Internet radio integration
+- Internet radio integration (stream & sample)
 - 5-channel mixer with EQ
-- Scene system with crossfader
-- AI-assisted pattern generation
-- GPS tracking and location-bound recordings
 - Session recording and playback
+
+### Planned / In Progress
+
+- Scene system with crossfader (UI exists, wiring incomplete)
+- AI-assisted pattern generation (scaffold only, references stale APIs)
+- GPS-bound recordings (GPS capture works, radio-GPS link has property mismatch)
+- Kit switching (stub — does not load audio files)
+- Punch FX: reverse, filter sweep, tape stop (stubs)
 
 ## Tech Stack
 
@@ -67,4 +72,12 @@ Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) for gu
 
 ## License
 
-This project is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0).
+This project uses a tri-license structure:
+
+| Component | License |
+|-----------|---------|
+| Software & Firmware | [AGPL v3](LICENSE-SOFTWARE) |
+| Hardware Designs | [CERN OHL-S v2](LICENSE-HARDWARE) |
+| Documentation & Brand | [CC BY-NC-SA 4.0](LICENSE-DOCS) |
+
+See [INTENT.md](INTENT.md) for the philosophy behind this instrument.
