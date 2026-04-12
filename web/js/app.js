@@ -1,15 +1,5 @@
 // Oh My Ondas v2.5.2 - Main Application Controller
-
-// Security: HTML escape utility to prevent XSS
-function escapeHtml(str) {
-    if (typeof str !== 'string') return str;
-    return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
+// escapeHtml is provided by utils.js (loaded first)
 
 class App {
     constructor() {

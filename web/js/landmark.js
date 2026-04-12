@@ -1,17 +1,7 @@
 // Oh My Ondas - Landmark Feature
 // Captures a "sonic snapshot" of the current location
 // Version 2.0 - with extensive logging
-
-// Security: HTML escape utility to prevent XSS
-function escapeHtml(str) {
-    if (typeof str !== 'string') return str;
-    return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
+// escapeHtml is provided by utils.js (loaded first)
 
 // Rate limiter: reuse shared global defined in radio.js
 // (radio.js loads first and creates window.nominatimRateLimiter)
