@@ -5,7 +5,9 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/alevm/oh-my-ondas)
 
-A location-aware portable music instrument combining sequencing, audio mangling, and GPS-aware features. Includes a web prototype and ESP32 firmware scaffolding.
+For people who walk through cities and want to listen differently — a portable instrument for pedestrian sonic exploration.
+
+A location-aware music instrument combining sequencing, audio mangling, and GPS-aware features. Includes a web prototype and ESP32 firmware scaffolding.
 
 **[Live Demo](https://alevm.github.io/oh-my-ondas/)**
 
@@ -81,3 +83,7 @@ This project uses a tri-license structure:
 | Documentation & Brand | [CC BY-NC-SA 4.0](LICENSE-DOCS) |
 
 See [INTENT.md](INTENT.md) for the philosophy behind this instrument.
+
+## Theoretical Background
+
+The soundscape taxonomy and compositional approach are grounded in the work of Schafer, Westerkamp, and Truax. See [docs/theoretical-basis.md](docs/theoretical-basis.md) for the full lineage and taxonomy mapping.
