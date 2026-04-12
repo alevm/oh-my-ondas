@@ -36,3 +36,13 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify deployment
+        run: |
+          sleep 15
+          CODE=$(curl -so /dev/null -w "%{http_code}" --max-time 10 "https://ohmyondas.levm.eu/")
+          if [[ ! "$CODE" =~ ^(200|301|302|401)$ ]]; then
+            echo "DEPLOY VERIFICATION FAILED: ohmyondas.levm.eu returned $CODE"
+            exit 1
+          fi
+          echo "Deployment verified: ohmyondas.levm.eu returned $CODE"
