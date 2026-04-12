@@ -11,6 +11,12 @@ class Sequencer {
         this.intervalId = null;
         this.swing = 0;  // Swing amount 0-100
 
+        // Web Audio scheduler (Chris Wilson "A Tale of Two Clocks" pattern)
+        this.audioCtx = null;       // Set on first play()
+        this.lookahead = 0.1;       // How far ahead to schedule (seconds)
+        this.scheduleInterval = 25; // How often to call scheduler (ms)
+        this.nextStepTime = 0;      // When the next step is due (AudioContext time)
+
         // Pattern slots (A-H = 0-7)
         this.patternSlots = [];
         this.currentPatternSlot = 0;
@@ -192,14 +198,16 @@ class Sequencer {
 
     setTempo(bpm) {
         this.tempo = Math.max(30, Math.min(300, bpm));
-        if (this.playing) {
-            this.stop();
-            this.play();
-        }
+        // No restart needed — the lookahead scheduler picks up the new tempo automatically
     }
 
     getTempo() {
         return this.tempo;
+    }
+
+    // Get step duration in seconds (16th notes)
+    _stepDuration() {
+        return 60 / this.tempo / 4;
     }
 
     play() {
@@ -208,19 +216,32 @@ class Sequencer {
         this.playing = true;
         this.currentStep = 0;
 
-        const stepDuration = (60 / this.tempo) * 1000 / 4; // 16th notes
+        // Acquire AudioContext for accurate timing
+        this.audioCtx = window.audioEngine?.ctx || new (window.AudioContext || window.webkitAudioContext)();
+        this.nextStepTime = this.audioCtx.currentTime;
 
-        this.intervalId = setInterval(() => {
+        // Lookahead scheduler: use setTimeout to poll, schedule notes against AudioContext.currentTime
+        this._scheduleLoop();
+
+        console.log('Sequencer started at', this.tempo, 'BPM (Web Audio scheduler)');
+    }
+
+    // Core scheduler: runs via setTimeout, looks ahead and fires ticks whose time has come
+    _scheduleLoop() {
+        if (!this.playing) return;
+
+        while (this.nextStepTime < this.audioCtx.currentTime + this.lookahead) {
             this.tick();
-        }, stepDuration);
+            this.nextStepTime += this._stepDuration();
+        }
 
-        console.log('Sequencer started at', this.tempo, 'BPM');
+        this.intervalId = setTimeout(() => this._scheduleLoop(), this.scheduleInterval);
     }
 
     stop() {
         this.playing = false;
         if (this.intervalId) {
-            clearInterval(this.intervalId);
+            clearTimeout(this.intervalId);
             this.intervalId = null;
         }
         this.currentStep = 0;
