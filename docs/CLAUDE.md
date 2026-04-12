@@ -198,27 +198,24 @@ npm run docs
 
 ---
 
-## 🎯 Current Development Focus
+## Current State (April 2026)
 
-### Priority 1: Audio Engine
-- Sample playback (8 voices)
-- Touch pad triggering
-- Basic mixing
+### Panel Review Status: A- (all P1 tickets resolved)
 
-### Priority 2: Sequencer
-- Step sequencer (8 tracks × 16 steps)
-- Pattern storage
-- Transport controls
+Completed in A- sprint (2026-04-11):
+- **A1** Theoretical grounding doc: `docs/theoretical-basis.md` (Schafer/Westerkamp/Truax lineage, taxonomy mapping)
+- **A2** Sequencer scheduler: replaced `setInterval` with Web Audio lookahead (Chris Wilson pattern)
+- **A3** `escapeHtml` dedup: single definition in `web/js/utils.js`, removed from app.js/journey.js/landmark.js
+- **A4** postMessage wildcard: fixed last `'*'` in mockup-orange.html
+- **A7** README pitch: human-readable hook above the fold, theoretical-basis link
+- **A8** WCAG: accent `#2874a6` (5.07:1), bare `overflow:hidden` removed from html/body
 
-### Priority 3: Effects
-- Basic FX chain (reverb, delay, filter)
-- Bastl mangling effects
-- Parameter control
+### Remaining P2 (not required for A-)
+- **A5** Noise + FM synthesis in synth.js
+- **A6** Serial framing protocol for ESP32 output
 
-### Priority 4: Interface
-- OLED display
-- Encoder handling
-- Mode switching
+### Web App JS Modules (15 files)
+`utils.js` (shared utilities) loads first, followed by gps, audio-engine, mic-input, soundscape-analyzer, sampler, synth, radio, recorder, sequencer, channel-fx, mangle, scenes, arrangement, ai-composer, source-roles, landmark, journey, app, demo-mode.
 
 ---
 
@@ -306,4 +303,4 @@ pio pkg list
 
 ---
 
-*Last updated: December 2025*
+*Last updated: April 2026*
