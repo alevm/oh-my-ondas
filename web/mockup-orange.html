@@ -797,7 +797,7 @@
 
         function sendToApp(action, data) {
             if (appFrame && appFrame.contentWindow) {
-                appFrame.contentWindow.postMessage({ type: 'mockup-control', action, data }, '*');
+                appFrame.contentWindow.postMessage({ type: 'mockup-control', action, data }, window.location.origin);
             }
         }
 
