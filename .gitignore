@@ -43,6 +43,10 @@ Desktop.ini
 *.key
 *.pem
 credentials.json
+firmware/esp32/config.h
+
+# Video recordings
+*.mp4
 
 # Audio files (user-generated)
 web/samples/*.wav

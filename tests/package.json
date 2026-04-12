@@ -17,7 +17,7 @@
     "sequencer"
   ],
   "author": "",
-  "license": "GPL-3.0",
+  "license": "AGPL-3.0-only",
   "dependencies": {
     "puppeteer": "^24.34.0"
   }

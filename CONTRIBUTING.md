@@ -63,4 +63,4 @@ cd firmware && pip install platformio && pio run
 
 ## License
 
-By contributing to this project you agree that your contributions will be licensed under the [GPL-3.0](LICENSE) license.
+By contributing to this project you agree that your contributions will be licensed under the [AGPL-3.0](LICENSE) license.

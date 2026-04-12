@@ -13,12 +13,12 @@ into a clean, professional repository layout with full CI/CD.
 - Renamed project from "Oh My Box" to "Oh My Ondas"
 - Flat directory structure: `web/`, `firmware/`, `tests/`, `docs/`
 - All internal references updated (`oh-my-box` -> `oh-my-ondas`, `ohmybox` -> `ohmyondas`)
-- License changed from MIT to GPL-3.0
+- License changed from MIT to AGPL-3.0
 - Tests support `TEST_URL` environment variable for CI compatibility
 
 #### Added
 - Root `README.md` with badges and quick start
-- `LICENSE` (GPL-3.0 full text)
+- `LICENSE` (AGPL-3.0 full text)
 - `CONTRIBUTING.md` with development guidelines
 - `.editorconfig` for consistent formatting
 - `.gitignore` (comprehensive)

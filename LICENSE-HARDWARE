@@ -1,0 +1,23 @@
+Oh My Box (Oh My Ondas) — Hardware Design Files
+Copyright (C) 2025 AnV
+
+These hardware design files (schematics, PCB layouts, BOM, enclosure files)
+are licensed under the CERN Open Hardware Licence Strongly Reciprocal
+(CERN OHL-S) v2.
+
+You may redistribute and modify this documentation and make products
+using it under the terms of the CERN OHL-S v2
+(https://ohwr.org/cern_ohl_s_v2.txt).
+
+This documentation is distributed WITHOUT ANY EXPRESS OR IMPLIED WARRANTY,
+INCLUDING OF MERCHANTABILITY, SATISFACTORY QUALITY AND FITNESS FOR A
+PARTICULAR PURPOSE. Please see the CERN OHL-S v2 for applicable conditions.
+
+Source location: https://github.com/alevm/oh-my-box
+
+As per CERN OHL-S v2 section 4, should you produce hardware based on
+these designs, you must make the modified source available.
+
+---
+
+Full license text: https://ohwr.org/cern_ohl_s_v2.txt

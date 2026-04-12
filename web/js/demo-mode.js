@@ -1,13 +1,24 @@
 /**
- * Oh My Ondas — DEMO MODE
+ * Oh My Ondas — DEMO MODE (Sónar+D version)
  *
- * Adds a DEMO button to app.html. When pressed, performs an automated
- * 40-second musical piece using the user's LIVE MICROPHONE as source material.
+ * Automated 50-second psychogeographic performance.
+ * The room sound drives the composition through the soundscape analyzer.
+ * Mic stays open. Radio is sampled and mangled. Everything adapts.
  *
  * Structure:
- *   PHASE 1 — LISTEN  (0:00 → 0:05)  Mic only. Capture room into a pad.
- *   PHASE 2 — PERFORM (0:05 → 0:35)  Sequence, radio, synth, FX, scenes, GPS.
- *   PHASE 3 — RETURN  (0:35 → 0:40)  Fade everything. Room sound resurfaces.
+ *   PHASE 1 — LISTEN    (0:00 → 0:04)  Mic opens. Room + radio captured. PICTURE mode.
+ *   PHASE 2 — COMPOSE   (0:04 → 0:08)  AI interprets. Sequencer starts. SOUNDSCAPE mode.
+ *   PHASE 3 — INTERACT  (0:08 → 0:42)  Live adaptive composition. INTERACT mode.
+ *             Reacts to soundscape changes:
+ *               quiet/ambient  → sparse texture, granulated mic+radio
+ *               rhythmic/noisy → driven, mic transients as drums, radio chopped
+ *               tonal/chaotic  → melodic, synth follows room, all sources converge
+ *   PHASE 4 — RETURN    (0:42 → 0:50)  Fade. Room resurfaces. GPS stamp.
+ *
+ * CRITICAL: Radio is SAMPLED into pads 1,2 (which the sequencer uses), then stream
+ * is killed. Radio never plays as a live fader — it only exists as mangled material.
+ * Mic is captured into pad 0, re-captured into pad 3 mid-performance.
+ * The sequencer triggers pads 0,1,2,3 through the sampler tracks.
  *
  * Integration: <script src="js/demo-mode.js"></script> in app.html
  *
@@ -39,6 +50,8 @@
  * window.mangleEngine  .setGrain(), .setDelayMix(), .setGlitch(), .setCrush()
  * window.sessionRecorder .start(), .stop(), .isRecording()
  * window.aiComposer    .context.vibe, .updateUI()
+ * window.soundscapeAnalyzer .startMonitoring(), .stopMonitoring(), .onClassificationChange()
+ * window.sourceRoleManager  .generateRoleAssignment(), .assignRole()
  * window.journey       (journey panel JS)
  * window.app           .refreshSequencerUI(), .applyKnobValue(), .updateKnobRotation()
  */
@@ -58,7 +71,6 @@
     const ctx = window.audioEngine.ctx;
     const analyser = ctx.createAnalyser();
     analyser.fftSize = 256;
-    // Connect to the destination (master output)
     try {
       const dest = window.audioEngine.masterGain || window.audioEngine.master;
       if (dest) dest.connect(analyser);
@@ -73,17 +85,14 @@
         const v = Math.abs(data[i]);
         if (v > peak) peak = v;
       }
-      // If peak is very hot (near clipping), duck the mic
       if (peak > 0.85 && !ducked && micFader) {
         const cur = parseFloat(micFader.value) || 0;
         if (cur > 20) {
           micFader.value = Math.max(10, cur * 0.4);
           micFader.dispatchEvent(new Event('input', { bubbles: true }));
           ducked = true;
-          console.log(`[demo] Feedback guard: ducked mic from ${cur} to ${micFader.value}`);
         }
       }
-      // Recover slowly when level drops
       if (peak < 0.5 && ducked && micFader) {
         const cur = parseFloat(micFader.value) || 0;
         if (cur < 35) {
@@ -143,6 +152,19 @@
     tap(`.panel-tab[data-panel="${name}-panel"]`);
   }
 
+  /** Set a fader/slider value immediately */
+  function setVal(id, v) {
+    const el = $(`#${id}`);
+    if (el) { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); }
+  }
+
+  /** Notify mockup parent of mode change */
+  function setMode(mode) {
+    try {
+      window.parent.postMessage({ type: 'app-state', data: { mode } }, window.location.origin);
+    } catch {}
+  }
+
   /** Caption overlay — petrol green monospace on dark bg */
   function caption(text, opts = {}) {
     const { position = 'bottom', fontSize = '15px' } = opts;
@@ -187,6 +209,177 @@
     });
   }
 
+  /** Manually trigger sampler pads to ensure radio/mic material is heard */
+  function triggerPad(padIdx, opts) {
+    try { window.sampler?.trigger(padIdx, opts); } catch {}
+  }
+
+  // ─── Compositional states ───
+  // Each state defines patterns, FX, mixer, tempo — driven by soundscape classification
+  //
+  // PAD LAYOUT (what the sequencer triggers):
+  //   Pad 0: room capture (mic)
+  //   Pad 1: radio fragment 1 (mangled)
+  //   Pad 2: radio fragment 2 (chopped)
+  //   Pad 3: room re-capture (mic, refreshed mid-performance)
+  //
+  // Track 0 → sampler (triggers pad 0 = room)
+  // Track 1 → sampler (triggers pad 1 = radio)
+  // Track 2 → synth
+
+  const PATTERNS = {
+    quiet: {
+      // Sparse, breathing. Lots of space. Room + radio granulated.
+      tracks: [
+        { steps: [0, 7, 11],           source: 'sampler' },  // room fragments
+        { steps: [3, 13],              source: 'sampler' },  // radio fragment
+        { steps: [],                   source: 'synth'   },  // silent
+      ],
+      tempo: 72,
+      fx: { delay: 55, grain: 65, glitch: 0, crush: 16 },
+      filter: 400,
+      mixer: { mic: 30, samples: 55, synth: 0, radio: 0 },
+      vibe: 'calm',
+      // Extra pad triggers per bar cycle (pads not in sequencer)
+      extraTriggers: [
+        { pad: 2, every: 8000 },  // radio chop every 8s
+      ]
+    },
+    rhythmic: {
+      // Driven, polyrhythmic. Mic transients become the beat. Radio chopped.
+      tracks: [
+        { steps: [0, 3, 5, 8, 11, 14], source: 'sampler' },  // room as percussion
+        { steps: [1, 4, 6, 10, 13],    source: 'sampler' },  // radio chopped
+        { steps: [0, 8],               source: 'synth'   },  // stabs
+      ],
+      tempo: 98,
+      fx: { delay: 20, grain: 30, glitch: 40, crush: 8 },
+      filter: 3500,
+      mixer: { mic: 20, samples: 75, synth: 45, radio: 0 },
+      vibe: 'urban',
+      extraTriggers: [
+        { pad: 2, every: 3000 },  // radio chops fast
+        { pad: 3, every: 5000 },  // room re-capture hits
+      ]
+    },
+    tonal: {
+      // Melodic, layered. Voices become harmony. Radio melodic.
+      tracks: [
+        { steps: [0, 5, 7, 12],        source: 'sampler' },  // room pitched
+        { steps: [2, 6, 10, 14],       source: 'sampler' },  // radio melodic
+        { steps: [0, 3, 7, 10],        source: 'synth'   },  // melody
+      ],
+      tempo: 88,
+      fx: { delay: 45, grain: 40, glitch: 10, crush: 16 },
+      filter: 8000,
+      mixer: { mic: 25, samples: 65, synth: 65, radio: 0 },
+      vibe: 'nature',
+      extraTriggers: [
+        { pad: 2, every: 6000 },
+        { pad: 3, every: 4000 },
+      ]
+    },
+    chaotic: {
+      // Everything converges. Dense, alive. All pads firing.
+      tracks: [
+        { steps: [0, 2, 5, 7, 8, 11, 13, 15], source: 'sampler' },
+        { steps: [1, 3, 6, 9, 12, 14],         source: 'sampler' },
+        { steps: [0, 4, 7, 11],                source: 'synth'   },
+      ],
+      tempo: 108,
+      fx: { delay: 35, grain: 50, glitch: 55, crush: 5 },
+      filter: 6000,
+      mixer: { mic: 25, samples: 80, synth: 60, radio: 0 },
+      vibe: 'chaos',
+      extraTriggers: [
+        { pad: 2, every: 2000 },
+        { pad: 3, every: 2500 },
+      ]
+    }
+  };
+  // Aliases
+  PATTERNS.ambient = PATTERNS.quiet;
+  PATTERNS.noisy = PATTERNS.rhythmic;
+
+  // Interval IDs for extra pad triggers
+  let extraTriggerIntervals = [];
+
+  function startExtraTriggers(state) {
+    stopExtraTriggers();
+    const triggers = PATTERNS[state]?.extraTriggers || [];
+    for (const t of triggers) {
+      const id = setInterval(() => triggerPad(t.pad), t.every);
+      extraTriggerIntervals.push(id);
+    }
+  }
+  function stopExtraTriggers() {
+    for (const id of extraTriggerIntervals) clearInterval(id);
+    extraTriggerIntervals = [];
+  }
+
+  /** Apply a compositional state — morphs over durationMs */
+  async function applyState(stateName, durationMs) {
+    const state = PATTERNS[stateName] || PATTERNS.quiet;
+    const half = durationMs / 2;
+
+    console.log(`[demo] → compositional state: ${stateName}`);
+
+    // Tempo
+    window.sequencer?.setTempo(state.tempo);
+    const ts = $('#tempoSlider');
+    const tv = $('#tempoVal');
+    if (ts) ts.value = state.tempo;
+    if (tv) tv.textContent = String(state.tempo);
+
+    // Sequencer pattern — clear then set
+    for (let t = 0; t < 3; t++) {
+      for (let s = 0; s < 16; s++) {
+        try { window.sequencer?.setStep(t, s, false); } catch {}
+      }
+      // Set source
+      try { window.sequencer?.setTrackSource(t, state.tracks[t].source); } catch {}
+      // Set active steps
+      for (const s of state.tracks[t].steps) {
+        try { window.sequencer?.setStep(t, s, true); } catch {}
+      }
+    }
+    window.app?.refreshSequencerUI?.();
+
+    // Start extra pad triggers for material not in the sequencer
+    startExtraTriggers(stateName);
+
+    // Apply source roles if available
+    if (window.sourceRoleManager) {
+      const analysis = window.soundscapeAnalyzer?.getLatest?.();
+      window.sourceRoleManager.generateRoleAssignment({
+        vibe: state.vibe,
+        soundscape: analysis,
+        availableSources: ['sampler', 'synth', 'radio', 'mic']
+      });
+    }
+
+    // FX — sweep to targets
+    sweep($('#fxDelay'), state.fx.delay, half);
+    sweep($('#fxGrain'), state.fx.grain, half);
+    sweep($('#fxGlitch'), state.fx.glitch, half);
+    sweep($('#fxCrush'), state.fx.crush, half);
+
+    // Filter
+    sweep($('#filterCutoff'), state.filter, half);
+
+    // Mixer — sweep faders
+    sweep($('#faderSamples'), state.mixer.samples, half);
+    sweep($('#faderSynth'), state.mixer.synth, half);
+    sweep($('#faderRadio'), state.mixer.radio, half);
+    sweep($('#faderMic'), state.mixer.mic, half);
+
+    // Set AI vibe
+    if (window.aiComposer) {
+      window.aiComposer.context.vibe = state.vibe;
+      window.aiComposer.updateUI?.();
+    }
+  }
+
   // ─── DEMO Button ───
 
   let running = false;
@@ -210,7 +403,6 @@
       runDemo(btn);
     });
 
-    // Insert after transport buttons
     const stop = $('#btnStop');
     if (stop && stop.parentElement) {
       stop.parentElement.insertBefore(btn, stop.nextSibling);
@@ -228,14 +420,58 @@
     btn.style.color = '#fff';
     btn.disabled = true;
 
+    // Track current compositional state so we don't re-trigger the same one
+    let currentState = 'quiet';
+
+    // Classification change handler — THE CORE of the adaptive composition
+    const onSoundscapeChange = (change) => {
+      if (!running) return;
+      const cls = change.current; // quiet, ambient, rhythmic, noisy, tonal, chaotic
+      if (cls === currentState) return;
+
+      console.log(`[demo] soundscape: ${change.previous} → ${cls}`);
+      currentState = cls;
+
+      // Show what's happening
+      const labels = {
+        quiet: 'Silence speaks...',
+        ambient: 'Ambient field',
+        rhythmic: 'Rhythm detected — recomposing',
+        noisy: 'Noise as material',
+        tonal: 'Voices become melody',
+        chaotic: 'Everything converges'
+      };
+      caption(labels[cls] || cls);
+
+      // Morph composition to match
+      applyState(cls, 2500);
+
+      // Re-capture mic fragment into pad 3 for fresh material
+      captureMicToPad(3);
+    };
+
+    // Capture mic to a specific pad
+    async function captureMicToPad(pad) {
+      try {
+        const dur = currentState === 'quiet' ? 2000 : currentState === 'rhythmic' ? 600 : 1200;
+        const buf = await window.micInput?.captureToBuffer(dur);
+        if (buf) {
+          window.sampler?.loadBuffer(pad, buf, {
+            name: `room-${currentState}`,
+            source: 'mic',
+            timestamp: Date.now()
+          });
+        }
+      } catch (e) { console.warn('[demo] re-capture failed:', e.message); }
+    }
+
     try {
-      // ── Init audio (needs user gesture — this IS the click handler) ──
+      // ── Init audio ──
       if (window.audioEngine) {
         if (!window.audioEngine.initialized) await window.audioEngine.init();
         if (window.audioEngine.ctx?.state === 'suspended') await window.audioEngine.ctx.resume();
       }
 
-      // Start feedback detection
       startFeedbackGuard();
 
       // Request real mic
@@ -250,300 +486,324 @@
       try { window.sessionRecorder?.start(); } catch {}
 
       // ════════════════════════════════════════════════════════════
-      // PHASE 1 — LISTEN (0:00 → 0:05)
+      // PHASE 1 — LISTEN (0:00 → 0:04)
+      // PICTURE mode: capture room + radio FAST, get material loaded
       // ════════════════════════════════════════════════════════════
-      console.log('[demo] PHASE 1: LISTEN');
+      console.log('[demo] PHASE 1: LISTEN — capturing material');
 
-      // Start on mixer tile — mic is the instrument
+      setMode('picture');
       showPanel('mixer');
 
-      // Force GPS display — Barcelona, Llotja de Mar
+      // GPS display — force Barcelona coords if geolocation unavailable (HTTP localhost)
+      let gps = window.gpsTracker?.getPosition?.();
+      if (!gps) {
+        // Inject fake position into the tracker so all GPS-dependent features work
+        const fakePos = {
+          latitude: 41.3818,
+          longitude: 2.1685,
+          accuracy: 10,
+          altitude: 12,
+          timestamp: Date.now(),
+          formatted: '41.38180°N, 2.16850°E'
+        };
+        if (window.gpsTracker) {
+          window.gpsTracker.currentPosition = fakePos;
+          window.gpsTracker.error = null;
+          window.gpsTracker.notifyListeners();
+          window.gpsTracker.updateLocationImage?.();
+        }
+        gps = fakePos;
+      }
+      const coordStr = `${gps.latitude.toFixed(4)}, ${gps.longitude.toFixed(4)}`;
       const gpsText = $('#gpsText');
       const gpsTextE = $('#gpsTextE');
-      if (gpsText) gpsText.textContent = '41.3818, 2.1685';
-      if (gpsTextE) gpsTextE.textContent = '41.3818, 2.1685';
+      if (gpsText) gpsText.textContent = coordStr;
+      if (gpsTextE) gpsTextE.textContent = coordStr;
 
-      // Set tempo 85 BPM
-      window.sequencer?.setTempo(85);
-      const ts = $('#tempoSlider');
+      // All faders down, master up
+      for (const [id, val] of [
+        ['faderSamples', 0], ['faderSynth', 0], ['faderRadio', 0],
+        ['faderMic', 0], ['faderMaster', 80]
+      ]) { setVal(id, val); }
+
+      setVal('filterCutoff', 12000);
+
+      // Tempo
+      window.sequencer?.setTempo(72);
+      setVal('tempoSlider', 72);
       const tv = $('#tempoVal');
-      if (ts) ts.value = 85;
-      if (tv) tv.textContent = '85';
+      if (tv) tv.textContent = '72';
 
-      // Make sure sequencer is stopped and clear any previous patterns
+      // Clear sequencer
       try { window.sequencer?.stop(); } catch {}
       for (let t = 0; t < 3; t++)
         for (let s = 0; s < 16; s++)
           try { window.sequencer?.setStep(t, s, false); } catch {}
 
-      // All faders to zero except mic (start low, will ramp)
-      for (const [id, val] of [
-        ['faderSamples', 0], ['faderSynth', 0], ['faderRadio', 0],
-        ['faderMic', 0], ['faderMaster', 80]
-      ]) {
-        const el = $(`#${id}`);
-        if (el) { el.value = val; el.dispatchEvent(new Event('input', { bubbles: true })); }
-      }
-
-      // Filter wide open — let the mic sound natural in this phase
-      const filterEl = $('#filterCutoff');
-      if (filterEl) { filterEl.value = 12000; filterEl.dispatchEvent(new Event('input', { bubbles: true })); }
-
-      // Mic fades in gently — NOT slamming to max
-      await sweep($('#faderMic'), 55, 2000);
-
-      // GPS coords visible
-      const gps = window.gpsTracker?.getPosition?.();
-      const coordStr = gps ? `${gps.latitude.toFixed(4)}, ${gps.longitude.toFixed(4)}` : '41.3818, 2.1685';
       caption(`Listening · ${coordStr}`, { fontSize: '15px' });
 
-      await sleep(2500);
+      // Mic fades in — the room arrives
+      sweep($('#faderMic'), 45, 1500);
 
-      // MIC REC — capture 2s of room into pad 0
-      caption('Capturing room...');
-      let micBuffer = null;
+      // In parallel: start radio, capture mic, capture radio
+      // Radio — start it, let it play briefly
+      try { await window.radioPlayer?.playFallback(); } catch {}
+      tap('#radioScan');
+
+      await sleep(800);
+
+      // Capture room into pad 0 (1.2s — short!)
       try {
-        micBuffer = await window.micInput.captureToBuffer(2000);
-        if (micBuffer) {
-          window.sampler.loadBuffer(0, micBuffer, {
-            name: 'Room',
-            source: 'mic',
-            timestamp: Date.now()
+        const micBuf = await window.micInput?.captureToBuffer(1200);
+        if (micBuf) {
+          window.sampler?.loadBuffer(0, micBuf, {
+            name: 'Room', source: 'mic', timestamp: Date.now()
           });
         }
       } catch (e) { console.warn('[demo] Mic capture failed:', e.message); }
 
+      // Capture radio into pad 1 (1.5s)
+      try {
+        const radioBuf1 = await window.radioPlayer?.captureToBuffer(1500);
+        if (radioBuf1) {
+          window.sampler?.loadBuffer(1, radioBuf1, {
+            name: 'Radio-1', source: 'radio', timestamp: Date.now()
+          });
+        }
+      } catch (e) { console.warn('[demo] Radio capture 1 failed:', e.message); }
+
+      // Capture radio into pad 2 (shorter chop)
+      try {
+        const radioBuf2 = await window.radioPlayer?.captureToBuffer(800);
+        if (radioBuf2) {
+          window.sampler?.loadBuffer(2, radioBuf2, {
+            name: 'Radio-2', source: 'radio', timestamp: Date.now()
+          });
+        }
+      } catch (e) { console.warn('[demo] Radio capture 2 failed:', e.message); }
+
+      // KILL the radio stream — from now on it only lives in pads 1,2
+      try { window.radioPlayer?.stop(); } catch {}
+      setVal('faderRadio', 0);
+
+      // Start soundscape analysis
+      window.soundscapeAnalyzer?.startMonitoring(3000);
+
+      // ════════════════════════════════════════════════════════════
+      // PHASE 2 — COMPOSE (0:04 → 0:08)
+      // SOUNDSCAPE mode: AI interprets, sequencer starts IMMEDIATELY
+      // ════════════════════════════════════════════════════════════
+      console.log('[demo] PHASE 2: COMPOSE — music starts');
+
+      setMode('soundscape');
+      caption('Composing from soundscape...');
+
+      // Duck mic — composition takes over
+      sweep($('#faderMic'), 25, 800);
+
+      // Show AI panel, generate
+      showPanel('ai');
+      tap('#aiGenerate');
+      await sleep(400);
+
+      // Apply initial quiet state AND start playback
+      await applyState('quiet', 1000);
+
+      showPanel('seq');
+      tap('#btnPlay');
       await sleep(500);
 
-      // ════════════════════════════════════════════════════════════
-      // PHASE 2 — PERFORM (0:05 → 0:35)
-      // ════════════════════════════════════════════════════════════
-
-      // ── 2a (5s): Sequence the captured room sample ──
-      console.log('[demo] PHASE 2a: Sequence room sample');
-
-      // Pull mic down as other elements enter — prevent feedback
-      sweep($('#faderMic'), 25, 1500);
-
-      caption('Room → sampler → sequencer');
-      showPanel('seq');
-      await sleep(300);
-
-      // Irregular pattern — NOT four-on-the-floor
-      window.sequencer.setTrackSource(0, 'sampler');
-      for (const s of [0, 3, 5, 7, 8, 11, 14]) {
-        window.sequencer.setStep(0, s, true);
-      }
-      window.app?.refreshSequencerUI?.();
-
-      // Start FX non-zero
-      const fxD = $('#fxDelay'), fxG = $('#fxGrain');
-      if (fxD) { fxD.value = 15; fxD.dispatchEvent(new Event('input', { bubbles: true })); }
-      if (fxG) { fxG.value = 20; fxG.dispatchEvent(new Event('input', { bubbles: true })); }
-
-      // Filter low to start — darken the texture
-      if (filterEl) { filterEl.value = 300; filterEl.dispatchEvent(new Event('input', { bubbles: true })); }
-
-      // Sweep samples fader up
-      sweep($('#faderSamples'), 72, 2000); // non-blocking
-
-      // PLAY
-      tap('#btnPlay');
-      await sleep(2500);
-
-      // Switch to CTRL knobs — sweep grain up
-      showPanel('knobs');
-      await sleep(300);
-      sweepKnob($('#knobGrain'), 40, 1500); // non-blocking
-      await sleep(2000);
-
-      // ── 2b (4s): More texture — polyrhythm ──
-      console.log('[demo] PHASE 2b: Polyrhythm');
-      caption('');
-      showPanel('seq');
-      await sleep(200);
-
-      window.sequencer.setTrackSource(1, 'sampler');
-      for (const s of [1, 4, 6, 10, 13]) {
-        window.sequencer.setStep(1, s, true);
-      }
-      window.app?.refreshSequencerUI?.();
-      await sleep(3500);
-
-      // ── 2c (5s): Radio enters ──
-      console.log('[demo] PHASE 2c: Radio');
-      caption('FM radio bleeds in');
-      showPanel('radio');
-      await sleep(300);
-
-      // Start radio
-      try { await window.radioPlayer?.playFallback(); } catch {}
-      await sleep(800);
-      tap('#radioScan');
-      await sleep(1200);
-
-      // Sweep radio fader up
-      sweep($('#faderRadio'), 55, 1500); // non-blocking
+      // Samples fader up — hear the mangled room + radio
+      sweep($('#faderSamples'), 55, 1000);
       await sleep(1500);
 
-      // Capture radio fragment
-      try {
-        tap('#radioSample');
-      } catch {}
-      await sleep(1000);
+      // ════════════════════════════════════════════════════════════
+      // PHASE 3 — INTERACT (0:08 → 0:42)
+      // INTERACT mode: live adaptive composition driven by room
+      // 34 seconds of MUSIC
+      // ════════════════════════════════════════════════════════════
+      console.log('[demo] PHASE 3: INTERACT — adaptive composition');
 
-      // ── 2d (5s): Synth drone + filter sweep ──
-      console.log('[demo] PHASE 2d: Synth drone + filter');
-      caption('Filter sweep — dark to bright');
+      setMode('interact');
+      caption('Room drives composition');
 
-      // Track 2: synth source, steps 0 and 8 only — sustained drone
-      window.sequencer.setTrackSource(2, 'synth');
-      window.sequencer.setStep(2, 0, true);
-      window.sequencer.setStep(2, 8, true);
-      window.app?.refreshSequencerUI?.();
+      // Register the soundscape change handler — this makes it LIVE
+      window.soundscapeAnalyzer?.onClassificationChange(onSoundscapeChange);
+      window._demoOnSoundscapeChange = onSoundscapeChange;
 
-      // Sweep synth fader up
-      sweep($('#faderSynth'), 60, 1200); // non-blocking
+      // --- Timed showcase: panels rotate, material refreshes ---
+      // Music adapts independently via the soundscape callback.
 
-      // Sweep filter from low to high over 4s
+      // 8-14s: Let pattern establish, show sequencer
+      await sleep(2000);
+      showPanel('seq');
+      await sleep(2000);
+
+      // Trigger some pads manually to make sure radio material is heard
+      triggerPad(1);
+      await sleep(400);
+      triggerPad(2);
+      await sleep(1600);
+
+      // 14-18s: CTRL knobs — grain + filter sweep
       showPanel('knobs');
-      await sleep(200);
-      await sweep(filterEl, 6000, 4000);
+      sweepKnob($('#knobGrain'), 50, 1500);
       await sleep(500);
-
-      // ── 2e (6s): Effects + scene crossfade ──
-      console.log('[demo] PHASE 2e: Effects + scene crossfade');
-      caption('Scene crossfade — morphing');
-
-      // Pump up FX
-      showPanel('fx');
-      await sleep(200);
-      sweep($('#fxDelay'), 50, 800);
-      sweep($('#fxGrain'), 55, 800);
+      caption('');
+      await sweep($('#filterCutoff'), 5000, 2000);
       await sleep(1000);
 
-      // Save current as Scene A
+      // 18-22s: FX panel — glitch + delay
+      showPanel('fx');
+      await sleep(500);
+      sweep($('#fxGlitch'), 25, 1000);
+      sweep($('#fxDelay'), 40, 1000);
+      await sleep(2000);
+
+      // Punch FX — stutter burst
+      tap('.punch-btn[data-fx="stutter"]');
+      await sleep(600);
+      tap('.punch-btn[data-fx="reverse"]');
+      await sleep(1500);
+
+      // 22-26s: Re-capture mic — fresh material
+      caption('Re-sampling room...');
+      showPanel('pads');
+      await captureMicToPad(3);
+      await sleep(300);
+      // Trigger the new capture
+      triggerPad(3);
+      await sleep(500);
+      triggerPad(0); // original room too
+      await sleep(1200);
+      caption('');
+
+      // 26-30s: Re-capture radio — briefly turn it on, grab, kill
+      showPanel('radio');
+      try {
+        await window.radioPlayer?.playFallback();
+        await sleep(600);
+        const radioBuf3 = await window.radioPlayer?.captureToBuffer(1000);
+        if (radioBuf3) {
+          window.sampler?.loadBuffer(2, radioBuf3, {
+            name: 'Radio-fresh', source: 'radio', timestamp: Date.now()
+          });
+        }
+        window.radioPlayer?.stop();
+      } catch {}
+      triggerPad(2); // play the fresh radio chop
+      await sleep(500);
+      triggerPad(1);
+      await sleep(1500);
+
+      // 30-34s: Scene crossfade
+      showPanel('seq');
+      await sleep(500);
+      caption('Scene crossfade');
       showPanel('scenes');
-      await sleep(200);
-      window.sceneManager?.saveScene(0);
-      tap('.scene-btn[data-scene="0"]');
       await sleep(300);
 
-      // Modify for Scene B: different FX, filter, mixer balance
-      const setVal = (id, v) => {
-        const el = $(`#${id}`);
-        if (el) { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); }
-      };
-      setVal('fxGlitch', 35);
-      setVal('fxCrush', 5);
-      setVal('fxDelay', 70);
-      setVal('filterCutoff', 12000);
-      setVal('faderRadio', 72);
-      setVal('faderSynth', 35);
-      setVal('faderSamples', 50);
+      // Save current as Scene A
+      window.sceneManager?.saveScene(0);
+      tap('.scene-btn[data-scene="0"]');
+      await sleep(200);
+
+      // Create Scene B: heavier FX
+      setVal('fxGlitch', 45);
+      setVal('fxCrush', 4);
+      setVal('fxDelay', 60);
+      setVal('filterCutoff', 10000);
+      setVal('faderSynth', 50);
+      setVal('faderSamples', 70);
+      setVal('faderMic', 15);
 
       window.sceneManager?.saveScene(1);
       tap('.scene-btn[data-scene="1"]');
       await sleep(200);
 
-      // Recall A, then morph to B
+      // Morph A → B
       window.sceneManager?.recallScene(0);
-      await sleep(300);
-      window.sceneManager?.morphTo(1, 3000);
-      sweep($('#sceneCrossfader'), 100, 3000); // visual crossfader
-      await sleep(3200);
+      await sleep(200);
+      window.sceneManager?.morphTo(1, 2500);
+      sweep($('#sceneCrossfader'), 100, 2500);
+      await sleep(3000);
 
-      // Morph back to A (fast)
+      // Morph back
       window.sceneManager?.morphTo(0, 1500);
       sweep($('#sceneCrossfader'), 0, 1500);
-      await sleep(1700);
+      await sleep(1500);
+      caption('');
 
-      // ── 2f (5s): CLIMAX — all tiles converge ──
-      console.log('[demo] PHASE 2f: CLIMAX');
-      caption('All elements converging', { fontSize: '17px' });
-
-      // Push everything to peak
-      sweep($('#faderSamples'), 80, 800);
-      sweep($('#faderSynth'), 70, 800);
-      sweep($('#faderRadio'), 65, 800);
-      sweep($('#faderMic'), 40, 800);
-
-      // Rapid tile showcase — every panel lights up
-      for (const p of ['seq', 'mixer', 'pads', 'knobs', 'fx', 'radio']) {
+      // 34-38s: Rapid panel showcase — instrument alive
+      for (const p of ['seq', 'mixer', 'pads', 'knobs', 'fx']) {
         showPanel(p);
-        await sleep(400);
+        await sleep(300);
       }
 
-      // Scenes crossfade at peak
-      showPanel('scenes');
-      await sleep(500);
+      // Punch FX burst
+      tap('.punch-btn[data-fx="tape"]');
+      await sleep(400);
+      tap('.punch-btn[data-fx="filter"]');
+      await sleep(600);
 
-      // AI fires
+      // AI re-generates
       showPanel('ai');
       tap('#aiGenerate');
-      await sleep(500);
-
-      // Journey stamps this place
-      showPanel('journey');
-      tap('#journeyStart');
-      await sleep(300);
-      tap('#journeyWaypoint');
-      await sleep(400);
-
-      caption('This sound belongs to this place', { fontSize: '17px' });
       await sleep(800);
 
+      // 38-42s: Journey — stamp this place
+      showPanel('journey');
+      tap('#journeyStart');
+      await sleep(200);
+      tap('#journeyWaypoint');
+      caption('This sound belongs here', { fontSize: '17px' });
+      await sleep(2000);
+
       // ════════════════════════════════════════════════════════════
-      // PHASE 3 — RETURN (0:35 → 0:40)
+      // PHASE 4 — RETURN (0:42 → 0:50)
+      // Room resurfaces. Music dissolves.
       // ════════════════════════════════════════════════════════════
-      console.log('[demo] PHASE 3: RETURN');
+      console.log('[demo] PHASE 4: RETURN');
       caption('Returning to the room...');
 
-      // Show mixer — watch everything fade down
       showPanel('mixer');
 
-      // Sweep all faders to zero EXCEPT mic
-      sweep($('#faderSamples'), 0, 2500);
-      sweep($('#faderSynth'), 0, 2500);
-      sweep($('#faderRadio'), 0, 2500);
-      // Sweep FX down
-      sweep($('#fxDelay'), 0, 2000);
-      sweep($('#fxGrain'), 0, 2000);
-      sweep($('#fxGlitch'), 0, 1500);
-      sweep($('#fxCrush'), 16, 1500);
+      // Stop monitoring and extra triggers
+      window.soundscapeAnalyzer?.stopMonitoring();
+      stopExtraTriggers();
 
-      // Mic comes back gently — room resurfaces
-      sweep($('#faderMic'), 65, 2000);
+      // Fade everything down except mic
+      sweep($('#faderSamples'), 0, 3000);
+      sweep($('#faderSynth'), 0, 3000);
+      sweep($('#fxDelay'), 0, 2500);
+      sweep($('#fxGrain'), 0, 2500);
+      sweep($('#fxGlitch'), 0, 2000);
+      sweep($('#fxCrush'), 16, 2000);
 
-      await sleep(3500);
+      // Mic comes back — the room resurfaces
+      sweep($('#faderMic'), 60, 2500);
 
-      // Show seq tile — watch it empty
+      await sleep(4000);
+
+      // Stop sequencer
       showPanel('seq');
       await sleep(300);
-
-      // ── HARD STOP — prevent any looping ──
       try { window.sequencer?.stop(); } catch {}
       tap('#btnStop');
-      await sleep(300);
 
-      // Clear all sequencer steps — tiles empty
+      // Clear sequencer — visual emptying
       for (let t = 0; t < 3; t++)
         for (let s = 0; s < 16; s++)
           try { window.sequencer?.setStep(t, s, false); } catch {}
       window.app?.refreshSequencerUI?.();
 
-      await sleep(500);
+      await sleep(800);
 
-      // Fade mic to zero
+      // Fade mic to silence
       await sweep($('#faderMic'), 0, 1500);
-
-      // Fade master to zero
       await sweep($('#faderMaster'), 0, 500);
 
-      // Stop radio
-      try { window.radioPlayer?.stop(); } catch {}
-
-      // Focus on location — the place this sound belongs to
+      // GPS stamp — the place this sound belongs to
       showPanel('journey');
       tap('#journeyEnd');
       const endCoords = gps
@@ -551,7 +811,7 @@
         : '41.3818° N, 2.1685° E';
       caption(endCoords, { fontSize: '17px' });
 
-      // Stop session recorder and auto-download
+      // Stop session recorder
       try {
         const sr = window.sessionRecorder;
         if (sr?.isRecording()) {
@@ -559,8 +819,7 @@
           await sleep(1500);
           const recs = sr.getRecordings?.() || sr.recordings || [];
           if (recs.length > 0) {
-            const latest = recs[0];
-            sr.downloadRecording(latest.id);
+            sr.downloadRecording(recs[0].id);
           }
         }
       } catch (e) { console.warn('[demo] Recording download failed:', e); }
@@ -568,7 +827,6 @@
       await sleep(2000);
       caption('');
 
-      // Refresh the recordings list in the UI
       window.app?.updateRecCount?.();
       window.app?.updateFilesList?.();
 
@@ -578,14 +836,14 @@
       console.error('[demo] Error:', err);
     } finally {
       stopFeedbackGuard();
-      // Restore button
+      stopExtraTriggers();
+      window.soundscapeAnalyzer?.stopMonitoring();
       running = false;
       btn.textContent = 'DEMO';
       btn.style.background = '#00e5a0';
       btn.style.color = '#0a0a0a';
       btn.disabled = false;
 
-      // Remove overlay
       const overlay = $('#demo-overlay');
       if (overlay) overlay.remove();
     }
@@ -593,8 +851,38 @@
 
   // ─── Init ───
 
+  /** Inject Barcelona coords if GPS fails (HTTP localhost blocks geolocation) */
+  function ensureGPS() {
+    if (window.gpsTracker?.getPosition?.()) return; // real GPS works
+    const fakePos = {
+      latitude: 41.3818,
+      longitude: 2.1685,
+      accuracy: 10,
+      altitude: 12,
+      timestamp: Date.now(),
+      formatted: '41.38180°N, 2.16850°E'
+    };
+    if (window.gpsTracker) {
+      window.gpsTracker.currentPosition = fakePos;
+      window.gpsTracker.error = null;
+      try { window.gpsTracker.notifyListeners(); } catch {}
+      try { window.gpsTracker.updateLocationImage?.(); } catch {}
+    }
+    // Update all GPS text elements directly
+    const els = ['gpsText', 'gpsTextE'];
+    for (const id of els) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '41.3818, 2.1685';
+    }
+    console.log('[demo] GPS injected: Barcelona (41.3818, 2.1685)');
+  }
+
   function initDemo() {
     createDemoButton();
+
+    // Inject GPS immediately so location shows before demo starts
+    // Wait a moment for gpsTracker.init() to try real GPS first
+    setTimeout(ensureGPS, 3000);
 
     // Auto-start if ?demo=auto in URL
     const params = new URLSearchParams(window.location.search);
@@ -602,7 +890,7 @@
       setTimeout(() => {
         const btn = $('#btnDemo');
         if (btn) btn.click();
-      }, 4000); // 4s delay for audio engine + mic init
+      }, 4000);
     }
   }
 

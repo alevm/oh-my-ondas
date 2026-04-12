@@ -16,6 +16,7 @@
 # Usage: ./record-demo.sh [OPTIONS]
 #   --auto            Auto-start demo (opens ?demo=auto, no prompts)
 #   --manual          Manual mode (default): prompts, you click DEMO
+#   --audio-only      Record audio only (mic+system), skip screen capture
 #   --mic-test-only   Run mic test and exit
 #   --no-record       Launch app + Chrome but skip recording
 #   --fake-mic FILE   Use a WAV file as fake mic input
@@ -52,18 +53,22 @@ NO_RECORD=false
 NO_TRIM=false
 MIC_TEST_ONLY=false
 AUTO_MODE=false
+AUDIO_ONLY=false
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 RAW_FILE="/tmp/ohmyondas-raw-${TIMESTAMP}.mp4"
 TRIMMED_FILE=""
 SERVER_PID=""
 CHROME_PID=""
 FFMPEG_PID=""
+MIC_PID=""
+MIC_RAW=""
 
 # ─── Parse args ───
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --auto) AUTO_MODE=true; shift ;;
     --manual) AUTO_MODE=false; shift ;;
+    --audio-only) AUDIO_ONLY=true; shift ;;
     --mic-test-only) MIC_TEST_ONLY=true; shift ;;
     --no-record) NO_RECORD=true; shift ;;
     --fake-mic) FAKE_MIC="$2"; shift 2 ;;
@@ -87,8 +92,13 @@ TRIMMED_FILE="${OUTPUT%.mp4}-trimmed.mp4"
 # ─── Cleanup trap ───
 cleanup() {
   [[ -n "$FFMPEG_PID" ]] && kill "$FFMPEG_PID" 2>/dev/null || true
+  [[ -n "$MIC_PID" ]] && kill "$MIC_PID" 2>/dev/null || true
   [[ -n "$CHROME_PID" ]] && kill "$CHROME_PID" 2>/dev/null || true
   [[ -n "$SERVER_PID" ]] && kill "$SERVER_PID" 2>/dev/null || true
+  # Stop GNOME screencast if running
+  gdbus call --session --dest org.gnome.Shell.Screencast \
+    --object-path /org/gnome/Shell/Screencast \
+    --method org.gnome.Shell.Screencast.StopScreencast &>/dev/null || true
   # Kill any leftover server on our port
   fuser -k "${PORT}/tcp" 2>/dev/null || true
   rm -f /tmp/ohmyondas-mic-test.wav
@@ -160,11 +170,12 @@ fi
 
 if [[ "${XDG_SESSION_TYPE:-}" == "wayland" ]] || [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
   DISPLAY_TYPE="wayland"
-  if command -v wf-recorder &>/dev/null; then
-    CAPTURE_METHOD="wf-recorder"
-  elif [[ -n "${X11_DISPLAY:-}" ]]; then
+  # On Wayland, we force Chrome to render via XWayland (--ozone-platform=x11)
+  # then capture the XWayland display with ffmpeg x11grab.
+  # wf-recorder only works on wlroots compositors (Sway, Hyprland), NOT KDE/GNOME.
+  if [[ -n "${X11_DISPLAY:-}" ]]; then
     CAPTURE_METHOD="x11grab"
-    info "Wayland detected but using XWayland (DISPLAY=$X11_DISPLAY) for capture"
+    info "Wayland detected — Chrome will use XWayland, captured via x11grab"
   fi
 elif [[ -n "${X11_DISPLAY:-}" ]]; then
   DISPLAY_TYPE="x11"
@@ -173,7 +184,7 @@ fi
 
 if [[ -z "$CAPTURE_METHOD" ]]; then
   fail "No screen capture method available."
-  fail "Install wf-recorder (zypper install wf-recorder) or ensure XWayland is running."
+  fail "Ensure XWayland is running (check \$DISPLAY env var)."
   exit 1
 fi
 
@@ -310,6 +321,35 @@ ok "Server running at $BASE"
 CHROME_PROFILE="/tmp/ohmyondas-chrome-profile"
 mkdir -p "$CHROME_PROFILE"
 
+# Pre-configure permissions for the isolated profile (geolocation, mic, notifications)
+PREFS_DIR="$CHROME_PROFILE/Default"
+mkdir -p "$PREFS_DIR"
+if [[ ! -f "$PREFS_DIR/Preferences" ]]; then
+  cat > "$PREFS_DIR/Preferences" <<'PREFS_EOF'
+{
+  "profile": {
+    "content_settings": {
+      "exceptions": {
+        "geolocation": {
+          "http://127.0.0.1:*,*": { "setting": 1 },
+          "http://localhost:*,*": { "setting": 1 }
+        },
+        "media_stream_mic": {
+          "http://127.0.0.1:*,*": { "setting": 1 },
+          "http://localhost:*,*": { "setting": 1 }
+        },
+        "notifications": {
+          "http://127.0.0.1:*,*": { "setting": 2 },
+          "http://localhost:*,*": { "setting": 2 }
+        }
+      }
+    }
+  }
+}
+PREFS_EOF
+  ok "Chrome profile configured (geolocation + mic auto-allowed)"
+fi
+
 # Prefer chromium (stays alive as separate process) over google-chrome
 # google-chrome-stable delegates to existing instance and exits
 for name in chromium chromium-browser google-chrome-stable google-chrome; do
@@ -329,9 +369,11 @@ CHROME_FLAGS=(
   --disable-extensions
   --no-first-run
   --no-default-browser-check
+  --enable-features=GeolocationPermission
+  --unsafely-treat-insecure-origin-as-secure="http://127.0.0.1:${PORT}"
 )
 
-# Force X11 rendering when using x11grab capture (Wayland windows are invisible to x11grab)
+# Force X11 rendering so Chrome is visible to x11grab on both X11 and Wayland+XWayland
 if [[ "$CAPTURE_METHOD" == "x11grab" ]]; then
   CHROME_FLAGS+=(--ozone-platform=x11)
   info "Forcing Chrome X11 mode (needed for x11grab capture)"
@@ -357,9 +399,14 @@ if [[ -n "$FAKE_MIC" ]]; then
 fi
 
 # Launch Chrome
-APP_URL="${BASE}/app.html"
+# Use mockup (index.html) to show the device — app runs inside its iframe.
+# The iframe loads app.html?embedded=1&mockup=1 which includes demo-mode.js.
+# For auto mode, we open app.html directly with ?demo=auto so the DEMO button
+# auto-clicks without needing to reach into the iframe.
 if $AUTO_MODE; then
-  APP_URL="${APP_URL}?demo=auto"
+  APP_URL="${BASE}/app.html?demo=auto"
+else
+  APP_URL="${BASE}/index.html"
 fi
 info "Launching Chrome..."
 "$CHROME_BIN" "${CHROME_FLAGS[@]}" "$APP_URL" &>/dev/null &
@@ -407,17 +454,97 @@ else
   read -r
 fi
 
-info "Starting recording ($CAPTURE_METHOD)..."
+if $AUDIO_ONLY; then
+  # ── AUDIO-ONLY + GNOME SCREEN RECORDER ──
+  # Records screen via GNOME Shell D-Bus Screencast API (built into GNOME),
+  # plus mic+system audio via ffmpeg. Everything automated.
 
-if [[ "$CAPTURE_METHOD" == "wf-recorder" ]]; then
-  WF_ARGS=(-f "$RAW_FILE")
-  [[ -n "$MONITOR_SOURCE" ]] && WF_ARGS+=(--audio="$MONITOR_SOURCE")
-  wf-recorder "${WF_ARGS[@]}" &>/dev/null &
+  SCREEN_FILE="/tmp/ohmyondas-screen-${TIMESTAMP}.webm"
+  AUDIO_FILE="${OUTPUT%.mp4}.wav"
+  GNOME_SCREENCAST=false
+
+  # Try to start GNOME Shell built-in screencast via D-Bus
+  if gdbus introspect --session --dest org.gnome.Shell.Screencast \
+      --object-path /org/gnome/Shell/Screencast &>/dev/null; then
+    info "GNOME Shell Screencast available"
+    GNOME_SCREENCAST=true
+  else
+    warn "GNOME Shell Screencast D-Bus not available"
+    warn "Will record audio only — use Ctrl+Shift+Alt+R to screencast manually"
+  fi
+
+  echo ""
+  if ! $AUTO_MODE; then
+    echo -e "  ${BOLD}═══════════════════════════════════════════════════${NC}"
+    echo -e "  ${YELLOW}TIMESTAMP: ${TIMESTAMP}${NC}"
+    echo -e "  ${CYAN}Press Enter to start recording, then click DEMO.${NC}"
+    echo -e "  ${BOLD}═══════════════════════════════════════════════════${NC}"
+    read -r
+  fi
+
+  # Start GNOME screen recording
+  if $GNOME_SCREENCAST; then
+    SCREENCAST_RESULT=$(gdbus call --session \
+      --dest org.gnome.Shell.Screencast \
+      --object-path /org/gnome/Shell/Screencast \
+      --method org.gnome.Shell.Screencast.Screencast \
+      "$SCREEN_FILE" \
+      "{'framerate': <uint32 25>, 'draw-cursor': <true>}" 2>&1) || true
+
+    if echo "$SCREENCAST_RESULT" | grep -q "true"; then
+      ok "GNOME screen recording started → $SCREEN_FILE"
+    else
+      warn "GNOME screencast failed: $SCREENCAST_RESULT"
+      warn "Falling back to audio-only. Press Ctrl+Shift+Alt+R to record manually."
+      GNOME_SCREENCAST=false
+    fi
+  fi
+
+  echo -e "  ${GREEN}▶ RECORDING STARTED at $(date +%H:%M:%S)${NC}"
+
+  # Start audio recording (mic + system mixed)
+  AUDIO_INPUTS=0
+  FFMPEG_AUDIO_CMD=(ffmpeg -y)
+  if [[ -n "$MIC_SOURCE" ]]; then
+    FFMPEG_AUDIO_CMD+=(-f pulse -i "$MIC_SOURCE")
+    AUDIO_INPUTS=$((AUDIO_INPUTS + 1))
+  fi
+  if [[ -n "$MONITOR_SOURCE" ]]; then
+    FFMPEG_AUDIO_CMD+=(-f pulse -i "$MONITOR_SOURCE")
+    AUDIO_INPUTS=$((AUDIO_INPUTS + 1))
+  fi
+
+  if [[ "$AUDIO_INPUTS" -eq 2 ]]; then
+    FFMPEG_AUDIO_CMD+=(-filter_complex "[0:a][1:a]amix=inputs=2:duration=longest[aout]" -map "[aout]")
+  fi
+  FFMPEG_AUDIO_CMD+=(-ar 48000 -ac 2 "$AUDIO_FILE")
+
+  "${FFMPEG_AUDIO_CMD[@]}" &>/dev/null &
   FFMPEG_PID=$!
+  sleep 1
+  if ! kill -0 "$FFMPEG_PID" 2>/dev/null; then
+    fail "Audio recording failed to start"
+    exit 1
+  fi
+  ok "Audio recorder running (PID $FFMPEG_PID)"
+  RAW_FILE="$AUDIO_FILE"
 
 elif [[ "$CAPTURE_METHOD" == "x11grab" ]]; then
+  info "Starting recording ($CAPTURE_METHOD)..."
+  FFMPEG_LOG="/tmp/ohmyondas-ffmpeg-${TIMESTAMP}.log"
+
+  # Get actual screen resolution if xrandr available
+  SCREEN_RES="1920x1080"
+  if command -v xrandr &>/dev/null; then
+    DETECTED_RES=$(xrandr --display "${X11_DISPLAY}" 2>/dev/null | grep -oP '\d+x\d+\+0\+0' | head -1 | cut -d+ -f1)
+    if [[ -n "$DETECTED_RES" ]]; then
+      SCREEN_RES="$DETECTED_RES"
+      info "Detected resolution: $SCREEN_RES"
+    fi
+  fi
+
   FFMPEG_CMD=(ffmpeg -y
-    -f x11grab -r 25 -video_size 1920x1080 -i "$X11_DISPLAY"
+    -f x11grab -r 25 -video_size "$SCREEN_RES" -i "${X11_DISPLAY}.0+0,0"
   )
 
   # Audio: mix raw mic + system audio output together
@@ -445,8 +572,16 @@ elif [[ "$CAPTURE_METHOD" == "x11grab" ]]; then
 
   FFMPEG_CMD+=(-movflags +faststart "$RAW_FILE")
 
-  "${FFMPEG_CMD[@]}" &>/dev/null &
+  info "ffmpeg command: ${FFMPEG_CMD[*]}"
+  "${FFMPEG_CMD[@]}" >"$FFMPEG_LOG" 2>&1 &
   FFMPEG_PID=$!
+  sleep 2
+  # Verify ffmpeg is running
+  if ! kill -0 "$FFMPEG_PID" 2>/dev/null; then
+    fail "ffmpeg exited immediately. Log:"
+    cat "$FFMPEG_LOG" 2>/dev/null | tail -20
+    exit 1
+  fi
 fi
 
 info "Recorder PID $FFMPEG_PID"
@@ -477,6 +612,39 @@ if kill -0 "$FFMPEG_PID" 2>/dev/null; then
   kill -INT "$FFMPEG_PID" 2>/dev/null || true
   sleep 2
   kill -9 "$FFMPEG_PID" 2>/dev/null || true
+fi
+
+# Stop GNOME screencast if we started one
+if [[ "${GNOME_SCREENCAST:-false}" == "true" ]]; then
+  gdbus call --session \
+    --dest org.gnome.Shell.Screencast \
+    --object-path /org/gnome/Shell/Screencast \
+    --method org.gnome.Shell.Screencast.StopScreencast &>/dev/null || true
+  ok "GNOME screen recording stopped"
+
+  # Merge screen + audio into final output
+  if [[ -f "$SCREEN_FILE" ]] && [[ -f "$AUDIO_FILE" ]]; then
+    info "Merging screen ($SCREEN_FILE) + audio ($AUDIO_FILE)..."
+    ffmpeg -y -i "$SCREEN_FILE" -i "$AUDIO_FILE" \
+      -c:v libx264 -preset fast -crf 18 -pix_fmt yuv420p \
+      -c:a aac -b:a 192k \
+      -shortest -movflags +faststart \
+      "$RAW_FILE.merged.mp4" 2>/dev/null
+    if [[ -f "$RAW_FILE.merged.mp4" ]]; then
+      RAW_FILE="$RAW_FILE.merged.mp4"
+      ok "Merged video+audio: $RAW_FILE"
+    else
+      warn "Merge failed — screen and audio saved separately"
+      info "Screen: $SCREEN_FILE"
+      info "Audio:  $AUDIO_FILE"
+    fi
+  fi
+fi
+# Stop separate mic recorder if running
+if [[ -n "$MIC_PID" ]] && kill -0 "$MIC_PID" 2>/dev/null; then
+  kill -INT "$MIC_PID" 2>/dev/null || true
+  sleep 1
+  kill -9 "$MIC_PID" 2>/dev/null || true
 fi
 wait "$FFMPEG_PID" 2>/dev/null || true
 FFMPEG_PID=""

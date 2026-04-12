@@ -48,7 +48,7 @@ OhMyOndas/
 │   └── ise/            # ISE 2026 submission
 ├── .github/workflows/  # CI/CD
 ├── README.md
-├── LICENSE             # GPL-3.0
+├── LICENSE             # AGPL-3.0
 └── CONTRIBUTING.md
 ```
 
