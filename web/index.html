@@ -1154,6 +1154,129 @@
         <div>Time: <span id="timeVal">--:--</span></div>
     </div>
 
+    <!-- Audio Examples Section -->
+    <div class="audio-examples" id="audioExamples">
+        <h3>Listen: Example Compositions</h3>
+        <p class="audio-subtitle">These demos are generated live by the same Web Audio engine that powers the app.</p>
+        <div class="audio-grid">
+            <div class="audio-card" data-demo="urban">
+                <div class="audio-card-header">
+                    <span class="audio-icon">&#9834;</span>
+                    <div>
+                        <h4>Urban Drift</h4>
+                        <span class="audio-desc">Synth pads + sequenced kicks + city ambience</span>
+                    </div>
+                </div>
+                <div class="audio-controls">
+                    <button class="audio-play-btn" data-demo="urban" title="Play Urban Drift">&#9654;</button>
+                    <div class="audio-progress"><div class="audio-progress-fill" data-demo="urban"></div></div>
+                    <span class="audio-time" data-demo="urban">0:00 / 0:08</span>
+                </div>
+            </div>
+            <div class="audio-card" data-demo="coastal">
+                <div class="audio-card-header">
+                    <span class="audio-icon">&#127754;</span>
+                    <div>
+                        <h4>Coastal Waves</h4>
+                        <span class="audio-desc">Filtered noise + sine harmonics + delay</span>
+                    </div>
+                </div>
+                <div class="audio-controls">
+                    <button class="audio-play-btn" data-demo="coastal" title="Play Coastal Waves">&#9654;</button>
+                    <div class="audio-progress"><div class="audio-progress-fill" data-demo="coastal"></div></div>
+                    <span class="audio-time" data-demo="coastal">0:00 / 0:08</span>
+                </div>
+            </div>
+            <div class="audio-card" data-demo="forest">
+                <div class="audio-card-header">
+                    <span class="audio-icon">&#127795;</span>
+                    <div>
+                        <h4>Forest Pulse</h4>
+                        <span class="audio-desc">Granular textures + euclidean rhythm + reverb</span>
+                    </div>
+                </div>
+                <div class="audio-controls">
+                    <button class="audio-play-btn" data-demo="forest" title="Play Forest Pulse">&#9654;</button>
+                    <div class="audio-progress"><div class="audio-progress-fill" data-demo="forest"></div></div>
+                    <span class="audio-time" data-demo="forest">0:00 / 0:08</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        .audio-examples {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        .audio-examples h3 {
+            font-size: 18px;
+            color: var(--petrol);
+            margin-bottom: 4px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .audio-subtitle {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+        .audio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 14px;
+        }
+        .audio-card {
+            background: var(--petrol);
+            border-radius: 10px;
+            padding: 16px;
+            color: #fff;
+        }
+        .audio-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .audio-icon { font-size: 24px; }
+        .audio-card h4 { font-size: 15px; margin: 0; font-weight: 700; }
+        .audio-desc { font-size: 11px; color: rgba(255,255,255,0.5); }
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .audio-play-btn {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 2px solid #278789;
+            background: transparent;
+            color: #278789;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .audio-play-btn:hover { background: #278789; color: #fff; }
+        .audio-play-btn.playing { background: #c0392b; border-color: #c0392b; color: #fff; }
+        .audio-progress {
+            flex: 1;
+            height: 4px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .audio-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #278789;
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+        .audio-time { font-size: 11px; color: rgba(255,255,255,0.4); font-family: monospace; white-space: nowrap; }
+    </style>
+
     <div class="diy-panel">
         <h3>DIY Build Assessment</h3>
         <div class="diy-grid">
@@ -1446,6 +1569,226 @@
             if (e.key === 'b' || e.key === 'B') { sendToApp('button', { action: 'back' }); }
             if (e.key === 'Shift') { sendToApp('button', { action: 'shift' }); }
         });
+
+        // Audio Examples — synthesized demos
+        (function() {
+            let actx = null;
+            const demos = {};
+            const DURATION = 8;
+
+            function getCtx() {
+                if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+                if (actx.state === 'suspended') actx.resume();
+                return actx;
+            }
+
+            function createUrban(ctx) {
+                const dur = DURATION;
+                const master = ctx.createGain();
+                master.gain.value = 0.4;
+                // Pad chord
+                [220, 277.18, 329.63].forEach(freq => {
+                    const osc = ctx.createOscillator();
+                    osc.type = 'sawtooth';
+                    osc.frequency.value = freq;
+                    const g = ctx.createGain();
+                    g.gain.setValueAtTime(0, ctx.currentTime);
+                    g.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.5);
+                    g.gain.linearRampToValueAtTime(0.06, ctx.currentTime + dur - 1);
+                    g.gain.linearRampToValueAtTime(0, ctx.currentTime + dur);
+                    const filt = ctx.createBiquadFilter();
+                    filt.type = 'lowpass';
+                    filt.frequency.value = 800;
+                    filt.frequency.linearRampToValueAtTime(1200, ctx.currentTime + dur / 2);
+                    filt.frequency.linearRampToValueAtTime(600, ctx.currentTime + dur);
+                    osc.connect(filt).connect(g).connect(master);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + dur);
+                });
+                // Kick pattern
+                for (let i = 0; i < dur * 2; i++) {
+                    const t = ctx.currentTime + i * 0.5;
+                    const osc = ctx.createOscillator();
+                    osc.frequency.setValueAtTime(150, t);
+                    osc.frequency.exponentialRampToValueAtTime(40, t + 0.1);
+                    const g = ctx.createGain();
+                    g.gain.setValueAtTime(0.3, t);
+                    g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+                    osc.connect(g).connect(master);
+                    osc.start(t);
+                    osc.stop(t + 0.2);
+                }
+                // Hi-hat noise
+                for (let i = 0; i < dur * 4; i++) {
+                    const t = ctx.currentTime + i * 0.25 + 0.125;
+                    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+                    const d = buf.getChannelData(0);
+                    for (let s = 0; s < d.length; s++) d[s] = (Math.random() * 2 - 1) * (1 - s / d.length);
+                    const src = ctx.createBufferSource();
+                    src.buffer = buf;
+                    const g = ctx.createGain();
+                    g.gain.setValueAtTime(0.06, t);
+                    g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+                    const hp = ctx.createBiquadFilter();
+                    hp.type = 'highpass';
+                    hp.frequency.value = 8000;
+                    src.connect(hp).connect(g).connect(master);
+                    src.start(t);
+                }
+                return master;
+            }
+
+            function createCoastal(ctx) {
+                const dur = DURATION;
+                const master = ctx.createGain();
+                master.gain.value = 0.35;
+                // Wave noise sweep
+                const bufLen = ctx.sampleRate * dur;
+                const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+                const d = buf.getChannelData(0);
+                for (let s = 0; s < bufLen; s++) d[s] = Math.random() * 2 - 1;
+                const noise = ctx.createBufferSource();
+                noise.buffer = buf;
+                const filt = ctx.createBiquadFilter();
+                filt.type = 'bandpass';
+                filt.Q.value = 2;
+                for (let i = 0; i < dur; i++) {
+                    const t = ctx.currentTime + i;
+                    filt.frequency.linearRampToValueAtTime(200 + Math.sin(i * 0.8) * 150, t);
+                }
+                const ng = ctx.createGain();
+                ng.gain.value = 0.15;
+                noise.connect(filt).connect(ng).connect(master);
+                noise.start(ctx.currentTime);
+                noise.stop(ctx.currentTime + dur);
+                // Sine harmonics
+                [261.63, 392, 523.25].forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    const g = ctx.createGain();
+                    g.gain.setValueAtTime(0, ctx.currentTime + idx * 0.8);
+                    g.gain.linearRampToValueAtTime(0.08, ctx.currentTime + idx * 0.8 + 1);
+                    g.gain.linearRampToValueAtTime(0, ctx.currentTime + dur);
+                    osc.connect(g).connect(master);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + dur);
+                });
+                // Delay effect via feedback loop
+                const delay = ctx.createDelay(0.5);
+                delay.delayTime.value = 0.375;
+                const fb = ctx.createGain();
+                fb.gain.value = 0.3;
+                master.connect(delay).connect(fb).connect(delay);
+                const dg = ctx.createGain();
+                dg.gain.value = 0.25;
+                delay.connect(dg);
+                const out = ctx.createGain();
+                out.gain.value = 1;
+                master.connect(out);
+                dg.connect(out);
+                return out;
+            }
+
+            function createForest(ctx) {
+                const dur = DURATION;
+                const master = ctx.createGain();
+                master.gain.value = 0.35;
+                // Granular texture
+                for (let i = 0; i < 60; i++) {
+                    const t = ctx.currentTime + Math.random() * dur;
+                    const gLen = 0.03 + Math.random() * 0.08;
+                    const osc = ctx.createOscillator();
+                    osc.type = ['sine','triangle'][Math.floor(Math.random()*2)];
+                    osc.frequency.value = 400 + Math.random() * 2000;
+                    const g = ctx.createGain();
+                    g.gain.setValueAtTime(0, t);
+                    g.gain.linearRampToValueAtTime(0.04, t + gLen * 0.3);
+                    g.gain.linearRampToValueAtTime(0, t + gLen);
+                    osc.connect(g).connect(master);
+                    osc.start(t);
+                    osc.stop(t + gLen + 0.01);
+                }
+                // Euclidean pulse (5 hits in 8 steps)
+                const euclidean = [1,0,1,0,1,1,0,1];
+                const stepTime = 0.25;
+                for (let rep = 0; rep < Math.floor(dur / (8 * stepTime)); rep++) {
+                    euclidean.forEach((hit, i) => {
+                        if (!hit) return;
+                        const t = ctx.currentTime + rep * 8 * stepTime + i * stepTime;
+                        const osc = ctx.createOscillator();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(80, t);
+                        osc.frequency.exponentialRampToValueAtTime(50, t + 0.12);
+                        const g = ctx.createGain();
+                        g.gain.setValueAtTime(0.2, t);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+                        osc.connect(g).connect(master);
+                        osc.start(t);
+                        osc.stop(t + 0.2);
+                    });
+                }
+                // Sub bass drone
+                const sub = ctx.createOscillator();
+                sub.type = 'sine';
+                sub.frequency.value = 55;
+                const sg = ctx.createGain();
+                sg.gain.setValueAtTime(0, ctx.currentTime);
+                sg.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 1);
+                sg.gain.linearRampToValueAtTime(0.1, ctx.currentTime + dur - 1);
+                sg.gain.linearRampToValueAtTime(0, ctx.currentTime + dur);
+                sub.connect(sg).connect(master);
+                sub.start(ctx.currentTime);
+                sub.stop(ctx.currentTime + dur);
+                return master;
+            }
+
+            const generators = { urban: createUrban, coastal: createCoastal, forest: createForest };
+
+            function stopDemo(name) {
+                if (demos[name]) {
+                    demos[name].output.disconnect();
+                    clearInterval(demos[name].timer);
+                    delete demos[name];
+                    const btn = document.querySelector(`.audio-play-btn[data-demo="${name}"]`);
+                    if (btn) { btn.textContent = '\u25B6'; btn.classList.remove('playing'); }
+                    const fill = document.querySelector(`.audio-progress-fill[data-demo="${name}"]`);
+                    if (fill) fill.style.width = '0%';
+                    const time = document.querySelector(`.audio-time[data-demo="${name}"]`);
+                    if (time) time.textContent = '0:00 / 0:08';
+                }
+            }
+
+            function playDemo(name) {
+                // Stop any playing demo
+                Object.keys(demos).forEach(stopDemo);
+                const ctx = getCtx();
+                const output = generators[name](ctx);
+                output.connect(ctx.destination);
+                const startTime = ctx.currentTime;
+                const btn = document.querySelector(`.audio-play-btn[data-demo="${name}"]`);
+                if (btn) { btn.textContent = '\u25A0'; btn.classList.add('playing'); }
+                const timer = setInterval(() => {
+                    const elapsed = ctx.currentTime - startTime;
+                    if (elapsed >= DURATION) { stopDemo(name); return; }
+                    const fill = document.querySelector(`.audio-progress-fill[data-demo="${name}"]`);
+                    if (fill) fill.style.width = (elapsed / DURATION * 100) + '%';
+                    const time = document.querySelector(`.audio-time[data-demo="${name}"]`);
+                    if (time) {
+                        const e = Math.floor(elapsed);
+                        time.textContent = '0:0' + e + ' / 0:08';
+                    }
+                }, 100);
+                demos[name] = { output, timer, startTime };
+            }
+
+            document.querySelectorAll('.audio-play-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const name = btn.dataset.demo;
+                    if (demos[name]) { stopDemo(name); } else { playDemo(name); }
+                });
+            });
+        })();
 
         // Time
         function updateTime() {
