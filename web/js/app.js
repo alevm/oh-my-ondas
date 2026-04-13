@@ -127,6 +127,9 @@ class App {
 
         this.initialized = true;
         console.log('App v2.5.2 initialized');
+
+        // Start onboarding walkthrough for first-time users
+        if (window.onboarding) window.onboarding.init();
     }
 
     // Demo mode configuration
