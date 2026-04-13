@@ -119,6 +119,24 @@ class App {
             this.updateRecCount();
         };
 
+        // Initialize MIDI I/O
+        if (window.midiIO) {
+            window.midiIO.init().then(() => {
+                this.setupMidiSettings();
+            });
+        }
+
+        // Setup preset sharing UI
+        this.setupPresetShare();
+
+        // Load preset from URL if present
+        if (window.presetShare) {
+            const urlPreset = window.presetShare.loadFromURL();
+            if (urlPreset) {
+                console.log('Loaded preset from URL:', urlPreset.name);
+            }
+        }
+
         // Apply saved settings
         this.applySettings();
 
@@ -3610,6 +3628,188 @@ class App {
         });
     }
 
+    // ===== MIDI Settings UI =====
+    setupMidiSettings() {
+        const midi = window.midiIO;
+        if (!midi) return;
+
+        const inputSelect = document.getElementById('midiInputSelect');
+        const outputSelect = document.getElementById('midiOutputSelect');
+        const statusEl = document.getElementById('midiStatus');
+
+        const refreshDevices = () => {
+            if (!midi.isAvailable()) {
+                if (statusEl) statusEl.textContent = 'No MIDI devices found';
+                return;
+            }
+
+            // Populate input dropdown
+            if (inputSelect) {
+                const inputs = midi.getInputs();
+                inputSelect.innerHTML = '<option value="">-- None --</option>';
+                inputs.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.id;
+                    opt.textContent = d.name;
+                    if (d.id === midi.selectedInputId) opt.selected = true;
+                    inputSelect.appendChild(opt);
+                });
+            }
+
+            // Populate output dropdown
+            if (outputSelect) {
+                const outputs = midi.getOutputs();
+                outputSelect.innerHTML = '<option value="">-- None --</option>';
+                outputs.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.id;
+                    opt.textContent = d.name;
+                    if (d.id === midi.selectedOutputId) opt.selected = true;
+                    outputSelect.appendChild(opt);
+                });
+            }
+
+            if (statusEl) statusEl.textContent = midi.getStatus();
+        };
+
+        // Device selection
+        inputSelect?.addEventListener('change', () => {
+            midi.selectInput(inputSelect.value || null);
+            if (statusEl) statusEl.textContent = midi.getStatus();
+        });
+
+        outputSelect?.addEventListener('change', () => {
+            midi.selectOutput(outputSelect.value || null);
+            if (statusEl) statusEl.textContent = midi.getStatus();
+        });
+
+        // Re-populate on device changes
+        midi.onStateChange = refreshDevices;
+
+        // Initial populate
+        refreshDevices();
+
+        // CC mapping UI
+        this.renderCCMappings();
+
+        const addBtn = document.getElementById('midiCCAdd');
+        if (addBtn) {
+            addBtn.addEventListener('click', () => {
+                const ccNum = parseInt(document.getElementById('midiCCNum')?.value);
+                const target = document.getElementById('midiCCTarget')?.value;
+                const param = document.getElementById('midiCCParam')?.value;
+                if (isNaN(ccNum) || ccNum < 0 || ccNum > 127) return;
+
+                // Determine min/max based on param
+                const ranges = {
+                    filterCutoff: [20, 8000],
+                    filterResonance: [0, 30],
+                    volume: [0, 100],
+                    glide: [0, 500],
+                    lfoRate: [0, 20],
+                    lfoDepth: [0, 100],
+                    delay: [0, 100],
+                    reverb: [0, 100]
+                };
+                const [min, max] = ranges[param] || [0, 127];
+                midi.setMapping(ccNum, target, param, min, max, `CC${ccNum} -> ${param}`);
+                this.renderCCMappings();
+            });
+        }
+    }
+
+    renderCCMappings() {
+        const list = document.getElementById('midiCCList');
+        if (!list || !window.midiIO) return;
+
+        const mappings = window.midiIO.getMappings();
+        list.innerHTML = '';
+
+        Object.keys(mappings).sort((a, b) => a - b).forEach(cc => {
+            const m = mappings[cc];
+            const row = document.createElement('div');
+            row.className = 'midi-cc-row';
+            row.innerHTML = `<span>CC${cc}</span><span>${m.target}.${m.param}</span>` +
+                `<button class="midi-cc-del" data-cc="${cc}" title="Remove mapping">x</button>`;
+            list.appendChild(row);
+        });
+
+        list.querySelectorAll('.midi-cc-del').forEach(btn => {
+            btn.addEventListener('click', () => {
+                window.midiIO.removeMapping(parseInt(btn.dataset.cc));
+                this.renderCCMappings();
+            });
+        });
+    }
+
+    // ===== Preset Sharing UI =====
+    setupPresetShare() {
+        const ps = window.presetShare;
+        if (!ps) return;
+
+        // Export button
+        document.getElementById('presetExport')?.addEventListener('click', () => {
+            const name = prompt('Preset name:', 'My Preset');
+            if (!name) return;
+            const desc = prompt('Description (optional):', '') || '';
+            const preset = ps.capturePreset(name, desc);
+            ps.exportPreset(preset);
+        });
+
+        // Import button
+        document.getElementById('presetImport')?.addEventListener('click', () => {
+            ps.importPreset().then(preset => {
+                console.log('Imported preset:', preset.name);
+                alert('Preset loaded: ' + preset.name);
+            }).catch(err => {
+                console.warn('Import failed:', err);
+                alert('Failed to import preset: ' + err.message);
+            });
+        });
+
+        // Share URL button
+        document.getElementById('presetShareURL')?.addEventListener('click', () => {
+            const name = prompt('Preset name for sharing:', 'Shared Preset');
+            if (!name) return;
+            const preset = ps.capturePreset(name, '');
+            const url = ps.generateShareURL(preset);
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Share URL copied to clipboard!');
+            }).catch(() => {
+                // Fallback: show the URL
+                prompt('Copy this URL:', url);
+            });
+        });
+
+        // Render gallery
+        this.renderPresetGallery();
+    }
+
+    renderPresetGallery() {
+        const list = document.getElementById('presetGalleryList');
+        const ps = window.presetShare;
+        if (!list || !ps) return;
+
+        list.innerHTML = '';
+        ps.getGallery().forEach((preset, i) => {
+            const item = document.createElement('div');
+            item.className = 'preset-gallery-item';
+            item.title = preset.description;
+            item.innerHTML = `<span class="preset-gallery-name">${preset.name}</span>` +
+                `<span class="preset-gallery-desc">${preset.description}</span>`;
+            item.addEventListener('click', () => {
+                ps.applyPreset(preset);
+                console.log('Applied gallery preset:', preset.name);
+                // Visual feedback
+                list.querySelectorAll('.preset-gallery-item').forEach(el => el.classList.remove('active'));
+                item.classList.add('active');
+            });
+            list.appendChild(item);
+        });
+    }
+
     populateAdminModal() {
         // Sync UI with current settings
         document.querySelectorAll('.kit-item').forEach(item => {
@@ -3635,6 +3835,14 @@ class App {
         if (recGpsEmbed) recGpsEmbed.checked = this.settings.recGpsEmbed;
         if (seqTracks) seqTracks.value = this.settings.seqTracks;
         if (seqSteps) seqSteps.value = this.settings.seqSteps;
+
+        // Refresh MIDI device lists and CC mappings
+        if (window.midiIO?.isAvailable()) {
+            this.setupMidiSettings();
+        }
+
+        // Refresh preset gallery
+        this.renderPresetGallery();
     }
 
     // GPS

@@ -687,6 +687,58 @@
                     </div>
                 </div>
                 <div class="settings-section">
+                    <div class="settings-title">MIDI</div>
+                    <div id="midiSettings" class="midi-settings">
+                        <div class="midi-device-row">
+                            <label>Input:</label>
+                            <select id="midiInputSelect" title="Select MIDI input device">
+                                <option value="">-- None --</option>
+                            </select>
+                        </div>
+                        <div class="midi-device-row">
+                            <label>Output:</label>
+                            <select id="midiOutputSelect" title="Select MIDI output device">
+                                <option value="">-- None --</option>
+                            </select>
+                        </div>
+                        <div class="midi-status" id="midiStatus">Initializing...</div>
+                        <div class="midi-cc-editor">
+                            <div class="settings-subtitle">CC Mappings</div>
+                            <div id="midiCCList" class="midi-cc-list"></div>
+                            <div class="midi-cc-add">
+                                <input type="number" id="midiCCNum" min="0" max="127" placeholder="CC#" title="MIDI CC number (0-127)" style="width:50px">
+                                <select id="midiCCTarget" title="Target module">
+                                    <option value="synth">Synth</option>
+                                    <option value="fx">FX</option>
+                                </select>
+                                <select id="midiCCParam" title="Parameter to control">
+                                    <option value="filterCutoff">Filter Cutoff</option>
+                                    <option value="filterResonance">Resonance</option>
+                                    <option value="volume">Volume</option>
+                                    <option value="glide">Glide</option>
+                                    <option value="lfoRate">LFO Rate</option>
+                                    <option value="lfoDepth">LFO Depth</option>
+                                    <option value="delay">Delay</option>
+                                    <option value="reverb">Reverb</option>
+                                </select>
+                                <button id="midiCCAdd" class="settings-btn" title="Add CC mapping">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <div class="settings-title">PRESETS</div>
+                    <div class="preset-share-controls">
+                        <button id="presetExport" class="settings-btn" title="Export current state as JSON preset file">Export JSON</button>
+                        <button id="presetImport" class="settings-btn" title="Import a preset from a JSON file">Import JSON</button>
+                        <button id="presetShareURL" class="settings-btn" title="Copy a shareable URL with the current preset">Share URL</button>
+                    </div>
+                    <div class="preset-gallery">
+                        <div class="settings-subtitle">Preset Gallery</div>
+                        <div id="presetGalleryList" class="preset-gallery-list"></div>
+                    </div>
+                </div>
+                <div class="settings-section">
                     <div class="settings-title">THEME</div>
                     <div class="theme-options">
                         <button class="theme-btn active" data-theme="mariani" title="Classic Vin Mariani color theme">Vin Mariani</button>
@@ -726,6 +778,8 @@
     <script src="js/app.js"></script>
     <script src="js/demo-mode.js"></script>
     <script src="js/midi-export.js"></script>
+    <script src="js/midi-io.js"></script>
+    <script src="js/preset-share.js"></script>
     <script src="js/onboarding.js"></script>
 </body>
 </html>
