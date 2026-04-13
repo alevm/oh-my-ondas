@@ -809,6 +809,16 @@ class App {
                 window.sequencer.redo();
             });
         }
+
+        // MIDI Export
+        const midiBtn = document.getElementById('midiExport');
+        if (midiBtn) {
+            midiBtn.addEventListener('click', () => {
+                if (window.midiExport) {
+                    window.midiExport.download();
+                }
+            });
+        }
     }
 
     // Setup pattern length selector
