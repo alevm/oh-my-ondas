@@ -73,6 +73,9 @@ demo/output/
 
 # Claude Code internal
 .claude/
-ARCHITECT_REVIEW_2026-04-11.md
-PANEL_REVIEW_2026-04-12.md
-PANEL_REVIEW_A_MINUS.md
+# Review / audit files
+ARCHITECT_REVIEW*
+PANEL_REVIEW*
+PENTEST*
+**/DESIGN-REVIEW.md
+**/SUPERVISOR_REVIEW.md
