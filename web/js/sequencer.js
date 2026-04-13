@@ -346,6 +346,11 @@ class Sequencer {
         // Apply P-Locks to the audio engine before triggering
         this.applyPLocks(pLocks, source);
 
+        // Send MIDI out if connected
+        if (window.midiIO?.currentOutput) {
+            window.midiIO.sendSequencerNote(trackIndex, source, pLocks, velocity);
+        }
+
         switch (source) {
             case 'sampler':
                 if (window.sampler) {
