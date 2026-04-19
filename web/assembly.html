@@ -179,11 +179,83 @@
         .nav-link:hover { color: #ccc !important; }
         .nav-link.active, .nav-link.secondary.active { background: #27ae60 !important; color: #111 !important; }
 
+        /* View toggle (CSS-only) */
+        .view-switch { position: absolute; left: -9999px; opacity: 0; }
+        .view-toggle {
+            display: flex; max-width: 600px; margin: 24px auto 40px auto;
+            border: 1px solid #2a2a2a; border-radius: 8px; overflow: hidden;
+        }
+        .view-toggle label {
+            flex: 1; padding: 12px 20px; text-align: center; background: #161616;
+            color: #888; cursor: pointer; font-size: 13px; font-weight: 600;
+            letter-spacing: 1px; text-transform: uppercase; transition: all 0.15s;
+        }
+        .view-toggle label:first-of-type { border-right: 1px solid #2a2a2a; }
+        .view-toggle label:hover { background: #1a1a1a; color: #ccc; }
+        #view-phases:checked ~ .view-toggle label[for="view-phases"] {
+            background: #27ae60; color: #111;
+        }
+        #view-days:checked ~ .view-toggle label[for="view-days"] {
+            background: #f39c12; color: #111;
+        }
+        #view-phases:checked ~ .days-view { display: none; }
+        #view-days:checked ~ .phases-view { display: none; }
+
+        /* Day variant (orange accent to distinguish from phase green) */
+        .day-num { background: #f39c12 !important; color: #111; }
+        .day .phase-goal-text { color: #f39c12; }
+        .day .step-head { border-left-color: #f39c12; }
+        .day .validation-bar {
+            background: #2a1a00; border-color: #f39c12; color: #f5c06c;
+        }
+        .time-table {
+            width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px;
+        }
+        .time-table th {
+            background: #222; color: #888; padding: 8px 12px; text-align: left;
+            font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .time-table td {
+            padding: 10px 12px; border-bottom: 1px solid #222; color: #aaa; line-height: 1.55;
+        }
+        .time-table td:first-child {
+            color: #f39c12; font-family: 'Courier New', monospace; font-weight: 700;
+            width: 72px; white-space: nowrap; vertical-align: top;
+        }
+        .time-table code {
+            background: #222; padding: 1px 5px; border-radius: 3px;
+            font-family: 'Courier New', monospace; font-size: 12px; color: #5dade2;
+        }
+        .runover-note {
+            margin: 16px 0; padding: 12px 16px; border-left: 4px solid #e67e22;
+            background: #2a1f00; border-radius: 0 6px 6px 0; font-size: 13px; color: #e6a44c;
+        }
+        .summary-table {
+            width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 13px;
+            border: 1px solid #2a2a2a; border-radius: 8px; overflow: hidden;
+        }
+        .summary-table th {
+            background: #1a1a1a; color: #f39c12; padding: 10px 14px; text-align: left;
+            font-size: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
+        }
+        .summary-table td { padding: 10px 14px; border-top: 1px solid #222; color: #aaa; }
+        .summary-table td:first-child { color: #f39c12; font-weight: 700; width: 60px; }
+        .summary-table td:last-child { color: #6abf8a; font-family: 'Courier New', monospace; font-size: 12px; }
+        .stuck-box {
+            border: 1px solid #e67e22; border-radius: 12px; background: #1a1000;
+            padding: 20px 28px; margin: 32px 0;
+        }
+        .stuck-box h3 { color: #f39c12; margin: 0 0 10px 0; font-size: 16px; }
+        .stuck-box li { font-size: 13px; color: #c9a06a; line-height: 1.8; }
+        .stuck-box strong { color: #f5c06c; }
+
         @media (max-width: 700px) {
             .bus-grid { grid-template-columns: 1fr; }
             .phase-banner { padding: 16px 18px; }
             .phase-body { padding: 18px; }
             .manual { padding: 20px 12px; }
+            .view-toggle label { padding: 10px 8px; font-size: 11px; }
+            .time-table td:first-child { width: 56px; font-size: 11px; }
         }
     </style>
     <script defer src="https://analytics.levm.eu/script.js" data-website-id="efecfc31-cd39-46d0-88c4-3a063ee7ec78"></script>
@@ -207,6 +279,16 @@
         <main class="manual">
             <h1 class="manual-title">Assembly Manual</h1>
             <p class="manual-subtitle">Oh My Ondas Hardware Prototype &mdash; March 2026 &mdash; Barcelona</p>
+
+            <!-- VIEW TOGGLE -->
+            <input type="radio" id="view-phases" name="assembly-view" class="view-switch" checked>
+            <input type="radio" id="view-days" name="assembly-view" class="view-switch">
+            <div class="view-toggle" role="tablist" aria-label="Assembly view mode">
+                <label for="view-phases" role="tab">Phases &middot; reference</label>
+                <label for="view-days" role="tab">Days &middot; workshop</label>
+            </div>
+
+            <div class="phases-view">
 
             <!-- PIN MAP -->
             <div class="hero-diagram">
@@ -656,6 +738,310 @@ if (Serial1.available()) {
                     <li><strong>Backup Teensy 4.1 + Audio Shield</strong> &mdash; in the drawer</li>
                 </ul>
             </div>
+
+            </div><!-- /phases-view -->
+
+            <!-- ============================================================ -->
+            <!--                        DAYS VIEW                              -->
+            <!--       1 hour per day &middot; 8 days &middot; Barcelona workshop      -->
+            <!-- ============================================================ -->
+            <div class="days-view">
+
+            <div class="prereq-box">
+                <h2 style="color:#f39c12;">Before Day 1 &mdash; 15 min, do tonight</h2>
+                <ul>
+                    <li>Format SD card as FAT32 on your computer</li>
+                    <li>Download PJRC test WAV files from <a href="https://www.pjrc.com/teensy/td_libs_AudioDataFiles.html" target="_blank" rel="noopener noreferrer" style="color:#5dade2;">pjrc.com</a> &rarr; copy to SD root</li>
+                    <li>Install Arduino IDE + Teensyduino (or PlatformIO)</li>
+                    <li>Install libraries: <code>Adafruit_CAP1188</code>, <code>Adafruit_SSD1306</code>, <code>Adafruit_GPS</code>, <code>Adafruit_ADS1X15</code>, <code>Adafruit_MCP23017</code>, <code>ILI9341_t3</code>, <code>Adafruit_NeoPixel</code>, <code>Bounce2</code></li>
+                    <li>Confirm you have a data-capable micro-USB cable</li>
+                </ul>
+            </div>
+
+            <!-- DAY 1 -->
+            <div class="phase day">
+                <div class="phase-banner">
+                    <div class="phase-num day-num">1</div>
+                    <div class="phase-info">
+                        <h2 class="phase-name">Solder + Stack + First Sound</h2>
+                        <p class="phase-goal-text">60 MIN &mdash; MILESTONE: Hear audio through headphones</p>
+                    </div>
+                </div>
+                <div class="phase-body">
+                    <div class="hero-diagram">
+                        <img src="images/day1-solder-stack-sound.png" alt="Day 1 wiring diagram">
+                        <p class="diagram-label">DAY 1 &mdash; AUDIO SHIELD STACK + SD CARD + HEADPHONES</p>
+                    </div>
+                    <table class="time-table">
+                        <tr><th>Min</th><th>Task</th></tr>
+                        <tr><td>0&ndash;5</td><td>Set up soldering station. Tin tip. Open flux.</td></tr>
+                        <tr><td>5&ndash;10</td><td>Cut 2&times; female 14-pin headers from 40-pin strips.</td></tr>
+                        <tr><td>10&ndash;15</td><td>Insert female headers through Audio Shield bottom holes.</td></tr>
+                        <tr><td>15&ndash;20</td><td>Place Audio Shield onto Teensy (use Teensy as alignment jig).</td></tr>
+                        <tr><td>20&ndash;40</td><td>Solder all 28 pins. One at a time, check alignment every 5 pins.</td></tr>
+                        <tr><td>40&ndash;42</td><td>Cool. Separate. Inspect joints for bridges or cold solder.</td></tr>
+                        <tr><td>42&ndash;45</td><td>Insert Teensy into breadboard. Insert SD card into built-in slot.</td></tr>
+                        <tr><td>45&ndash;47</td><td>Stack Audio Shield on Teensy. Plug headphones. Connect USB.</td></tr>
+                        <tr><td>47&ndash;52</td><td>Open WavFilePlayer example. Set <code>SDCARD_CS_PIN</code> to <code>BUILTIN_SDCARD</code>. Upload.</td></tr>
+                        <tr><td>52&ndash;57</td><td>Listen. WAV files should play through headphones.</td></tr>
+                        <tr><td>57&ndash;60</td><td>If no sound: check Serial Monitor, SD format, headphone jack.</td></tr>
+                    </table>
+                    <div class="validation-bar">&#10003; MILESTONE: Hear audio through headphones</div>
+                </div>
+            </div>
+
+            <!-- DAY 2 -->
+            <div class="phase day">
+                <div class="phase-banner">
+                    <div class="phase-num day-num">2</div>
+                    <div class="phase-info">
+                        <h2 class="phase-name">OLED + CAP1188 + 8 Touch Pads</h2>
+                        <p class="phase-goal-text">60 MIN &mdash; MILESTONE: 8 pads on I2C1, OLED on I2C0, audio still clean</p>
+                    </div>
+                </div>
+                <div class="phase-body">
+                    <div class="hero-diagram">
+                        <img src="images/day2-oled-cap1188-pads.png" alt="Day 2 wiring diagram">
+                        <p class="diagram-label">DAY 2 &mdash; OLED ON WIRE + CAP1188 ON WIRE1 WITH 10K PULL-UPS</p>
+                    </div>
+                    <table class="time-table">
+                        <tr><th>Min</th><th>Task</th></tr>
+                        <tr><td>0&ndash;3</td><td>Solder 4-pin header onto OLED module.</td></tr>
+                        <tr><td>3&ndash;8</td><td>Wire OLED: SDA&rarr;pin 18, SCL&rarr;pin 19, VCC&rarr;3.3V, GND&rarr;GND.</td></tr>
+                        <tr><td>8&ndash;12</td><td>Flash I2C scanner. Should see <code>0x0A</code> (SGTL5000) + <code>0x3C</code> (OLED).</td></tr>
+                        <tr><td>12&ndash;15</td><td>Flash SSD1306 example. Display shows Adafruit splash.</td></tr>
+                        <tr><td>15&ndash;18</td><td>Solder headers onto CAP1188 breakout (if not pre-soldered).</td></tr>
+                        <tr><td>18&ndash;23</td><td>Wire CAP1188: SDA&rarr;<strong>pin 17</strong>, SCL&rarr;<strong>pin 16</strong>, VIN&rarr;3.3V, GND&rarr;GND.</td></tr>
+                        <tr><td>23&ndash;26</td><td>Add 10K pull-up resistors: pin 17&rarr;3.3V, pin 16&rarr;3.3V.</td></tr>
+                        <tr><td>26&ndash;28</td><td>Flash I2C scanner on Wire1. Should see <code>0x29</code>.</td></tr>
+                        <tr><td>28&ndash;45</td><td>Cut 8 copper tape pads (20&times;20mm). Stick to cardboard. Solder wire to each. Connect to C1&ndash;C8.</td></tr>
+                        <tr><td>45&ndash;55</td><td>Flash CAP1188 test (use <code>Wire1</code>). Touch each pad &rarr; Serial shows events.</td></tr>
+                        <tr><td>55&ndash;60</td><td>Test: audio plays while touching pads. Both I2C buses independent.</td></tr>
+                    </table>
+                    <div class="validation-bar">&#10003; MILESTONE: 8 pads detected on I2C1, OLED shows text, audio plays</div>
+                </div>
+            </div>
+
+            <!-- DAY 3 -->
+            <div class="phase day">
+                <div class="phase-banner">
+                    <div class="phase-num day-num">3</div>
+                    <div class="phase-info">
+                        <h2 class="phase-name">Touch Triggers Audio Samples</h2>
+                        <p class="phase-goal-text">60 MIN &mdash; MILESTONE: Touch pad &rarr; hear sample &rarr; see on OLED</p>
+                    </div>
+                </div>
+                <div class="phase-body">
+                    <div class="hero-diagram">
+                        <img src="images/day3-touch-audio-code.png" alt="Day 3 data flow diagram">
+                        <p class="diagram-label">DAY 3 &mdash; CAP1188 EVENTS DRIVE AUDIO LIBRARY SAMPLE PLAYBACK</p>
+                    </div>
+                    <table class="time-table">
+                        <tr><th>Min</th><th>Task</th></tr>
+                        <tr><td>0&ndash;10</td><td>Create 8 short WAV samples (or rename PJRC test files to <code>pad1.wav</code>&ndash;<code>pad8.wav</code>). Copy to SD <code>/samples/</code>.</td></tr>
+                        <tr><td>10&ndash;30</td><td>Write combined sketch: read CAP1188 on Wire1, when pad N touched &rarr; play <code>/samples/padN.wav</code> via Audio Library.</td></tr>
+                        <tr><td>30&ndash;40</td><td>Flash and test. Touch pad 1 &rarr; hear sample 1, pad 2 &rarr; sample 2, etc.</td></tr>
+                        <tr><td>40&ndash;50</td><td>Add OLED feedback: show which pad was touched and filename.</td></tr>
+                        <tr><td>50&ndash;55</td><td>Test simultaneous touches, retrigger behavior.</td></tr>
+                        <tr><td>55&ndash;60</td><td>Polish: add debounce, show active pad as highlight on OLED.</td></tr>
+                    </table>
+                    <div class="validation-bar">&#10003; MILESTONE: Touch pad &rarr; hear sample &rarr; see on OLED</div>
+                </div>
+            </div>
+
+            <!-- DAY 4 -->
+            <div class="phase day">
+                <div class="phase-banner">
+                    <div class="phase-num day-num">4</div>
+                    <div class="phase-info">
+                        <h2 class="phase-name">NeoPixels + ADS1115 + First Fader</h2>
+                        <p class="phase-goal-text">60 MIN &mdash; MILESTONE: Fader controls volume, LEDs sync with touch, audio clean</p>
+                    </div>
+                </div>
+                <div class="phase-body">
+                    <div class="hero-diagram">
+                        <img src="images/day4-neopixel-ads1115-pot.png" alt="Day 4 wiring diagram">
+                        <p class="diagram-label">DAY 4 &mdash; WS2812B ON PIN 6 + ADS1115 ON I2C0 + FIRST SLIDE POT</p>
+                    </div>
+                    <table class="time-table">
+                        <tr><th>Min</th><th>Task</th></tr>
+                        <tr><td>0&ndash;5</td><td>Wire NeoPixel strip: DIN&rarr;pin 6 (via 470&Omega; resistor), VCC&rarr;5V, GND&rarr;GND.</td></tr>
+                        <tr><td>5&ndash;10</td><td>Flash NeoPixel strandtest. 8 LEDs cycle colors.</td></tr>
+                        <tr><td>10&ndash;13</td><td>Test with audio. If glitches &rarr; switch to <code>WS2812Serial</code> library later.</td></tr>
+                        <tr><td>13&ndash;18</td><td>Solder headers onto ADS1115 breakout. Insert into breadboard.</td></tr>
+                        <tr><td>18&ndash;23</td><td>Wire ADS1115: SDA&rarr;pin 18, SCL&rarr;pin 19, VDD&rarr;3.3V, GND&rarr;GND, ADDR&rarr;GND.</td></tr>
+                        <tr><td>23&ndash;28</td><td>Wire first slide pot: left&rarr;GND, right&rarr;3.3V, wiper&rarr;ADS1115 A0. Add 100nF cap wiper&rarr;GND.</td></tr>
+                        <tr><td>28&ndash;35</td><td>Flash ADS1115 example. Move fader &rarr; values sweep 0&ndash;26000. Check for jitter.</td></tr>
+                        <tr><td>35&ndash;45</td><td>Integrate: fader controls volume. NeoPixels light on touch.</td></tr>
+                        <tr><td>45&ndash;55</td><td>Combined test: touch pad &rarr; sample plays + LED lights + fader controls volume.</td></tr>
+                        <tr><td>55&ndash;60</td><td>I2C scanner on Wire: <code>0x0A</code>, <code>0x3C</code>, <code>0x48</code> &mdash; three devices confirmed.</td></tr>
+                    </table>
+                    <div class="validation-bar">&#10003; MILESTONE: Fader controls volume, LEDs sync with touch, audio clean</div>
+                </div>
+            </div>
+
+            <!-- DAY 5 -->
+            <div class="phase day">
+                <div class="phase-banner">
+                    <div class="phase-num day-num">5</div>
+                    <div class="phase-info">
+                        <h2 class="phase-name">All 5 Faders</h2>
+                        <p class="phase-goal-text">60 MIN &mdash; MILESTONE: 5 faders smooth, no jitter, OLED bar graphs</p>
+                    </div>
+                </div>
+                <div class="phase-body">
+                    <div class="hero-diagram">
+                        <img src="images/day5-all-faders.png" alt="Day 5 wiring diagram">
+                        <p class="diagram-label">DAY 5 &mdash; 4 POTS ON ADS1115 + 1 POT ON TEENSY PIN 14</p>
+                    </div>
+                    <table class="time-table">
+                        <tr><th>Min</th><th>Task</th></tr>
+                        <tr><td>0&ndash;15</td><td>Wire pots 2&ndash;4 to ADS1115 A1, A2, A3. Same pattern each: ends to 3.3V/GND, wiper to input, 100nF cap.</td></tr>
+                        <tr><td>15&ndash;20</td><td>Wire pot 5 to Teensy <strong>pin 14 (A0)</strong> &mdash; built-in ADC. Add 100nF cap.</td></tr>
+                        <tr><td>20&ndash;30</td><td>Update firmware: read all 5 pots. Print values to Serial. Move each fader independently.</td></tr>
+                        <tr><td>30&ndash;40</td><td>Assign functions: pot 1=volume, pot 2=FX mix, pot 3=mod depth, pot 4=tempo, pot 5=crossfade.</td></tr>
+                        <tr><td>40&ndash;50</td><td>Update OLED: show 5 fader positions as bar graphs.</td></tr>
+                        <tr><td>50&ndash;60</td><td>Full test: 5 faders + 8 pads + audio + OLED + NeoPixels all running.</td></tr>
+                    </table>
+                    <div class="validation-bar">&#10003; MILESTONE: 5 faders smooth, no jitter, OLED shows bar graphs</div>
+                </div>
+            </div>
+
+            <!-- DAY 6 -->
+            <div class="phase day">
+                <div class="phase-banner">
+                    <div class="phase-num day-num">6</div>
+                    <div class="phase-info">
+                        <h2 class="phase-name">MCP23017 &times;2 + Encoders + Buttons + Nav Switch</h2>
+                        <p class="phase-goal-text">60 MIN &mdash; MILESTONE: 7 encoders + 5-way nav + 4 buttons all responding</p>
+                    </div>
+                </div>
+                <div class="phase-body">
+                    <div class="hero-diagram">
+                        <img src="images/day6-mcp23017-encoders.png" alt="Day 6 wiring diagram">
+                        <p class="diagram-label">DAY 6 &mdash; BIGGEST WIRING DAY: 4 DIRECT BUTTONS + 2 MCP23017 + 7 ENCODERS + NAV</p>
+                    </div>
+                    <p style="color:#888; font-size:13px; margin:0 0 12px 0;">This is the biggest wiring day. Repetitive but straightforward.</p>
+                    <table class="time-table">
+                        <tr><th>Min</th><th>Task</th></tr>
+                        <tr><td>0&ndash;5</td><td>Wire 4 buttons directly to Teensy: MODE&rarr;pin 2, SHIFT&rarr;pin 3, REC&rarr;pin 4, PLAY&rarr;pin 5. Each button between pin and GND. Use <code>INPUT_PULLUP</code> in code.</td></tr>
+                        <tr><td>5&ndash;10</td><td>Press MCP23017 #1 into DIP socket. Wire: SDA(chip pin 13)&rarr;Teensy pin 17, SCL(12)&rarr;pin 16, VDD(9)&rarr;3.3V, VSS(10)&rarr;GND, RST(18)&rarr;3.3V, A0/A1/A2&rarr;GND. Add 100nF cap.</td></tr>
+                        <tr><td>10&ndash;13</td><td>Press MCP23017 #2 into DIP socket. Same wiring but A0&rarr;3.3V (address <code>0x21</code>).</td></tr>
+                        <tr><td>13&ndash;15</td><td>Flash I2C scanner on Wire1: should show <code>0x20</code>, <code>0x21</code>, <code>0x29</code>.</td></tr>
+                        <tr><td>15&ndash;40</td><td>Wire 7 encoders. Each: A&rarr;GPx, B&rarr;GPx, C&rarr;GND, SW&rarr;GPx, SW common&rarr;GND. Encoders 1&ndash;5 on MCP#1, encoders 6&ndash;7 on MCP#2. See diagram for exact pin map.</td></tr>
+                        <tr><td>40&ndash;45</td><td>Wire 5-way nav switch to MCP#2: up/down/left/right/select&rarr;GPB0&ndash;GPB4, common&rarr;GND.</td></tr>
+                        <tr><td>45&ndash;55</td><td>Flash combined test: all 7 encoders + nav switch + 4 buttons.</td></tr>
+                        <tr><td>55&ndash;58</td><td>Put Rainbow Micro Knobs on encoders. Test fit.</td></tr>
+                        <tr><td>58&ndash;60</td><td>Verify no I2C errors. Full UI responding.</td></tr>
+                    </table>
+                    <div class="runover-note"><strong>If you run over:</strong> finish encoder wiring tomorrow and push remaining days by one. This is the only day that might spill.</div>
+                    <div class="validation-bar">&#10003; MILESTONE: 7 encoders + 5-way nav + 4 buttons all responding</div>
+                </div>
+            </div>
+
+            <!-- DAY 7 -->
+            <div class="phase day">
+                <div class="phase-banner">
+                    <div class="phase-num day-num">7</div>
+                    <div class="phase-info">
+                        <h2 class="phase-name">ILI9341 2.8&Prime; LCD</h2>
+                        <p class="phase-goal-text">60 MIN &mdash; MILESTONE: LCD shows UI, audio clean, no SPI/I2S conflict</p>
+                    </div>
+                </div>
+                <div class="phase-body">
+                    <div class="hero-diagram">
+                        <img src="images/day7-ili9341-lcd.png" alt="Day 7 SPI wiring">
+                        <p class="diagram-label">DAY 7 &mdash; SPI DISPLAY ON PINS 10-13 &middot; AVOID PIN 8 (I2S RX)</p>
+                    </div>
+                    <table class="time-table">
+                        <tr><th>Min</th><th>Task</th></tr>
+                        <tr><td>0&ndash;5</td><td>Solder headers onto ILI9341 breakout (P1770) if needed.</td></tr>
+                        <tr><td>5&ndash;15</td><td>Wire SPI: CLK&rarr;pin 13, MOSI&rarr;pin 11, MISO&rarr;pin 12, CS&rarr;pin 10, DC&rarr;pin 9, RST&rarr;pin 15, VIN&rarr;5V, GND&rarr;GND, LITE&rarr;3.3V.</td></tr>
+                        <tr><td>15&ndash;20</td><td><strong>Double check: pin 8 is NOT used for LCD.</strong> Pin 8 = I2S RX (Audio Shield).</td></tr>
+                        <tr><td>20&ndash;30</td><td>Flash <code>ILI9341_t3</code> graphicstest. Fast graphics demo on 2.8&Prime; screen.</td></tr>
+                        <tr><td>30&ndash;40</td><td>Test with audio playing simultaneously. SPI + I2S = different buses, should be clean.</td></tr>
+                        <tr><td>40&ndash;55</td><td>Write a basic UI screen: mode name, fader bars, pad activity, GPS placeholder.</td></tr>
+                        <tr><td>55&ndash;60</td><td>Run everything: LCD + OLED + NeoPixels + faders + pads + encoders + audio.</td></tr>
+                    </table>
+                    <div class="validation-bar">&#10003; MILESTONE: LCD shows UI, audio clean, no SPI/I2S conflict</div>
+                </div>
+            </div>
+
+            <!-- DAY 8 -->
+            <div class="phase day">
+                <div class="phase-banner">
+                    <div class="phase-num day-num">8</div>
+                    <div class="phase-info">
+                        <h2 class="phase-name">GPS + ESP32 + Full Integration</h2>
+                        <p class="phase-goal-text">60 MIN &mdash; MILESTONE: Full system running. Prototype complete.</p>
+                    </div>
+                </div>
+                <div class="phase-body">
+                    <div class="hero-diagram">
+                        <img src="images/day8-gps-esp32-integration.png" alt="Day 8 integration diagram">
+                        <p class="diagram-label">DAY 8 &mdash; PA1010D ON I2C0 + ESP32-S2 UART (5V, NOT 3.3V)</p>
+                    </div>
+                    <table class="time-table">
+                        <tr><th>Min</th><th>Task</th></tr>
+                        <tr><td>0&ndash;3</td><td>Solder headers onto PA1010D GPS (or use STEMMA QT cable).</td></tr>
+                        <tr><td>3&ndash;8</td><td>Wire GPS: SDA&rarr;pin 18, SCL&rarr;pin 19, VIN&rarr;3.3V, GND&rarr;GND.</td></tr>
+                        <tr><td>8&ndash;12</td><td>Flash <code>Adafruit_GPS</code> I2C example. <code>GPS.begin(0x10)</code>.</td></tr>
+                        <tr><td>12&ndash;18</td><td><strong>Go to window/balcony.</strong> Wait for fix (30&ndash;60 sec). Verify Barcelona coordinates.</td></tr>
+                        <tr><td>18&ndash;22</td><td>Show GPS on OLED: lat, lon, satellites.</td></tr>
+                        <tr><td>22&ndash;25</td><td>Connect ESP32-S2 to computer via its own USB. Flash WiFi connect sketch. Verify it connects.</td></tr>
+                        <tr><td>25&ndash;28</td><td>Disconnect ESP32 from computer.</td></tr>
+                        <tr><td>28&ndash;33</td><td>Wire ESP32 to Teensy: TX&rarr;pin 0, RX&rarr;pin 1, GND&rarr;GND, 5V&rarr;VIN. <strong>NOT 3.3V.</strong></td></tr>
+                        <tr><td>33&ndash;40</td><td>Flash Teensy with Serial1 receive code. Test: ESP32 sends message &rarr; Teensy prints it.</td></tr>
+                        <tr><td>40&ndash;50</td><td>Full integration: power on, init all subsystems, test every input/output.</td></tr>
+                        <tr><td>50&ndash;55</td><td>Monitor: CPU usage, audio memory, I2C errors. CPU should be &lt;70%.</td></tr>
+                        <tr><td>55&ndash;60</td><td>Everything works. Take a photo of the complete breadboard build.</td></tr>
+                    </table>
+                    <div class="validation-bar">&#10003; MILESTONE: FULL SYSTEM RUNNING &mdash; Oh My Ondas prototype complete</div>
+                </div>
+            </div>
+
+            <!-- SUMMARY -->
+            <h2 style="color:#f39c12; font-size:20px; margin:40px 0 12px 0;">Summary</h2>
+            <table class="summary-table">
+                <tr><th>Day</th><th>What</th><th>Milestone</th></tr>
+                <tr><td>1</td><td>Solder Audio Shield + stack + first sound</td><td>Hear audio</td></tr>
+                <tr><td>2</td><td>OLED on I2C0 + CAP1188 on I2C1 + 8 pads</td><td>Touch + display</td></tr>
+                <tr><td>3</td><td>Code: touch &rarr; play sample &rarr; OLED feedback</td><td>Touch = sound</td></tr>
+                <tr><td>4</td><td>NeoPixels + ADS1115 + first fader</td><td>Light + fader + sound</td></tr>
+                <tr><td>5</td><td>Remaining 4 slide pots</td><td>5 faders</td></tr>
+                <tr><td>6</td><td>2&times; MCP23017 + 7 encoders + 4 buttons + nav</td><td>Full interface</td></tr>
+                <tr><td>7</td><td>ILI9341 2.8&Prime; LCD on SPI</td><td>Main display</td></tr>
+                <tr><td>8</td><td>GPS + ESP32 UART + integration test</td><td>Complete prototype</td></tr>
+            </table>
+            <p style="color:#888; font-size:13px; text-align:center; margin:12px 0 32px 0;"><strong style="color:#f39c12;">8 hours total.</strong> One hour per day. No blockers with current hardware.</p>
+
+            <!-- IF YOU GET STUCK -->
+            <div class="stuck-box">
+                <h3>If You Get Stuck</h3>
+                <ul>
+                    <li><strong>No sound (Day 1):</strong> SD must be FAT32, files on root, CS = <code>BUILTIN_SDCARD</code>.</li>
+                    <li><strong>I2C device not found (Day 2+):</strong> Check wiring. Wire1 needs external 10K pull-ups.</li>
+                    <li><strong>Audio glitches with NeoPixels (Day 4):</strong> Switch to <code>WS2812Serial</code> library.</li>
+                    <li><strong>Fader jitter (Day 4&ndash;5):</strong> Add 100nF caps on wipers. Keep analog wires away from SPI.</li>
+                    <li><strong>ESP32 causes Teensy reboot (Day 8):</strong> Power ESP32 from 5V, not 3.3V.</li>
+                    <li><strong>GPS no fix (Day 8):</strong> Go outdoors or to window. First fix needs sky view.</li>
+                    <li><strong>Encoder knobs don't fit (Day 6):</strong> Check for set screw hole. May need D-shaft adapter.</li>
+                </ul>
+            </div>
+
+            <!-- AFTER DAY 8 -->
+            <div class="set-aside">
+                <h2>After Day 8</h2>
+                <ul>
+                    <li>Write actual Oh My Ondas firmware (sampling engine, sequencer, effects routing)</li>
+                    <li>Source 6 more EC11 encoders for full 13-encoder interface</li>
+                    <li>Pick up 2.2K + 1K + 470&Omega; resistors from Diotronic</li>
+                    <li>Design 3D-printed enclosure at FabLab Barcelona</li>
+                    <li>First field recording walk</li>
+                </ul>
+            </div>
+
+            </div><!-- /days-view -->
 
         </main>
 
