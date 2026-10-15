@@ -84,11 +84,11 @@ Teensy 4.1 + Audio Shield + SD + headphones.
 - **Stack:** Audio Shield sits UNDER the Teensy 4.1. A female socket strip on the shield receives the Teensy's downward-facing male headers. Shield at the USB end, pin 0 to pin 0. The shield covers only the first 14 pins per side; pins 24+ stay free. Seat the Teensy fully (header plastic touching the socket strip) — partial insertion gives intermittent contact. Pluggable; no solder joint between the boards.
 - **Shield pins** ([PJRC](https://www.pjrc.com/store/teensy3_audio.html)): audio data 7, 8, 20, 21, 23 · I2C 18 (SDA), 19 (SCL), shared · shield SD socket 10–13 · memory chip CS 6 · volume pot 15/A1. Keep the shield SD socket empty and don't fit the pot or memory chip: the LCD uses 10 and 15, the NeoPixels use 6.
 - **SD:** FAT32, `TEST.WAV` (44.1 kHz/16-bit) at root, Teensy built-in slot (`BUILTIN_SDCARD`).
-- **Tests:** `firmware/teensy/test/layer1_tone`, `firmware/teensy/test/layer1_sd_playback`.
+- **Tests:** `firmware/teensy/test/layer1_tone`, `firmware/teensy/test/layer1_sd_playback`, `firmware/teensy/test/layer1_record_roundtrip`.
 - **Status:**
   - [x] Audio out: SGTL5000 responds, 440 Hz sine heard on headphones (Oct 2026)
   - [x] SD playback from BUILTIN_SDCARD (TEST.WAV, 44.1kHz/16-bit) heard on headphones (Oct 2026)
-  - [ ] Record → SD → playback round trip — blocked: input source TBD (electret on MIC/GND pads or line-in, not yet chosen)
+  - [ ] Record → SD → playback round trip — digital path verified with layer1_record_roundtrip (Oct 2026); analog input blocked: input source TBD (electret on MIC/GND pads or line-in, not yet chosen)
 - **Before Phase 2:** I2C scan on Wire (18/19) should show only the SGTL5000 at 0x0A. Then add the CAP1188 on Wire1 (16/17, 10K pull-ups) and confirm 0x29.
 **Done when:** hear audio in headphones.
 

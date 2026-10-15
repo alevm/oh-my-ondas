@@ -387,6 +387,7 @@
                         <ol>
                             <li><code>layer1_tone</code> &mdash; prints <code>SGTL5000 OK</code> and plays a 440&nbsp;Hz sine on both channels.</li>
                             <li><code>layer1_sd_playback</code> &mdash; prints <code>SD OK</code> and loops <code>TEST.WAV</code> from the built-in slot.</li>
+                            <li><code>layer1_record_roundtrip</code> &mdash; records a generated 880&nbsp;Hz tone to <code>REC.RAW</code>, checks size and frequency, plays it back (<code>File: PASS</code>, <code>Playback: PASS</code>).</li>
                         </ol>
                         <div class="callout-warn">If no sound: check Serial Monitor for <code>SGTL5000 NON risponde</code> or <code>SD FAIL</code>. Verify the Teensy is fully seated, FAT32 format, correct slot, headphone jack fully inserted.</div>
                     </div>
@@ -396,7 +397,7 @@
                         <ul style="list-style:none; margin-left:0;">
                             <li>&#9745; Audio out: SGTL5000 responds, 440&nbsp;Hz sine heard on headphones (Oct 2026)</li>
                             <li>&#9745; SD playback from <code>BUILTIN_SDCARD</code> (<code>TEST.WAV</code>, 44.1&nbsp;kHz/16-bit) heard on headphones (Oct 2026)</li>
-                            <li>&#9744; Record &rarr; SD &rarr; playback round trip</li>
+                            <li>&#9744; Record &rarr; SD &rarr; playback round trip &mdash; digital path verified with <code>layer1_record_roundtrip</code> (Oct 2026); analog input still untested</li>
                         </ul>
                         <div class="callout-warn"><strong>Open &mdash; blocks the record test:</strong> Input source TBD &mdash; electret on MIC/GND pads or line-in. Not yet chosen. Picture Mode needs audio capture, and the component list has no microphone.</div>
                     </div>
