@@ -39,7 +39,6 @@
 
 | Device | Address | Function |
 |--------|---------|----------|
-| MPR121 | 0x5A | Touch sensor (8 pads) |
 | SSD1306 | 0x3C | OLED display 128x64 |
 | (Optional) | 0x68 | RTC module |
 
@@ -79,21 +78,22 @@ REC          28   Start/stop recording
 PLAY         29   Start/stop playback
 ```
 
-## Touch Sensor (MPR121)
+## Touch Sensor (CAP1188)
 
+On I2C1 (Wire1): SDA pin 17, SCL pin 16, address 0x29, external 10K pull-ups to 3.3V.
 8 touch electrodes connected to copper tape pads:
 
 ```
-Pad    MPR121 Pin   Function
+Pad    CAP1188 Pin  Function
 ────────────────────────────────
-PAD1   IRQ0         Sample trigger / Track 1
-PAD2   IRQ1         Sample trigger / Track 2
-PAD3   IRQ2         Sample trigger / Track 3
-PAD4   IRQ3         Sample trigger / Track 4
-PAD5   IRQ4         Sample trigger / Track 5
-PAD6   IRQ5         Sample trigger / Track 6
-PAD7   IRQ6         Sample trigger / Track 7
-PAD8   IRQ7         Sample trigger / Track 8
+PAD1   C1           Sample trigger / Track 1
+PAD2   C2           Sample trigger / Track 2
+PAD3   C3           Sample trigger / Track 3
+PAD4   C4           Sample trigger / Track 4
+PAD5   C5           Sample trigger / Track 5
+PAD6   C6           Sample trigger / Track 6
+PAD7   C7           Sample trigger / Track 7
+PAD8   C8           Sample trigger / Track 8
 ```
 
 Touch sensitivity can be adjusted in firmware.

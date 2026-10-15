@@ -8,10 +8,10 @@
  * Each test prints PASS/FAIL. Send 's' to skip a test.
  *
  * Test sequence:
- *   1. I2C scan (finds MPR121 + OLED)
+ *   1. I2C scan (OLED on Wire, CAP1188 on Wire1)
  *   2. OLED display
  *   3. LED ring (NeoPixel)
- *   4. Touch sensor (MPR121)
+ *   4. Touch sensor (CAP1188 on Wire1)
  *   5. Buttons (MODE/SHIFT/REC/PLAY)
  *   6. Encoders (4x rotary)
  *   7. SD card
@@ -24,7 +24,7 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <SD.h>
-#include <Adafruit_MPR121.h>
+#include <Adafruit_CAP1188.h>
 #include <Adafruit_SSD1306.h>
 #include <Encoder.h>
 #include <Adafruit_NeoPixel.h>
@@ -46,8 +46,8 @@ AudioConnection        pc4(testInput, 1, testPeakR, 0);
 // ============================================
 // HARDWARE OBJECTS
 // ============================================
-Adafruit_MPR121 touch = Adafruit_MPR121();
-Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+Adafruit_CAP1188 touch = Adafruit_CAP1188();
+Adafruit_SSD1306 oled(OLED_WIDTH, OLED_HEIGHT, &Wire, OLED_RESET);
 Encoder enc[4] = {
     Encoder(ENC1_CLK, ENC1_DT),
     Encoder(ENC2_CLK, ENC2_DT),
@@ -123,6 +123,7 @@ void setup() {
 
     // Init subsystems needed for all tests
     Wire.begin();
+    Wire1.begin();
     Wire.setClock(400000);
     AudioMemory(20);
     leds.begin();
@@ -192,32 +193,30 @@ void loop() {
 // TEST IMPLEMENTATIONS
 // ============================================
 
-void testI2CScan() {
-    printHeader("I2C Bus Scan");
-
+int scanBus(TwoWire& bus, const char* name, uint8_t want, bool& foundWant) {
     int found = 0;
-    bool foundMPR121 = false;
-    bool foundOLED = false;
-
     for (uint8_t addr = 1; addr < 127; addr++) {
-        Wire.beginTransmission(addr);
-        if (Wire.endTransmission() == 0) {
-            Serial.printf("  Found device at 0x%02X", addr);
-            if (addr == ADDR_MPR121) {
-                Serial.print(" (MPR121 touch sensor)");
-                foundMPR121 = true;
-            } else if (addr == ADDR_SSD1306) {
-                Serial.print(" (SSD1306 OLED)");
-                foundOLED = true;
-            }
-            Serial.println();
+        bus.beginTransmission(addr);
+        if (bus.endTransmission() == 0) {
+            Serial.printf("  %s: device at 0x%02X\n", name, addr);
+            if (addr == want) foundWant = true;
             found++;
         }
     }
+    return found;
+}
+
+void testI2CScan() {
+    printHeader("I2C Bus Scan");
+
+    bool foundOLED = false;
+    bool foundCAP1188 = false;
+    int found = scanBus(Wire, "Wire (18/19)", ADDR_SSD1306, foundOLED);
+    found += scanBus(Wire1, "Wire1 (16/17)", ADDR_CAP1188, foundCAP1188);
 
     Serial.printf("  Total I2C devices: %d\n", found);
-    reportResult(foundMPR121, "MPR121 at 0x5A");
-    reportResult(foundOLED, "SSD1306 at 0x3C");
+    reportResult(foundCAP1188, "CAP1188 at 0x29 on Wire1");
+    reportResult(foundOLED, "SSD1306 at 0x3C on Wire");
 }
 
 void testOLED() {
@@ -281,40 +280,37 @@ void testLEDRing() {
 }
 
 void testTouch() {
-    printHeader("Touch Sensor (MPR121)");
+    printHeader("Touch Sensor (CAP1188)");
 
-    bool ok = touch.begin(ADDR_MPR121);
-    reportResult(ok, ok ? "MPR121 initialized" : "begin() failed — check wiring SDA/SCL/IRQ");
+    bool ok = touch.begin(ADDR_CAP1188, &Wire1);
+    reportResult(ok, ok ? "CAP1188 initialized" : "begin() failed — check Wire1 wiring (16/17) and 10K pull-ups");
 
     if (!ok) return;
 
-    // Read baseline values
-    Serial.println("  Baseline capacitance per electrode:");
-    bool baselines_ok = true;
-    for (int i = 0; i < 12; i++) {
-        uint16_t baseline = touch.baselineData(i);
-        uint16_t filtered = touch.filteredData(i);
-        Serial.printf("    CH%02d: baseline=%d filtered=%d", i, baseline, filtered);
-        if (i < MAX_PADS) {
-            if (baseline == 0) {
-                Serial.print(" ⚠ no baseline (disconnected?)");
-                baselines_ok = false;
+    // Interactive touch test: record every pad touched within 15 seconds
+    Serial.println("  → Touch each pad (1-8) within 15s (send 's' to skip)");
+    uint8_t seen = 0;
+    unsigned long start = millis();
+    while (millis() - start < 15000 && seen != 0xFF) {
+        if (Serial.available() && (Serial.read() == 's')) {
+            Serial.println("  ⊘ SKIPPED");
+            skipped++;
+            return;
+        }
+        uint8_t now = touch.touched();
+        for (int i = 0; i < MAX_PADS; i++) {
+            if ((now & (1 << i)) && !(seen & (1 << i))) {
+                Serial.printf("    Pad %d touched\n", i + 1);
             }
         }
-        Serial.println();
+        seen |= now;
+        delay(10);
     }
-    reportResult(baselines_ok, "All 8 pad channels have baseline data");
-
-    // Interactive touch test
-    if (waitForInput("Touch each pad (1-8). Press any key when done.", 15000)) {
-        uint16_t touched = touch.touched();
-        int count = 0;
-        for (int i = 0; i < MAX_PADS; i++) {
-            if (touched & (1 << i)) count++;
-        }
-        Serial.printf("  Currently touched: %d pads (raw: 0x%03X)\n", count, touched);
-        reportResult(true, "Touch readout working");
+    int count = 0;
+    for (int i = 0; i < MAX_PADS; i++) {
+        if (seen & (1 << i)) count++;
     }
+    reportResult(count == MAX_PADS, count == MAX_PADS ? "All 8 pads responded" : "Not every pad responded");
 }
 
 void testButtons() {

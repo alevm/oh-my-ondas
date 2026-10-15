@@ -6,7 +6,7 @@
  *   4 direct buttons + 14 MCP23017 buttons (debounced)
  *   5-way joystick (4 GPIO + 1 MCP pin)
  *   4 ADS1115 faders + 1 Teensy ADC crossfader
- *   8 MPR121 touch pads
+ *   8 CAP1188 touch pads (Wire1)
  */
 
 #ifndef INPUT_MANAGER_H
@@ -15,7 +15,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <Encoder.h>
-#include <Adafruit_MPR121.h>
+#include <Adafruit_CAP1188.h>
 #include "config.h"
 
 // Callbacks
@@ -75,7 +75,7 @@ private:
     uint8_t  joystickLastState;
 
     // ── Touch ──
-    Adafruit_MPR121 touchSensor;
+    Adafruit_CAP1188 touchSensor;
     uint16_t touchLast;
     bool     touchReady;
 

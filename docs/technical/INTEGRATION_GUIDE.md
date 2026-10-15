@@ -30,7 +30,7 @@ INPUTS → SAMPLING ENGINE → FX CHAIN → OUTPUT + RECORDING
 #include <Audio.h>
 #include <Wire.h>
 #include <SD.h>
-#include <Adafruit_MPR121.h>
+#include <Adafruit_CAP1188.h>
 #include <TinyGPS++.h>
 
 // ===== IMPORT MODULES =====
@@ -553,7 +553,7 @@ APPLY AI INSTRUCTIONS
 **Touch Pads Not Responsive:**
 - Recalibrate (boot with all buttons held)
 - Check copper tape connectivity
-- Verify MPR121 I2C address (0x5A)
+- Verify CAP1188 I2C address (0x29 on Wire1, pins 16/17)
 - Reduce sensitivity if too sensitive
 
 **Audio Crackling:**

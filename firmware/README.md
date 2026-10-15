@@ -51,7 +51,7 @@ python tools/metadata_generator.py --help
 - **Teensy 4.1** - Main processor (600MHz ARM Cortex-M7, 1MB RAM)
 - **ESP32-WROOM** - WiFi, Bluetooth, GPS communication
 - **Audio Shield** - SGTL5000 codec (44.1kHz / 24-bit)
-- **MPR121** - 8 capacitive touch pads
+- **CAP1188** - 8 capacitive touch pads (Wire1, pins 16/17)
 - **SSD1306** - 128x64 OLED display
 
 See [docs/technical/component_pinout.md](../docs/technical/component_pinout.md) for pin assignments.

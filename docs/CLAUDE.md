@@ -82,7 +82,7 @@ sudo apt install teensy-loader-cli
 1. **Teensy 4.1** - Main processor (audio, sequencing, UI)
 2. **ESP32** - WiFi, GPS, AI communication
 3. **Audio Shield** - SGTL5000 codec
-4. **Touch Sensor** - MPR121 (8 pads)
+4. **Touch Sensor** - CAP1188 (8 pads)
 5. **Display** - SSD1306 OLED 128x64
 
 ### Software Layers
@@ -136,10 +136,9 @@ Audio Shield:
   - I2C: 18 (SDA), 19 (SCL)
   - SD Card: Built-in
 
-Touch Sensor (MPR121):
-  - I2C: 18 (SDA), 19 (SCL)
-  - Address: 0x5A
-  - IRQ: Pin 2
+Touch Sensor (CAP1188):
+  - I2C1 (Wire1): 17 (SDA), 16 (SCL), external 10K pull-ups
+  - Address: 0x29
 
 Encoders:
   - ENC1: Pins 3, 4 (CLK, DT), 5 (SW)

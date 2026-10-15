@@ -1,6 +1,6 @@
 /**
  * Oh My Ondas - Input Manager Implementation
- * Unified input handling: direct GPIO + MCP23017 + ADS1115 + MPR121
+ * Unified input handling: direct GPIO + MCP23017 + ADS1115 + CAP1188
  */
 
 #include "input_manager.h"
@@ -201,11 +201,12 @@ void InputManager::initJoystick() {
 }
 
 void InputManager::initTouch() {
-    if (touchSensor.begin(ADDR_MPR121)) {
+    // CAP1188 sits on Wire1 (16/17) with external 10K pull-ups
+    if (touchSensor.begin(ADDR_CAP1188, &Wire1)) {
         touchReady = true;
-        DEBUG_PRINTLN("  MPR121 touch: OK");
+        DEBUG_PRINTLN("  CAP1188 touch: OK");
     } else {
-        DEBUG_PRINTLN("  MPR121 touch: NOT FOUND");
+        DEBUG_PRINTLN("  CAP1188 touch: NOT FOUND");
     }
 }
 

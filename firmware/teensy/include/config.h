@@ -8,7 +8,8 @@
  * Pin allocation strategy:
  *   Direct GPIO: 5 encoders, 4 buttons, joystick, status LEDs, NeoPixel
  *   SPI0 (11,12,13): ILI9488 5" LCD
- *   I2C (18,19): OLED, MPR121, 2×MCP23017, ADS1115
+ *   I2C (18,19): OLED, 2×MCP23017, ADS1115
+ *   I2C1 (16,17): CAP1188
  *   MCP23017 #1 (0x20): 8 extra encoders (CLK+DT, polled)
  *   MCP23017 #2 (0x21): 12 extra buttons + PREV/NEXT + joystick press
  *   ADS1115 (0x48): 4 mixer faders
@@ -62,7 +63,7 @@
 // PIN DEFINITIONS — TEENSY 4.1
 // ============================================
 
-// I2C (shared bus: OLED, MPR121, MCP23017×2, ADS1115)
+// I2C (shared bus: OLED, MCP23017×2, ADS1115); CAP1188 touch is on Wire1 (16/17)
 // SDA = Pin 18, SCL = Pin 19
 
 // Audio Shield Rev D2 — RESERVED PINS, do NOT reuse
@@ -74,9 +75,6 @@
 // Pin 23 = I2S MCLK
 // Shield SD socket 10-13, memory chip CS 6, volume pot 15/A1:
 // only free while the socket stays empty and the chip/pot are not fitted
-
-// Touch Sensor IRQ (MPR121)
-#define TOUCH_IRQ 15
 
 // ── Direct Encoders (5) ──────────────────────
 // Using Encoder library (interrupt-based)
@@ -221,7 +219,7 @@ enum FaderID {
 // ============================================
 
 #define ADDR_SSD1306   0x3C  // OLED map display
-#define ADDR_MPR121    0x5A  // Touch sensor
+#define ADDR_CAP1188   0x29  // Touch sensor (Wire1)
 #define ADDR_MCP23017A 0x20  // I/O expander #1 (encoders)
 #define ADDR_MCP23017B 0x21  // I/O expander #2 (buttons)
 #define ADDR_ADS1115   0x48  // 16-bit ADC (faders)
@@ -235,8 +233,10 @@ enum FaderID {
 //   0x20 MCP23017A — 8 encoders,  polled every 2ms
 //   0x21 MCP23017B — 14 buttons,  polled every 10ms
 //   0x48 ADS1115   — 4 faders,    polled every 20ms
-//   0x5A MPR121    — 8 touch pads, polled every loop (~1ms)
 //   0x3C SSD1306   — OLED map,    updated every 200ms
+//
+// I2C1 bus (pins 16/17, external 10K pull-ups):
+//   0x29 CAP1188   — 8 touch pads, polled every loop (~1ms)
 
 // ============================================
 // AUDIO ROUTING

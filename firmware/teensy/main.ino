@@ -144,7 +144,7 @@ void setup() {
         initSDDirectories();
     }
 
-    // I2C (shared: OLED, MPR121, MCP23017×2, ADS1115)
+    // I2C (shared: OLED, MCP23017×2, ADS1115); CAP1188 is on Wire1
     Wire.begin();
     Wire.setClock(400000);
     Wire.setTimeout(1000);  // 1ms I2C timeout — prevents bus hangs
