@@ -66,7 +66,7 @@
 // I2C (shared bus: OLED, MCP23017×2, ADS1115); CAP1188 touch is on Wire1 (16/17)
 // SDA = Pin 18, SCL = Pin 19
 
-// Audio Shield Rev D2 — RESERVED PINS, do NOT reuse
+// Audio Shield Rev D — RESERVED PINS, do NOT reuse
 // (source: pjrc.com/store/teensy3_audio.html):
 // Pin 7  = I2S TX (audio data out)
 // Pin 8  = I2S RX (audio data in)

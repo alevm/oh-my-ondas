@@ -309,7 +309,7 @@
                 <ol>
                     <li>Use <strong>Teensy built-in SD</strong> (SanDisk Ultra 32GB). Audio Shield SD slot unused.</li>
                     <li>LCD is <strong>2.8&Prime; ILI9341</strong> (P1770) &mdash; DMA-optimized ILI9341_t3 library.</li>
-                    <li>Dual I2C: <strong>Wire (18/19)</strong> audio-path, <strong>Wire1 (16/17)</strong> UI-polling.</li>
+                    <li>Dual I2C: <strong>Wire (18/19)</strong> audio-path, <strong>Wire2 (24/25)</strong> UI-polling (pins 16/17 are covered by the Audio Shield sockets).</li>
                     <li>4 main buttons <strong>direct to Teensy pins</strong> for latency + interrupts.</li>
                     <li>ESP32-S2 powered from <strong>5V</strong>, not Teensy 3.3V.</li>
                 </ol>
@@ -329,12 +329,12 @@
                     </div>
                 </div>
                 <div class="phase-parts-bar">
-                    <span>Teensy 4.1</span><span>Audio Shield Rev D2</span><span>SD Card (32GB)</span><span>Headphones</span>
+                    <span>Teensy 4.1</span><span>Audio Shield Rev D</span><span>SD Card (32GB)</span><span>Headphones</span>
                 </div>
                 <div class="phase-body">
                     <div class="step">
                         <div class="step-head">1.1 &mdash; Stack the Teensy on the Audio Shield</div>
-                        <p>The Audio Shield Rev D2 sits <strong>under</strong> the Teensy 4.1. A female socket strip on the shield receives the Teensy's downward-facing male headers. The stack is pluggable &mdash; there is no solder joint between the two boards.</p>
+                        <p>The Audio Shield Rev D sits <strong>under</strong> the Teensy 4.1. A female socket strip on the shield receives the Teensy's downward-facing male headers. The stack is pluggable &mdash; there is no solder joint between the two boards.</p>
 
                         <ol>
                             <li><strong>Orientation:</strong> shield at the USB end, <strong>pin 0 to pin 0</strong>.</li>
@@ -355,7 +355,7 @@
                         <div class="callout-warn">Shared pins later in the build: the LCD uses <strong>pin 10</strong> (CS, shared with the shield SD socket) and <strong>pin 15</strong> (RST, the volume-pot pin); the NeoPixels use <strong>pin 6</strong> (memory chip CS). Keep the shield SD socket empty, and do not fit the volume pot or the memory chip.</div>
 
                         <div class="diagram-frame">
-                            <img src="images/layer1-stack.jpg" alt="Teensy 4.1 seated on the Audio Shield Rev D2, shield underneath at the USB end" onerror="this.parentElement.style.display='none'">
+                            <img src="images/layer1-stack.jpg" alt="Teensy 4.1 seated on the Audio Shield Rev D, shield underneath at the USB end" onerror="this.parentElement.style.display='none'">
                             <p class="diagram-label">VISUAL CHECK &mdash; SHIELD UNDER TEENSY, USB END, HEADERS FULLY SEATED</p>
                         </div>
                     </div>
@@ -406,7 +406,7 @@
                         <div class="step-head">1.6 &mdash; Before Phase 2</div>
                         <ol>
                             <li>Run an I2C scan on <code>Wire</code> (18/19): it should show only the SGTL5000 at <code>0x0A</code>.</li>
-                            <li>Then add the CAP1188 on <code>Wire1</code> (16/17, 10K pull-ups) and confirm <code>0x29</code>.</li>
+                            <li>Then add the CAP1188 on <code>Wire2</code> (24/25) and confirm <code>0x29</code> with <code>layer2_cap1188</code>.</li>
                         </ol>
                     </div>
 
@@ -430,15 +430,16 @@
                 </div>
                 <div class="phase-body">
                     <div class="step">
-                        <div class="step-head">2.1 &mdash; Wire CAP1188 to I2C1</div>
+                        <div class="step-head">2.1 &mdash; Wire CAP1188 to Wire2</div>
+                        <p>Wire2 sits on free pins just past the Audio Shield, so the stack stays pluggable: female Dupont jumpers push straight onto the Teensy's downward-facing pins.</p>
                         <table class="wire-table">
                             <tr><th>CAP1188 Pin</th><th>Teensy Pin</th><th>Notes</th></tr>
-                            <tr><td>SDA</td><td class="pin">17 (SDA1)</td><td>Wire1 bus</td></tr>
-                            <tr><td>SCL</td><td class="pin">16 (SCL1)</td><td>Wire1 bus</td></tr>
-                            <tr><td>VIN</td><td class="pin">3.3V</td><td></td></tr>
-                            <tr><td>GND</td><td class="pin">GND</td><td></td></tr>
+                            <tr><td>SDA</td><td class="pin">25 (SDA2)</td><td>Wire2 bus</td></tr>
+                            <tr><td>SCL</td><td class="pin">24 (SCL2)</td><td>Wire2 bus</td></tr>
+                            <tr><td>VIN</td><td class="pin">3.3V</td><td>Next to pin 24, past the shield</td></tr>
+                            <tr><td>GND</td><td class="pin">GND</td><td>Opposite side, next to pin 41</td></tr>
                         </table>
-                        <div class="callout-warn">Wire1 has NO built-in pull-ups. Add <strong>10K&ohm;</strong> from pin 17 to 3.3V and from pin 16 to 3.3V. (2.2K better &mdash; next Diotronic visit.)</div>
+                        <div class="callout-warn">One set of pull-ups per bus. If the CAP1188 breakout already has pull-ups on SDA/SCL, add none. If it doesn't, add <strong>2.2K&ohm;</strong> from pin 25 and from pin 24 to 3.3V.</div>
                     </div>
 
                     <div class="step">
@@ -448,9 +449,10 @@
 
                     <div class="step">
                         <div class="step-head">2.3 &mdash; Test</div>
-<pre><code>Wire1.begin();
+<pre><code>Wire2.begin();
 Adafruit_CAP1188 cap = Adafruit_CAP1188();
-cap.begin(0x29, &amp;Wire1);  // I2C1 at 0x29</code></pre>
+cap.begin(0x29, &amp;Wire2);  // Wire2 at 0x29</code></pre>
+                        <p>Ready-made test: <code>firmware/teensy/test/layer2_cap1188</code>.</p>
                         <p>Serial Monitor: touch each pad &rarr; see event. Then integrate: pad N triggers sample N via <code>AudioPlaySdWav</code>.</p>
                     </div>
 
@@ -584,7 +586,7 @@ ads.begin(0x48, &amp;Wire);
 
                     <div class="step">
                         <div class="step-head">5.2 &mdash; Install MCP23017s into DIP Sockets</div>
-                        <p><strong>Watch the notch</strong> &mdash; pin 1 at the notch end. Both on I2C1 (16/17). #1 at <code>0x20</code> (A0/A1/A2 = GND). #2 at <code>0x21</code> (A0 = 3.3V). RESET pins &rarr; 3.3V. 100nF cap on each VDD&ndash;VSS.</p>
+                        <p><strong>Watch the notch</strong> &mdash; pin 1 at the notch end. Both on Wire2 (24/25), shared with the CAP1188. #1 at <code>0x20</code> (A0/A1/A2 = GND). #2 at <code>0x21</code> (A0 = 3.3V). RESET pins &rarr; 3.3V. 100nF cap on each VDD&ndash;VSS.</p>
                     </div>
 
                     <div class="step">
@@ -711,7 +713,7 @@ if (Serial1.available()) {
             <!-- ============================================================ -->
             <div class="hero-diagram">
                 <img src="images/assembly-diagram-i2c-bus.png" alt="I2C Bus Architecture">
-                <p class="diagram-label">I2C BUS ARCHITECTURE &mdash; Wire (audio-path) and Wire1 (UI-polling, external pull-ups required)</p>
+                <p class="diagram-label">I2C BUS ARCHITECTURE &mdash; Wire (audio-path) and Wire2 (UI-polling, one set of pull-ups)</p>
             </div>
 
             <div class="hero-diagram">
@@ -730,8 +732,8 @@ if (Serial1.available()) {
                     <div class="bus-device"><span>ADS1115 ADC</span><span class="bus-addr">0x48</span></div>
                 </div>
                 <div class="bus-card">
-                    <h4>Wire1 &mdash; I2C1</h4>
-                    <div class="bus-pins">Pins 16 (SCL1), 17 (SDA1) &mdash; 10K pull-ups required</div>
+                    <h4>Wire2 &mdash; I2C2</h4>
+                    <div class="bus-pins">Pins 24 (SCL2), 25 (SDA2) &mdash; one set of pull-ups (2.2K if the breakouts have none)</div>
                     <div class="bus-device"><span>MCP23017 #1</span><span class="bus-addr">0x20</span></div>
                     <div class="bus-device"><span>MCP23017 #2</span><span class="bus-addr">0x21</span></div>
                     <div class="bus-device"><span>CAP1188 Touch</span><span class="bus-addr">0x29</span></div>
@@ -753,7 +755,7 @@ if (Serial1.available()) {
             <div class="still-needed">
                 <h3>Next Diotronic Visit</h3>
                 <ul>
-                    <li>2.2K&ohm; resistors &times;4 &mdash; replace 10K I2C1 pull-ups with proper values</li>
+                    <li>2.2K&ohm; resistors &times;4 &mdash; Wire2 pull-ups, if the breakouts have none</li>
                     <li>1K&ohm; resistors &times;5 &mdash; RC filter series resistors for slide pots</li>
                     <li>470&ohm; resistor &times;1 &mdash; NeoPixel data line (check your assortment first)</li>
                     <li>EC11 rotary encoders &times;6 &mdash; complete the 13-encoder interface</li>
@@ -828,13 +830,13 @@ if (Serial1.available()) {
                     <div class="phase-num day-num">2</div>
                     <div class="phase-info">
                         <h2 class="phase-name">OLED + CAP1188 + 8 Touch Pads</h2>
-                        <p class="phase-goal-text">60 MIN &mdash; MILESTONE: 8 pads on I2C1, OLED on I2C0, audio still clean</p>
+                        <p class="phase-goal-text">60 MIN &mdash; MILESTONE: 8 pads on Wire2, OLED on Wire, audio still clean</p>
                     </div>
                 </div>
                 <div class="phase-body">
                     <div class="hero-diagram">
                         <img src="images/day2-oled-cap1188-pads.png" alt="Day 2 wiring diagram">
-                        <p class="diagram-label">DAY 2 &mdash; OLED ON WIRE + CAP1188 ON WIRE1 WITH 10K PULL-UPS</p>
+                        <p class="diagram-label">DAY 2 &mdash; OLED ON WIRE + CAP1188 ON WIRE2 (PINS 24/25)</p>
                     </div>
                     <table class="time-table">
                         <tr><th>Min</th><th>Task</th></tr>
@@ -843,14 +845,14 @@ if (Serial1.available()) {
                         <tr><td>8&ndash;12</td><td>Flash I2C scanner. Should see <code>0x0A</code> (SGTL5000) + <code>0x3C</code> (OLED).</td></tr>
                         <tr><td>12&ndash;15</td><td>Flash SSD1306 example. Display shows Adafruit splash.</td></tr>
                         <tr><td>15&ndash;18</td><td>Solder headers onto CAP1188 breakout (if not pre-soldered).</td></tr>
-                        <tr><td>18&ndash;23</td><td>Wire CAP1188: SDA&rarr;<strong>pin 17</strong>, SCL&rarr;<strong>pin 16</strong>, VIN&rarr;3.3V, GND&rarr;GND.</td></tr>
-                        <tr><td>23&ndash;26</td><td>Add 10K pull-up resistors: pin 17&rarr;3.3V, pin 16&rarr;3.3V.</td></tr>
-                        <tr><td>26&ndash;28</td><td>Flash I2C scanner on Wire1. Should see <code>0x29</code>.</td></tr>
+                        <tr><td>18&ndash;23</td><td>Wire CAP1188: SDA&rarr;<strong>pin 25</strong>, SCL&rarr;<strong>pin 24</strong>, VIN&rarr;3.3V, GND&rarr;GND (all past the shield edge).</td></tr>
+                        <tr><td>23&ndash;26</td><td>Pull-ups: only if the breakout has none, add 2.2K pin 25&rarr;3.3V and pin 24&rarr;3.3V.</td></tr>
+                        <tr><td>26&ndash;28</td><td>Flash <code>layer2_cap1188</code>: Wire shows <code>0x0A</code>, Wire2 shows <code>0x29</code>.</td></tr>
                         <tr><td>28&ndash;45</td><td>Cut 8 copper tape pads (20&times;20mm). Stick to cardboard. Solder wire to each. Connect to C1&ndash;C8.</td></tr>
-                        <tr><td>45&ndash;55</td><td>Flash CAP1188 test (use <code>Wire1</code>). Touch each pad &rarr; Serial shows events.</td></tr>
+                        <tr><td>45&ndash;55</td><td>Touch each pad &rarr; <code>layer2_cap1188</code> prints <code>Pad N down/up</code>.</td></tr>
                         <tr><td>55&ndash;60</td><td>Test: audio plays while touching pads. Both I2C buses independent.</td></tr>
                     </table>
-                    <div class="validation-bar">&#10003; MILESTONE: 8 pads detected on I2C1, OLED shows text, audio plays</div>
+                    <div class="validation-bar">&#10003; MILESTONE: 8 pads detected on Wire2, OLED shows text, audio plays</div>
                 </div>
             </div>
 
@@ -871,7 +873,7 @@ if (Serial1.available()) {
                     <table class="time-table">
                         <tr><th>Min</th><th>Task</th></tr>
                         <tr><td>0&ndash;10</td><td>Create 8 short WAV samples (or rename PJRC test files to <code>pad1.wav</code>&ndash;<code>pad8.wav</code>). Copy to SD <code>/samples/</code>.</td></tr>
-                        <tr><td>10&ndash;30</td><td>Write combined sketch: read CAP1188 on Wire1, when pad N touched &rarr; play <code>/samples/padN.wav</code> via Audio Library.</td></tr>
+                        <tr><td>10&ndash;30</td><td>Write combined sketch: read CAP1188 on Wire2, when pad N touched &rarr; play <code>/samples/padN.wav</code> via Audio Library.</td></tr>
                         <tr><td>30&ndash;40</td><td>Flash and test. Touch pad 1 &rarr; hear sample 1, pad 2 &rarr; sample 2, etc.</td></tr>
                         <tr><td>40&ndash;50</td><td>Add OLED feedback: show which pad was touched and filename.</td></tr>
                         <tr><td>50&ndash;55</td><td>Test simultaneous touches, retrigger behavior.</td></tr>
@@ -957,9 +959,9 @@ if (Serial1.available()) {
                     <table class="time-table">
                         <tr><th>Min</th><th>Task</th></tr>
                         <tr><td>0&ndash;5</td><td>Wire 4 buttons directly to Teensy: MODE&rarr;pin 2, SHIFT&rarr;pin 3, REC&rarr;pin 4, PLAY&rarr;pin 5. Each button between pin and GND. Use <code>INPUT_PULLUP</code> in code.</td></tr>
-                        <tr><td>5&ndash;10</td><td>Press MCP23017 #1 into DIP socket. Wire: SDA(chip pin 13)&rarr;Teensy pin 17, SCL(12)&rarr;pin 16, VDD(9)&rarr;3.3V, VSS(10)&rarr;GND, RST(18)&rarr;3.3V, A0/A1/A2&rarr;GND. Add 100nF cap.</td></tr>
+                        <tr><td>5&ndash;10</td><td>Press MCP23017 #1 into DIP socket. Wire: SDA(chip pin 13)&rarr;Teensy pin 25, SCL(12)&rarr;pin 24, VDD(9)&rarr;3.3V, VSS(10)&rarr;GND, RST(18)&rarr;3.3V, A0/A1/A2&rarr;GND. Add 100nF cap.</td></tr>
                         <tr><td>10&ndash;13</td><td>Press MCP23017 #2 into DIP socket. Same wiring but A0&rarr;3.3V (address <code>0x21</code>).</td></tr>
-                        <tr><td>13&ndash;15</td><td>Flash I2C scanner on Wire1: should show <code>0x20</code>, <code>0x21</code>, <code>0x29</code>.</td></tr>
+                        <tr><td>13&ndash;15</td><td>Flash I2C scanner on Wire2: should show <code>0x20</code>, <code>0x21</code>, <code>0x29</code>.</td></tr>
                         <tr><td>15&ndash;40</td><td>Wire 7 encoders. Each: A&rarr;GPx, B&rarr;GPx, C&rarr;GND, SW&rarr;GPx, SW common&rarr;GND. Encoders 1&ndash;5 on MCP#1, encoders 6&ndash;7 on MCP#2. See diagram for exact pin map.</td></tr>
                         <tr><td>40&ndash;45</td><td>Wire 5-way nav switch to MCP#2: up/down/left/right/select&rarr;GPB0&ndash;GPB4, common&rarr;GND.</td></tr>
                         <tr><td>45&ndash;55</td><td>Flash combined test: all 7 encoders + nav switch + 4 buttons.</td></tr>
@@ -1037,7 +1039,7 @@ if (Serial1.available()) {
             <table class="summary-table">
                 <tr><th>Day</th><th>What</th><th>Milestone</th></tr>
                 <tr><td>1</td><td>Solder Audio Shield + stack + first sound</td><td>Hear audio</td></tr>
-                <tr><td>2</td><td>OLED on I2C0 + CAP1188 on I2C1 + 8 pads</td><td>Touch + display</td></tr>
+                <tr><td>2</td><td>OLED on Wire + CAP1188 on Wire2 + 8 pads</td><td>Touch + display</td></tr>
                 <tr><td>3</td><td>Code: touch &rarr; play sample &rarr; OLED feedback</td><td>Touch = sound</td></tr>
                 <tr><td>4</td><td>NeoPixels + ADS1115 + first fader</td><td>Light + fader + sound</td></tr>
                 <tr><td>5</td><td>Remaining 4 slide pots</td><td>5 faders</td></tr>
@@ -1052,7 +1054,7 @@ if (Serial1.available()) {
                 <h3>If You Get Stuck</h3>
                 <ul>
                     <li><strong>No sound (Day 1):</strong> SD must be FAT32, files on root, CS = <code>BUILTIN_SDCARD</code>.</li>
-                    <li><strong>I2C device not found (Day 2+):</strong> Check wiring. Wire1 needs external 10K pull-ups.</li>
+                    <li><strong>I2C device not found (Day 2+):</strong> Check wiring. Wire2 needs one set of pull-ups (on the breakout or 2.2K added).</li>
                     <li><strong>Audio glitches with NeoPixels (Day 4):</strong> Switch to <code>WS2812Serial</code> library.</li>
                     <li><strong>Fader jitter (Day 4&ndash;5):</strong> Add 100nF caps on wipers. Keep analog wires away from SPI.</li>
                     <li><strong>ESP32 causes Teensy reboot (Day 8):</strong> Power ESP32 from 5V, not 3.3V.</li>

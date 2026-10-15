@@ -553,7 +553,7 @@ APPLY AI INSTRUCTIONS
 **Touch Pads Not Responsive:**
 - Recalibrate (boot with all buttons held)
 - Check copper tape connectivity
-- Verify CAP1188 I2C address (0x29 on Wire1, pins 16/17)
+- Verify CAP1188 I2C address (0x29 on Wire2, pins 24/25)
 - Reduce sensitivity if too sensitive
 
 **Audio Crackling:**

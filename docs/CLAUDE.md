@@ -137,7 +137,7 @@ Audio Shield:
   - SD Card: Built-in
 
 Touch Sensor (CAP1188):
-  - I2C1 (Wire1): 17 (SDA), 16 (SCL), external 10K pull-ups
+  - Wire2: 25 (SDA), 24 (SCL), one set of pull-ups
   - Address: 0x29
 
 Encoders:

@@ -2,7 +2,7 @@
 /**
  * Oh My Ondas - Layer 1 Test: SD Playback
  *
- * Teensy 4.1 + Audio Shield Rev D2. Loops TEST.WAV from the Teensy built-in
+ * Teensy 4.1 + Audio Shield Rev D. Loops TEST.WAV from the Teensy built-in
  * SD slot (not the Audio Shield socket, which stays empty).
  *
  * Setup: FAT32 card with TEST.WAV (44.1kHz, 16-bit) at the root.

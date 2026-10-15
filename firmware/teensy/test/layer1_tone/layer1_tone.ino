@@ -2,7 +2,7 @@
 /**
  * Oh My Ondas - Layer 1 Test: Tone
  *
- * Teensy 4.1 + Audio Shield Rev D2 (SGTL5000). Plays a continuous 440Hz sine
+ * Teensy 4.1 + Audio Shield Rev D (SGTL5000). Plays a continuous 440Hz sine
  * on both channels of the headphone jack.
  *
  * Pass criteria:

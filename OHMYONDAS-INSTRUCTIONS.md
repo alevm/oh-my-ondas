@@ -17,7 +17,7 @@ Oh My Ondas is a GPS-location-aware portable field recording and sampling instru
 - **GPS:** PA1010D with built-in antenna (P4415), NOT NEO-6M
 - **Encoders:** 7 of 13 received (6 more needed from Diotronic)
 - **MCU:** Teensy 4.1 with pre-soldered pins
-- **Audio:** Audio Shield Rev D2 (SGTL5000 codec)
+- **Audio:** Audio Shield Rev D (SGTL5000 codec; silkscreen reads "Rev D", ordered as Rev D2)
 - **WiFi:** SparkFun ESP32-S2 Thing Plus
 - **SD:** SanDisk Ultra 32GB in Teensy built-in SDIO slot (NOT Audio Shield SPI slot)
 
@@ -52,7 +52,7 @@ Open — not yet chosen: Input source TBD — electret on MIC/GND pads or line-i
 
 8 phases with I2C bus map. Render as vertical timeline/checklist. Include bus map:
 - **Wire (18/19):** SGTL5000 @ 0x0A, PA1010D @ 0x10, SSD1306 @ 0x3C, ADS1115 @ 0x48
-- **Wire1 (16/17):** MCP23017 #1 @ 0x20, #2 @ 0x21, CAP1188 @ 0x29 (needs external 10K pull-ups)
+- **Wire2 (24/25):** MCP23017 #1 @ 0x20, #2 @ 0x21, CAP1188 @ 0x29 (one set of pull-ups: on the breakout, or 2.2K added). Pins 16/17 (Wire1) are covered by the Audio Shield sockets.
 - **SPI (10-13):** ILI9341 LCD (CS=10, DC=9, RST=15)
 - **Serial1 (0/1):** ESP32-S2 UART
 
@@ -74,7 +74,7 @@ Dark background, monospace font (`Courier New`), gradient backgrounds. Match exi
 
 1. Use **Teensy built-in SD** (SDIO). Audio Shield's SD slot unused — avoids SPI bus conflict with LCD.
 2. LCD is **2.8" ILI9341** — ILI9341_t3 is the most optimized display library for Teensy with DMA.
-3. Split I2C: **Wire (18/19)** for audio-path devices, **Wire1 (16/17)** for UI-polling devices.
+3. Split I2C: **Wire (18/19)** for audio-path devices, **Wire2 (24/25)** for UI-polling devices (Wire1 on 16/17 is covered by the Audio Shield sockets).
 4. 4 main buttons (MODE/SHIFT/REC/PLAY) wired **directly to Teensy pins** (not MCP23017) for latency.
 5. ESP32-S2 powered from **5V** through its own regulator, not from Teensy 3.3V.
 
@@ -89,11 +89,11 @@ Teensy 4.1 + Audio Shield + SD + headphones.
   - [x] Audio out: SGTL5000 responds, 440 Hz sine heard on headphones (Oct 2026)
   - [x] SD playback from BUILTIN_SDCARD (TEST.WAV, 44.1kHz/16-bit) heard on headphones (Oct 2026)
   - [ ] Record → SD → playback round trip — digital path verified with layer1_record_roundtrip (Oct 2026); analog input blocked: input source TBD (electret on MIC/GND pads or line-in, not yet chosen)
-- **Before Phase 2:** I2C scan on Wire (18/19) should show only the SGTL5000 at 0x0A. Then add the CAP1188 on Wire1 (16/17, 10K pull-ups) and confirm 0x29.
+- **Before Phase 2:** I2C scan on Wire (18/19) should show only the SGTL5000 at 0x0A. Then add the CAP1188 on Wire2 (24/25) and confirm 0x29 (`firmware/teensy/test/layer2_cap1188`).
 **Done when:** hear audio in headphones.
 
 ### Phase 2: Touch Sensing
-CAP1188 on Wire1 (pins 16/17), address 0x29. 10K pull-ups on SDA1/SCL1. Copper tape pads 20x20mm. Touch triggers audio samples.
+CAP1188 on Wire2 (SDA 25, SCL 24), address 0x29. One set of pull-ups: the breakout's own, or 2.2K added if it has none. 3.3V is next to pin 24, GND next to pin 41, all past the shield edge. Copper tape pads 20x20mm. Touch triggers audio samples.
 **Done when:** touching pads triggers samples.
 
 ### Phase 3: Display + LEDs
@@ -105,7 +105,7 @@ ADS1115 on Wire (18/19) @ 0x48. 4 slide pots to ADS1115 A0-A3, 5th pot to Teensy
 **Done when:** faders read 0-26000 smoothly, no jitter.
 
 ### Phase 5: I/O Expansion
-Buttons directly: MODE=pin2, SHIFT=pin3, REC=pin4, PLAY=pin5 (INPUT_PULLUP). MCP23017 #1 @ 0x20, #2 @ 0x21 on Wire1. 5 encoders on MCP #1, 2 encoders + 5-way nav switch on MCP #2. 100nF decoupling caps. RESET pins tied to 3.3V.
+Buttons directly: MODE=pin2, SHIFT=pin3, REC=pin4, PLAY=pin5 (INPUT_PULLUP). MCP23017 #1 @ 0x20, #2 @ 0x21 on Wire2 (24/25). 5 encoders on MCP #1, 2 encoders + 5-way nav switch on MCP #2. 100nF decoupling caps. RESET pins tied to 3.3V.
 **Done when:** all encoders, buttons, nav switch respond.
 
 ### Phase 6: GPS
@@ -123,4 +123,4 @@ Everything running simultaneously. CPU <70%, no I2C errors, audio clean, GPS fix
 KB2040 (P5302), RFM95W LoRa (P3072), USB-C connectors (P5978, P5993), backup Teensy + Audio Shield.
 
 ### Next Diotronic Visit
-2.2kΩ resistors x4 (replace I2C1 10K pull-ups), 1kΩ resistors x5 (RC filter for pots), 470Ω resistor x1 (NeoPixel data), 6x more EC11 encoders.
+2.2kΩ resistors x4 (Wire2 pull-ups, if the breakouts have none), 1kΩ resistors x5 (RC filter for pots), 470Ω resistor x1 (NeoPixel data), 6x more EC11 encoders.

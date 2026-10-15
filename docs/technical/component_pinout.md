@@ -80,7 +80,7 @@ PLAY         29   Start/stop playback
 
 ## Touch Sensor (CAP1188)
 
-On I2C1 (Wire1): SDA pin 17, SCL pin 16, address 0x29, external 10K pull-ups to 3.3V.
+On Wire2: SDA pin 25, SCL pin 24, address 0x29, one set of pull-ups (breakout's own or 2.2K to 3.3V).
 8 touch electrodes connected to copper tape pads:
 
 ```
