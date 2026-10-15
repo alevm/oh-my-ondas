@@ -65,12 +65,15 @@
 // I2C (shared bus: OLED, MPR121, MCP23017×2, ADS1115)
 // SDA = Pin 18, SCL = Pin 19
 
-// Audio Shield (I2S) — RESERVED PINS, do NOT reuse:
-// Pin 2  = I2S RX (audio input)
-// Pin 7  = I2S TX (BCLK)
+// Audio Shield Rev D2 — RESERVED PINS, do NOT reuse
+// (source: pjrc.com/store/teensy3_audio.html):
+// Pin 7  = I2S TX (audio data out)
+// Pin 8  = I2S RX (audio data in)
 // Pin 20 = I2S LRCLK
 // Pin 21 = I2S BCLK
-// Pin 23 = I2S TX
+// Pin 23 = I2S MCLK
+// Shield SD socket 10-13, memory chip CS 6, volume pot 15/A1:
+// only free while the socket stays empty and the chip/pot are not fitted
 
 // Touch Sensor IRQ (MPR121)
 #define TOUCH_IRQ 15

@@ -333,37 +333,46 @@
                 </div>
                 <div class="phase-body">
                     <div class="step">
-                        <div class="step-head">1.1 &mdash; Solder Audio Shield Headers</div>
-                        <p>The Audio Shield Rev D2 stacks directly on top of the Teensy 4.1 via two rows of female headers. You need <strong>2 &times; 14-pin female headers</strong> (cut from a 40-pin strip).</p>
+                        <div class="step-head">1.1 &mdash; Stack the Teensy on the Audio Shield</div>
+                        <p>The Audio Shield Rev D2 sits <strong>under</strong> the Teensy 4.1. A female socket strip on the shield receives the Teensy's downward-facing male headers. The stack is pluggable &mdash; there is no solder joint between the two boards.</p>
 
                         <ol>
-                            <li><strong>Cut headers:</strong> Count 14 pins on the strip and cut with flush cutters. You need two 14-pin pieces. Cut on the 15th socket to avoid cracking pin 14.</li>
-                            <li><strong>Insert headers into Teensy:</strong> Push the two 14-pin female headers onto the Teensy's outer male pin rows (the two long rows of pins along each edge). The headers sit on top of the Teensy, sockets facing up.</li>
-                            <li><strong>Stack the Audio Shield on top:</strong> Place the Audio Shield board onto the headers so the shield's through-holes line up with all 28 header pins. The Audio Shield's 3.5mm jack should face the same end as the Teensy's USB port. <strong>The Teensy is your alignment jig</strong> &mdash; stacking before soldering guarantees all pins are straight and spaced correctly.</li>
-                            <li><strong>Solder from the TOP of the Audio Shield:</strong> Flip the stack so the Audio Shield PCB is on the bottom. The header pins now poke through the Audio Shield's top surface. Solder each pin where it comes through the Audio Shield PCB. Do NOT solder anything to the Teensy itself.</li>
-                            <li><strong>Technique:</strong> Heat the pad and pin together for 2 seconds, feed solder until it flows around the pin and wets the pad. Move to the next pin. Do corners first to lock alignment, then fill in the rest.</li>
-                            <li><strong>Separate:</strong> After all 28 joints cool, gently pull the Audio Shield off the Teensy. Inspect every joint &mdash; look for bridges between adjacent pins and cold joints (dull/blobby). Reflow any bad joints.</li>
+                            <li><strong>Orientation:</strong> shield at the USB end, <strong>pin 0 to pin 0</strong>.</li>
+                            <li><strong>Coverage:</strong> the shield covers only the first 14 pins per side. Teensy 4.1 pins 24 and up stay free.</li>
+                            <li><strong>Seat the Teensy fully:</strong> the header plastic must touch the socket strip. Partial insertion gives intermittent contact &mdash; the codec can answer on I2C while audio still fails.</li>
                         </ol>
 
-                        <div class="callout-warn">The Audio Shield connects to the Teensy through these pins: <strong>I2S audio</strong> (7, 20, 21, 23), <strong>I2C control</strong> (18, 19 &mdash; SGTL5000 codec at 0x0A), and <strong>power</strong> (3.3V, GND, VIN). All of these are on the outer pin rows you just soldered. No extra wiring needed &mdash; the header connection carries everything.</div>
+                        <table class="wire-table">
+                            <tr><th>Shield function</th><th>Teensy pins</th></tr>
+                            <tr><td>Audio data (I2S)</td><td class="pin">7, 8, 20, 21, 23</td></tr>
+                            <tr><td>I2C control (shared) &mdash; SGTL5000 at <span class="addr">0x0A</span></td><td class="pin">18 (SDA), 19 (SCL)</td></tr>
+                            <tr><td>Shield SD socket</td><td class="pin">10, 11, 12, 13</td></tr>
+                            <tr><td>Memory chip CS</td><td class="pin">6</td></tr>
+                            <tr><td>Volume pot</td><td class="pin">15 / A1</td></tr>
+                        </table>
+                        <p>Source: <a href="https://www.pjrc.com/store/teensy3_audio.html" target="_blank" rel="noopener noreferrer" style="color:#5dade2;">pjrc.com/store/teensy3_audio.html</a></p>
 
-                        <div class="callout-tip">If you've never soldered headers before: practice on a spare piece of perfboard first. The key mistakes are (1) not heating long enough so solder blobs instead of flowing, and (2) moving the board while the joint cools, creating a cold joint. PJRC has photos of the correct stack at <code>pjrc.com/store/teensy3_audio.html</code>.</div>
+                        <div class="callout-warn">Shared pins later in the build: the LCD uses <strong>pin 10</strong> (CS, shared with the shield SD socket) and <strong>pin 15</strong> (RST, the volume-pot pin); the NeoPixels use <strong>pin 6</strong> (memory chip CS). Keep the shield SD socket empty, and do not fit the volume pot or the memory chip.</div>
+
+                        <div class="diagram-frame">
+                            <img src="images/layer1-stack.jpg" alt="Teensy 4.1 seated on the Audio Shield Rev D2, shield underneath at the USB end" onerror="this.parentElement.style.display='none'">
+                            <p class="diagram-label">VISUAL CHECK &mdash; SHIELD UNDER TEENSY, USB END, HEADERS FULLY SEATED</p>
+                        </div>
                     </div>
 
                     <div class="step">
                         <div class="step-head">1.2 &mdash; Prepare SD Card</div>
                         <ol>
                             <li>Format as <strong>FAT32</strong> (not exFAT).</li>
-                            <li>Copy PJRC test WAV files to root.</li>
+                            <li>Copy <code>TEST.WAV</code> (44.1&nbsp;kHz, 16-bit) to the root.</li>
                             <li>Insert into Teensy <strong>built-in slot</strong> (not Audio Shield slot).</li>
                         </ol>
                     </div>
 
                     <div class="step">
-                        <div class="step-head">1.3 &mdash; Stack and Connect</div>
+                        <div class="step-head">1.3 &mdash; Connect</div>
                         <ol>
-                            <li>Teensy into breadboard (spans center gap).</li>
-                            <li>Audio Shield on top via headers.</li>
+                            <li>Rest the stack on a non-conductive surface (with the shield underneath it does not go into a breadboard).</li>
                             <li>Headphones into Audio Shield 3.5mm jack.</li>
                             <li>USB to computer.</li>
                         </ol>
@@ -372,10 +381,32 @@
                     <div class="step">
                         <div class="step-head">1.4 &mdash; Flash and Test</div>
 <pre><code>#define SDCARD_CS_PIN    BUILTIN_SDCARD
-// DO NOT use pins 10/7/14 for SD
-// Those are Audio Shield SD (unused)</code></pre>
-                        <p>Open WavFilePlayer example. Set CS pin as above. Upload. Serial Monitor 9600 baud.</p>
-                        <div class="callout-warn">If no sound: check Serial Monitor for &ldquo;Unable to access SD card&rdquo;. Verify FAT32 format, correct slot, headphone jack fully inserted.</div>
+// Shield SD socket (CS 10, SPI 11-13) stays empty:
+// pin 10 is the LCD chip select</code></pre>
+                        <p>Test sketches in <code>firmware/teensy/test/</code>, Serial Monitor at 115200 baud:</p>
+                        <ol>
+                            <li><code>layer1_tone</code> &mdash; prints <code>SGTL5000 OK</code> and plays a 440&nbsp;Hz sine on both channels.</li>
+                            <li><code>layer1_sd_playback</code> &mdash; prints <code>SD OK</code> and loops <code>TEST.WAV</code> from the built-in slot.</li>
+                        </ol>
+                        <div class="callout-warn">If no sound: check Serial Monitor for <code>SGTL5000 NON risponde</code> or <code>SD FAIL</code>. Verify the Teensy is fully seated, FAT32 format, correct slot, headphone jack fully inserted.</div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-head">1.5 &mdash; Status</div>
+                        <ul style="list-style:none; margin-left:0;">
+                            <li>&#9745; Audio out: SGTL5000 responds, 440&nbsp;Hz sine heard on headphones (Oct 2026)</li>
+                            <li>&#9745; SD playback from <code>BUILTIN_SDCARD</code> (<code>TEST.WAV</code>, 44.1&nbsp;kHz/16-bit) heard on headphones (Oct 2026)</li>
+                            <li>&#9744; Record &rarr; SD &rarr; playback round trip</li>
+                        </ul>
+                        <div class="callout-warn"><strong>Open &mdash; blocks the record test:</strong> Input source TBD &mdash; electret on MIC/GND pads or line-in. Not yet chosen. Picture Mode needs audio capture, and the component list has no microphone.</div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-head">1.6 &mdash; Before Phase 2</div>
+                        <ol>
+                            <li>Run an I2C scan on <code>Wire</code> (18/19): it should show only the SGTL5000 at <code>0x0A</code>.</li>
+                            <li>Then add the CAP1188 on <code>Wire1</code> (16/17, 10K pull-ups) and confirm <code>0x29</code>.</li>
+                        </ol>
                     </div>
 
                     <div class="validation-bar">&#10003; VALIDATION: Hear WAV audio through headphones</div>
@@ -775,16 +806,16 @@ if (Serial1.available()) {
                     <table class="time-table">
                         <tr><th>Min</th><th>Task</th></tr>
                         <tr><td>0&ndash;5</td><td>Set up soldering station. Tin tip. Open flux.</td></tr>
-                        <tr><td>5&ndash;10</td><td>Cut 2&times; female 14-pin headers from 40-pin strips.</td></tr>
-                        <tr><td>10&ndash;15</td><td>Insert female headers through Audio Shield bottom holes.</td></tr>
-                        <tr><td>15&ndash;20</td><td>Place Audio Shield onto Teensy (use Teensy as alignment jig).</td></tr>
-                        <tr><td>20&ndash;40</td><td>Solder all 28 pins. One at a time, check alignment every 5 pins.</td></tr>
-                        <tr><td>40&ndash;42</td><td>Cool. Separate. Inspect joints for bridges or cold solder.</td></tr>
-                        <tr><td>42&ndash;45</td><td>Insert Teensy into breadboard. Insert SD card into built-in slot.</td></tr>
-                        <tr><td>45&ndash;47</td><td>Stack Audio Shield on Teensy. Plug headphones. Connect USB.</td></tr>
-                        <tr><td>47&ndash;52</td><td>Open WavFilePlayer example. Set <code>SDCARD_CS_PIN</code> to <code>BUILTIN_SDCARD</code>. Upload.</td></tr>
-                        <tr><td>52&ndash;57</td><td>Listen. WAV files should play through headphones.</td></tr>
-                        <tr><td>57&ndash;60</td><td>If no sound: check Serial Monitor, SD format, headphone jack.</td></tr>
+                        <tr><td>5&ndash;10</td><td>Cut 2&times; female 14-pin socket strips from 40-pin strips.</td></tr>
+                        <tr><td>10&ndash;15</td><td>Fit the socket strips on the Audio Shield, sockets facing up toward the Teensy.</td></tr>
+                        <tr><td>15&ndash;20</td><td>Plug the Teensy into the strips as an alignment jig: shield at the USB end, pin 0 to pin 0.</td></tr>
+                        <tr><td>20&ndash;40</td><td>Solder the strips to the shield only. One pin at a time, check alignment every 5 pins.</td></tr>
+                        <tr><td>40&ndash;42</td><td>Cool. Unplug the Teensy. Inspect joints for bridges or cold solder.</td></tr>
+                        <tr><td>42&ndash;45</td><td>Insert SD card (<code>TEST.WAV</code> at root) into the Teensy built-in slot.</td></tr>
+                        <tr><td>45&ndash;47</td><td>Seat the Teensy fully on the shield (header plastic touching the strips). Plug headphones. Connect USB.</td></tr>
+                        <tr><td>47&ndash;52</td><td>Upload <code>layer1_tone</code>, then <code>layer1_sd_playback</code> from <code>firmware/teensy/test/</code>.</td></tr>
+                        <tr><td>52&ndash;57</td><td>Listen: 440&nbsp;Hz tone, then <code>TEST.WAV</code> looping.</td></tr>
+                        <tr><td>57&ndash;60</td><td>If no sound: check Serial Monitor, Teensy fully seated, SD format, headphone jack.</td></tr>
                     </table>
                     <div class="validation-bar">&#10003; MILESTONE: Hear audio through headphones</div>
                 </div>
