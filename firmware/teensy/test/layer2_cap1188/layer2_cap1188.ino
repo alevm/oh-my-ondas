@@ -12,6 +12,7 @@
  *   - "CAP1188 OK", then each pad prints "Pad N down/up" when touched
  */
 
+#include <Audio.h>
 #include <Wire.h>
 #include <Adafruit_CAP1188.h>
 
@@ -20,6 +21,8 @@
 #define TOUCH_BUS Wire2
 #define TOUCH_BUS_NAME "Wire2 (SDA 25, SCL 24)"
 
+// The SGTL5000 only answers on I2C while MCLK runs: an I2S object starts it.
+AudioOutputI2S   i2sOut;
 Adafruit_CAP1188 touch = Adafruit_CAP1188();
 uint8_t lastTouched = 0;
 
@@ -36,19 +39,36 @@ void scan(TwoWire& bus, const char* name) {
     Serial.println(found ? "" : " none");
 }
 
+uint8_t readReg(TwoWire& bus, uint8_t addr, uint8_t reg) {
+    bus.beginTransmission(addr);
+    bus.write(reg);
+    bus.endTransmission(false);
+    bus.requestFrom(addr, (uint8_t)1);
+    return bus.available() ? bus.read() : 0;
+}
+
 void setup() {
     Serial.begin(115200);
     while (!Serial && millis() < 3000) {}
 
+    AudioMemory(4);
+    delay(10);
     Wire.begin();
     TOUCH_BUS.begin();
     scan(Wire, "Wire (SDA 18, SCL 19)");
     scan(TOUCH_BUS, TOUCH_BUS_NAME);
 
-    if (touch.begin(0x29, &TOUCH_BUS)) {
+    // touch.begin() fails if the previous transaction on the bus was NACKed
+    // (the scan ends on one); a plain register read first clears it.
+    readReg(TOUCH_BUS, 0x29, 0xFD);
+    bool ok = touch.begin(0x29, &TOUCH_BUS);
+    if (ok) {
         Serial.println("CAP1188 OK - touch each pad");
     } else {
-        Serial.println("CAP1188 NOT FOUND - check wiring and 10K pull-ups");
+        // Library expects product 0x50, manufacturer 0x5D, revision 0x83
+        Serial.printf("CAP1188 NOT FOUND - IDs: product 0x%02X, manuf 0x%02X, rev 0x%02X\n",
+                      readReg(TOUCH_BUS, 0x29, 0xFD), readReg(TOUCH_BUS, 0x29, 0xFE),
+                      readReg(TOUCH_BUS, 0x29, 0xFF));
     }
 }
 
