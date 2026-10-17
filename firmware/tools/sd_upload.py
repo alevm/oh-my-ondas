@@ -6,6 +6,7 @@ Requires firmware/teensy/test/sd_upload running on the Teensy.
 
 Examples:
     sd_upload.py --test-wav                 # generate and upload TEST.WAV
+    sd_upload.py --pad-samples              # generate and upload PAD1-PAD8.WAV
     sd_upload.py sample01.wav --name S01.WAV
     sd_upload.py --list
 """
@@ -50,6 +51,29 @@ def make_test_wav() -> bytes:
     return buf.getvalue()
 
 
+def make_pad_wav(n: int) -> bytes:
+    """PADn.WAV: 44.1kHz 16-bit mono, 0.5s note of a C major scale (pad 1 = C4).
+    Odd pads are a plain sine, even pads add harmonics, so neighbours differ in
+    pitch and timbre."""
+    freq = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25][n - 1]
+    harmonics = [1.0] if n % 2 else [1.0, 0.5, 0.33]
+    frames = []
+    for i in range(int(RATE * 0.5)):
+        t = i / RATE
+        env = math.exp(-6.0 * t) * min(1.0, i / 100)
+        v = sum(a * math.sin(2 * math.pi * freq * (k + 1) * t)
+                for k, a in enumerate(harmonics)) / sum(harmonics)
+        frames.append(struct.pack('<h', int(0.6 * 32767 * env * v)))
+
+    buf = BytesIO()
+    with wave.open(buf, 'wb') as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(RATE)
+        w.writeframes(b''.join(frames))
+    return buf.getvalue()
+
+
 def list_files(port: serial.Serial) -> None:
     port.write(b'LIST\n')
     while (line := port.readline().decode().strip()) != 'END':
@@ -77,6 +101,7 @@ def main():
     parser.add_argument('file', nargs='?', help='Local file to upload')
     parser.add_argument('--name', help='Name on the SD card (default: local file name)')
     parser.add_argument('--test-wav', action='store_true', help='Generate and upload TEST.WAV')
+    parser.add_argument('--pad-samples', action='store_true', help='Generate and upload PAD1.WAV-PAD8.WAV')
     parser.add_argument('--list', action='store_true', help='List files on the SD card')
     parser.add_argument('--port', default='/dev/ttyACM0')
     args = parser.parse_args()
@@ -84,6 +109,16 @@ def main():
     port = serial.Serial(args.port, 115200, timeout=10)
     time.sleep(0.5)
     port.reset_input_buffer()
+
+    if args.pad_samples:
+        for n in range(1, 9):
+            name, data = f'PAD{n}.WAV', make_pad_wav(n)
+            if not put(port, name, data):
+                sys.exit(f'{name}: upload failed or checksum mismatch')
+            print(f'{name}: {len(data)} bytes, checksum OK')
+        if args.list:
+            list_files(port)
+        return
 
     if args.test_wav:
         name, data = 'TEST.WAV', make_test_wav()
