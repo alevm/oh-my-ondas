@@ -6,11 +6,14 @@
  * SPI1 sits on pins past the Audio Shield edge; MISO1 defaults to pin 1
  * (under the shield), so it is moved to 39.
  *
- * Wiring: Vin -> 3.3V rail, GND -> GND rail, CLK -> 27, MOSI -> 26,
- * MISO -> 39, CS -> 38, D/C -> 37, RST -> 36. Lite unconnected.
+ * Wiring (SPI-row pins only): 3-5V -> 3.3V, GND -> GND, CLK -> 27,
+ * MOSI -> 26, MISO -> 39, CS -> 38, D/C -> 37, RST -> 36. Lite unconnected.
+ * Keep the LCD itself out of the breadboard and leave the 8-bit row
+ * (including its PWR pins) unconnected: with the board plugged in and
+ * powered from that row, the controller answered but the panel stayed white.
  *
  * Pass criteria (Serial Monitor, 115200):
- *   - "LCD power mode 0x9C" (read back over MISO: display on, awake)
+ *   - "LCD power mode 0x94", "LCD pixel format 0x05" (read back over MISO)
  *   - Screen shows colour bars and "Oh My Ondas" text
  *   - "Fill test: N ms" printed (full-screen redraw time)
  */
