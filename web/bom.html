@@ -129,8 +129,8 @@
             <p class="page-subtitle">Actual received hardware &middot; v3.0 &middot; March 2026</p>
 
             <div class="bom-summary">
-                <strong>Status:</strong> All core components received across 3 orders from 3 countries.<br>
-                <strong>Total spent:</strong> ~&euro;158 + ~$194 (~&euro;340 equivalent)<br>
+                <strong>Status:</strong> Core components received across 3 orders from 3 countries; 4th order (DigiKey, October 2026) in transit.<br>
+                <strong>Total spent:</strong> ~&euro;250 + ~$194 (~&euro;430 equivalent)<br>
                 <strong>Assembly phase:</strong> Phase 1 (Core Audio) &mdash; see <a href="assembly.html">Assembly Manual</a>
             </div>
 
@@ -446,10 +446,94 @@
                 </tbody>
             </table>
 
+            <!-- Order 4: DigiKey -->
+            <div class="order-header">
+                <h3>DigiKey (Spain)</h3>
+                <span class="order-meta">October 2026 &middot; order 102318278 &middot; shipped to Barcelona, duties included &middot; in transit</span>
+                <span class="order-total">&euro;91.62</span>
+            </div>
+            <table class="bom-table">
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Part #</th>
+                        <th class="qty">Qty</th>
+                        <th class="price">Price</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>I2C Quad Rotary Encoder (STEMMA QT)</td>
+                        <td class="part-num">Adafruit 5752</td>
+                        <td class="qty">2</td>
+                        <td class="price">&euro;6.59</td>
+                        <td class="role">Holds the 7 EC11 encoders, Wire2 0x49/0x4A</td>
+                    </tr>
+                    <tr>
+                        <td>Electret Mic + MAX9814 AGC Preamp</td>
+                        <td class="part-num">Adafruit 1713</td>
+                        <td class="qty">1</td>
+                        <td class="price">&euro;6.98</td>
+                        <td class="role">Mic source into LINE-IN L</td>
+                    </tr>
+                    <tr>
+                        <td>STEMMA QT / Qwiic Cable 150mm</td>
+                        <td class="part-num">Adafruit 4397</td>
+                        <td class="qty">3</td>
+                        <td class="price">&euro;0.83</td>
+                        <td class="role">Wire2 chain (Quad &rarr; Quad &rarr; GPS)</td>
+                    </tr>
+                    <tr>
+                        <td>STEMMA QT to Male Header Cable 150mm</td>
+                        <td class="part-num">Adafruit 4209</td>
+                        <td class="qty">3</td>
+                        <td class="price">&euro;0.83</td>
+                        <td class="role">Teensy Wire2 / breadboard &rarr; STEMMA chain</td>
+                    </tr>
+                    <tr>
+                        <td>8 MB PSRAM Chip</td>
+                        <td class="part-num">SparkFun COM-28391</td>
+                        <td class="qty">2</td>
+                        <td class="price">&euro;2.14</td>
+                        <td class="role">16 MB sample memory under Teensy 4.1</td>
+                    </tr>
+                    <tr>
+                        <td>USB Host Cable for Teensy 4.1</td>
+                        <td class="part-num">SparkFun CAB-28389</td>
+                        <td class="qty">2</td>
+                        <td class="price">&euro;2.63</td>
+                        <td class="role">USB MIDI keyboard input (1 spare: duplicate line)</td>
+                    </tr>
+                    <tr>
+                        <td>Perma-Proto Full-sized Breadboard PCB</td>
+                        <td class="part-num">Adafruit 1606</td>
+                        <td class="qty">1</td>
+                        <td class="price">&euro;9.61</td>
+                        <td class="role">Soldered carrier once the pin map is fixed</td>
+                    </tr>
+                    <tr>
+                        <td>Si4732-A10 AM/FM/SW Receiver (SOIC-16)</td>
+                        <td class="part-num">Skyworks SI4732-A10-GS</td>
+                        <td class="qty">2</td>
+                        <td class="price">&euro;3.71</td>
+                        <td class="role">Over-the-air radio, DIY (1 spare)</td>
+                    </tr>
+                    <tr>
+                        <td>USB Logic Analyzer 24MHz/8-Ch</td>
+                        <td class="part-num">SparkFun TOL-18627</td>
+                        <td class="qty">1</td>
+                        <td class="price">&euro;24.01</td>
+                        <td class="role">Tool: SPI/I2C debugging</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="page-subtitle">Subtotal &euro;75.72 + VAT &euro;15.90, free shipping.</p>
+
             <!-- Still Needed -->
             <div class="still-needed">
                 <h3>Still Needed</h3>
-                <p>Pick up on next Diotronic visit:</p>
+                <p>Open items, to pick up on the next Diotronic visit (Si4732 radio circuit and fader filters):</p>
                 <table class="bom-table">
                     <thead>
                         <tr>
@@ -460,28 +544,48 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Rotary Encoder EC11</td>
-                            <td class="qty">6</td>
-                            <td>Complete 13-encoder interface</td>
+                            <td>SOIC-16 to DIP adapter</td>
+                            <td class="qty">2</td>
+                            <td>Carrier for the Si4732 chip (1.27&nbsp;mm pitch). Required for the radio</td>
+                        </tr>
+                        <tr>
+                            <td>32.768&nbsp;kHz crystal (~12.5&nbsp;pF)</td>
+                            <td class="qty">2</td>
+                            <td>Si4732 clock. Required for the radio</td>
+                        </tr>
+                        <tr>
+                            <td>Ceramic capacitors 22&nbsp;pF</td>
+                            <td class="qty">4</td>
+                            <td>Crystal load capacitors</td>
+                        </tr>
+                        <tr>
+                            <td>Ceramic capacitors 1&nbsp;nF / 22&nbsp;nF / 470&nbsp;nF</td>
+                            <td class="qty">2 + 2 + 2</td>
+                            <td>Si4732 supply filtering</td>
+                        </tr>
+                        <tr>
+                            <td>Capacitors 4.7&nbsp;&micro;F</td>
+                            <td class="qty">4</td>
+                            <td>Si4732 audio outputs (optional)</td>
                         </tr>
                         <tr>
                             <td>2.2k&Omega; Resistors</td>
-                            <td class="qty">4</td>
-                            <td>Wire2 pull-ups, if the breakouts have none</td>
+                            <td class="qty">2</td>
+                            <td>Si4732 reference circuit</td>
                         </tr>
                         <tr>
                             <td>1k&Omega; Resistors</td>
                             <td class="qty">5</td>
-                            <td>Analog input RC filters</td>
+                            <td>Fader RC filters, only if readings jitter</td>
                         </tr>
                         <tr>
-                            <td>470&Omega; Resistor</td>
+                            <td>AM ferrite antenna (~500&nbsp;&micro;H)</td>
                             <td class="qty">1</td>
-                            <td>NeoPixel data line</td>
+                            <td>AM/LW reception. FM and SW work with a wire. Or salvage one from an old AM radio</td>
                         </tr>
                     </tbody>
                 </table>
-                <p><strong>Open &mdash; not yet chosen:</strong> Input source TBD &mdash; electret on MIC/GND pads or line-in. Picture Mode needs audio capture; nothing on this list provides it. Blocks the Layer 1 record test.</p>
+                <p><strong>Not needed for v1:</strong> 6 more EC11 encoders (only for the full 13-encoder interface), 2.2k&Omega; Wire2 pull-ups (all breakouts have their own), 470&Omega; NeoPixel resistor (NeoPixel strip out of v1).</p>
             </div>
 
             <p class="blog-license">

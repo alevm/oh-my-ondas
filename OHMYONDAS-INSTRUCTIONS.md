@@ -43,8 +43,9 @@ Create/update a BOM page reflecting **actual hardware received** from three orde
 - **Antratek Belgium** (Jan 2026, €78.05): Teensy 4.1, Audio Shield, ESP32-S2
 - **Diotronic Barcelona** (Feb 2026, ~€80): encoders, buttons, OLED, copper tape, NeoPixels, jacks, passives, prototyping supplies, soldering station
 - **Adafruit US** (Mar 2026, ~$194): backup Teensy + Audio Shield, GPS, CAP1188, ADS1115, MCP23017 x2, nav switch, slide pots, knobs, 2.8" LCD, LoRa, KB2040, USB-C, wire kit, helping hand
+- **DigiKey Spain** (Oct 2026, €91.62, in transit): 2x Quad Rotary Encoder (Adafruit 5752), MAX9814 mic preamp, STEMMA QT cables, 2x PSRAM 8 MB, 2x USB Host cable, Perma-Proto, 2x Si4732-A10 radio chip, USB logic analyzer
 
-Still needed: 6 more EC11 encoders, 2.2kΩ resistors x4, 1kΩ resistors x5, 470Ω resistor x1.
+Still needed (Diotronic): for the Si4732 radio, 2x SOIC-16 to DIP adapter, 2x 32.768 kHz crystal, capacitors 22 pF x4, 1 nF x2, 22 nF x2, 470 nF x2, 4.7 µF x4, 2.2kΩ x2, AM ferrite antenna; 1kΩ x5 only if the faders jitter. See web/bom.html.
 
 Open — not yet chosen: Input source TBD — electret on MIC/GND pads or line-in. Picture Mode needs audio capture; no microphone is in the component list.
 
