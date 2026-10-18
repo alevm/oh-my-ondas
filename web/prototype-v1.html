@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Oh My Ondas prototype v1 concept: an A5-sized field instrument built from the real v1 parts — LCD, radio window, 8 copper pads, 5 faders, 7 encoders, game-pad navigation.">
+    <meta property="og:title" content="Prototype v1 Concept - Oh My Ondas">
+    <meta property="og:description" content="A5-sized field instrument concept built from the v1 parts list.">
+    <title>Prototype v1 Concept - Oh My Ondas</title>
+    <link rel="stylesheet" href="css/style.css?v=254">
+    <style>
+        body { overflow: auto; }
+        .page-container {
+            position: relative; z-index: 1; min-height: 100vh;
+            background: rgba(255,255,255,0.75); display: flex; flex-direction: column;
+        }
+        .page-content {
+            max-width: 960px; margin: 0 auto; padding: 40px 24px; flex: 1;
+        }
+        .page-title {
+            font-size: 32px; font-weight: 800; color: var(--accent);
+            margin-bottom: 8px; border-bottom: 3px solid var(--border); padding-bottom: 16px;
+        }
+        .page-subtitle {
+            font-size: 14px; color: #888; margin-bottom: 32px;
+        }
+        .page-content h2 {
+            font-size: 22px; font-weight: 700; color: var(--text); margin: 36px 0 12px 0;
+        }
+        .page-content h3 {
+            font-size: 17px; font-weight: 700; color: var(--text); margin: 24px 0 8px 0;
+        }
+        .page-content p {
+            font-size: 15px; line-height: 1.75; color: var(--text); margin-bottom: 16px;
+        }
+
+        .order-header {
+            display: flex; align-items: baseline; gap: 12px;
+            margin: 32px 0 4px 0; flex-wrap: wrap;
+        }
+        .order-header h3 { margin: 0; }
+        .order-meta {
+            font-size: 13px; color: #888;
+        }
+        .order-total {
+            font-size: 14px; font-weight: 700; color: var(--accent);
+            margin-left: auto;
+        }
+
+        .bom-table {
+            width: 100%; border-collapse: collapse; margin: 8px 0 24px 0;
+            font-size: 14px;
+        }
+        .bom-table th {
+            background: #f0f0f0; color: var(--text); padding: 10px 12px;
+            text-align: left; font-weight: 700; font-size: 12px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border);
+        }
+        .bom-table td {
+            padding: 8px 12px; border-bottom: 1px solid #eee;
+            color: var(--text); vertical-align: top;
+        }
+        .bom-table tr:hover { background: #fafafa; }
+        .bom-table .part-num {
+            font-family: 'Courier New', monospace; font-size: 12px; color: #888;
+        }
+        .bom-table .role {
+            font-size: 13px; color: #666; font-style: italic;
+        }
+        .bom-table .note {
+            font-size: 12px; color: var(--accent);
+        }
+        .bom-table .qty { text-align: center; font-weight: 700; }
+        .bom-table .price { text-align: right; white-space: nowrap; }
+
+        .still-needed {
+            background: #fff8e1; border-left: 4px solid #f9a825;
+            padding: 16px 20px; margin: 24px 0; border-radius: 0 8px 8px 0;
+        }
+        .still-needed h3 {
+            margin: 0 0 12px 0; font-size: 16px; color: #e65100;
+        }
+        .still-needed table { margin: 0; }
+        .still-needed .bom-table th { background: #fff3e0; }
+
+        .bom-summary {
+            background: #e8f5e9; border-left: 4px solid #27ae60;
+            padding: 16px 20px; margin: 24px 0; border-radius: 0 8px 8px 0;
+            font-size: 14px; line-height: 1.8;
+        }
+        .bom-summary strong { font-weight: 700; }
+
+        .blog-license {
+            margin-top: 40px; padding-top: 20px; border-top: 2px solid var(--border);
+            font-size: 13px; color: #888; font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            .bom-table { font-size: 12px; }
+            .bom-table th, .bom-table td { padding: 6px 8px; }
+            .order-header { flex-direction: column; gap: 4px; }
+            .order-total { margin-left: 0; }
+        }
+            /* page-specific */
+        .pv-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 20px; align-items: start; margin-top: 16px; }
+        @media (max-width: 900px) { .pv-wrap { grid-template-columns: 1fr; } }
+        .pv-stage { background: linear-gradient(180deg, #eeeeee 0%, #e2e2e2 100%); border-radius: 14px; padding: 18px; overflow-x: auto; }
+        .pv-stage svg { display: block; width: 100%; height: auto; }
+        .pv-info { background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 16px; position: sticky; top: 16px; font-size: 14px; line-height: 1.5; }
+        .pv-info h3 { margin: 0 0 6px; font-size: 16px; }
+        .pv-info .pv-part { color: #555; font-size: 13px; }
+        .pv-info .pv-bus { display: inline-block; margin-top: 8px; padding: 2px 8px; border-radius: 10px; background: #f1f1ee; font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+        .hot { cursor: pointer; transition: opacity .15s; }
+        .hot:hover, .hot.sel { opacity: .78; }
+        .pv-notes { margin-top: 26px; }
+        .pv-notes h2 { font-size: 20px; margin: 24px 0 8px; }
+        .pv-notes li { margin: 5px 0; line-height: 1.5; }
+        .pv-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 18px; }
+        .pv-table th, .pv-table td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #e3e3e3; vertical-align: top; }
+        .pv-table th { background: #f2f2f2; }
+        .pv-note { background: #fff8e6; border-left: 4px solid #ffc003; border-radius: 6px; padding: 10px 14px; margin: 14px 0; font-size: 14px; }
+    </style>
+    <script defer src="https://analytics.levm.eu/script.js" data-website-id="efecfc31-cd39-46d0-88c4-3a063ee7ec78"></script>
+</head>
+<body>
+    <div id="mapBackground" class="map-bg"></div>
+
+    <div class="page-container">
+        <header class="page-header">
+            <a href="index.html" class="logo">OH MY ONDAS</a>
+            <nav class="nav-links" aria-label="Main navigation">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="app.html" class="nav-link">App</a>
+                <a href="about.html" class="nav-link">About</a>
+                <a href="design.html" class="nav-link secondary">Design</a>
+                <a href="prototype.html" class="nav-link secondary">Prototype</a>
+                <a href="architecture.html" class="nav-link secondary">Arch</a>
+                <a href="assembly.html" class="nav-link secondary">Assembly</a>
+                <a href="build-log.html" class="nav-link secondary">Build Log</a>
+                <a href="bom.html" class="nav-link secondary">BOM</a>
+            </nav>
+        </header>
+
+        <main class="page-content">
+            <h1 class="page-title">Prototype v1: Field Unit</h1>
+            <p class="page-subtitle">Concept &middot; A5 footprint (&#8776; 210 &#215; 120 mm) &middot; Indian temple stucco palette &middot; every control is a part we own or have on order</p>
+
+            <div class="pv-note">
+                Concept for review, not a final enclosure. Sizes follow the real parts (2.8&#8243; LCD module, 45 mm faders, EC11 knobs, 0.96&#8243; OLED).
+                The encoder spacing still has to match the Quad encoder boards. Tap or hover over a control to see which part and bus it uses.
+            </div>
+
+            <div class="pv-wrap">
+                <div class="pv-stage">
+<svg viewBox="-10 -46 250 186" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, sans-serif">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1f9a97"/><stop offset="1" stop-color="#13706f"/>
+    </linearGradient>
+    <linearGradient id="copper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e7a46a"/><stop offset=".5" stop-color="#c97b42"/><stop offset="1" stop-color="#e9b07c"/>
+    </linearGradient>
+    <radialGradient id="knob" cx=".4" cy=".35" r=".7">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d9d6cd"/>
+    </radialGradient>
+    <pattern id="grille" width="2.2" height="2.2" patternUnits="userSpaceOnUse">
+      <circle cx="1.1" cy="1.1" r=".55" fill="#6f6a60"/>
+    </pattern>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-opacity=".18"/>
+    </filter>
+  </defs>
+
+  <!-- telescopic antenna -->
+  <g class="hot" data-k="antenna">
+    <line x1="196" y1="-2" x2="228" y2="-42" stroke="#9aa0a6" stroke-width="2.4" stroke-linecap="round"/>
+    <line x1="196" y1="-2" x2="210" y2="-20" stroke="#7b8187" stroke-width="3.4" stroke-linecap="round"/>
+    <circle cx="228" cy="-42" r="1.8" fill="#7b8187"/>
+    <rect x="191" y="-5" width="10" height="7" rx="2" fill="#5f6368"/>
+  </g>
+
+  <!-- body -->
+  <rect x="0" y="0" width="210" height="120" rx="9" fill="url(#body)" filter="url(#shadow)"/>
+  <rect x="2" y="2" width="206" height="116" rx="7.5" fill="none" stroke="#d9452b" stroke-width="1"/>
+  <rect x="3.6" y="3.6" width="202.8" height="112.8" rx="6.5" fill="none" stroke="#f3b42c" stroke-opacity=".8" stroke-width=".5"/>
+
+  <!-- top edge jacks (shown as labels on the top lip) -->
+  <g font-size="3.2" fill="#f4f1ea" text-anchor="middle">
+    <g class="hot" data-k="usbc"><rect x="64" y="-2.6" width="11" height="3.6" rx="1.6" fill="#3c3c3c"/><text x="69.5" y="6.5">USB-C</text></g>
+    <g class="hot" data-k="usba"><rect x="84" y="-2.6" width="13" height="3.6" rx=".6" fill="#3c3c3c"/><text x="90.5" y="6.5">MIDI HOST</text></g>
+    <g class="hot" data-k="phones"><circle cx="112" cy="-.8" r="2.4" fill="#3c3c3c"/><text x="112" y="6.5">PHONES</text></g>
+    <g class="hot" data-k="lineout"><circle cx="131" cy="-.8" r="2.4" fill="#3c3c3c"/><text x="131" y="6.5">LINE OUT</text></g>
+  </g>
+
+  <!-- mic grille -->
+  <g class="hot" data-k="mic">
+    <circle cx="16" cy="14" r="7" fill="#e2a72e"/>
+    <circle cx="16" cy="14" r="6" fill="url(#grille)"/>
+    <text x="27" y="15.5" font-size="3.4" fill="#f4f1ea">MIC</text>
+  </g>
+
+  <!-- game-pad navigation -->
+  <g class="hot" data-k="nav">
+    <circle cx="28" cy="40" r="13" fill="#0f5a5a"/>
+    <path d="M24.5 30.5 h7 v6 h6 v7 h-6 v6 h-7 v-6 h-6 v-7 h6 z" fill="#f4f1ea"/>
+    <circle cx="28" cy="40" r="2.6" fill="#d9452b"/>
+  </g>
+  <!-- 4 buttons -->
+  <g font-size="2.9" text-anchor="middle" fill="#f4f1ea">
+    <g class="hot" data-k="btn"><circle cx="49" cy="31" r="3.6" fill="#2a52be"/><text x="49" y="38.6">MODE</text></g>
+    <g class="hot" data-k="btn"><circle cx="49" cy="45" r="3.6" fill="#2a52be"/><text x="49" y="52.6">SHIFT</text></g>
+    <g class="hot" data-k="rec"><circle cx="12" cy="62" r="4.2" fill="#d9452b"/><text x="12" y="70">REC</text></g>
+    <g class="hot" data-k="play"><circle cx="26" cy="62" r="4.2" fill="#5bb04a"/><text x="26" y="70">PLAY</text></g>
+  </g>
+
+  <!-- faders -->
+  <g class="hot" data-k="faders">
+    <g fill="#0c4f4f">
+      <rect x="10.5" y="74" width="3" height="40" rx="1.5"/><rect x="21" y="74" width="3" height="40" rx="1.5"/>
+      <rect x="31.5" y="74" width="3" height="40" rx="1.5"/><rect x="42" y="74" width="3" height="40" rx="1.5"/>
+      <rect x="52.5" y="74" width="3" height="40" rx="1.5"/>
+    </g>
+    <rect x="7.5" y="96" width="9" height="5" rx="1" fill="#e75480"/>
+    <rect x="18" y="86" width="9" height="5" rx="1" fill="#f6a21a"/>
+    <rect x="28.5" y="92" width="9" height="5" rx="1" fill="#2a52be"/>
+    <rect x="39" y="80" width="9" height="5" rx="1" fill="#e2a72e"/>
+    <rect x="49.5" y="89" width="9" height="5" rx="1" fill="#fbfbf8" stroke="#0c4f4f" stroke-width=".6"/>
+    <g font-size="2.7" text-anchor="middle" fill="#f4f1ea">
+      <text x="12" y="118">MIC</text><text x="22.5" y="118">SMP</text><text x="33" y="118">SYN</text><text x="43.5" y="118">RAD</text><text x="54" y="118">OUT</text>
+    </g>
+  </g>
+
+  <!-- encoder row A (Quad #1) above the LCD -->
+  <g class="hot" data-k="encA">
+    <g>
+      <circle cx="80" cy="16" r="5.2" fill="url(#knob)" stroke="#bdb8ac" stroke-width=".5"/><circle cx="80" cy="16" r="6.4" fill="none" stroke="#e75480" stroke-width="1"/>
+      <circle cx="98" cy="16" r="5.2" fill="url(#knob)" stroke="#bdb8ac" stroke-width=".5"/><circle cx="98" cy="16" r="6.4" fill="none" stroke="#f6a21a" stroke-width="1"/>
+      <circle cx="116" cy="16" r="5.2" fill="url(#knob)" stroke="#bdb8ac" stroke-width=".5"/><circle cx="116" cy="16" r="6.4" fill="none" stroke="#2a52be" stroke-width="1"/>
+      <circle cx="134" cy="16" r="5.2" fill="url(#knob)" stroke="#bdb8ac" stroke-width=".5"/><circle cx="134" cy="16" r="6.4" fill="none" stroke="#e2a72e" stroke-width="1"/>
+    </g>
+    <g stroke="#6b675e" stroke-width=".7" stroke-linecap="round">
+      <line x1="80" y1="16" x2="80" y2="12"/><line x1="98" y1="16" x2="101" y2="13"/><line x1="116" y1="16" x2="112.5" y2="13"/><line x1="134" y1="16" x2="134" y2="12"/>
+    </g>
+  </g>
+
+  <!-- LCD -->
+  <g class="hot" data-k="lcd">
+    <rect x="70" y="26" width="74" height="54" rx="3" fill="#1d2226"/>
+    <rect x="73.5" y="29" width="62" height="47" rx="1" fill="#0f1417"/>
+    <!-- mock UI: 4 source lanes + waveform -->
+    <g font-size="2.6" font-family="ui-monospace, Menlo, monospace">
+      <text x="76" y="34" fill="#e75480">MIC</text><text x="76" y="40" fill="#f6a21a">SMP</text>
+      <text x="76" y="46" fill="#2a52be">SYN</text><text x="76" y="52" fill="#e2a72e">RAD</text>
+      <rect x="86" y="31.8" width="46" height="2.6" fill="#e75480" opacity=".35"/><rect x="86" y="31.8" width="21" height="2.6" fill="#e75480"/>
+      <rect x="86" y="37.8" width="46" height="2.6" fill="#f6a21a" opacity=".35"/><rect x="86" y="37.8" width="33" height="2.6" fill="#f6a21a"/>
+      <rect x="86" y="43.8" width="46" height="2.6" fill="#2a52be" opacity=".35"/><rect x="86" y="43.8" width="14" height="2.6" fill="#2a52be"/>
+      <rect x="86" y="49.8" width="46" height="2.6" fill="#e2a72e" opacity=".35"/><rect x="86" y="49.8" width="27" height="2.6" fill="#e2a72e"/>
+      <path d="M76 66 q3 -7 6 0 t6 0 t6 0 t6 0 t6 0 t6 0 t6 0 t6 0 t6 0" fill="none" stroke="#9be7c4" stroke-width=".6"/>
+      <text x="76" y="74" fill="#9aa3a8">PL. REIAL  41.380N 2.175E  92 BPM</text>
+    </g>
+    <text x="141" y="54" font-size="2.6" fill="#f4f1ea" transform="rotate(90 141 54)">2.8&#8243;</text>
+  </g>
+
+  <!-- radio window: OLED (yellow band + blue) -->
+  <g class="hot" data-k="oled">
+    <rect x="70" y="86" width="40" height="26" rx="2.5" fill="#1d2226"/>
+    <rect x="73" y="89" width="34" height="5" fill="#2a2400"/>
+    <rect x="73" y="94" width="34" height="15" fill="#04121e"/>
+    <text x="74" y="92.8" font-size="2.6" fill="#ffd54f" font-family="ui-monospace, Menlo, monospace">FM &#183; RDS &#183; GPS 7</text>
+    <text x="74.5" y="103.5" font-size="7" fill="#4fc3f7" font-family="ui-monospace, Menlo, monospace">98.1</text>
+    <text x="99" y="103.5" font-size="2.6" fill="#4fc3f7">MHz</text>
+    <rect x="74" y="106" width="32" height=".6" fill="#4fc3f7" opacity=".5"/>
+    <rect x="86" y="105.2" width=".8" height="2.2" fill="#4fc3f7"/>
+  </g>
+  <!-- status + logo -->
+  <g>
+    <circle cx="117" cy="91" r="1.6" fill="#5bb04a"/><text x="121" y="92.2" font-size="2.7" fill="#f4f1ea">GPS</text>
+    <circle cx="117" cy="98" r="1.6" fill="#d9452b" opacity=".45"/><text x="121" y="99.2" font-size="2.7" fill="#f4f1ea">REC</text>
+    <text x="117" y="110" font-size="4.6" font-weight="800" fill="#fbfbf8" letter-spacing=".4">OH MY</text>
+    <text x="117" y="115.5" font-size="4.6" font-weight="800" fill="#f6a21a" letter-spacing=".4">ONDAS</text>
+  </g>
+
+  <!-- encoder row B (Quad #2): 3 knobs + one larger TUNE -->
+  <g class="hot" data-k="encB">
+    <circle cx="157" cy="16" r="5.2" fill="url(#knob)" stroke="#bdb8ac" stroke-width=".5"/><circle cx="157" cy="16" r="6.4" fill="none" stroke="#5bb04a" stroke-width="1"/>
+    <circle cx="175" cy="16" r="5.2" fill="url(#knob)" stroke="#bdb8ac" stroke-width=".5"/><circle cx="175" cy="16" r="6.4" fill="none" stroke="#d9452b" stroke-width="1"/>
+    <g stroke="#6b675e" stroke-width=".7" stroke-linecap="round"><line x1="157" y1="16" x2="160" y2="13"/><line x1="175" y1="16" x2="175" y2="12"/></g>
+  </g>
+  <g class="hot" data-k="tune">
+    <circle cx="195" cy="16" r="7" fill="url(#knob)" stroke="#bdb8ac" stroke-width=".5"/>
+    <circle cx="195" cy="16" r="8.2" fill="none" stroke="#e2a72e" stroke-width="1.1"/>
+    <line x1="195" y1="16" x2="199" y2="11" stroke="#6b675e" stroke-width=".8" stroke-linecap="round"/>
+    <text x="195" y="29" font-size="2.7" text-anchor="middle" fill="#f4f1ea">TUNE</text>
+  </g>
+
+  <!-- 8 copper pads, 2 x 4 -->
+  <g class="hot" data-k="pads">
+    <g fill="url(#copper)">
+      <rect x="152" y="33" width="24" height="18" rx="2.5"/><rect x="179" y="33" width="24" height="18" rx="2.5"/>
+      <rect x="152" y="54" width="24" height="18" rx="2.5"/><rect x="179" y="54" width="24" height="18" rx="2.5"/>
+      <rect x="152" y="75" width="24" height="18" rx="2.5"/><rect x="179" y="75" width="24" height="18" rx="2.5"/>
+      <rect x="152" y="96" width="24" height="18" rx="2.5"/><rect x="179" y="96" width="24" height="18" rx="2.5"/>
+    </g>
+    <g font-size="3" fill="#7a4a24" opacity=".8" font-family="ui-monospace, Menlo, monospace">
+      <text x="154.5" y="37.8">1</text><text x="181.5" y="37.8">2</text><text x="154.5" y="58.8">3</text><text x="181.5" y="58.8">4</text>
+      <text x="154.5" y="79.8">5</text><text x="181.5" y="79.8">6</text><text x="154.5" y="100.8">7</text><text x="181.5" y="100.8">8</text>
+    </g>
+  </g>
+
+  <!-- dimension hint -->
+  <g font-size="3" fill="#777777" text-anchor="middle">
+    <line x1="0" y1="128" x2="210" y2="128" stroke="#b5b0a4" stroke-width=".4"/>
+    <line x1="0" y1="126" x2="0" y2="130" stroke="#b5b0a4" stroke-width=".4"/><line x1="210" y1="126" x2="210" y2="130" stroke="#b5b0a4" stroke-width=".4"/>
+    <text x="105" y="134">&#8776; 210 mm (A5)</text>
+  </g>
+</svg>
+                </div>
+                <aside class="pv-info" id="pvInfo" aria-live="polite">
+                    <h3>Field Unit v1</h3>
+                    <p class="pv-part">Tap or hover over any control. Left: hands-on navigation and the faders. Centre: screen and radio window. Right: the sound pads and radio tuning.</p>
+                </aside>
+            </div>
+
+            <div class="pv-notes">
+                <h2>Design ideas</h2>
+                <ul>
+                    <li><strong>Radio you can see:</strong> a telescopic antenna and a dedicated radio window (the two-colour OLED, yellow status band over a blue frequency) with a larger TUNE knob, so the radio feels like part of the instrument rather than a menu.</li>
+                    <li><strong>Game-pad navigation:</strong> 5-way switch plus REC and PLAY under the left thumb, MODE and SHIFT beside it, the way small handhelds such as Casio's SX-C1 sampler put game-controller buttons on top.</li>
+                    <li><strong>Direct controls, few menus:</strong> each source has its own colour, its own fader and its own knob ring (the Quad encoder LEDs). The same colours run through the LCD lanes, in the spirit of "no menus, just buttons" pocket samplers such as the Stylophone VOICE.</li>
+                    <li><strong>Pocket density, hand-sized parts:</strong> everything fits on an A5 plate while keeping real 45 mm faders and touch pads big enough for fingers (24 &#215; 18 mm copper).</li>
+                    <li><strong>Place on screen:</strong> the LCD footer shows where and when (GPS) with the tempo, because every capture is stamped with location.</li>
+                </ul>
+
+                <h2>Palette: Indian temple stucco</h2>
+                <p>Taken from the painted stucco figures of South Indian temple towers (gopurams): a peacock-turquoise body with a vermilion and gold outline, and one temple colour per sound source.</p>
+                <table class="pv-table">
+                    <thead><tr><th>Colour</th><th>Hex</th><th>Used for</th></tr></thead>
+                    <tbody>
+                        <tr><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#1f9a97;vertical-align:-2px"></span> Peacock turquoise</td><td><code>#1F9A97</code> &#8594; <code>#13706F</code></td><td>Body</td></tr>
+                        <tr><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#d9452b;vertical-align:-2px"></span> Vermilion</td><td><code>#D9452B</code></td><td>Outline, REC, centre button</td></tr>
+                        <tr><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#e75480;vertical-align:-2px"></span> Lotus pink</td><td><code>#E75480</code></td><td>MIC</td></tr>
+                        <tr><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#f6a21a;vertical-align:-2px"></span> Marigold</td><td><code>#F6A21A</code></td><td>SMP (sampler)</td></tr>
+                        <tr><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#2a52be;vertical-align:-2px"></span> Krishna blue</td><td><code>#2A52BE</code></td><td>SYN (synth), MODE/SHIFT</td></tr>
+                        <tr><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#e2a72e;vertical-align:-2px"></span> Gold ochre</td><td><code>#E2A72E</code></td><td>RAD (radio), TUNE, mic grille</td></tr>
+                        <tr><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#5bb04a;vertical-align:-2px"></span> Parrot green</td><td><code>#5BB04A</code></td><td>PLAY, GPS</td></tr>
+                        <tr><td><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#fbfbf8;border:1px solid #ccc;vertical-align:-2px"></span> Lime-wash white</td><td><code>#FBFBF8</code></td><td>OUT, labels, navigation cross</td></tr>
+                    </tbody>
+                </table>
+
+                <h2>Control map</h2>
+                <table class="pv-table">
+                    <thead><tr><th>Control</th><th>Part</th><th>Bus / pin</th></tr></thead>
+                    <tbody>
+                        <tr><td>Nav + centre</td><td>5-way switch (P504)</td><td>MCP23017 GPA0&#8211;4 &#183; Wire2 0x20</td></tr>
+                        <tr><td>MODE, SHIFT, REC, PLAY</td><td>Tactile buttons</td><td>MCP23017 GPB0&#8211;3</td></tr>
+                        <tr><td>Faders MIC SMP SYN RAD</td><td>Slide pots 45 mm (P4272)</td><td>ADS1115 A0&#8211;A3 &#183; 0x48</td></tr>
+                        <tr><td>Fader OUT</td><td>Slide pot 45 mm</td><td>Teensy pin 40</td></tr>
+                        <tr><td>4 knobs above the screen</td><td>EC11 on Quad encoder #1</td><td>0x49</td></tr>
+                        <tr><td>2 knobs + TUNE</td><td>EC11 on Quad encoder #2</td><td>0x4A</td></tr>
+                        <tr><td>Screen</td><td>ILI9341 2.8&#8243; (P1770)</td><td>SPI1: 26, 27, 39, 38, 37, 36</td></tr>
+                        <tr><td>Radio window</td><td>SSD1306 OLED, two-colour</td><td>0x3C</td></tr>
+                        <tr><td>8 pads</td><td>Copper on CAP1188</td><td>0x29</td></tr>
+                        <tr><td>Radio + antenna</td><td>Si4732 DIY</td><td>0x11, RST 34, audio &#8594; LINE-IN R</td></tr>
+                        <tr><td>Mic</td><td>Electret + MAX9814</td><td>&#8594; LINE-IN L</td></tr>
+                        <tr><td>MIDI HOST / USB-C</td><td>USB Host cable / Teensy USB</td><td>Keyboard in / computer, power, USB audio</td></tr>
+                    </tbody>
+                </table>
+
+                <h2>Open questions</h2>
+                <ul>
+                    <li>Encoder spacing is set by the Quad boards: measure them and adjust the two knob rows.</li>
+                    <li>Front panel material over the pads: touch works through 1&#8211;3 mm of plastic.</li>
+                    <li>Where the USB power bank sits (behind the panel, or external).</li>
+                </ul>
+                <p>See also: <a href="prototype.html">Breadboard prototype v1</a> &middot; <a href="gallery.html">Gallery</a> &middot; <a href="bom.html">BOM</a></p>
+                <p class="pv-part" style="font-size:12px;color:#777">References for the design ideas:
+                    <a href="https://synthanatomy.com/2026/04/casio-previews-a-portable-standalone-sampler.html" target="_blank" rel="noopener">Casio SX-C1</a>,
+                    <a href="https://synthanatomy.com/2026/01/stylophone-voice-a-50-portable-multi-sampler-with-effects.html" target="_blank" rel="noopener">Stylophone VOICE</a>,
+                    <a href="https://www.synthtopia.com/content/2026/09/25/woovebox-packs-a-synth-sampler-and-sequencer-into-a-pocket-sized-box/" target="_blank" rel="noopener">Woovebox</a>.
+                </p>
+            </div>
+
+            <p class="blog-license">
+                Oh My Ondas is a GPS-location-aware portable field recording and sampling instrument.
+                Licensed under AGPL v3 (firmware), CERN OHL-S v2 (hardware), CC BY-NC-SA 4.0 (documentation).
+            </p>
+        </main>
+
+        <footer class="page-footer">
+            <span>Oh My Ondas v3.0.0</span>
+            <span>AGPL-3.0 License</span>
+            <a href="https://github.com/alevm/oh-my-box" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </footer>
+    </div>
+
+    <script>
+    (function () {
+        const info = {
+            antenna: ["Telescopic antenna", "FM and shortwave for the Si4732. AM uses an internal ferrite rod.", "Si4732 FM/AM inputs"],
+            usbc: ["USB-C", "Computer or power bank: power, USB MIDI and USB Audio over one cable.", "Teensy device port"],
+            usba: ["MIDI HOST", "Plug a USB MIDI keyboard straight in.", "Teensy USB Host pads"],
+            phones: ["Phones", "Headphone out of the Audio Shield.", "SGTL5000"],
+            lineout: ["Line out", "To a mixer or speaker.", "SGTL5000 LINE-OUT"],
+            mic: ["Mic", "Electret capsule with the MAX9814 auto-gain preamp.", "LINE-IN L"],
+            nav: ["Navigation", "5-way switch: menus, browsing captures, tuning steps. Centre = select.", "MCP23017 GPA0-4 · Wire2 0x20"],
+            btn: ["MODE / SHIFT", "Page and function buttons beside the nav cross.", "MCP23017 GPB0-1"],
+            rec: ["REC", "Capture from the selected source (mic or radio) to a pad, stamped with place and time.", "MCP23017 GPB2"],
+            play: ["PLAY", "Start and stop the sequencer.", "MCP23017 GPB3"],
+            faders: ["Faders", "One per source: MIC, SMP (sampler), SYN (synth), RAD (radio), OUT (master).", "ADS1115 A0-A3 · 0x48 + Teensy pin 40"],
+            encA: ["Knobs above the screen", "Four parameter knobs, ring colour = the source being edited.", "Quad encoder #1 · 0x49"],
+            encB: ["Right knobs", "Two more parameters (FX, tempo).", "Quad encoder #2 · 0x4A"],
+            tune: ["TUNE", "Radio tuning and fine scrolling, slightly larger knob.", "Quad encoder #2 · 0x4A"],
+            lcd: ["Screen", "2.8\" colour LCD: source lanes, waveforms, place and tempo.", "SPI1 · pins 26 27 39 38 37 36"],
+            oled: ["Radio window", "Two-colour OLED: yellow status band, blue frequency.", "SSD1306 · Wire2 0x3C"],
+            pads: ["8 pads", "Copper touch pads: play samples, capture into a pad.", "CAP1188 · Wire2 0x29"]
+        };
+        const box = document.getElementById("pvInfo");
+        let sel = null;
+        function show(el) {
+            const d = info[el.dataset.k];
+            if (!d) return;
+            if (sel) sel.classList.remove("sel");
+            sel = el; el.classList.add("sel");
+            box.innerHTML = "<h3>" + d[0] + "</h3><p class=\"pv-part\">" + d[1] + "</p><span class=\"pv-bus\">" + d[2] + "</span>";
+        }
+        document.querySelectorAll(".hot").forEach(function (el) {
+            el.addEventListener("mouseenter", function () { show(el); });
+            el.addEventListener("click", function () { show(el); });
+        });
+    })();
+    </script>
+</body>
+</html>
