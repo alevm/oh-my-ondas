@@ -1,48 +1,54 @@
-name: Deploy to GitHub Pages
+name: Deploy to Sisyphus
+
+# Push to main -> signed call to the Sisyphus deploy-static webhook -> the VPS
+# pulls main into /opt/sisyphus/sites/ohmyondas.levm.eu and Caddy serves web/.
+# Secret DEPLOY_SECRET (= DEPLOY_SECRET_OHMYONDAS on the VPS) lives only in the
+# "production" environment: each run waits for Andrea's approval, main only.
 
 on:
   push:
     branches: [main]
     paths:
       - "web/**"
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+      - "index.html"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
 
 concurrency:
-  group: pages
+  group: deploy
   cancel-in-progress: false
 
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    environment: production
+    permissions: {}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: web/
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-      - name: Verify deployment
+      - name: Trigger deploy-static webhook
+        env:
+          DEPLOY_SECRET: ${{ secrets.DEPLOY_SECRET }}
         run: |
-          sleep 15
-          CODE=$(curl -so /dev/null -w "%{http_code}" --max-time 10 "https://ohmyondas.levm.eu/")
-          if [[ ! "$CODE" =~ ^(200|301|302|401)$ ]]; then
-            echo "DEPLOY VERIFICATION FAILED: ohmyondas.levm.eu returned $CODE"
+          PAYLOAD='{"branch": "main"}'
+          SIGNATURE=$(printf '%s' "$PAYLOAD" | openssl dgst -sha256 -hmac "$DEPLOY_SECRET" | awk '{print "sha256=" $NF}')
+          CODE=$(curl -s -o response.json -w "%{http_code}" --max-time 60 -X POST \
+            "https://sisyphus.levm.eu/api/deploy-static/ohmyondas" \
+            -H "Content-Type: application/json" \
+            -H "X-Deploy-Signature: ${SIGNATURE}" \
+            -d "$PAYLOAD")
+          cat response.json; echo
+          if [ "$CODE" != "200" ]; then
+            echo "Deploy failed: HTTP $CODE"
             exit 1
           fi
-          echo "Deployment verified: ohmyondas.levm.eu returned $CODE"
+          TAG=$(jq -r .tag response.json)
+          if [ "${GITHUB_SHA:0:12}" != "$TAG" ]; then
+            echo "Deployed $TAG but this run is ${GITHUB_SHA:0:12} (a newer push may have deployed first)"
+          fi
+
+      - name: Verify the live site
+        run: |
+          sleep 5
+          CODE=$(curl -so /dev/null -w "%{http_code}" --max-time 10 "https://ohmyondas.levm.eu/")
+          [ "$CODE" = "200" ] || { echo "ohmyondas.levm.eu returned $CODE"; exit 1; }
+          curl -s --max-time 10 "https://ohmyondas.levm.eu/" | grep -o "Oh My Ondas v[^<]*" || true
