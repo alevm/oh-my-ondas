@@ -1,0 +1,1800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GPS-aware musical instrument that captures location waves and transforms them into compositions. Open-source hardware + web prototype.">
+    <meta property="og:title" content="Oh My Ondas - Location-Based Music Instrument">
+    <meta property="og:description" content="Capture the wave spectrum of any location and turn it into music. Sequencer, sampler, synth, and AI composition engine.">
+    <title>Interactive Hardware (iteration 5) - Oh My Ondas</title>
+    <link rel="stylesheet" href="css/style.css?v=256">
+    <style>
+        :root {
+            --bg: #f5f5f5;
+            --petrol: #1a3535;
+            --petrol-light: #1e3d3d;
+            --petrol-dark: #162e2e;
+            --petrol-border: #2a5050;
+            --petrol-raised: #3a5a5a;
+            --petrol-highlight: #4a6a6a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 20px;
+            background: transparent;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Device */
+        .device-container { position: relative; width: 1100px; height: 700px; overflow: visible; }
+
+        .enclosure {
+            position: absolute;
+            top: 10px; left: 10px;
+            width: 1080px; height: 670px;
+            background: linear-gradient(165deg, var(--petrol-light) 0%, var(--petrol) 40%, var(--petrol-dark) 100%);
+            border-radius: 14px;
+            border: 1px solid var(--petrol-border);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35), 0 4px 16px rgba(0,0,0,0.25),
+                        inset 0 1px 0 rgba(255,255,255,0.06);
+        }
+
+        .enclosure::before {
+            content: '';
+            position: absolute;
+            top: 5px; left: 5px; right: 5px; bottom: 5px;
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 10px;
+            pointer-events: none;
+        }
+
+        .enclosure::after {
+            content: '';
+            position: absolute;
+            top: 295px; left: 15px; right: 15px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.3) 15%, rgba(0,0,0,0.3) 85%, transparent 100%);
+            box-shadow: 0 1px 0 rgba(255,255,255,0.03);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .artwork {
+            position: absolute;
+            top: 296px; left: 10px; right: 10px; bottom: 10px;
+            opacity: 0.07;
+            background-image: url('images/chombart-de-lauwe.jpg');
+            background-size: cover;
+            border-radius: 0 0 8px 8px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ===== TOP: Encoders | Display | Modes + Nav ===== */
+
+        .encoder-column {
+            position: absolute;
+            left: 18px; top: 18px;
+            width: 76px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            z-index: 2;
+        }
+
+        .encoder { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+
+        .encoder-knob {
+            width: 30px; height: 30px;
+            background: linear-gradient(145deg, var(--petrol-raised) 0%, #2a4545 50%, #305050 100%);
+            border-radius: 50%;
+            border: 2px solid var(--petrol-highlight);
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+
+        .encoder-knob::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 10px; height: 10px;
+            background: linear-gradient(145deg, var(--petrol-highlight) 0%, var(--petrol-raised) 100%);
+            border: 1px solid #5a7a7a;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .encoder-knob::after {
+            content: '';
+            position: absolute;
+            top: 2px; left: 50%;
+            width: 2px; height: 6px;
+            background: #278789;
+            border-radius: 1px;
+            transform: translateX(-50%);
+        }
+
+        .encoder[data-param="volume"] .encoder-knob::after { background: #1aa167; }
+        .encoder[data-param="pan"] .encoder-knob::after { background: #1270b8; }
+        .encoder[data-param="filter"] .encoder-knob::after { background: #d4a857; }
+        .encoder[data-param="fx"] .encoder-knob::after { background: #c0392b; }
+        .encoder[data-param="decay"] .encoder-knob::after { background: #278789; }
+
+        .encoder-label { font-size: 7px; color: rgba(255,255,255,0.5); font-weight: 700; letter-spacing: 0.5px; }
+        .encoder-value { font-size: 7px; color: rgba(255,255,255,0.35); font-family: monospace; }
+
+        /* Display — wider, non-touch */
+        .display {
+            position: absolute;
+            left: 102px; top: 16px;
+            width: 680px; height: 265px;
+            background: #0a0a0a;
+            border-radius: 6px;
+            border: 3px solid #111;
+            box-shadow: inset 0 0 0 1px #444, 0 4px 12px rgba(0,0,0,0.3);
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        /* Mode column — narrower, compact */
+        .mode-column {
+            position: absolute;
+            right: 18px; top: 18px;
+            width: 160px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 2;
+        }
+
+        .mode-btn {
+            height: 36px;
+            width: 100%;
+            border-radius: 6px;
+            border: 2px solid;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.15s;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .mode-btn[data-mode="picture"] { border-color: #278789; color: #278789; }
+        .mode-btn[data-mode="picture"].active { background: #278789; color: #fff; box-shadow: 0 0 14px rgba(39,135,137,0.4); }
+        .mode-btn[data-mode="soundscape"] { border-color: #1aa167; color: #1aa167; }
+        .mode-btn[data-mode="soundscape"].active { background: #1aa167; color: #fff; box-shadow: 0 0 14px rgba(26,161,103,0.4); }
+        .mode-btn[data-mode="interact"] { border-color: #1270b8; color: #1270b8; }
+        .mode-btn[data-mode="interact"].active { background: #1270b8; color: #fff; box-shadow: 0 0 14px rgba(18,112,184,0.4); }
+        .mode-btn[data-mode="journey"] { border-color: #d4783a; color: #d4783a; }
+        .mode-btn[data-mode="journey"].active { background: #d4783a; color: #fff; box-shadow: 0 0 14px rgba(212,120,58,0.4); }
+        .mode-btn:hover { opacity: 0.85; transform: scale(1.02); }
+
+        /* Screen navigation cluster — below mode buttons */
+        .screen-nav {
+            position: absolute;
+            right: 18px; top: 192px;
+            width: 160px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            z-index: 2;
+        }
+
+        .nav-btn {
+            flex: 1 1 46%;
+            height: 28px;
+            border-radius: 5px;
+            border: 1.5px solid var(--petrol-border);
+            background: linear-gradient(180deg, var(--petrol-raised) 0%, var(--petrol-dark) 100%);
+            color: rgba(255,255,255,0.55);
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .nav-btn:hover { background: linear-gradient(180deg, #5a7a7a 0%, var(--petrol-raised) 100%); color: rgba(255,255,255,0.8); }
+        .nav-btn:active { background: #278789; color: #fff; }
+        .nav-btn.shift-btn { border-color: #d4a857; color: #d4a857; }
+        .nav-btn.shift-btn:active, .nav-btn.shift-btn.active { background: #d4a857; color: #fff; }
+        .nav-btn.page-btn { border-color: #1270b8; color: #1270b8; }
+        .nav-btn.page-btn:active { background: #1270b8; color: #fff; }
+
+        /* ===== TOP EDGE: Transport (ridge buttons) ===== */
+
+        .transport-bar {
+            position: absolute;
+            left: 30px; top: -12px;
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+            z-index: 5;
+        }
+
+        .transport-btn {
+            width: 32px; height: 16px;
+            border-radius: 5px 5px 3px 3px;
+            border: 1px solid var(--petrol-border);
+            background: linear-gradient(180deg, var(--petrol-highlight) 0%, var(--petrol-raised) 40%, var(--petrol-dark) 100%);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: rgba(255,255,255,0.5);
+            transition: all 0.1s;
+            box-shadow: 0 -2px 6px rgba(0,0,0,0.2), 0 2px 3px rgba(0,0,0,0.25),
+                        inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+        .transport-btn.play { color: #1aa167; border-color: #1aa167; }
+        .transport-btn.rec { color: #c0392b; border-color: #c0392b; }
+        .transport-btn:hover { background: linear-gradient(180deg, #5a7a7a 0%, var(--petrol-raised) 100%); }
+        .transport-btn.play.active { background: #1aa167; color: #fff; box-shadow: 0 0 8px rgba(26,161,103,0.4); }
+        .transport-btn.rec.active, .transport-btn.rec.rec-active { background: #c0392b; color: #fff; box-shadow: 0 0 8px rgba(192,57,43,0.4); }
+        .transport-label {
+            font-size: 6px; font-weight: 700; letter-spacing: 1px;
+            color: rgba(255,255,255,0.25); margin-top: 2px;
+            text-align: center;
+        }
+
+        /* ===== BOTTOM HALF ===== */
+
+        /* Pads — left */
+        .pads-container {
+            position: absolute;
+            left: 18px; top: 310px;
+            display: grid;
+            grid-template-columns: repeat(4, 70px);
+            grid-template-rows: repeat(2, 52px);
+            gap: 6px;
+            z-index: 2;
+            background: rgba(0,0,0,0.12);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .pad {
+            background: linear-gradient(180deg, var(--petrol-light) 0%, var(--petrol-dark) 100%);
+            border-radius: 5px;
+            border: 1px solid var(--petrol-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.3);
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+            transition: all 0.08s;
+        }
+
+        .pad:hover { background: linear-gradient(180deg, #254545 0%, var(--petrol-light) 100%); color: rgba(255,255,255,0.5); }
+        .pad:active, .pad.active {
+            background: linear-gradient(145deg, #1aa167 0%, #148f57 100%);
+            border-color: #1aa167; color: #fff;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 0 12px rgba(26,161,103,0.2);
+        }
+
+        .pad::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+        .pad:nth-child(1)::before { background: #278789; }
+        .pad:nth-child(2)::before { background: #1270b8; }
+        .pad:nth-child(3)::before { background: #1aa167; }
+        .pad:nth-child(4)::before { background: #d4a857; }
+        .pad:nth-child(5)::before { background: #c0392b; }
+        .pad:nth-child(6)::before { background: #1270b8; }
+        .pad:nth-child(7)::before { background: #1270b8; }
+        .pad:nth-child(8)::before { background: #278789; }
+        .pad.active::before { background: rgba(255,255,255,0.6); }
+
+        /* Crossfader — below pads */
+        .crossfader-section {
+            position: absolute;
+            left: 26px; top: 460px;
+            width: 290px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .crossfader-label { font-size: 8px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 1px; }
+        .crossfader-track {
+            width: 100%; height: 6px;
+            background: rgba(0,0,0,0.3); border-radius: 3px;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .crossfader-thumb {
+            position: absolute; top: -9px; left: 50%;
+            transform: translateX(-50%);
+            width: 18px; height: 22px;
+            background: linear-gradient(180deg, var(--petrol-highlight) 0%, var(--petrol-raised) 100%);
+            border-radius: 3px;
+            border: 1px solid #5a7a7a;
+            cursor: ew-resize;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        .crossfader-thumb::after {
+            content: ''; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 10px; height: 2px;
+            background: rgba(255,255,255,0.3); border-radius: 1px;
+        }
+        .crossfader-ends {
+            display: flex; justify-content: space-between; width: 100%;
+            font-size: 7px; font-weight: 700; color: rgba(255,255,255,0.3);
+        }
+
+        /* 4 Mixer Faders — center-left */
+        .faders-container {
+            position: absolute;
+            left: 350px; top: 306px;
+            display: flex;
+            gap: 18px;
+            z-index: 2;
+        }
+        .fader-ch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .fader-lbl {
+            font-size: 7px; font-weight: 800;
+            letter-spacing: 0.5px; text-transform: uppercase;
+        }
+        .fader-lbl.mic { color: #1aa167; }
+        .fader-lbl.smp { color: #1270b8; }
+        .fader-lbl.syn { color: #278789; }
+        .fader-lbl.rad { color: #d4a857; }
+        .fader-track {
+            width: 6px; height: 120px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 3px;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .fader-thumb {
+            position: absolute; left: -5px;
+            width: 16px; height: 10px;
+            background: linear-gradient(180deg, var(--petrol-highlight) 0%, var(--petrol-raised) 100%);
+            border: 1px solid #5a7a7a;
+            border-radius: 2px;
+            cursor: ns-resize;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .fader-thumb::after {
+            content: ''; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 8px; height: 1px;
+            background: rgba(255,255,255,0.3);
+        }
+        .fader-val {
+            font-size: 7px; color: rgba(255,255,255,0.35); font-family: monospace;
+        }
+        .fader-led {
+            width: 4px; height: 4px;
+            border-radius: 50%;
+        }
+
+        /* 5-Way Joystick Navigation — center */
+        .joystick-module {
+            position: absolute;
+            left: 530px; top: 316px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            z-index: 2;
+        }
+        .joystick-base {
+            width: 68px; height: 68px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, var(--petrol-raised) 0%, var(--petrol-dark) 100%);
+            border: 2px solid var(--petrol-border);
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            align-items: center;
+            justify-items: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+            overflow: hidden;
+        }
+        .joystick-dir {
+            font-size: 7px;
+            color: rgba(255,255,255,0.25);
+            cursor: pointer;
+            width: 100%; height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s;
+        }
+        .joystick-dir:hover { color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.04); }
+        .joystick-dir:active { color: #278789; background: rgba(39,135,137,0.15); }
+        .joystick-up { grid-column: 2; grid-row: 1; border-radius: 50% 50% 0 0; }
+        .joystick-left { grid-column: 1; grid-row: 2; border-radius: 50% 0 0 50%; }
+        .joystick-right { grid-column: 3; grid-row: 2; border-radius: 0 50% 50% 0; }
+        .joystick-down { grid-column: 2; grid-row: 3; border-radius: 0 0 50% 50%; }
+        .joystick-center {
+            grid-column: 2; grid-row: 2;
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, var(--petrol-highlight), var(--petrol-raised));
+            border: 1px solid #5a7a7a;
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+            transition: all 0.1s;
+        }
+        .joystick-center:hover { background: linear-gradient(145deg, #5a7a7a, var(--petrol-highlight)); }
+        .joystick-center:active { background: #278789; box-shadow: 0 0 8px rgba(39,135,137,0.4); }
+        .joystick-label {
+            font-size: 7px; font-weight: 700;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 0.5px;
+        }
+
+        /* Nav buttons around joystick */
+        .joy-nav-btns {
+            position: absolute;
+            left: 514px; top: 410px;
+            display: flex;
+            gap: 4px;
+            z-index: 2;
+        }
+        .joy-nav-btn {
+            width: 44px; height: 22px;
+            border-radius: 4px;
+            border: 1.5px solid var(--petrol-border);
+            background: linear-gradient(180deg, var(--petrol-raised) 0%, var(--petrol-dark) 100%);
+            color: rgba(255,255,255,0.5);
+            font-size: 7px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .joy-nav-btn:hover { color: rgba(255,255,255,0.8); }
+        .joy-nav-btn:active { background: #278789; color: #fff; }
+
+        /* Synth Knobs — 2x2, center-right */
+        .synth-knobs-area {
+            position: absolute;
+            left: 640px; top: 310px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px 22px;
+            z-index: 2;
+        }
+
+        .knob-unit { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+        .knob-unit .encoder-knob { width: 34px; height: 34px; }
+        .knob-unit .encoder-knob::before { width: 11px; height: 11px; }
+        .knob-unit .encoder-knob::after { height: 6px; }
+        .knob-unit .encoder-label { font-size: 7px; color: rgba(255,255,255,0.45); font-weight: 700; letter-spacing: 0.5px; }
+        .knob-unit .encoder-value { font-size: 7px; color: rgba(255,255,255,0.3); font-family: monospace; }
+
+        .knob-unit[data-param="cutoff"] .encoder-knob::after { background: #278789; }
+        .knob-unit[data-param="resonance"] .encoder-knob::after { background: #278789; }
+        .knob-unit[data-param="attack"] .encoder-knob::after { background: #d4a857; }
+        .knob-unit[data-param="release"] .encoder-knob::after { background: #d4a857; }
+
+        /* FX Knobs — 2x2, far right */
+        .fx-knobs-area {
+            position: absolute;
+            left: 830px; top: 310px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px 22px;
+            z-index: 2;
+        }
+
+        .fx-knobs-area .knob-unit[data-param="delay"] .encoder-knob::after { background: #c0392b; }
+        .fx-knobs-area .knob-unit[data-param="glitch"] .encoder-knob::after { background: #c0392b; }
+        .fx-knobs-area .knob-unit[data-param="grain"] .encoder-knob::after { background: #1270b8; }
+        .fx-knobs-area .knob-unit[data-param="crush"] .encoder-knob::after { background: #1270b8; }
+
+        /* Knob area labels */
+        .area-label {
+            font-size: 6px; font-weight: 800; letter-spacing: 1.5px;
+            color: rgba(255,255,255,0.2); text-transform: uppercase;
+            position: absolute; z-index: 3;
+        }
+        .label-synth { left: 654px; top: 300px; }
+        .label-fx { left: 844px; top: 300px; }
+        .label-mixer { left: 358px; top: 296px; }
+
+        /* Function Buttons Row — bottom center */
+        .func-btns {
+            position: absolute;
+            left: 350px; top: 470px;
+            display: flex;
+            gap: 8px;
+            z-index: 2;
+        }
+        .func-btn {
+            width: 64px; height: 28px;
+            border-radius: 4px;
+            border: 1.5px solid var(--petrol-border);
+            background: linear-gradient(180deg, var(--petrol-raised) 0%, var(--petrol-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px; font-weight: 800;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .func-btn:hover { transform: scale(1.03); }
+        .func-btn:active { transform: scale(0.97); }
+        .func-btn.dub { border-color: #c0392b; color: #c0392b; }
+        .func-btn.dub:active { background: #c0392b; color: #fff; }
+        .func-btn.fill { border-color: #d4a857; color: #d4a857; }
+        .func-btn.fill:active { background: #d4a857; color: #fff; }
+        .func-btn.clr { border-color: #1270b8; color: #1270b8; }
+        .func-btn.clr:active { background: #1270b8; color: #fff; }
+        .func-btn.scene { border-color: #1aa167; color: #1aa167; }
+        .func-btn.scene:active { background: #1aa167; color: #fff; }
+        .func-btn.bank { border-color: #278789; color: #278789; }
+        .func-btn.bank:active { background: #278789; color: #fff; }
+
+        /* GPS Strip — bottom right */
+        .gps-strip {
+            position: absolute;
+            right: 18px; bottom: 18px;
+            width: 280px; height: 50px;
+            background: rgba(0,0,0,0.2);
+            border: 1.5px solid #278789;
+            border-radius: 6px;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            gap: 6px;
+            overflow: hidden;
+        }
+        .gps-strip .gps-icon { font-size: 12px; color: #278789; flex-shrink: 0; }
+        .gps-strip .gps-info { display: flex; flex-direction: column; gap: 1px; }
+        .gps-strip .gps-label { font-size: 7px; font-weight: 800; color: #278789; letter-spacing: 1px; }
+        .gps-strip .gps-coords { font-size: 8px; color: rgba(255,255,255,0.4); font-family: monospace; }
+        .gps-strip .gps-city { font-size: 7px; color: rgba(255,255,255,0.25); }
+
+        /* ===== Side Grips ===== */
+        .grip {
+            position: absolute;
+            width: 28px;
+            height: 220px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(165deg, var(--petrol-light) 0%, var(--petrol) 50%, var(--petrol-dark) 100%);
+            border: 1px solid var(--petrol-border);
+            z-index: 0;
+        }
+        .grip::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 100px;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(255,255,255,0.05) 0px,
+                rgba(255,255,255,0.05) 2px,
+                transparent 2px,
+                transparent 8px
+            );
+            border-radius: 2px;
+        }
+        .grip-left {
+            left: -18px;
+            border-radius: 12px 0 0 12px;
+            box-shadow: -4px 4px 12px rgba(0,0,0,0.25), inset 1px 0 0 rgba(255,255,255,0.04);
+        }
+        .grip-left::after { right: 5px; }
+        .grip-right {
+            right: -18px;
+            border-radius: 0 12px 12px 0;
+            box-shadow: 4px 4px 12px rgba(0,0,0,0.25), inset -1px 0 0 rgba(255,255,255,0.04);
+        }
+        .grip-right::after { left: 5px; }
+
+        /* Labels */
+        .section-label {
+            position: absolute; font-size: 7px; font-weight: 700;
+            letter-spacing: 2px; color: rgba(255,255,255,0.2); z-index: 3;
+        }
+        .label-enc { top: 278px; left: 28px; }
+        .label-pads { top: 300px; left: 24px; }
+
+        /* I/O */
+        .io-ports {
+            position: absolute;
+            right: -25px; top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .io-port {
+            width: 16px; height: 16px;
+            background: var(--petrol-border);
+            border-radius: 50%;
+            border: 2px solid #c0392b;
+        }
+        .io-label {
+            position: absolute; right: -160px;
+            font-size: 9px; font-weight: 800;
+            color: #c0392b; text-transform: uppercase;
+            letter-spacing: 0.5px; white-space: nowrap;
+        }
+        .io-label-line {
+            position: absolute; right: -25px; width: 25px;
+            border-top: 2px solid #c0392b;
+        }
+        .io-label-line::after {
+            content: '';
+            position: absolute;
+            right: -1px; top: -4px;
+            width: 6px; height: 6px;
+            background: #c0392b;
+        }
+
+        /* External Sensor Diagrams */
+        .sensor {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 0;
+        }
+        .sensor-icon {
+            width: 32px; height: 32px;
+            border: 2px solid #1270b8;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            background: #e8e8e8;
+            color: #333;
+            flex-shrink: 0;
+        }
+        .sensor-info { display: flex; flex-direction: column; gap: 1px; }
+        .sensor-name { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #1270b8; }
+        .sensor-desc { font-size: 8px; color: #666; }
+
+        .sensor-line { position: absolute; border-top: 3px solid #1270b8; }
+        .sensor-line-v { position: absolute; border-left: 3px solid #1270b8; }
+        .sensor-line::after, .sensor-line-v::after {
+            content: ''; position: absolute;
+            width: 8px; height: 8px;
+            background: currentColor; border-radius: 50%;
+        }
+        .sensor-line::after { right: -4px; top: -5px; }
+        .sensor-line-v::after { bottom: -4px; left: -5px; }
+
+        .sensor-piezo .sensor-icon { border-color: #278789; }
+        .sensor-piezo .sensor-name { color: #278789; }
+        .sensor-piezo .sensor-line { border-color: #278789; color: #278789; }
+
+        .sensor-mic .sensor-icon { border-color: #1aa167; }
+        .sensor-mic .sensor-name { color: #1aa167; }
+        .sensor-mic .sensor-line { border-color: #1aa167; color: #1aa167; }
+
+        .sensor-wifi .sensor-icon { border-color: #d4a857; }
+        .sensor-wifi .sensor-name { color: #d4a857; }
+        .sensor-wifi .sensor-line-v { border-color: #d4a857; color: #d4a857; }
+
+        .sensor-radio .sensor-icon { border-color: #1270b8; }
+        .sensor-radio .sensor-name { color: #1270b8; }
+        .sensor-radio .sensor-line-v { border-color: #1270b8; color: #1270b8; }
+
+        .sensor-piezo { top: 180px; left: -170px; }
+        .sensor-piezo .sensor-line { top: 16px; left: 130px; width: 50px; }
+
+        .sensor-mic { top: 300px; left: -170px; }
+        .sensor-mic .sensor-line { top: 16px; left: 130px; width: 50px; }
+
+        .sensor-wifi { top: -55px; left: 200px; flex-direction: column; }
+        .sensor-wifi .sensor-line-v { top: 42px; left: 15px; height: 23px; }
+
+        .sensor-radio { top: -55px; right: 200px; left: auto; flex-direction: column; }
+        .sensor-radio .sensor-line-v { top: 42px; left: 15px; height: 23px; }
+
+        .sensor-piezo .sensor-line::before,
+        .sensor-mic .sensor-line::before {
+            content: '';
+            position: absolute;
+            right: -2px; top: -12px;
+            width: 0; height: 12px;
+            border-left: 2px solid;
+        }
+        .sensor-piezo .sensor-line::before { border-color: #278789; }
+        .sensor-mic .sensor-line::before { border-color: #1aa167; }
+
+        /* Corner screws */
+        .corner-screw {
+            position: absolute;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, var(--petrol-raised) 0%, #2a4545 100%);
+            border: 1px solid var(--petrol-highlight);
+            z-index: 4;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .corner-screw::before, .corner-screw::after {
+            content: ''; position: absolute; background: rgba(0,0,0,0.3);
+        }
+        .corner-screw::before { top: 4px; left: 2px; width: 6px; height: 1px; }
+        .corner-screw::after { top: 2px; left: 4px; width: 1px; height: 6px; }
+        .screw-tl { top: 12px; left: 12px; }
+        .screw-tr { top: 12px; right: 12px; }
+        .screw-bl { bottom: 12px; left: 12px; }
+        .screw-br { bottom: 12px; right: 12px; }
+
+        .brand-silkscreen {
+            position: absolute;
+            bottom: 8px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px; font-weight: 800;
+            letter-spacing: 4px;
+            color: rgba(255,255,255,0.08);
+            text-transform: uppercase;
+            z-index: 3;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .status-leds {
+            position: absolute;
+            top: 292px; right: 30px;
+            display: flex; gap: 8px;
+            z-index: 4;
+        }
+        .status-led { width: 5px; height: 5px; border-radius: 50%; }
+        .status-led.led-teal { background: #278789; box-shadow: 0 0 4px rgba(39,135,137,0.6); }
+        .status-led.led-green { background: #1aa167; box-shadow: 0 0 4px rgba(26,161,103,0.6); }
+        .status-led.led-red { background: #c0392b; box-shadow: 0 0 4px rgba(192,57,43,0.6); }
+
+        /* Info bar */
+        .info-bar {
+            background: rgba(255,255,255,0.85);
+            padding: 8px 16px;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            color: #888;
+            font-size: 11px;
+            border-top: 1px solid #e0e0e0;
+            position: relative;
+            z-index: 1;
+            flex-wrap: wrap;
+        }
+        .info-bar span { color: #1aa167; font-weight: 600; }
+
+        /* DIY panel */
+        .diy-panel {
+            background: rgba(255,255,255,0.85);
+            padding: 20px 40px;
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        .diy-panel h3 {
+            font-size: 13px; font-weight: 800;
+            letter-spacing: 1px; text-transform: uppercase;
+            color: #333; margin-bottom: 12px;
+        }
+        .diy-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        .diy-col h4 {
+            font-size: 11px; font-weight: 700;
+            color: #1aa167; text-transform: uppercase;
+            letter-spacing: 0.5px; margin-bottom: 6px;
+        }
+        .diy-col ul { list-style: none; font-size: 11px; color: #555; line-height: 1.7; }
+        .diy-col .cost { color: #d4783a; font-weight: 600; float: right; }
+        .diy-total { font-weight: 700; border-top: 1px solid #eee; padding-top: 4px; margin-top: 4px; }
+        .diy-badge {
+            display: inline-block; margin-top: 8px;
+            padding: 4px 12px; border-radius: 4px;
+            font-size: 11px; font-weight: 800;
+            background: #1aa167; color: #fff;
+            letter-spacing: 1px;
+        }
+    </style>
+    <script defer src="https://analytics.levm.eu/script.js" data-website-id="efecfc31-cd39-46d0-88c4-3a063ee7ec78"></script>
+</head>
+<body>
+    <!-- Full-page map background -->
+    <div id="mapBackground" class="map-bg"></div>
+
+    <header class="page-header">
+        <a href="index.html" class="logo">OH MY ONDAS</a>
+        <nav class="nav-links" aria-label="Main navigation">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="app.html" class="nav-link">App</a>
+            <a href="gallery.html" class="nav-link active">Gallery</a>
+            <a href="prototype.html" class="nav-link">Hardware</a>
+            <a href="architecture.html" class="nav-link">Software</a>
+            <a href="about.html" class="nav-link">About</a>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="device-container">
+            <div class="enclosure">
+                <div class="grip grip-left"></div>
+                <div class="grip grip-right"></div>
+                <div class="corner-screw screw-tl"></div>
+                <div class="corner-screw screw-tr"></div>
+                <div class="corner-screw screw-bl"></div>
+                <div class="corner-screw screw-br"></div>
+                <div class="brand-silkscreen">OH MY ONDAS</div>
+                <div class="status-leds" title="Status LEDs: Teal=WiFi/GPS, Green=Audio Active, Red=Recording">
+                    <div class="status-led led-teal" title="WiFi/GPS Connected"></div>
+                    <div class="status-led led-green" title="Audio Active"></div>
+                    <div class="status-led led-red" title="Recording"></div>
+                </div>
+                <div class="artwork"></div>
+
+                <!-- 5 Encoders — left column -->
+                <div class="encoder-column">
+                    <div class="encoder" data-param="volume">
+                        <div class="encoder-knob" data-value="80"></div>
+                        <span class="encoder-label">VOL</span>
+                        <span class="encoder-value">80</span>
+                    </div>
+                    <div class="encoder" data-param="pan">
+                        <div class="encoder-knob" data-value="50"></div>
+                        <span class="encoder-label">PAN</span>
+                        <span class="encoder-value">C</span>
+                    </div>
+                    <div class="encoder" data-param="filter">
+                        <div class="encoder-knob" data-value="100"></div>
+                        <span class="encoder-label">FILT</span>
+                        <span class="encoder-value">100</span>
+                    </div>
+                    <div class="encoder" data-param="fx">
+                        <div class="encoder-knob" data-value="0"></div>
+                        <span class="encoder-label">FX</span>
+                        <span class="encoder-value">0</span>
+                    </div>
+                    <div class="encoder" data-param="decay">
+                        <div class="encoder-knob" data-value="50"></div>
+                        <span class="encoder-label">DECAY</span>
+                        <span class="encoder-value">50</span>
+                    </div>
+                </div>
+
+                <!-- 5" LCD Display (non-touch) -->
+                <div class="display">
+                    <iframe id="appDisplay"
+                            src="app.html?embedded=1&mockup=1"
+                            allow="autoplay; microphone"
+                            title="Oh My Ondas embedded app display"
+                            style="width: 100%; height: 100%; border: none; border-radius: 4px; background: #111;">
+                    </iframe>
+                </div>
+
+                <!-- 4 Mode Buttons — right column (compact) -->
+                <div class="mode-column">
+                    <button class="mode-btn active" data-mode="picture">PICTURE</button>
+                    <button class="mode-btn" data-mode="soundscape">SOUNDSCAPE</button>
+                    <button class="mode-btn" data-mode="interact">INTERACT</button>
+                    <button class="mode-btn" data-mode="journey">JOURNEY</button>
+                </div>
+
+                <!-- Screen Navigation Cluster — below mode buttons -->
+                <div class="screen-nav">
+                    <button class="nav-btn" data-action="menu">MENU</button>
+                    <button class="nav-btn" data-action="back">BACK</button>
+                    <button class="nav-btn shift-btn" data-action="shift">SHIFT</button>
+                    <button class="nav-btn page-btn" data-action="page">PAGE</button>
+                </div>
+
+                <!-- Labels -->
+                <span class="section-label label-enc">CTRL</span>
+                <span class="section-label label-pads">PADS</span>
+                <span class="area-label label-mixer">MIXER</span>
+                <span class="area-label label-synth">SYNTH</span>
+                <span class="area-label label-fx">FX</span>
+
+                <!-- Transport — top edge (ridge buttons) -->
+                <div class="transport-bar">
+                    <button class="transport-btn play" data-action="play" title="Play">&#9654;</button>
+                    <button class="transport-btn stop" data-action="stop" title="Stop">&#9632;</button>
+                    <button class="transport-btn rec" data-action="rec" title="Record">&#9679;</button>
+                </div>
+
+                <!-- 8 Touch Pads -->
+                <div class="pads-container" id="padsContainer">
+                    <div class="pad" data-pad="0">1</div>
+                    <div class="pad" data-pad="1">2</div>
+                    <div class="pad" data-pad="2">3</div>
+                    <div class="pad" data-pad="3">4</div>
+                    <div class="pad" data-pad="4">5</div>
+                    <div class="pad" data-pad="5">6</div>
+                    <div class="pad" data-pad="6">7</div>
+                    <div class="pad" data-pad="7">8</div>
+                </div>
+
+                <!-- Crossfader — below pads -->
+                <div class="crossfader-section" id="crossfader">
+                    <span class="crossfader-label">X-FADE</span>
+                    <div class="crossfader-track">
+                        <div class="crossfader-thumb" id="xfadeThumb" data-value="50"></div>
+                    </div>
+                    <div class="crossfader-ends">
+                        <span>A</span>
+                        <span>B</span>
+                    </div>
+                </div>
+
+                <!-- 4 Mixer Faders -->
+                <div class="faders-container" id="fadersContainer">
+                    <div class="fader-ch" data-channel="mic">
+                        <span class="fader-lbl mic">MIC</span>
+                        <div class="fader-track"><div class="fader-thumb" data-value="75" style="top: 18px;"></div></div>
+                        <span class="fader-val">75</span>
+                        <div class="fader-led" style="background:#1aa167; box-shadow:0 0 4px rgba(26,161,103,0.6);"></div>
+                    </div>
+                    <div class="fader-ch" data-channel="sample">
+                        <span class="fader-lbl smp">SMP</span>
+                        <div class="fader-track"><div class="fader-thumb" data-value="90" style="top: 8px;"></div></div>
+                        <span class="fader-val">90</span>
+                        <div class="fader-led" style="background:#1270b8; box-shadow:0 0 4px rgba(18,112,184,0.6);"></div>
+                    </div>
+                    <div class="fader-ch" data-channel="synth">
+                        <span class="fader-lbl syn">SYN</span>
+                        <div class="fader-track"><div class="fader-thumb" data-value="60" style="top: 28px;"></div></div>
+                        <span class="fader-val">60</span>
+                        <div class="fader-led" style="background:#278789; box-shadow:0 0 4px rgba(39,135,137,0.6);"></div>
+                    </div>
+                    <div class="fader-ch" data-channel="radio">
+                        <span class="fader-lbl rad">RAD</span>
+                        <div class="fader-track"><div class="fader-thumb" data-value="45" style="top: 40px;"></div></div>
+                        <span class="fader-val">45</span>
+                        <div class="fader-led" style="background:#d4a857; box-shadow:0 0 4px rgba(212,168,87,0.6);"></div>
+                    </div>
+                </div>
+
+                <!-- 5-Way Joystick Navigation -->
+                <div class="joystick-module" id="joystickModule" title="5-way navigation joystick">
+                    <div class="joystick-base">
+                        <div class="joystick-dir joystick-up" data-dir="up" title="Navigate Up">&#9650;</div>
+                        <div class="joystick-dir joystick-left" data-dir="left" title="Navigate Left">&#9664;</div>
+                        <div class="joystick-center" data-dir="select" title="Select/Confirm"></div>
+                        <div class="joystick-dir joystick-right" data-dir="right" title="Navigate Right">&#9654;</div>
+                        <div class="joystick-dir joystick-down" data-dir="down" title="Navigate Down">&#9660;</div>
+                    </div>
+                    <span class="joystick-label">NAV</span>
+                </div>
+
+                <!-- Extra nav buttons below joystick -->
+                <div class="joy-nav-btns">
+                    <button class="joy-nav-btn" data-action="prev" title="Previous">&#9664; PREV</button>
+                    <button class="joy-nav-btn" data-action="next" title="Next">NEXT &#9654;</button>
+                </div>
+
+                <!-- 4 Synth Knobs (2x2) -->
+                <div class="synth-knobs-area" id="synthKnobs">
+                    <div class="knob-unit" data-param="cutoff">
+                        <div class="encoder-knob" data-value="72"></div>
+                        <span class="encoder-label">CUTOFF</span>
+                        <span class="encoder-value">72</span>
+                    </div>
+                    <div class="knob-unit" data-param="resonance">
+                        <div class="encoder-knob" data-value="40"></div>
+                        <span class="encoder-label">RES</span>
+                        <span class="encoder-value">40</span>
+                    </div>
+                    <div class="knob-unit" data-param="attack">
+                        <div class="encoder-knob" data-value="10"></div>
+                        <span class="encoder-label">ATK</span>
+                        <span class="encoder-value">10</span>
+                    </div>
+                    <div class="knob-unit" data-param="release">
+                        <div class="encoder-knob" data-value="50"></div>
+                        <span class="encoder-label">REL</span>
+                        <span class="encoder-value">50</span>
+                    </div>
+                </div>
+
+                <!-- 4 FX Knobs (2x2) -->
+                <div class="fx-knobs-area" id="fxKnobs">
+                    <div class="knob-unit" data-param="delay">
+                        <div class="encoder-knob" data-value="35"></div>
+                        <span class="encoder-label">DELAY</span>
+                        <span class="encoder-value">35</span>
+                    </div>
+                    <div class="knob-unit" data-param="glitch">
+                        <div class="encoder-knob" data-value="0"></div>
+                        <span class="encoder-label">GLITCH</span>
+                        <span class="encoder-value">0</span>
+                    </div>
+                    <div class="knob-unit" data-param="grain">
+                        <div class="encoder-knob" data-value="20"></div>
+                        <span class="encoder-label">GRAIN</span>
+                        <span class="encoder-value">20</span>
+                    </div>
+                    <div class="knob-unit" data-param="crush">
+                        <div class="encoder-knob" data-value="0"></div>
+                        <span class="encoder-label">CRUSH</span>
+                        <span class="encoder-value">0</span>
+                    </div>
+                </div>
+
+                <!-- Function Buttons Row -->
+                <div class="func-btns" id="funcBtns">
+                    <button class="func-btn dub" data-func="dub">DUB</button>
+                    <button class="func-btn fill" data-func="fill">FILL</button>
+                    <button class="func-btn clr" data-func="clr">CLR</button>
+                    <button class="func-btn scene" data-func="scene">SCENE</button>
+                    <button class="func-btn bank" data-func="bank">BANK</button>
+                </div>
+
+                <!-- GPS Strip — bottom right -->
+                <div class="gps-strip">
+                    <div class="gps-icon">+</div>
+                    <div class="gps-info">
+                        <span class="gps-label">GPS</span>
+                        <span class="gps-coords">40.4168, -3.7038</span>
+                        <span class="gps-city">Madrid, ES</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- I/O Ports -->
+            <div class="io-ports">
+                <div style="position: relative;">
+                    <div class="io-port" title="Audio Out"></div>
+                    <div class="io-label" style="top: 2px;">Audio Out</div>
+                    <div class="io-label-line" style="top: 8px;"></div>
+                </div>
+                <div style="position: relative;">
+                    <div class="io-port" title="Headphones"></div>
+                    <div class="io-label" style="top: 2px;">Headphones</div>
+                    <div class="io-label-line" style="top: 8px;"></div>
+                </div>
+                <div style="position: relative;">
+                    <div class="io-port" title="Audio In"></div>
+                    <div class="io-label" style="top: 2px;">Audio In</div>
+                    <div class="io-label-line" style="top: 8px;"></div>
+                </div>
+            </div>
+
+            <!-- External Sensors -->
+            <div class="sensor sensor-piezo">
+                <div class="sensor-icon">&#9676;</div>
+                <div class="sensor-info">
+                    <span class="sensor-name">Piezo</span>
+                    <span class="sensor-desc">Vibration sensor</span>
+                </div>
+                <div class="sensor-line"></div>
+            </div>
+            <div class="sensor sensor-mic">
+                <div class="sensor-icon">&#9834;</div>
+                <div class="sensor-info">
+                    <span class="sensor-name">Mic</span>
+                    <span class="sensor-desc">Condenser</span>
+                </div>
+                <div class="sensor-line"></div>
+            </div>
+            <div class="sensor sensor-wifi">
+                <div class="sensor-icon">&#8801;</div>
+                <div class="sensor-info">
+                    <span class="sensor-name">WiFi</span>
+                    <span class="sensor-desc">802.11</span>
+                </div>
+                <div class="sensor-line-v"></div>
+            </div>
+            <div class="sensor sensor-radio">
+                <div class="sensor-icon">&#9399;</div>
+                <div class="sensor-info">
+                    <span class="sensor-name">Radio</span>
+                    <span class="sensor-desc">FM Antenna</span>
+                </div>
+                <div class="sensor-line-v"></div>
+            </div>
+        </div>
+    </main>
+
+    <div class="info-bar">
+        <div>Enclosure: <span>200x140x45mm</span></div>
+        <div>Display: <span>5" LCD (non-touch)</span></div>
+        <div>Pads: <span>8x CAP1188</span></div>
+        <div>Encoders: <span>5 Main + 4 Synth + 4 FX</span></div>
+        <div>Faders: <span>4x Mixer</span></div>
+        <div>Nav: <span>5-Way + D-Pad</span></div>
+        <div>Buttons: <span>16 (Mode/Nav/Func/Transport)</span></div>
+        <div>Time: <span id="timeVal">--:--</span></div>
+    </div>
+
+    <!-- Audio Examples Section -->
+    <div class="audio-examples" id="audioExamples">
+        <h3>Listen: Example Compositions</h3>
+        <p class="audio-subtitle">These demos are generated live by the same Web Audio engine that powers the app.</p>
+        <div class="audio-grid">
+            <div class="audio-card" data-demo="urban">
+                <div class="audio-card-header">
+                    <span class="audio-icon">&#9834;</span>
+                    <div>
+                        <h4>Urban Drift</h4>
+                        <span class="audio-desc">Synth pads + sequenced kicks + city ambience</span>
+                    </div>
+                </div>
+                <div class="audio-controls">
+                    <button class="audio-play-btn" data-demo="urban" title="Play Urban Drift">&#9654;</button>
+                    <div class="audio-progress"><div class="audio-progress-fill" data-demo="urban"></div></div>
+                    <span class="audio-time" data-demo="urban">0:00 / 0:08</span>
+                </div>
+            </div>
+            <div class="audio-card" data-demo="coastal">
+                <div class="audio-card-header">
+                    <span class="audio-icon">&#127754;</span>
+                    <div>
+                        <h4>Coastal Waves</h4>
+                        <span class="audio-desc">Filtered noise + sine harmonics + delay</span>
+                    </div>
+                </div>
+                <div class="audio-controls">
+                    <button class="audio-play-btn" data-demo="coastal" title="Play Coastal Waves">&#9654;</button>
+                    <div class="audio-progress"><div class="audio-progress-fill" data-demo="coastal"></div></div>
+                    <span class="audio-time" data-demo="coastal">0:00 / 0:08</span>
+                </div>
+            </div>
+            <div class="audio-card" data-demo="forest">
+                <div class="audio-card-header">
+                    <span class="audio-icon">&#127795;</span>
+                    <div>
+                        <h4>Forest Pulse</h4>
+                        <span class="audio-desc">Granular textures + euclidean rhythm + reverb</span>
+                    </div>
+                </div>
+                <div class="audio-controls">
+                    <button class="audio-play-btn" data-demo="forest" title="Play Forest Pulse">&#9654;</button>
+                    <div class="audio-progress"><div class="audio-progress-fill" data-demo="forest"></div></div>
+                    <span class="audio-time" data-demo="forest">0:00 / 0:08</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        .audio-examples {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        .audio-examples h3 {
+            font-size: 18px;
+            color: var(--petrol);
+            margin-bottom: 4px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .audio-subtitle {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+        .audio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 14px;
+        }
+        .audio-card {
+            background: var(--petrol);
+            border-radius: 10px;
+            padding: 16px;
+            color: #fff;
+        }
+        .audio-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .audio-icon { font-size: 24px; }
+        .audio-card h4 { font-size: 15px; margin: 0; font-weight: 700; }
+        .audio-desc { font-size: 11px; color: rgba(255,255,255,0.5); }
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .audio-play-btn {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 2px solid #278789;
+            background: transparent;
+            color: #278789;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .audio-play-btn:hover { background: #278789; color: #fff; }
+        .audio-play-btn.playing { background: #c0392b; border-color: #c0392b; color: #fff; }
+        .audio-progress {
+            flex: 1;
+            height: 4px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .audio-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #278789;
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+        .audio-time { font-size: 11px; color: rgba(255,255,255,0.4); font-family: monospace; white-space: nowrap; }
+    </style>
+
+    <div class="diy-panel">
+        <h3>DIY Build Assessment</h3>
+        <div class="diy-grid">
+            <div class="diy-col">
+                <h4>Brain + Display</h4>
+                <ul>
+                    <li>Teensy 4.1 (Main CPU) <span class="cost">~$32</span></li>
+                    <li>ESP32 (WiFi/GPS Module) <span class="cost">~$8</span></li>
+                    <li>5" ILI9341 LCD (non-touch) <span class="cost">~$28</span></li>
+                    <li>I2S DAC (PCM5102A) <span class="cost">~$8</span></li>
+                    <li>USB/MEMS Microphone <span class="cost">~$10</span></li>
+                    <li>Piezo Contact Mic <span class="cost">~$5</span></li>
+                </ul>
+            </div>
+            <div class="diy-col">
+                <h4>Controls + Connectivity</h4>
+                <ul>
+                    <li>13x KY-040 Rotary Encoders <span class="cost">~$20</span></li>
+                    <li>4x 45mm Slide Faders <span class="cost">~$12</span></li>
+                    <li>1x 45mm DJ Crossfader <span class="cost">~$12</span></li>
+                    <li>CAP1188 + 8 Copper Pads <span class="cost">~$15</span></li>
+                    <li>16x Tactile Buttons <span class="cost">~$5</span></li>
+                    <li>5-Way Joystick Module <span class="cost">~$2</span></li>
+                    <li>FM Receiver (TEA5767) <span class="cost">~$4</span></li>
+                </ul>
+            </div>
+            <div class="diy-col">
+                <h4>Enclosure + Assembly</h4>
+                <ul>
+                    <li>3D Printed Case (PLA) <span class="cost">~$15</span></li>
+                    <li>Wires, Headers, Standoffs <span class="cost">~$10</span></li>
+                    <li class="diy-total">Estimated Total <span class="cost">~$196</span></li>
+                </ul>
+                <div class="diy-badge">FEASIBILITY: HIGH</div>
+                <ul style="margin-top: 8px;">
+                    <li>No custom PCB required</li>
+                    <li>Through-hole soldering only</li>
+                    <li>Teensy GPIO + MCP23017 expanders</li>
+                    <li>ESP32 handles WiFi + GPS</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer class="page-footer">
+        <span>Oh My Ondas v3.0.0</span>
+        <span>AGPL-3.0 License</span>
+        <a href="ise.html">ISE 2026</a>
+        <a href="https://github.com/alevm/oh-my-ondas" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </footer>
+
+    <script>
+    (function() {
+        const appFrame = document.getElementById('appDisplay');
+
+        function sendToApp(action, data) {
+            if (appFrame && appFrame.contentWindow) {
+                appFrame.contentWindow.postMessage({ type: 'mockup-control', action, data }, window.location.origin);
+            }
+        }
+
+        window.addEventListener('message', (event) => {
+            if (event.origin !== window.location.origin) return;
+            if (!event.data) return;
+            if (event.data.type === 'app-state') updateMockupFromState(event.data.data);
+            if (event.data.type === 'encoder-context') updateEncoderLabels(event.data.data);
+        });
+
+        function updateEncoderLabels(ctx) {
+            if (!ctx || !ctx.encoders) return;
+            const encoders = document.querySelectorAll('.encoder-column .encoder');
+            ctx.encoders.forEach((label, i) => {
+                if (encoders[i]) {
+                    const labelEl = encoders[i].querySelector('.encoder-label');
+                    if (labelEl) labelEl.textContent = label;
+                }
+            });
+        }
+
+        function updateMockupFromState(state) {
+            const playBtn = document.querySelector('.transport-btn.play');
+            if (playBtn) playBtn.classList.toggle('active', state.isPlaying);
+            const recBtn = document.querySelector('.transport-btn.rec');
+            if (recBtn) recBtn.classList.toggle('rec-active', state.isRecording);
+            if (state.mode) {
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.mode === state.mode);
+                });
+            }
+        }
+
+        // Transport
+        document.querySelectorAll('.transport-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const action = btn.classList.contains('play') ? 'play' :
+                              btn.classList.contains('stop') ? 'stop' : 'record';
+                sendToApp('transport', { action });
+                if (action === 'play') btn.classList.toggle('active');
+                if (action === 'record') btn.classList.toggle('rec-active');
+            });
+        });
+
+        // Pads
+        document.querySelectorAll('.pad').forEach(pad => {
+            const trigger = () => { pad.classList.add('active'); sendToApp('pad', { index: parseInt(pad.dataset.pad) }); };
+            const release = () => pad.classList.remove('active');
+            pad.addEventListener('mousedown', trigger);
+            pad.addEventListener('touchstart', (e) => { e.preventDefault(); trigger(); });
+            pad.addEventListener('mouseup', release);
+            pad.addEventListener('mouseleave', release);
+            pad.addEventListener('touchend', release);
+        });
+
+        // Encoders (left column)
+        document.querySelectorAll('.encoder-column .encoder').forEach(enc => {
+            let startY = 0, startVal = 50;
+            const param = enc.dataset.param;
+            const knob = enc.querySelector('.encoder-knob');
+
+            const onMove = (clientY) => {
+                const delta = (startY - clientY) * 0.5;
+                const val = Math.max(0, Math.min(100, startVal + delta));
+                const rounded = Math.round(val);
+                const valEl = enc.querySelector('.encoder-value');
+                if (valEl) {
+                    if (param === 'pan') {
+                        valEl.textContent = rounded === 50 ? 'C' : (rounded < 50 ? 'L' + (50 - rounded) : 'R' + (rounded - 50));
+                    } else {
+                        valEl.textContent = rounded;
+                    }
+                }
+                if (knob) knob.dataset.value = rounded;
+                sendToApp('encoder', { param, value: rounded });
+            };
+
+            enc.addEventListener('mousedown', (e) => {
+                startY = e.clientY;
+                startVal = parseInt(knob?.dataset.value || 50);
+                const move = (e2) => onMove(e2.clientY);
+                const up = () => { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); };
+                document.addEventListener('mousemove', move);
+                document.addEventListener('mouseup', up);
+            });
+        });
+
+        // Synth + FX Knobs (drag to change)
+        document.querySelectorAll('.knob-unit').forEach(unit => {
+            let startY = 0, startVal = 50;
+            const param = unit.dataset.param;
+            const knob = unit.querySelector('.encoder-knob');
+
+            const onMove = (clientY) => {
+                const delta = (startY - clientY) * 0.5;
+                const val = Math.max(0, Math.min(100, startVal + delta));
+                const rounded = Math.round(val);
+                const valEl = unit.querySelector('.encoder-value');
+                if (valEl) valEl.textContent = rounded;
+                if (knob) knob.dataset.value = rounded;
+                sendToApp('encoder', { param, value: rounded });
+            };
+
+            unit.addEventListener('mousedown', (e) => {
+                startY = e.clientY;
+                startVal = parseInt(knob?.dataset.value || 50);
+                const move = (e2) => onMove(e2.clientY);
+                const up = () => { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); };
+                document.addEventListener('mousemove', move);
+                document.addEventListener('mouseup', up);
+            });
+        });
+
+        // Faders (drag to change)
+        document.querySelectorAll('.fader-ch').forEach(ch => {
+            const thumb = ch.querySelector('.fader-thumb');
+            const track = ch.querySelector('.fader-track');
+            const valEl = ch.querySelector('.fader-val');
+            const channel = ch.dataset.channel;
+            if (!thumb || !track) return;
+
+            let dragging = false;
+
+            thumb.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                dragging = true;
+                const startY = e.clientY;
+                const startTop = parseInt(thumb.style.top) || 0;
+                const trackH = track.offsetHeight - thumb.offsetHeight;
+
+                const move = (e2) => {
+                    if (!dragging) return;
+                    const deltaY = e2.clientY - startY;
+                    const newTop = Math.max(0, Math.min(trackH, startTop + deltaY));
+                    thumb.style.top = newTop + 'px';
+                    const val = Math.round(100 - (newTop / trackH) * 100);
+                    thumb.dataset.value = val;
+                    if (valEl) valEl.textContent = val;
+                    sendToApp('fader', { channel, value: val });
+                };
+                const up = () => {
+                    dragging = false;
+                    document.removeEventListener('mousemove', move);
+                    document.removeEventListener('mouseup', up);
+                };
+                document.addEventListener('mousemove', move);
+                document.addEventListener('mouseup', up);
+            });
+        });
+
+        // Crossfader
+        const xfadeThumb = document.getElementById('xfadeThumb');
+        const xfadeTrack = xfadeThumb?.parentElement;
+        if (xfadeThumb && xfadeTrack) {
+            let dragging = false, startX = 0, startPct = 50;
+            xfadeThumb.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                dragging = true;
+                startX = e.clientX;
+                startPct = parseInt(xfadeThumb.dataset.value || 50);
+                const move = (e2) => {
+                    if (!dragging) return;
+                    const trackW = xfadeTrack.offsetWidth;
+                    const deltaPx = e2.clientX - startX;
+                    const deltaPct = (deltaPx / trackW) * 100;
+                    const val = Math.max(0, Math.min(100, startPct + deltaPct));
+                    xfadeThumb.style.left = Math.round(val) + '%';
+                    xfadeThumb.dataset.value = Math.round(val);
+                    sendToApp('crossfade', { value: Math.round(val) });
+                };
+                const up = () => {
+                    dragging = false;
+                    document.removeEventListener('mousemove', move);
+                    document.removeEventListener('mouseup', up);
+                };
+                document.addEventListener('mousemove', move);
+                document.addEventListener('mouseup', up);
+            });
+        }
+
+        // Mode buttons
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                sendToApp('mode', { mode: btn.dataset.mode });
+            });
+        });
+
+        // Screen nav buttons (MENU, BACK, SHIFT, PAGE)
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const action = btn.dataset.action;
+                if (action === 'shift') {
+                    btn.classList.toggle('active');
+                }
+                sendToApp('button', { action });
+            });
+        });
+
+        // Function buttons (DUB, FILL, CLR, SCENE, BANK)
+        document.querySelectorAll('.func-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                sendToApp('function', { func: btn.dataset.func });
+            });
+        });
+
+        // Joy nav buttons (PREV, NEXT)
+        document.querySelectorAll('.joy-nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                sendToApp('button', { action: btn.dataset.action });
+            });
+        });
+
+        // 5-Way Joystick
+        document.querySelectorAll('.joystick-dir, .joystick-center').forEach(el => {
+            el.addEventListener('click', () => {
+                sendToApp('joystick', { direction: el.dataset.dir });
+            });
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ') { e.preventDefault(); sendToApp('transport', { action: 'play' }); }
+            if (e.key >= '1' && e.key <= '8') { sendToApp('pad', { index: parseInt(e.key) - 1 }); }
+            if (e.key === 'Escape') { sendToApp('transport', { action: 'stop' }); }
+            if (e.key === 'ArrowUp') { e.preventDefault(); sendToApp('joystick', { direction: 'up' }); }
+            if (e.key === 'ArrowDown') { e.preventDefault(); sendToApp('joystick', { direction: 'down' }); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); sendToApp('joystick', { direction: 'left' }); }
+            if (e.key === 'ArrowRight') { e.preventDefault(); sendToApp('joystick', { direction: 'right' }); }
+            if (e.key === 'Enter') { sendToApp('joystick', { direction: 'select' }); }
+            if (e.key === 'm' || e.key === 'M') { sendToApp('button', { action: 'menu' }); }
+            if (e.key === 'b' || e.key === 'B') { sendToApp('button', { action: 'back' }); }
+            if (e.key === 'Shift') { sendToApp('button', { action: 'shift' }); }
+        });
+
+        // Audio Examples — synthesized demos
+        (function() {
+            let actx = null;
+            const demos = {};
+            const DURATION = 8;
+
+            function getCtx() {
+                if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+                if (actx.state === 'suspended') actx.resume();
+                return actx;
+            }
+
+            function createUrban(ctx) {
+                const dur = DURATION;
+                const master = ctx.createGain();
+                master.gain.value = 0.4;
+                // Pad chord
+                [220, 277.18, 329.63].forEach(freq => {
+                    const osc = ctx.createOscillator();
+                    osc.type = 'sawtooth';
+                    osc.frequency.value = freq;
+                    const g = ctx.createGain();
+                    g.gain.setValueAtTime(0, ctx.currentTime);
+                    g.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.5);
+                    g.gain.linearRampToValueAtTime(0.06, ctx.currentTime + dur - 1);
+                    g.gain.linearRampToValueAtTime(0, ctx.currentTime + dur);
+                    const filt = ctx.createBiquadFilter();
+                    filt.type = 'lowpass';
+                    filt.frequency.value = 800;
+                    filt.frequency.linearRampToValueAtTime(1200, ctx.currentTime + dur / 2);
+                    filt.frequency.linearRampToValueAtTime(600, ctx.currentTime + dur);
+                    osc.connect(filt).connect(g).connect(master);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + dur);
+                });
+                // Kick pattern
+                for (let i = 0; i < dur * 2; i++) {
+                    const t = ctx.currentTime + i * 0.5;
+                    const osc = ctx.createOscillator();
+                    osc.frequency.setValueAtTime(150, t);
+                    osc.frequency.exponentialRampToValueAtTime(40, t + 0.1);
+                    const g = ctx.createGain();
+                    g.gain.setValueAtTime(0.3, t);
+                    g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+                    osc.connect(g).connect(master);
+                    osc.start(t);
+                    osc.stop(t + 0.2);
+                }
+                // Hi-hat noise
+                for (let i = 0; i < dur * 4; i++) {
+                    const t = ctx.currentTime + i * 0.25 + 0.125;
+                    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+                    const d = buf.getChannelData(0);
+                    for (let s = 0; s < d.length; s++) d[s] = (Math.random() * 2 - 1) * (1 - s / d.length);
+                    const src = ctx.createBufferSource();
+                    src.buffer = buf;
+                    const g = ctx.createGain();
+                    g.gain.setValueAtTime(0.06, t);
+                    g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+                    const hp = ctx.createBiquadFilter();
+                    hp.type = 'highpass';
+                    hp.frequency.value = 8000;
+                    src.connect(hp).connect(g).connect(master);
+                    src.start(t);
+                }
+                return master;
+            }
+
+            function createCoastal(ctx) {
+                const dur = DURATION;
+                const master = ctx.createGain();
+                master.gain.value = 0.35;
+                // Wave noise sweep
+                const bufLen = ctx.sampleRate * dur;
+                const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+                const d = buf.getChannelData(0);
+                for (let s = 0; s < bufLen; s++) d[s] = Math.random() * 2 - 1;
+                const noise = ctx.createBufferSource();
+                noise.buffer = buf;
+                const filt = ctx.createBiquadFilter();
+                filt.type = 'bandpass';
+                filt.Q.value = 2;
+                for (let i = 0; i < dur; i++) {
+                    const t = ctx.currentTime + i;
+                    filt.frequency.linearRampToValueAtTime(200 + Math.sin(i * 0.8) * 150, t);
+                }
+                const ng = ctx.createGain();
+                ng.gain.value = 0.15;
+                noise.connect(filt).connect(ng).connect(master);
+                noise.start(ctx.currentTime);
+                noise.stop(ctx.currentTime + dur);
+                // Sine harmonics
+                [261.63, 392, 523.25].forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    const g = ctx.createGain();
+                    g.gain.setValueAtTime(0, ctx.currentTime + idx * 0.8);
+                    g.gain.linearRampToValueAtTime(0.08, ctx.currentTime + idx * 0.8 + 1);
+                    g.gain.linearRampToValueAtTime(0, ctx.currentTime + dur);
+                    osc.connect(g).connect(master);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + dur);
+                });
+                // Delay effect via feedback loop
+                const delay = ctx.createDelay(0.5);
+                delay.delayTime.value = 0.375;
+                const fb = ctx.createGain();
+                fb.gain.value = 0.3;
+                master.connect(delay).connect(fb).connect(delay);
+                const dg = ctx.createGain();
+                dg.gain.value = 0.25;
+                delay.connect(dg);
+                const out = ctx.createGain();
+                out.gain.value = 1;
+                master.connect(out);
+                dg.connect(out);
+                return out;
+            }
+
+            function createForest(ctx) {
+                const dur = DURATION;
+                const master = ctx.createGain();
+                master.gain.value = 0.35;
+                // Granular texture
+                for (let i = 0; i < 60; i++) {
+                    const t = ctx.currentTime + Math.random() * dur;
+                    const gLen = 0.03 + Math.random() * 0.08;
+                    const osc = ctx.createOscillator();
+                    osc.type = ['sine','triangle'][Math.floor(Math.random()*2)];
+                    osc.frequency.value = 400 + Math.random() * 2000;
+                    const g = ctx.createGain();
+                    g.gain.setValueAtTime(0, t);
+                    g.gain.linearRampToValueAtTime(0.04, t + gLen * 0.3);
+                    g.gain.linearRampToValueAtTime(0, t + gLen);
+                    osc.connect(g).connect(master);
+                    osc.start(t);
+                    osc.stop(t + gLen + 0.01);
+                }
+                // Euclidean pulse (5 hits in 8 steps)
+                const euclidean = [1,0,1,0,1,1,0,1];
+                const stepTime = 0.25;
+                for (let rep = 0; rep < Math.floor(dur / (8 * stepTime)); rep++) {
+                    euclidean.forEach((hit, i) => {
+                        if (!hit) return;
+                        const t = ctx.currentTime + rep * 8 * stepTime + i * stepTime;
+                        const osc = ctx.createOscillator();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(80, t);
+                        osc.frequency.exponentialRampToValueAtTime(50, t + 0.12);
+                        const g = ctx.createGain();
+                        g.gain.setValueAtTime(0.2, t);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+                        osc.connect(g).connect(master);
+                        osc.start(t);
+                        osc.stop(t + 0.2);
+                    });
+                }
+                // Sub bass drone
+                const sub = ctx.createOscillator();
+                sub.type = 'sine';
+                sub.frequency.value = 55;
+                const sg = ctx.createGain();
+                sg.gain.setValueAtTime(0, ctx.currentTime);
+                sg.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 1);
+                sg.gain.linearRampToValueAtTime(0.1, ctx.currentTime + dur - 1);
+                sg.gain.linearRampToValueAtTime(0, ctx.currentTime + dur);
+                sub.connect(sg).connect(master);
+                sub.start(ctx.currentTime);
+                sub.stop(ctx.currentTime + dur);
+                return master;
+            }
+
+            const generators = { urban: createUrban, coastal: createCoastal, forest: createForest };
+
+            function stopDemo(name) {
+                if (demos[name]) {
+                    demos[name].output.disconnect();
+                    clearInterval(demos[name].timer);
+                    delete demos[name];
+                    const btn = document.querySelector(`.audio-play-btn[data-demo="${name}"]`);
+                    if (btn) { btn.textContent = '\u25B6'; btn.classList.remove('playing'); }
+                    const fill = document.querySelector(`.audio-progress-fill[data-demo="${name}"]`);
+                    if (fill) fill.style.width = '0%';
+                    const time = document.querySelector(`.audio-time[data-demo="${name}"]`);
+                    if (time) time.textContent = '0:00 / 0:08';
+                }
+            }
+
+            function playDemo(name) {
+                // Stop any playing demo
+                Object.keys(demos).forEach(stopDemo);
+                const ctx = getCtx();
+                const output = generators[name](ctx);
+                output.connect(ctx.destination);
+                const startTime = ctx.currentTime;
+                const btn = document.querySelector(`.audio-play-btn[data-demo="${name}"]`);
+                if (btn) { btn.textContent = '\u25A0'; btn.classList.add('playing'); }
+                const timer = setInterval(() => {
+                    const elapsed = ctx.currentTime - startTime;
+                    if (elapsed >= DURATION) { stopDemo(name); return; }
+                    const fill = document.querySelector(`.audio-progress-fill[data-demo="${name}"]`);
+                    if (fill) fill.style.width = (elapsed / DURATION * 100) + '%';
+                    const time = document.querySelector(`.audio-time[data-demo="${name}"]`);
+                    if (time) {
+                        const e = Math.floor(elapsed);
+                        time.textContent = '0:0' + e + ' / 0:08';
+                    }
+                }, 100);
+                demos[name] = { output, timer, startTime };
+            }
+
+            document.querySelectorAll('.audio-play-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const name = btn.dataset.demo;
+                    if (demos[name]) { stopDemo(name); } else { playDemo(name); }
+                });
+            });
+        })();
+
+        // Time
+        function updateTime() {
+            const now = new Date();
+            const el = document.getElementById('timeVal');
+            if (el) el.textContent = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+    })();
+    </script>
+</body>
+</html>

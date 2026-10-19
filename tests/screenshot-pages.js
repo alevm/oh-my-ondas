@@ -3,6 +3,7 @@ const path = require('path');
 
 const pages = [
     { name: 'index',    url: 'http://localhost:8080/index.html' },
+    { name: 'device',   url: 'http://localhost:8080/device.html' },
     { name: 'app',      url: 'http://localhost:8080/app.html' },
     { name: 'design',   url: 'http://localhost:8080/design.html' },
     { name: 'analysis', url: 'http://localhost:8080/analysis.html' },
