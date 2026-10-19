@@ -7,7 +7,7 @@
     <meta property="og:title" content="Hardware Design - Oh My Ondas">
     <meta property="og:description" content="Open-source hardware specs: Teensy 4.1, ESP32, pads, buttons, encoders, and audio I/O for a location-based music instrument.">
     <title>Hardware Design - Oh My Ondas</title>
-    <link rel="stylesheet" href="css/style.css?v=254">
+    <link rel="stylesheet" href="css/style.css?v=255">
     <style>
         :root {
             --bg: #f5f5f5;
@@ -1019,20 +1019,23 @@
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="app.html" class="nav-link">App</a>
                 <a href="about.html" class="nav-link">About</a>
-                <a href="design.html" class="nav-link secondary active">Design</a>
-                <a href="prototype.html" class="nav-link secondary">Prototype</a>
-                <a href="architecture.html" class="nav-link secondary">Arch</a>
-                <a href="analysis.html" class="nav-link secondary">Analysis</a>
-                <a href="sdlc.html" class="nav-link secondary">SDLC</a>
-                <a href="assembly.html" class="nav-link secondary">Assembly</a>
-                <a href="bom.html" class="nav-link secondary">BOM</a>
-                <a href="build-log.html" class="nav-link secondary">Build Log</a>
+                <span class="nav-group">Hardware</span>
+                <a href="gallery.html" class="nav-link active">Gallery</a>
+                <a href="prototype.html" class="nav-link">Prototype</a>
+                <a href="bom.html" class="nav-link">BOM</a>
+                <a href="assembly.html" class="nav-link">Assembly</a>
+                <a href="build-log.html" class="nav-link">Build Log</a>
+                <span class="nav-group">Software</span>
+                <a href="architecture.html" class="nav-link">Architecture</a>
+                <a href="analysis.html" class="nav-link">Analysis</a>
+                <a href="sdlc.html" class="nav-link">SDLC</a>
             </nav>
         </header>
 
         <main class="page-content">
             <h1 class="page-title">Hardware Design</h1>
             <p class="page-subtitle">Portable music instrument with location-aware sampling, synthesis, and AI composition</p>
+            <div class="note-box" style="background:#fff8e1;border-left:4px solid #f6a21a;padding:14px 18px;border-radius:6px;margin:16px 0;"><strong>Earlier design study (v0.3).</strong> Kept for reference; the specs below still mention WiFi/Bluetooth and 13 encoders. The current hardware is the <a href="prototype-v1.html">Field Unit v1</a> concept and the <a href="prototype.html">breadboard prototype</a>. All visuals: <a href="gallery.html">Gallery</a>.</div>
 
             <!-- Gallery Tabs -->
             <div class="gallery-tabs" id="galleryTabs">
@@ -1554,93 +1557,16 @@
                 </div>
             </div>
 
-            <!-- Pin Assignments -->
-            <h2 class="section-header">Teensy 4.1 Pin Assignments</h2>
-            <table class="pin-table">
-                <thead>
-                    <tr><th>Function</th><th>Pins</th><th>Protocol</th><th>Notes</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td>Audio Shield (I2S)</td><td><span class="pin-num">7, 8, 20, 21, 23</span></td><td>I2S</td><td>SGTL5000 codec (RESERVED)</td></tr>
-                    <tr><td>Touch Sensor (CAP1188)</td><td><span class="pin-num">24, 25</span></td><td>I2C2</td><td>Address: 0x29 on Wire2</td></tr>
-                    <tr><td>2.8" ILI9341 LCD</td><td><span class="pin-num">10, 11, 12, 13, 9, 15</span></td><td>SPI</td><td>CS=10, DC=9, RST=15 (DMA)</td></tr>
-                    <tr><td>Buttons (direct)</td><td><span class="pin-num">2, 3, 4, 5</span></td><td>GPIO</td><td>MODE, SHIFT, REC, PLAY</td></tr>
-                    <tr><td>NeoPixel LEDs</td><td><span class="pin-num">6</span></td><td>WS2812</td><td>8x RGB (470&ohm; series)</td></tr>
-                    <tr><td>ESP32-S2</td><td><span class="pin-num">0, 1</span></td><td>UART</td><td>Serial1 @ 115200</td></tr>
-                    <tr><td>MCP23017 &times;2</td><td><span class="pin-num">24, 25</span></td><td>I2C2</td><td>0x20 + 0x21 on Wire2 (encoders + nav)</td></tr>
-                    <tr><td>GPS (PA1010D)</td><td><span class="pin-num">18, 19</span></td><td>I2C</td><td>Address: 0x10 on Wire</td></tr>
-                    <tr><td>ADS1115 ADC</td><td><span class="pin-num">18, 19</span></td><td>I2C</td><td>Address: 0x48 on Wire (faders)</td></tr>
-                    <tr><td>SD Card</td><td><span class="pin-num">Built-in</span></td><td>SDIO</td><td>64GB for samples</td></tr>
-                </tbody>
-            </table>
-
-            <!-- Bill of Materials -->
-            <h2 class="section-header">Bill of Materials v3.2 &mdash; Actual Hardware Received</h2>
-            <p style="color:#888; font-size:12px; margin-bottom:10px;">Verified March 2026 &mdash; 3 orders from Antratek (BE), Diotronic (BCN), Adafruit (US)</p>
-            <table class="bom-table">
-                <thead>
-                    <tr><th>#</th><th>Component</th><th>Source</th><th>Qty</th><th>Price</th></tr>
-                </thead>
-                <tbody>
-                    <tr class="bom-section"><td colspan="5" style="background:#1a1a1a;color:#27ae60;">PROCESSORS &amp; AUDIO</td></tr>
-                    <tr><td>1</td><td>Teensy 4.1 w/pins (600MHz Cortex-M7)</td><td>Antratek</td><td>1</td><td class="price">&euro;42.96</td></tr>
-                    <tr><td>2</td><td>Audio Shield Rev D2 (SGTL5000 codec)</td><td>Antratek</td><td>1</td><td class="price">&euro;11.85</td></tr>
-                    <tr><td>3</td><td>SparkFun ESP32-S2 Thing Plus (WiFi)</td><td>Antratek</td><td>1</td><td class="price">&euro;18.09</td></tr>
-                    <tr><td>4</td><td>microSD Card 32GB (SanDisk Ultra)</td><td>&mdash;</td><td>1</td><td class="price">&mdash;</td></tr>
-                    <tr><td>5</td><td>Teensy 4.1 w/pins (backup)</td><td>Adafruit</td><td>1</td><td class="price">$31.50</td></tr>
-                    <tr><td>6</td><td>Audio Shield Rev D (backup)</td><td>Adafruit</td><td>1</td><td class="price">$9.95</td></tr>
-
-                    <tr class="bom-section"><td colspan="5" style="background:#1a1a1a;color:#3498db;">DISPLAY</td></tr>
-                    <tr><td>7</td><td>2.8" ILI9341 TFT LCD w/touch (P1770)</td><td>Adafruit</td><td>1</td><td class="price">$39.95</td></tr>
-                    <tr><td>8</td><td>OLED SSD1306 0.96" I2C</td><td>Diotronic</td><td>1</td><td class="price">&mdash;</td></tr>
-
-                    <tr class="bom-section"><td colspan="5" style="background:#1a1a1a;color:#1270b8;">USER INTERFACE</td></tr>
-                    <tr><td>9</td><td>CAP1188 8-ch capacitive touch (P1602)</td><td>Adafruit</td><td>1</td><td class="price">$7.95</td></tr>
-                    <tr><td>10</td><td>Copper tape 5mm &times; 25m (touch pads)</td><td>Diotronic</td><td>1</td><td class="price">&mdash;</td></tr>
-                    <tr><td>11</td><td>Rotary encoder EC11 w/push switch</td><td>Diotronic</td><td>7</td><td class="price">&mdash;</td></tr>
-                    <tr><td>12</td><td>Rainbow Micro Knobs 10-pack (P5542)</td><td>Adafruit</td><td>2</td><td class="price">$9.90</td></tr>
-                    <tr><td>13</td><td>Slide pot 45mm B10K (P4272)</td><td>Adafruit</td><td>5</td><td class="price">$12.50</td></tr>
-                    <tr><td>14</td><td>Tactile button 6&times;5mm DTS61N</td><td>Diotronic</td><td>16</td><td class="price">&mdash;</td></tr>
-                    <tr><td>15</td><td>5-way navigation switch (P504)</td><td>Adafruit</td><td>1</td><td class="price">$2.50</td></tr>
-                    <tr><td>16</td><td>WS2812B 8-LED NeoPixel strip</td><td>Diotronic</td><td>1</td><td class="price">&mdash;</td></tr>
-
-                    <tr class="bom-section"><td colspan="5" style="background:#1a1a1a;color:#e67e22;">CONNECTIVITY &amp; SENSING</td></tr>
-                    <tr><td>17</td><td>GPS PA1010D STEMMA QT (P4415)</td><td>Adafruit</td><td>1</td><td class="price">$29.95</td></tr>
-                    <tr><td>18</td><td>ADS1115 16-bit ADC 4-ch (P1085)</td><td>Adafruit</td><td>1</td><td class="price">$14.95</td></tr>
-                    <tr><td>19</td><td>MCP23017 I/O expander DIP-28 (P732)</td><td>Adafruit</td><td>2</td><td class="price">$5.00</td></tr>
-                    <tr><td>20</td><td>Audio jack 3.5mm stereo chassis</td><td>Diotronic</td><td>3</td><td class="price">&mdash;</td></tr>
-
-                    <tr class="bom-section"><td colspan="5" style="background:#1a1a1a;color:#95a5a6;">PROTOTYPING &amp; WIRING</td></tr>
-                    <tr><td>21</td><td>Breadboard 830pts</td><td>Diotronic</td><td>2</td><td class="price">&mdash;</td></tr>
-                    <tr><td>22</td><td>Jumper wires 140pc</td><td>Diotronic</td><td>2</td><td class="price">&mdash;</td></tr>
-                    <tr><td>23</td><td>Pin header male 40-pin</td><td>Diotronic</td><td>3</td><td class="price">&mdash;</td></tr>
-                    <tr><td>24</td><td>Pin header female 40-pin</td><td>Diotronic</td><td>3</td><td class="price">&mdash;</td></tr>
-                    <tr><td>25</td><td>28-pin DIP IC socket</td><td>Diotronic</td><td>2</td><td class="price">&mdash;</td></tr>
-                    <tr><td>26</td><td>Resistor 10K 1/4W</td><td>Diotronic</td><td>20</td><td class="price">&mdash;</td></tr>
-                    <tr><td>27</td><td>Capacitor 100nF ceramic</td><td>Diotronic</td><td>10</td><td class="price">&mdash;</td></tr>
-                    <tr><td>28</td><td>Capacitor 10&micro;F electrolytic</td><td>Diotronic</td><td>5</td><td class="price">&mdash;</td></tr>
-                    <tr><td>29</td><td>Wire kit 22AWG (P3174)</td><td>Adafruit</td><td>1</td><td class="price">$15.95</td></tr>
-                    <tr><td>30</td><td>Soldering station 48W</td><td>Diotronic</td><td>1</td><td class="price">&mdash;</td></tr>
-                    <tr><td>31</td><td>Solder wire 1mm 100g + flux paste</td><td>Diotronic</td><td>1</td><td class="price">&mdash;</td></tr>
-                    <tr><td>32</td><td>Helping third hand (P291)</td><td>Adafruit</td><td>1</td><td class="price">$6.00</td></tr>
-
-                    <tr class="bom-section"><td colspan="5" style="background:#1a1a1a;color:#8e44ad;">FUTURE / SET ASIDE</td></tr>
-                    <tr><td>33</td><td>RFM95W LoRa 900MHz (P3072)</td><td>Adafruit</td><td>1</td><td class="price">&mdash;</td></tr>
-                    <tr><td>34</td><td>KB2040 (P5302)</td><td>Adafruit</td><td>1</td><td class="price">&mdash;</td></tr>
-                    <tr><td>35</td><td>USB Type C Plug + Vertical Port</td><td>Adafruit</td><td>2</td><td class="price">&mdash;</td></tr>
-
-                    <!-- Totals -->
-                    <tr class="bom-total" style="color:#27ae60; font-size:15px;"><td colspan="4">ANTRATEK (Belgium, Jan 2026)</td><td class="price">&euro;78.05</td></tr>
-                    <tr class="bom-total" style="color:#3498db; font-size:15px;"><td colspan="4">DIOTRONIC (Barcelona, Feb 2026)</td><td class="price">~&euro;80</td></tr>
-                    <tr class="bom-total" style="color:#e67e22; font-size:15px;"><td colspan="4">ADAFRUIT (US, Mar 2026)</td><td class="price">~$194</td></tr>
-                </tbody>
-            </table>
-            <p class="bom-note" style="margin-top:12px; color:#888; font-size:13px;">USB-powered prototype &mdash; battery system deferred to portable phase. Still needed: 6&times; EC11 encoders, 2.2K&ohm; &times;4, 1K&ohm; &times;5, 470&ohm; &times;1 resistors (next Diotronic visit).</p>
+            <div class="note-box" style="background:#fff8e1;border-left:4px solid #f6a21a;padding:14px 18px;border-radius:6px;margin:24px 0;">
+                The pin assignments and the BOM that used to be here described the v0.3 plan (ESP32, NeoPixels, pins 0&ndash;23).
+                Current versions: <a href="prototype.html">Prototype</a> (v1 pin map and breadboard layout) and <a href="bom.html">BOM</a> (parts and the cost of prototype #1).
+            </div>
         </main>
 
         <footer class="page-footer">
-            <span>Oh My Ondas v2.5.2</span>
+            <span>Oh My Ondas v3.0.0</span>
             <span>AGPL-3.0 License</span>
+            <a href="ise.html">ISE 2026</a>
             <a href="https://github.com/alevm/oh-my-ondas" target="_blank" rel="noopener noreferrer">GitHub</a>
         </footer>
     </div>

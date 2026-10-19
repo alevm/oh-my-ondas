@@ -7,7 +7,7 @@
     <meta property="og:title" content="About Oh My Ondas">
     <meta property="og:description" content="A GPS-aware instrument for sonic transurbance. Based on acoustic ecology, terrain vague, and electromagnetic soundscapes.">
     <title>About Oh My Ondas</title>
-    <link rel="stylesheet" href="css/style.css?v=254">
+    <link rel="stylesheet" href="css/style.css?v=255">
     <style>
         body {
             overflow: auto;
@@ -97,15 +97,17 @@
             <nav class="nav-links" aria-label="Main navigation">
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="app.html" class="nav-link">App</a>
-                <a href="about.html" class="nav-link active">About</a>
-                <a href="design.html" class="nav-link secondary">Design</a>
-                <a href="prototype.html" class="nav-link secondary">Prototype</a>
-                <a href="architecture.html" class="nav-link secondary">Arch</a>
-                <a href="analysis.html" class="nav-link secondary">Analysis</a>
-                <a href="sdlc.html" class="nav-link secondary">SDLC</a>
-                <a href="assembly.html" class="nav-link secondary">Assembly</a>
-                <a href="bom.html" class="nav-link secondary">BOM</a>
-                <a href="build-log.html" class="nav-link secondary">Build Log</a>
+                <a href="about.html" class="nav-link active" aria-current="page">About</a>
+                <span class="nav-group">Hardware</span>
+                <a href="gallery.html" class="nav-link">Gallery</a>
+                <a href="prototype.html" class="nav-link">Prototype</a>
+                <a href="bom.html" class="nav-link">BOM</a>
+                <a href="assembly.html" class="nav-link">Assembly</a>
+                <a href="build-log.html" class="nav-link">Build Log</a>
+                <span class="nav-group">Software</span>
+                <a href="architecture.html" class="nav-link">Architecture</a>
+                <a href="analysis.html" class="nav-link">Analysis</a>
+                <a href="sdlc.html" class="nav-link">SDLC</a>
             </nav>
         </header>
 
@@ -132,7 +134,7 @@
 
             <h2>How it's built</h2>
 
-            <p>The interface maps directly to physical controls &mdash; no menus, no dropdowns, everything is a button you can hit with your thumb. Fill effects use hold-to-activate like hardware drum machines. The location binding isn't a feature added on top; it's the core architecture. Hardware specs, BOM, and pin assignments are documented on the <a href="design.html">Design</a> page. Development process, CI/CD, and testing strategy are on the <a href="sdlc.html">SDLC</a> page.</p>
+            <p>The interface maps directly to physical controls &mdash; no menus, no dropdowns, everything is a button you can hit with your thumb. Fill effects use hold-to-activate like hardware drum machines. The location binding isn't a feature added on top; it's the core architecture. The current hardware is on the <a href="prototype.html">Prototype</a> page (pin map, breadboard layout) and the <a href="bom.html">BOM</a> (parts and cost); visuals are in the <a href="gallery.html">Gallery</a>. Development process, CI/CD, and testing strategy are on the <a href="sdlc.html">SDLC</a> page.</p>
 
             <div class="timeline">
                 <h2>Timeline</h2>
@@ -160,8 +162,9 @@
         </main>
 
         <footer class="page-footer">
-            <span>Oh My Ondas</span>
+            <span>Oh My Ondas v3.0.0</span>
             <span>AGPL-3.0</span>
+            <a href="ise.html">ISE 2026</a>
             <a href="https://github.com/alevm/oh-my-ondas" target="_blank" rel="noopener noreferrer">GitHub</a>
         </footer>
     </div>

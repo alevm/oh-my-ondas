@@ -7,7 +7,7 @@
     <meta property="og:title" content="Bill of Materials - Oh My Ondas">
     <meta property="og:description" content="Complete hardware component list for the Oh My Ondas GPS field recording instrument.">
     <title>Bill of Materials - Oh My Ondas</title>
-    <link rel="stylesheet" href="css/style.css?v=254">
+    <link rel="stylesheet" href="css/style.css?v=255">
     <style>
         body { overflow: auto; }
         .page-container {
@@ -115,12 +115,16 @@
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="app.html" class="nav-link">App</a>
                 <a href="about.html" class="nav-link">About</a>
-                <a href="design.html" class="nav-link secondary">Design</a>
-                <a href="prototype.html" class="nav-link secondary">Prototype</a>
-                <a href="architecture.html" class="nav-link secondary">Arch</a>
-                <a href="assembly.html" class="nav-link secondary">Assembly</a>
-                <a href="build-log.html" class="nav-link secondary">Build Log</a>
-                <a href="bom.html" class="nav-link secondary active">BOM</a>
+                <span class="nav-group">Hardware</span>
+                <a href="gallery.html" class="nav-link">Gallery</a>
+                <a href="prototype.html" class="nav-link">Prototype</a>
+                <a href="bom.html" class="nav-link active" aria-current="page">BOM</a>
+                <a href="assembly.html" class="nav-link">Assembly</a>
+                <a href="build-log.html" class="nav-link">Build Log</a>
+                <span class="nav-group">Software</span>
+                <a href="architecture.html" class="nav-link">Architecture</a>
+                <a href="analysis.html" class="nav-link">Analysis</a>
+                <a href="sdlc.html" class="nav-link">SDLC</a>
             </nav>
         </header>
 
@@ -130,10 +134,58 @@
 
             <div class="bom-summary">
                 <strong>Status:</strong> Core components received across 3 orders from 3 countries; 4th order (DigiKey, October 2026) in transit.<br>
-                <strong>Total spent:</strong> ~&euro;250 + ~$194 (~&euro;430 equivalent)<br>
-                <strong>Assembly phase:</strong> Phase 1 (Core Audio) &mdash; see <a href="assembly.html">Assembly Manual</a>
+                <strong>Prototype #1 cost:</strong> ~&euro;265 for the parts it uses (table below). The orders list everything bought, spares included.<br>
+                <strong>Build:</strong> layers 1&ndash;3 verified on the breadboard (audio, touch pads, OLED, LCD); faders next &mdash; see <a href="prototype.html">Prototype</a>
             </div>
 
+            <!-- Cost of prototype #1 -->
+            <div class="order-header">
+                <h3>Cost of prototype #1</h3>
+                <span class="order-meta">only the parts the v1 build uses &middot; spares, tools and parked parts left out</span>
+                <span class="order-total">~&euro;265</span>
+            </div>
+            <table class="bom-table">
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th class="qty">Used</th>
+                        <th>From</th>
+                        <th class="price">Cost</th>
+                        <th>Basis</th>
+                    </tr>
+                </thead>
+                <tbody>
+                        <tr><td>Teensy 4.1 with pins</td><td class="qty">1</td><td>Antratek</td><td class="price">&euro;42.96</td><td>invoice</td></tr>
+                        <tr><td>Audio Shield Rev D2</td><td class="qty">1</td><td>Antratek</td><td class="price">&euro;11.85</td><td>invoice</td></tr>
+                        <tr><td>2.8&#8243; TFT LCD ILI9341 (P1770)</td><td class="qty">1</td><td>Adafruit</td><td class="price">&euro;37.15</td><td>$39.95</td></tr>
+                        <tr><td>GPS PA1010D</td><td class="qty">1</td><td>Adafruit</td><td class="price">&euro;27.85</td><td>$29.95</td></tr>
+                        <tr><td>ADS1115 16-bit ADC</td><td class="qty">1</td><td>Adafruit</td><td class="price">&euro;13.90</td><td>$14.95</td></tr>
+                        <tr><td>CAP1188 touch breakout</td><td class="qty">1</td><td>Adafruit</td><td class="price">&euro;7.39</td><td>$7.95</td></tr>
+                        <tr><td>MCP23017 (1 of 2)</td><td class="qty">1</td><td>Adafruit</td><td class="price">&euro;2.33</td><td>$2.50</td></tr>
+                        <tr><td>5-way navigation switch</td><td class="qty">1</td><td>Adafruit</td><td class="price">&euro;2.33</td><td>$2.50</td></tr>
+                        <tr><td>Slide pot 45 mm B10K</td><td class="qty">5</td><td>Adafruit</td><td class="price">&euro;11.62</td><td>$12.50</td></tr>
+                        <tr><td>Micro knobs (1 of 2 packs)</td><td class="qty">7</td><td>Adafruit</td><td class="price">&euro;4.60</td><td>$4.95</td></tr>
+                        <tr><td>I2C Quad Rotary Encoder</td><td class="qty">2</td><td>DigiKey</td><td class="price">&euro;15.95</td><td>incl. VAT</td></tr>
+                        <tr><td>Electret mic + MAX9814</td><td class="qty">1</td><td>DigiKey</td><td class="price">&euro;8.45</td><td>incl. VAT</td></tr>
+                        <tr><td>STEMMA QT cables (2 + 1 header)</td><td class="qty">3</td><td>DigiKey</td><td class="price">&euro;3.01</td><td>incl. VAT</td></tr>
+                        <tr><td>8 MB PSRAM</td><td class="qty">2</td><td>DigiKey</td><td class="price">&euro;5.18</td><td>incl. VAT</td></tr>
+                        <tr><td>USB Host cable (1 of 2)</td><td class="qty">1</td><td>DigiKey</td><td class="price">&euro;3.18</td><td>incl. VAT</td></tr>
+                        <tr><td>Si4732-A10 radio chip (1 of 2)</td><td class="qty">1</td><td>DigiKey</td><td class="price">&euro;4.49</td><td>incl. VAT</td></tr>
+                        <tr><td>Perma-Proto full-size</td><td class="qty">1</td><td>DigiKey</td><td class="price">&euro;11.63</td><td>incl. VAT</td></tr>
+                        <tr><td>EC11 rotary encoders</td><td class="qty">7</td><td>Diotronic</td><td class="price">&euro;10.50</td><td>est.</td></tr>
+                        <tr><td>Tactile buttons (4 of 16)</td><td class="qty">4</td><td>Diotronic</td><td class="price">&euro;0.80</td><td>est.</td></tr>
+                        <tr><td>OLED SSD1306 0.96&#8243;</td><td class="qty">1</td><td>Diotronic</td><td class="price">&euro;6.00</td><td>est.</td></tr>
+                        <tr><td>Copper tape (8 pads, a few cm)</td><td class="qty">&mdash;</td><td>Diotronic</td><td class="price">&euro;1.00</td><td>est.</td></tr>
+                        <tr><td>Breadboards 830 pts</td><td class="qty">2</td><td>Diotronic</td><td class="price">&euro;12.00</td><td>est.</td></tr>
+                        <tr><td>Jumpers, headers, DIP socket, R/C</td><td class="qty">&mdash;</td><td>Diotronic</td><td class="price">&euro;6.00</td><td>est.</td></tr>
+                        <tr><td>Wired piezo</td><td class="qty">1</td><td>owned</td><td class="price">&euro;0.00</td><td>already owned</td></tr>
+                        <tr><td>Radio + piezo parts (Still Needed)</td><td class="qty">&mdash;</td><td>Diotronic</td><td class="price">&euro;15.00</td><td>est.</td></tr>
+                    <tr><td><strong>Total</strong></td><td></td><td></td><td class="price"><strong>&euro;265.18</strong></td><td>of which ~&euro;51 estimated</td></tr>
+                </tbody>
+            </table>
+            <p class="page-subtitle">Dollar prices at &euro;0.93/$, without US tax or shipping. DigiKey prices include 21% VAT. Diotronic was a single walk-in receipt (~&euro;80, tools included), so those lines are estimates. <strong>Not counted:</strong> the backup Teensy and Audio Shield, ESP32-S2, NeoPixel strip, LoRa, KB2040, USB-C enclosure ports, the second MCP23017, Si4732 and host cable, the extra buttons and knobs, and all tools (soldering station, third hand, logic analyzer, wire kit, solder, flux).</p>
+
+            <h2 class="bb-h" style="margin-top:32px">Orders (inventory)</h2>
             <!-- Order 1: Antratek -->
             <div class="order-header">
                 <h3>Antratek Belgium</h3>
@@ -622,7 +674,8 @@
         <footer class="page-footer">
             <span>Oh My Ondas v3.0.0</span>
             <span>AGPL-3.0 License</span>
-            <a href="https://github.com/alevm/oh-my-box" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="ise.html">ISE 2026</a>
+            <a href="https://github.com/alevm/oh-my-ondas" target="_blank" rel="noopener noreferrer">GitHub</a>
         </footer>
     </div>
 </body>
