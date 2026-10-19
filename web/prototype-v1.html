@@ -362,7 +362,7 @@
                         <tr><td>Radio window</td><td>SSD1306 OLED, two-colour</td><td>0x3C</td></tr>
                         <tr><td>8 pads</td><td>Copper on CAP1188</td><td>0x29</td></tr>
                         <tr><td>Radio + antenna</td><td>Si4732 DIY</td><td>0x11, RST 34, audio &#8594; LINE-IN R</td></tr>
-                        <tr><td>Mic</td><td>Electret + MAX9814</td><td>&#8594; LINE-IN L</td></tr>
+                        <tr><td>Mic</td><td>Electret + MAX9814, or piezo contact mic (switch)</td><td>&#8594; LINE-IN L</td></tr>
                         <tr><td>MIDI HOST / USB-C</td><td>USB Host cable / Teensy USB</td><td>Keyboard in / computer, power, USB audio</td></tr>
                     </tbody>
                 </table>
@@ -402,7 +402,7 @@
             usba: ["MIDI HOST", "Plug a USB MIDI keyboard straight in.", "Teensy USB Host pads"],
             phones: ["Phones", "Headphone out of the Audio Shield.", "SGTL5000"],
             lineout: ["Line out", "To a mixer or speaker.", "SGTL5000 LINE-OUT"],
-            mic: ["Mic", "Electret capsule with the MAX9814 auto-gain preamp.", "LINE-IN L"],
+            mic: ["Mic", "Electret capsule with the MAX9814 auto-gain preamp, or a piezo contact mic for surfaces (MIC/PIEZO switch).", "LINE-IN L"],
             nav: ["Navigation", "5-way switch: menus, browsing captures, tuning steps. Centre = select.", "MCP23017 GPA0-4 · Wire2 0x20"],
             btn: ["MODE / SHIFT", "Page and function buttons beside the nav cross.", "MCP23017 GPB0-1"],
             rec: ["REC", "Capture from the selected source (mic or radio) to a pad, stamped with place and time.", "MCP23017 GPB2"],

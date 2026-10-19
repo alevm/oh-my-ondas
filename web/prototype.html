@@ -277,8 +277,14 @@
       <text x="95" y="404" text-anchor="middle" font-size="9">MODE SHIFT REC PLAY</text>
       <text x="95" y="416" text-anchor="middle" font-size="9">&#8594; MCP GPB0&#8211;3, other leg GND</text>
 
-      <text x="95" y="560" text-anchor="middle" fill="#999">rows 46&#8211;63 free</text>
-      <text x="95" y="574" text-anchor="middle" fill="#999" font-size="9">(future: speaker amp, jacks)</text>
+      <rect x="30" y="505.5" width="130" height="84" rx="3" fill="#f8bbd0" opacity=".6"/>
+      <text x="95" y="530" text-anchor="middle" font-weight="600">rows 48&#8211;55 &#183; PIEZO BUFFER</text>
+      <text x="95" y="544" text-anchor="middle" font-size="9">MCP6002 straddling the gap</text>
+      <text x="95" y="556" text-anchor="middle" font-size="9">contact mic &#8594; MIC/PIEZO switch</text>
+      <text x="95" y="568" text-anchor="middle" font-size="9">&#8594; LINE-IN L</text>
+
+      <text x="95" y="630" text-anchor="middle" fill="#999">rows 57&#8211;63 free</text>
+      <text x="95" y="644" text-anchor="middle" fill="#999" font-size="9">(future: speaker amp, jacks)</text>
     </g>
   </g>
 
@@ -444,11 +450,12 @@
                 <thead><tr><th>Rows</th><th>What</th><th>Connections</th></tr></thead>
                 <tbody>
                     <tr><td class="mono">rails</td><td>Same plan as board A</td><td>Four short wires from board A: +, &#8722;, SDA, SCL.</td></tr>
-                    <tr><td class="mono">6&#8211;10</td><td>MAX9814 mic preamp</td><td>VDD &#8594; +, GND &#8594; &#8722;, GAIN/AR unconnected for now (defaults), OUT &#8594; shielded wire &#8594; Audio Shield LINE-IN L (1 &#181;F in series if LINE-IN has no coupling capacitor).</td></tr>
+                    <tr><td class="mono">6&#8211;10</td><td>MAX9814 mic preamp</td><td>VDD &#8594; +, GND &#8594; &#8722;, GAIN/AR unconnected for now (defaults), OUT &#8594; shielded wire &#8594; MIC side of the MIC/PIEZO switch (1 &#181;F in series if LINE-IN has no coupling capacitor).</td></tr>
                     <tr><td class="mono">13&#8211;16</td><td>OLED (4 pins)</td><td>VCC &#8594; +, GND &#8594; &#8722;, SDA/SCL &#8594; bus rails. Read the labels: the pin order varies by module.</td></tr>
                     <tr><td class="mono">20&#8211;27</td><td>5-way nav switch</td><td>Common &#8594; &#8722;. Up/down/left/right/centre &#8594; MCP GPA0&#8211;4 on board A.</td></tr>
                     <tr><td class="mono">30&#8211;45</td><td>4 tactile buttons, straddling the gap</td><td>One leg &#8594; &#8722;, the other &#8594; MCP GPB0&#8211;3 (MODE, SHIFT, REC, PLAY).</td></tr>
-                    <tr><td class="mono">46&#8211;63</td><td>free</td><td>Room for later: speaker amp, jack breakouts.</td></tr>
+                    <tr><td class="mono">48&#8211;55</td><td>Piezo contact-mic buffer: MCP6002 (DIP-8) straddling the gap</td><td>Pin 8 &#8594; +, pin 4 &#8594; &#8722;. Mid-supply bias: 2 &#215; 100k from + and &#8722; to a bias node, 10 &#181;F from the node to &#8722;. Piezo red &#8594; 10k &#8594; pin 3 (IN+), black &#8594; &#8722;. 1&#8211;10 M&#937; from pin 3 to the bias node (high input impedance keeps the low end). Pin 1 (OUT) &#8594; pin 2 (IN&#8722;) for unity gain. Pin 1 &#8594; 1 &#181;F &#8594; PIEZO side of the switch. Second op-amp (pins 5&#8211;7) spare: pin 5 to the bias node, pin 6 to pin 7.</td></tr>
+                    <tr><td class="mono">57&#8211;63</td><td>free</td><td>Room for later: speaker amp, jack breakouts.</td></tr>
                 </tbody>
             </table>
 
@@ -462,7 +469,9 @@
                     <tr><td>8 copper pads</td><td>One wire each to CAP1188 C1&#8211;C8</td><td>Plain cardboard, wires fanned out. Recalibrate after any wiring change.</td></tr>
                     <tr><td>5 faders</td><td>Ends to + / &#8722;; wipers 1&#8211;4 &#8594; ADS1115 A0&#8211;A3, wiper 5 &#8594; Teensy 40</td><td>3.3 V only, never 5 V</td></tr>
                     <tr><td>Antennas</td><td>Wire (&#8776; 75 cm) for FM/SW; ferrite rod for AM</td><td>Keep away from the LCD and the Teensy</td></tr>
-                    <tr><td>Audio</td><td>Headphones on the shield jack; LINE-IN L = mic, LINE-IN R = radio</td><td>LINE-IN pads are on the shield, solder from underneath</td></tr>
+                    <tr><td>Audio</td><td>Headphones on the shield jack; LINE-IN L = mic <em>or</em> piezo (switch), LINE-IN R = radio</td><td>LINE-IN pads are on the shield, solder from underneath</td></tr>
+                    <tr><td>MIC/PIEZO switch</td><td>SPDT toggle: common &#8594; LINE-IN L, one side &#8592; MAX9814, other side &#8592; piezo buffer</td><td>On the case. One input at a time; the radio keeps LINE-IN R</td></tr>
+                    <tr><td>Piezo disc</td><td>Shielded or twisted wire to board B row 48 area</td><td>Contact mic: tape or clip it to a surface. Passive disc only: an active buzzer (buzzes by itself on DC) does not work as a pickup</td></tr>
                     <tr><td>USB-A host</td><td>CAB-28389 on the 5 host pads</td><td>USB MIDI keyboard</td></tr>
                 </tbody>
             </table>
@@ -474,7 +483,7 @@
                 <li>ADS1115 + faders (Phase 4, <code>layer4_faders</code>).</li>
                 <li>MCP23017 + nav + buttons, then Quad encoders with the EC11s (Phase 5).</li>
                 <li>GPS on the STEMMA chain (Phase 6).</li>
-                <li>MAX9814 mic &#8594; LINE-IN L, then the Si4732 radio &#8594; LINE-IN R.</li>
+                <li>MAX9814 mic &#8594; LINE-IN L, then the piezo buffer + MIC/PIEZO switch, then the Si4732 radio &#8594; LINE-IN R.</li>
                 <li>Everything together: no I2C errors, clean audio. Then copy the layout 1:1 onto the Perma-Proto.</li>
             </ol>
             <p>See also: <a href="prototype-v1.html">Field Unit v1 concept</a> &middot; <a href="gallery.html">Gallery</a> &middot; <a href="bom.html">BOM</a> &middot; <a href="assembly.html">Assembly</a></p>
