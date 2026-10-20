@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Oh My Ondas build log: all hardware components received in Barcelona, March 2026. Three orders, three countries, one workbench.">
+    <meta name="description" content="Oh My Ondas build log: hardware bring-up of prototype #1, from parts arriving in March 2026 to the layer-by-layer tests in October 2026.">
     <meta property="og:title" content="Build Log - Oh My Ondas">
     <meta property="og:description" content="All components received for the Oh My Ondas prototype. Teensy 4.1, Audio Shield, GPS, touch sensing, displays, and more.">
     <title>Build Log - Oh My Ondas</title>
-    <link rel="stylesheet" href="css/style.css?v=256">
+    <link rel="stylesheet" href="css/style.css?v=257">
     <style>
         body { overflow: auto; }
         .page-container {
@@ -71,6 +71,14 @@
         .build-phases li strong { font-weight: 700; }
 
         /* What's next callout */
+        .log-entry { border-top: 2px solid var(--border); padding-top: 18px; margin-top: 32px; }
+        .log-entry:first-of-type { border-top: none; margin-top: 8px; }
+        .log-date { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+        .log-entry h2 { margin-top: 0; }
+        .page-content h3 { font-size: 17px; margin: 22px 0 8px; }
+        .log-status { font-size: 13px; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+        .log-status.pass { background: #e3f4e8; color: #1d6b35; }
+        .log-status.open { background: #fff2d9; color: #8a5a00; }
         .whats-next {
             background: #e8f5e9; border-left: 4px solid #27ae60;
             padding: 16px 20px; margin: 24px 0; border-radius: 0 8px 8px 0;
@@ -109,15 +117,54 @@
         </nav>
 
         <main class="page-content">
-            <h1 class="page-title">All Components Received &mdash; Build Begins</h1>
-            <p class="page-subtitle">March 2026 &middot; Barcelona</p>
+            <h1 class="page-title">Build Log</h1>
+            <p class="page-subtitle">Prototype #1 &middot; Barcelona &middot; newest first</p>
+
+            <article class="log-entry">
+                <span class="log-date">19 October 2026</span>
+                <h2>Parts ordered for the radio, mic and encoders; piezo becomes a contact mic</h2>
+                <p>One DigiKey order (shipped to Barcelona, duties included) covers what prototype #1 still missed: two Si4732-A10 radio chips (FM, AM and shortwave), two Adafruit quad rotary encoder boards, a MAX9814 mic preamp, a Perma-Proto board for the final solder-down, two 8&nbsp;MB PSRAM chips and a logic analyzer. The radio is built from the bare chip on a SOIC-to-DIP adapter; the crystal, adapter and small capacitors come from Diotronic.</p>
+                <p>The piezo disc will work as a <strong>contact mic</strong>: piezo &rarr; MCP6002 op-amp buffer &rarr; a MIC/PIEZO switch &rarr; the Audio Shield line input. Touch it to a table, a railing or a double bass and it records the vibration instead of the air.</p>
+                <p>The full v1 breadboard layout is now on the <a href="prototype.html">Prototype</a> page, the cost of the parts actually used on the <a href="bom.html">BOM</a> page, and the Field Unit v1 concept in the <a href="gallery.html">Gallery</a>. The Teensy is loaded with the layer&nbsp;4 fader test, waiting for the ADS1115 and faders to be wired.</p>
+            </article>
+
+            <article class="log-entry">
+                <span class="log-date">18 October 2026</span>
+                <h2>The LCD lights up &mdash; touch, OLED and LCD running together <span class="log-status pass">layer 3 pass</span></h2>
+                <p>The 2.8&Prime; ILI9341 LCD had stayed white for two sessions. The controller answered and even held the image in memory, but the panel showed nothing. The cause was the wiring: the board was plugged into the breadboard and powered through its 8-bit parallel header, with two signals swapped and reset left floating. Taken out of the breadboard and wired only on its SPI row, it worked at once. Also learned: 40&nbsp;MHz SPI over jumper wires gives a white screen too; the library default is fine.</p>
+                <p>Working wiring (SPI1): CLK 27, MOSI 26, MISO 39 (needs <code>SPI1.setMISO(39)</code>), CS 38, D/C 37, RST 36, power from 3.3&nbsp;V.</p>
+                <p>The rest was rebuilt one step at a time, checking the LCD after each step: LCD alone, then power through the breadboard rails, then the touch controller, then the OLED. All four steps passed.</p>
+                <h3>Touch pads <span class="log-status open">provisional</span></h3>
+                <p>With pads shown live on the LCD and each pad playing its own sample: pads 1, 3, 4, 6, 7 and 8 gave clean single touches with sound. Pad 2 never registered and pad 5 is not wired yet. About one touch in three fired several pads when the jumper ends were close together. Accepted for now; isolation gets re-checked on the real panel pads.</p>
+                <h3>Decisions</h3>
+                <p>USB only for v1: the Teensy&rsquo;s own USB carries MIDI, audio and power, so the ESP32 is out of v1 and internet radio is replaced by an over-the-air radio. GPS stays (location and time on every capture). The NeoPixel strip is dropped for now. Power comes from a USB-C power bank.</p>
+            </article>
+
+            <article class="log-entry">
+                <span class="log-date">17 October 2026</span>
+                <h2>Touch and OLED on a second I2C bus <span class="log-status pass">OLED pass</span></h2>
+                <p>With the Audio Shield under the Teensy, pins 0&ndash;23 disappear inside its sockets. Every user-interface part therefore moves to the Teensy&rsquo;s second I2C bus (Wire2, pins 24/25), leaving the first bus to the audio codec alone.</p>
+                <p>Two lessons from the CAP1188 touch controller: the audio codec only answers on I2C once its clock is running, and the touch chip&rsquo;s start-up fails if the previous I2C transaction was refused, so the test now does one plain register read first. Copper pads on black anti-static foam read as permanently touched (the foam conducts); on cardboard they work.</p>
+                <p>The 0.96&Prime; OLED works on the same bus. It is a two-colour panel: the top 16 rows are yellow, the rest blue, so the screens are designed around a 16-pixel status band.</p>
+            </article>
+
+            <article class="log-entry">
+                <span class="log-date">15 October 2026</span>
+                <h2>Layer 1: first sound from the stack <span class="log-status pass">digital path pass</span></h2>
+                <p>Teensy 4.1 and Audio Shield stacked. The SGTL5000 codec answers and plays a 440&nbsp;Hz tone in the headphones, and a WAV file plays from the SD card. Recording to the SD card and playing it back works on the digital path (every byte back, the test tone measured at 880.0&nbsp;Hz). Recording from a real microphone is not tested yet; that comes with the mic preamp.</p>
+                <p>A small helper now copies test files to the SD card over USB, so no card reader is needed.</p>
+            </article>
+
+            <article class="log-entry">
+            <span class="log-date">March 2026</span>
+            <h2>All components received &mdash; build begins</h2>
 
             <p>After months of sourcing components across three countries and four suppliers, every part for the Oh My Ondas prototype is now on the workbench in Barcelona. The wooden drawer organizer is loaded, the soldering station is warm, and the breadboards are fresh out of the packaging.</p>
 
             <img src="images/oh-my-ondas-components-overview.jpg" alt="All components laid out on the workbench" class="blog-image">
             <p class="blog-image-caption">All components across three orders &mdash; Teensy, Audio Shield, ESP32, GPS, touch, displays, encoders, faders, and prototyping supplies</p>
 
-            <h2>What Arrived</h2>
+            <h3>What Arrived</h3>
 
             <p>The components came from three separate orders, timed around travel between Barcelona and Brussels, with a US stopover in Denver:</p>
 
@@ -130,18 +177,18 @@
             <img src="images/oh-my-ondas-core-brain.jpg" alt="Core brain: Teensy 4.1, Audio Shield Rev D2, ESP32-S2 Thing Plus" class="blog-image">
             <p class="blog-image-caption">Core Brain Stack &mdash; Teensy 4.1 (Primary), Audio Shield Rev D2, ESP32-S2 Thing Plus</p>
 
-            <h2>The Core Stack</h2>
+            <h3>The Core Stack</h3>
 
             <p>The heart of Oh My Ondas is a Teensy 4.1 running at 600MHz with the PJRC Audio Library &mdash; a real-time DSP toolkit that handles sample playback, effects, mixing, and recording simultaneously. The Audio Shield sits directly on top, providing the SGTL5000 codec for CD-quality 16-bit/44.1kHz audio in and out through a 3.5mm headphone jack.</p>
 
             <p>The SanDisk Ultra 32GB SD card is already seated in the Teensy&rsquo;s built-in SDIO slot &mdash; faster and more reliable than the SPI-based slot on the Audio Shield, and it frees up the SPI bus for the display.</p>
 
-            <p>The ESP32-S2 Thing Plus handles all WiFi communication. It runs independently with its own firmware, talking to the Teensy over UART. In the final device, it connects to the Claude API for AI-assisted composition &mdash; but that&rsquo;s a later phase.</p>
+            <p>The ESP32-S2 Thing Plus handles all WiFi communication. It runs independently with its own firmware, talking to the Teensy over UART. The plan then was to use it for an AI composition service later; in October the ESP32 was dropped from v1 (see 18 October).</p>
 
             <img src="images/oh-my-ondas-interface-components.jpg" alt="Interface and sensing components" class="blog-image">
             <p class="blog-image-caption">Interface &amp; Sensing &mdash; CAP1188 Touch, ADS1115 ADC, Slide Pots, Rainbow Knobs, 5-Way Nav, 2.8&Prime; ILI9341</p>
 
-            <h2>Sensing the World</h2>
+            <h3>Sensing the World</h3>
 
             <p>The interface layer is where Oh My Ondas becomes a proper instrument:</p>
 
@@ -158,7 +205,7 @@
             <img src="images/oh-my-ondas-workshop.jpg" alt="Workshop setup with organizer and supplies" class="blog-image">
             <p class="blog-image-caption">Workshop &amp; Supplies &mdash; wooden organizer, breadboards, Diotronic haul, headers &amp; sockets, copper tape, solder wire</p>
 
-            <h2>The Workshop</h2>
+            <h3>The Workshop</h3>
 
             <p>The build station is set up on the desk in Barcelona. A wooden multi-drawer organizer keeps components sorted by type. The Diotronic soldering station (48W, temperature controlled) is ready alongside solder wire, flux paste, and two 830-point breadboards for prototyping.</p>
 
@@ -181,12 +228,13 @@
                 <p>The design reviews (hardware architecture, pin allocation, electrical analysis) are complete. Every pin conflict, I2C bus split, power budget issue, and signal integrity concern has been documented and resolved on paper. Now it&rsquo;s time to find out what the breadboard thinks about all that planning.</p>
                 <p>Step-by-step wiring and code for each phase: <a href="assembly.html">Assembly Instructions</a></p>
             </div>
+            </article>
 
             <p class="blog-license">Oh My Ondas is a GPS-location-aware portable field recording and sampling instrument for pedestrian urban exploration. Licensed under AGPL v3 (firmware), CERN OHL-S v2 (hardware), CC BY-NC-SA 4.0 (documentation).</p>
         </main>
 
         <footer class="page-footer">
-            <span>Oh My Ondas v3.0.1 · build 2026-10-19 12:16 UTC</span>
+            <span>Oh My Ondas v3.0.1 · build 2026-10-20 06:18 UTC</span>
             <span>AGPL-3.0 License</span>
             <a href="ise.html">ISE 2026</a>
             <a href="https://github.com/alevm/oh-my-ondas" target="_blank" rel="noopener noreferrer">GitHub</a>

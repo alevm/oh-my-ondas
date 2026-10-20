@@ -7,7 +7,7 @@
     <meta property="og:title" content="About Oh My Ondas">
     <meta property="og:description" content="A GPS-aware instrument for sonic transurbance. Based on acoustic ecology, terrain vague, and electromagnetic soundscapes.">
     <title>About Oh My Ondas</title>
-    <link rel="stylesheet" href="css/style.css?v=256">
+    <link rel="stylesheet" href="css/style.css?v=257">
     <style>
         body {
             overflow: auto;
@@ -109,13 +109,15 @@
 
             <p>Every place is saturated with waves. Radio broadcasts, WiFi handshakes, cellular pings, ambient vibrations, the hum of infrastructure, voices, wind, machines. Most of it is inaudible or ignored &mdash; electromagnetic noise, background radiation, the sonic residue of a location at a specific moment. Oh My Ondas captures all of it and turns it into music.</p>
 
+            <p><strong>Where it is now:</strong> the web app works today (sequencer, sampler, synth, effects, GPS tagging, microphone and internet radio). The hardware instrument is being built: layers 1&ndash;3 work on the bench (mic recording and pad isolation still to re-check), and the FM radio, piezo contact mic and WiFi sensing described below are planned, not working yet. See the <a href="build-log.html">Build Log</a>.</p>
+
             <p>"Ondas" means waves in Spanish. Sound waves, radio waves, the waves of a place. The name is the concept.</p>
 
             <h2>What it actually does</h2>
 
-            <p>The instrument reads the full wave spectrum of a location: microphone input, piezo vibration sensors, FM radio, WiFi signal characteristics, GPS coordinates. An AI composition engine analyzes this material and uses it <em>as</em> the components of a composition &mdash; not layered sequentially on top of a beat, but structurally transformed. Workers drilling outside become the rhythmic backbone. A microphone captures traffic hum and the synth reshapes it into a bass drone. A radio broadcast fragment becomes a melodic phrase. WiFi interference patterns become granular texture. The subtractive synth generates tones tuned to the spectral characteristics of the ambient sound &mdash; the place itself sets the harmonic palette. The composition is <em>of</em> the place, not just <em>at</em> the place.</p>
+            <p>The instrument reads the full wave spectrum of a location: microphone input, piezo vibration sensors, FM radio, WiFi signal characteristics, GPS coordinates. A rule-based composition engine analyzes this material and uses it <em>as</em> the components of a composition &mdash; not layered sequentially on top of a beat, but structurally transformed. Workers drilling outside become the rhythmic backbone. A microphone captures traffic hum and the synth reshapes it into a bass drone. A radio broadcast fragment becomes a melodic phrase. WiFi interference patterns become granular texture. The subtractive synth generates tones tuned to the spectral characteristics of the ambient sound &mdash; the place itself sets the harmonic palette. The composition is <em>of</em> the place, not just <em>at</em> the place.</p>
 
-            <p>Three modes of operation: <strong>Picture</strong> takes a snapshot of the sonic environment at a moment. <strong>Soundscape</strong> generates an AI composition from the captured waves. <strong>Interact</strong> lets you perform live on top of either &mdash; an 8-track sequencer, sampler with 8 pads, subtractive synth, effects chain (delay, granular, glitch, bitcrush). Every pattern is tagged with GPS coordinates and a timestamp. Take the instrument to a different corner and you get a different piece. The composition is unrepeatable because the source material only existed right there, right then.</p>
+            <p>Three modes of operation: <strong>Picture</strong> takes a snapshot of the sonic environment at a moment. <strong>Soundscape</strong> generates a rule-based composition from the captured waves. <strong>Interact</strong> lets you perform live on top of either &mdash; an 8-track sequencer, sampler with 8 pads, subtractive synth, effects chain (delay, granular, glitch, bitcrush). Every pattern is tagged with GPS coordinates and a timestamp. Take the instrument to a different corner and you get a different piece. The composition is unrepeatable because the source material only existed right there, right then.</p>
 
             <h2>Why it matters</h2>
 
@@ -132,30 +134,38 @@
             <div class="timeline">
                 <h2>Timeline</h2>
                 <div class="timeline-item">
-                    <span class="timeline-date">2024 Q4</span>
-                    <span class="timeline-text">Concept and initial web prototype &mdash; sequencer, sampler, synth, effects</span>
+                    <span class="timeline-date">Dec 2025</span>
+                    <span class="timeline-text">Idea; project repository started</span>
                 </div>
                 <div class="timeline-item">
-                    <span class="timeline-date">2025 Q1</span>
-                    <span class="timeline-text">GPS integration, internet radio sampling, AI composition engine</span>
+                    <span class="timeline-date">Jan 2026</span>
+                    <span class="timeline-text">Web app: sequencer, sampler, synth, effects &middot; first parts order (Antratek, Belgium)</span>
                 </div>
                 <div class="timeline-item">
-                    <span class="timeline-date">2025 Q2</span>
-                    <span class="timeline-text">Hardware design &mdash; Teensy 4.1 + ESP32 architecture, BOM, CAD enclosure</span>
+                    <span class="timeline-date">Feb 2026</span>
+                    <span class="timeline-text">ISE 2026 Open Innovation Challenge &middot; device design iterations (orange, palettes, petrol device) &middot; Journey mode with GPS &middot; parts from Diotronic</span>
                 </div>
                 <div class="timeline-item">
-                    <span class="timeline-date">2025 Q3</span>
-                    <span class="timeline-text">Firmware development, physical prototype build</span>
+                    <span class="timeline-date">Mar 2026</span>
+                    <span class="timeline-text">Adafruit parts arrive in Barcelona &middot; assembly guide and first build log</span>
                 </div>
                 <div class="timeline-item">
-                    <span class="timeline-date">2025 Q4</span>
-                    <span class="timeline-text">Testing, iteration, open-source release</span>
+                    <span class="timeline-date">Apr 2026</span>
+                    <span class="timeline-text">BOM of the actual hardware &middot; expert review &middot; site moves to its own server</span>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-date">Oct 2026</span>
+                    <span class="timeline-text">Hardware bring-up: layers 1&ndash;3 working on the bench &middot; Field Unit v1 design &middot; DigiKey order</span>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-date">Next</span>
+                    <span class="timeline-text">Layer 4 (faders), then radio, piezo contact mic, enclosure</span>
                 </div>
             </div>
         </main>
 
         <footer class="page-footer">
-            <span>Oh My Ondas v3.0.1 · build 2026-10-19 12:16 UTC</span>
+            <span>Oh My Ondas v3.0.1 · build 2026-10-20 06:18 UTC</span>
             <span>AGPL-3.0</span>
             <a href="ise.html">ISE 2026</a>
             <a href="https://github.com/alevm/oh-my-ondas" target="_blank" rel="noopener noreferrer">GitHub</a>
