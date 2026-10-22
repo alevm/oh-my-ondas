@@ -56,6 +56,9 @@ struct Pattern {
 
 // Callback: called when a step triggers
 typedef void (*StepTriggerCallback)(int track, int step, const Step& stepData);
+// Callback: called on every step advance, before the tracks trigger
+// (step 0 = bar boundary); drives the layer-1 renderer
+typedef void (*StepTickCallback)(int step);
 
 class Sequencer {
 public:
@@ -66,11 +69,13 @@ public:
 
     // Trigger callback
     void setTriggerCallback(StepTriggerCallback callback);
+    void setStepCallback(StepTickCallback callback) { stepCallback = callback; }
 
     // Transport
     void start();
     void stop();
     void pause();
+    void resume();          // run on from the current step (MIDI Continue)
     void reset();
     bool isRunning();
 
@@ -83,7 +88,13 @@ public:
     // Position
     int getCurrentStep();
     int getCurrentBar();
+    uint32_t getBarCount() const { return barCount; }  // bars played since start
     void setPosition(int step);
+
+    // Global trigger probability (layer-1 mapper): every trig that passes its
+    // condition still fires only with this probability. 1.0 = off.
+    void  setGlobalProbability(float p) { globalProb = constrain(p, 0.0f, 1.0f); }
+    float getGlobalProbability() const  { return globalProb; }
 
     // Track management
     void selectTrack(int track);
@@ -140,6 +151,9 @@ private:
     uint8_t triggerCounts[MAX_TRACKS];
 
     StepTriggerCallback triggerCallback;
+    StepTickCallback    stepCallback;
+    uint32_t barCount;
+    float    globalProb;
 
     void calculateStepInterval();
     bool evaluateTrigCondition(int track, int step);

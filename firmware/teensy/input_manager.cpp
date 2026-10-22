@@ -1,17 +1,16 @@
 /**
  * Oh My Ondas - Input Manager Implementation
- * Unified input handling: direct GPIO + MCP23017 + ADS1115 + CAP1188
+ * Unified input handling on Wire2: Quad encoders + ANO nav + MCP23017 +
+ * ADS1115 + CAP1188, plus fader 5 on the Teensy ADC
  */
 
 #include "input_manager.h"
 
-// Quadrature lookup table: [oldState][newState] → direction (-1, 0, +1)
-static const int8_t QUAD_TABLE[4][4] = {
-    { 0, -1,  1,  0},
-    { 1,  0,  0, -1},
-    {-1,  0,  0,  1},
-    { 0,  1, -1,  0}
-};
+static const uint8_t QUAD_SWITCH[QUAD_ENCODERS_PER] = QUAD_SWITCH_PINS;
+static const uint8_t ENC_PUSH[ENC_COUNT] = ENC_PUSH_BUTTONS;
+
+// ANO seesaw pins in JoystickDir bit order: up, down, left, right, centre
+static const uint8_t ANO_PINS[5] = {ANO_SW_UP, ANO_SW_DOWN, ANO_SW_LEFT, ANO_SW_RIGHT, ANO_SW_SELECT};
 
 // MCP23017 registers
 #define MCP_IODIRA   0x00
@@ -34,37 +33,36 @@ static const int8_t QUAD_TABLE[4][4] = {
 InputManager::InputManager()
     : encoderCB(nullptr), buttonCB(nullptr), faderCB(nullptr)
     , joystickCB(nullptr), touchCB(nullptr)
-    , joystickState(JOY_NONE), joystickLastState(JOY_NONE)
+    , quadSwitchMask(0)
+    , ano(nullptr), anoReady(false), anoSwitchMask(0), wheelPosition(0)
+    , anoDirs(0), mcpDirs(0), mcpDirsRaw(0)
+    , joystickState(JOY_NONE), joystickLastState(JOY_NONE), lastAnoPoll(0)
     , touchLast(0), touchReady(false)
-    , mcpAReady(false), mcpBReady(false)
-    , adsReady(false), adsCurrentChannel(0)
-    , i2cErrorCount(0), mcpALastGood(0xFFFF), mcpBLastGood(0xFFFF)
-    , lastEncoderPoll(0), lastButtonPoll(0), lastFaderPoll(0)
+    , mcpReady(false)
+    , adsReady(false), adsCurrentChannel(0), adsPending(false)
+    , i2cErrorCount(0), mcpLastGood(0xFFFF)
+    , lastEncoderPoll(0), lastButtonPoll(0), lastFaderPoll(0), lastTouchPoll(0)
 {
-    memset(directEncPositions, 0, sizeof(directEncPositions));
-    memset(mcpEncLastState, 0, sizeof(mcpEncLastState));
-    memset(mcpEncAccum, 0, sizeof(mcpEncAccum));
     memset(buttonStates, 0, sizeof(buttonStates));
     memset(buttonLastStates, 0, sizeof(buttonLastStates));
     memset(buttonDebounce, 0, sizeof(buttonDebounce));
     memset(faderValues, 0, sizeof(faderValues));
     memset(faderLastValues, 0, sizeof(faderLastValues));
-
     memset(adsLastGood, 0, sizeof(adsLastGood));
 
-    for (int i = 0; i < NUM_DIRECT_ENCODERS; i++) {
-        directEncoders[i] = nullptr;
+    for (int q = 0; q < NUM_QUAD_BOARDS; q++) {
+        quads[q] = nullptr;
+        quadReady[q] = false;
     }
 }
 
 void InputManager::begin() {
     DEBUG_PRINTLN("InputManager: Initializing...");
 
-    initDirectEncoders();
+    initQuads();
+    initANO();
     initMCP23017();
     initADS1115();
-    initDirectButtons();
-    initJoystick();
     initTouch();
 
     DEBUG_PRINTLN("InputManager: Ready");
@@ -73,26 +71,45 @@ void InputManager::begin() {
 void InputManager::update() {
     unsigned long now = millis();
 
-    // Touch pads: every loop (low latency)
-    pollTouch();
-
-    // MCP encoders: fast polling (every 2ms)
-    if (now - lastEncoderPoll >= ENCODER_POLL_MS) {
-        pollDirectEncoders();
-        if (mcpAReady) pollMCPEncoders();
-        lastEncoderPoll = now;
+    // Touch pads: every TOUCH_POLL_MS (one I2C read, ~0.3 ms)
+    if (now - lastTouchPoll >= TOUCH_POLL_MS) {
+        pollTouch();
+        lastTouchPoll = now;
     }
 
-    // Buttons + joystick: every 10ms
+    // Quad encoders + their push switches
+#if QUAD_USE_INT
+    // INT (both boards, wired-OR, active low) says something changed; the
+    // fallback poll keeps the boards working if the INT wire is missing
+    if (digitalReadFast(QUAD_INT_PIN) == LOW || now - lastEncoderPoll >= QUAD_FALLBACK_POLL_MS) {
+        pollQuads();
+        lastEncoderPoll = now;
+    }
+#else
+    if (now - lastEncoderPoll >= ENCODER_POLL_MS) {
+        pollQuads();
+        lastEncoderPoll = now;
+    }
+#endif
+
+    // ANO nav: same INT line if wired there, else its own poll period
+#if QUAD_USE_INT
+    if (digitalReadFast(QUAD_INT_PIN) == LOW || now - lastAnoPoll >= ANO_POLL_MS) {
+#else
+    if (now - lastAnoPoll >= ANO_POLL_MS) {
+#endif
+        if (anoReady) pollANO();
+        lastAnoPoll = now;
+    }
+
+    // Buttons: every 10ms
     if (now - lastButtonPoll >= 10) {
-        pollDirectButtons();
-        if (mcpBReady) pollMCPButtons();
-        pollJoystick();
+        if (mcpReady) pollMCP();
         lastButtonPoll = now;
     }
 
-    // Faders: every 20ms (50Hz, smooth enough)
-    if (now - lastFaderPoll >= 20) {
+    // Faders: one ADS1115 channel per poll, no waiting on conversions
+    if (now - lastFaderPoll >= FADER_POLL_MS) {
         pollFaders();
         lastFaderPoll = now;
     }
@@ -102,107 +119,103 @@ void InputManager::update() {
 // INITIALIZATION
 // ============================================
 
-void InputManager::initDirectEncoders() {
-    static Encoder enc1(ENC1_CLK, ENC1_DT);
-    static Encoder enc2(ENC2_CLK, ENC2_DT);
-    static Encoder enc3(ENC3_CLK, ENC3_DT);
-    static Encoder enc4(ENC4_CLK, ENC4_DT);
-    static Encoder enc5(ENC5_CLK, ENC5_DT);
+void InputManager::initQuads() {
+    static QuadBoard quad1(&UI_WIRE);
+    static QuadBoard quad2(&UI_WIRE);
+    quads[0] = &quad1;
+    quads[1] = &quad2;
+    const uint8_t addr[NUM_QUAD_BOARDS] = {ADDR_QUAD1, ADDR_QUAD2};
 
-    directEncoders[0] = &enc1;
-    directEncoders[1] = &enc2;
-    directEncoders[2] = &enc3;
-    directEncoders[3] = &enc4;
-    directEncoders[4] = &enc5;
+    for (int e = 0; e < QUAD_ENCODERS_PER; e++) quadSwitchMask |= 1UL << QUAD_SWITCH[e];
+#if QUAD_USE_INT
+    pinMode(QUAD_INT_PIN, INPUT_PULLUP);  // reads HIGH if the INT wire is missing
+#endif
 
-    // Encoder push switches
-    pinMode(ENC1_SW, INPUT_PULLUP);
-    pinMode(ENC2_SW, INPUT_PULLUP);
-    pinMode(ENC3_SW, INPUT_PULLUP);
-    pinMode(ENC4_SW, INPUT_PULLUP);
-    pinMode(ENC5_SW, INPUT_PULLUP);
+    for (int q = 0; q < NUM_QUAD_BOARDS; q++) {
+        quadReady[q] = quads[q]->begin(addr[q]);
+        if (quadReady[q]) {
+            quads[q]->pinModeBulk(quadSwitchMask, INPUT_PULLUP);
+            // Zero the hardware counters so the first poll reports no movement
+            for (int e = 0; e < QUAD_ENCODERS_PER; e++) quads[q]->getEncoderDelta(e);
+#if QUAD_USE_INT
+            // Raise INT on any turn or push of the encoders in use (Quad #2 has 3);
+            // INT is open drain, both boards share pin 32
+            int used = (q == 0) ? QUAD_ENCODERS_PER : ENC_COUNT - QUAD_ENCODERS_PER;
+            for (int e = 0; e < used; e++) quads[q]->enableEncoderInterrupt(e);
+            quads[q]->setGPIOInterrupts(quadSwitchMask, true);
+            quads[q]->clearGpioInterrupts();
+#endif
+        }
+        DEBUG_PRINTF("  Quad encoder #%d (0x%02X): %s\n", q + 1, addr[q], quadReady[q] ? "OK" : "NOT FOUND");
+    }
+}
 
-    DEBUG_PRINTLN("  Direct encoders: OK (5)");
+void InputManager::initANO() {
+    static QuadBoard anoBoard(&UI_WIRE);
+    ano = &anoBoard;
+    for (int i = 0; i < 5; i++) anoSwitchMask |= 1UL << ANO_PINS[i];
+
+    anoReady = ano->begin(ADDR_ANO);
+    if (anoReady) {
+        uint16_t pid = (ano->getVersion() >> 16) & 0xFFFF;
+        if (pid != 5740) DEBUG_PRINTF("  ANO: unexpected seesaw product %u (want 5740)\n", pid);
+        ano->pinModeBulk(anoSwitchMask, INPUT_PULLUP);
+        wheelPosition = 0;
+        ano->getEncoderDelta(ANO_ENCODER);  // zero the counter
+#if QUAD_USE_INT
+        // Harmless if its INT is not wired: the poll period still applies
+        ano->enableEncoderInterrupt(ANO_ENCODER);
+        ano->setGPIOInterrupts(anoSwitchMask, true);
+        ano->clearGpioInterrupts();
+#endif
+    }
+    DEBUG_PRINTF("  ANO nav (0x%02X): %s\n", ADDR_ANO, anoReady ? "OK" : "not fitted, nav on MCP GPA0-4");
 }
 
 void InputManager::initMCP23017() {
-    // MCP23017 #1 (0x20): all 16 pins as inputs with pull-ups (8 encoders)
-    Wire.beginTransmission(ADDR_MCP23017A);
-    if (Wire.endTransmission() == 0) {
-        mcpWrite8(ADDR_MCP23017A, MCP_IODIRA, 0xFF);  // Port A: all input
-        mcpWrite8(ADDR_MCP23017A, MCP_IODIRB, 0xFF);  // Port B: all input
-        mcpWrite8(ADDR_MCP23017A, MCP_GPPUA,  0xFF);  // Port A: pull-ups
-        mcpWrite8(ADDR_MCP23017A, MCP_GPPUB,  0xFF);  // Port B: pull-ups
-        mcpAReady = true;
-
-        // Read initial state for encoders
-        uint16_t pins;
-        if (mcpRead16(ADDR_MCP23017A, MCP_GPIOA, pins)) {
-            mcpALastGood = pins;
-            for (int i = 0; i < NUM_MCP_ENCODERS; i++) {
-                int bitPos = i * 2;
-                mcpEncLastState[i] = (pins >> bitPos) & 0x03;
-            }
-        }
-        DEBUG_PRINTLN("  MCP23017 #1 (encoders): OK");
+    // GPA0-4 nav buttons, GPB0-3 buttons: all 16 pins as inputs with pull-ups
+    UI_WIRE.beginTransmission(ADDR_MCP23017);
+    if (UI_WIRE.endTransmission() == 0) {
+        mcpWrite8(ADDR_MCP23017, MCP_IODIRA, 0xFF);
+        mcpWrite8(ADDR_MCP23017, MCP_IODIRB, 0xFF);
+        mcpWrite8(ADDR_MCP23017, MCP_GPPUA,  0xFF);
+        mcpWrite8(ADDR_MCP23017, MCP_GPPUB,  0xFF);
+        mcpReady = true;
+        DEBUG_PRINTLN("  MCP23017 (buttons + nav GPA0-4): OK");
     } else {
-        DEBUG_PRINTLN("  MCP23017 #1 (encoders): NOT FOUND");
-    }
-
-    // MCP23017 #2 (0x21): all 16 pins as inputs with pull-ups (14 buttons + 2 nav)
-    Wire.beginTransmission(ADDR_MCP23017B);
-    if (Wire.endTransmission() == 0) {
-        mcpWrite8(ADDR_MCP23017B, MCP_IODIRA, 0xFF);
-        mcpWrite8(ADDR_MCP23017B, MCP_IODIRB, 0xFF);
-        mcpWrite8(ADDR_MCP23017B, MCP_GPPUA,  0xFF);
-        mcpWrite8(ADDR_MCP23017B, MCP_GPPUB,  0xFF);
-        mcpBReady = true;
-        DEBUG_PRINTLN("  MCP23017 #2 (buttons): OK");
-    } else {
-        DEBUG_PRINTLN("  MCP23017 #2 (buttons): NOT FOUND");
+        DEBUG_PRINTLN("  MCP23017 (buttons + nav GPA0-4): NOT FOUND");
     }
 }
 
 void InputManager::initADS1115() {
-    Wire.beginTransmission(ADDR_ADS1115);
-    if (Wire.endTransmission() == 0) {
+    UI_WIRE.beginTransmission(ADDR_ADS1115);
+    if (UI_WIRE.endTransmission() == 0) {
         adsReady = true;
-        DEBUG_PRINTLN("  ADS1115 (faders): OK");
+        DEBUG_PRINTLN("  ADS1115 (faders 1-4): OK");
     } else {
-        DEBUG_PRINTLN("  ADS1115 (faders): NOT FOUND");
+        DEBUG_PRINTLN("  ADS1115 (faders 1-4): NOT FOUND");
     }
 
-    // Teensy ADC for crossfader
+    // Teensy ADC for fader 5
     analogReadResolution(12);
-    pinMode(CROSSFADER_PIN, INPUT);
-    DEBUG_PRINTLN("  Crossfader ADC: OK");
-}
-
-void InputManager::initDirectButtons() {
-    pinMode(BTN_PIN_MODE,  INPUT_PULLUP);
-    pinMode(BTN_PIN_SHIFT, INPUT_PULLUP);
-    pinMode(BTN_PIN_REC,   INPUT_PULLUP);
-    pinMode(BTN_PIN_PLAY,  INPUT_PULLUP);
-
-    for (int i = 0; i < BTN_COUNT; i++) {
-        buttonStates[i] = false;
-        buttonLastStates[i] = false;
-    }
-    DEBUG_PRINTLN("  Direct buttons: OK (4)");
-}
-
-void InputManager::initJoystick() {
-    pinMode(JOY_UP_PIN,    INPUT_PULLUP);
-    pinMode(JOY_DOWN_PIN,  INPUT_PULLUP);
-    pinMode(JOY_LEFT_PIN,  INPUT_PULLUP);
-    pinMode(JOY_RIGHT_PIN, INPUT_PULLUP);
-    // JOY_CENTER is on MCP#2 Port B bit 5 — read during pollMCPButtons
-    DEBUG_PRINTLN("  Joystick: OK");
+    pinMode(FADER5_PIN, INPUT);
+    DEBUG_PRINTLN("  Fader 5 ADC: OK");
 }
 
 void InputManager::initTouch() {
-    // CAP1188 sits on Wire1 (16/17) with external 10K pull-ups
-    if (touchSensor.begin(ADDR_CAP1188, &Wire1)) {
+    // touch.begin() fails if the previous transaction on the bus was NACKed;
+    // a plain register read first clears it (see test/layer2_cap1188).
+    UI_WIRE.beginTransmission(ADDR_CAP1188);
+    UI_WIRE.write(0xFD);
+    UI_WIRE.endTransmission(false);
+    UI_WIRE.requestFrom((uint8_t)ADDR_CAP1188, (uint8_t)1);
+    while (UI_WIRE.available()) UI_WIRE.read();
+
+    if (touchSensor.begin(ADDR_CAP1188, &UI_WIRE)) {
+        // 16x sensitivity and max-duration recalibration, as verified in test/layer2_pads_visual
+        touchSensor.writeRegister(0x1F, 0x3F);
+        touchSensor.writeRegister(0x20, touchSensor.readRegister(0x20) | 0x08);
+        touchSensor.writeRegister(0x26, 0xFF);
         touchReady = true;
         DEBUG_PRINTLN("  CAP1188 touch: OK");
     } else {
@@ -214,155 +227,129 @@ void InputManager::initTouch() {
 // POLLING
 // ============================================
 
-void InputManager::pollDirectEncoders() {
-    for (int i = 0; i < NUM_DIRECT_ENCODERS; i++) {
-        if (!directEncoders[i]) continue;
-        long newPos = directEncoders[i]->read() / 4;  // 4 counts per detent
-        if (newPos != directEncPositions[i]) {
-            int delta = (int)(newPos - directEncPositions[i]);
-            directEncPositions[i] = newPos;
-            if (encoderCB) encoderCB(i, delta);  // IDs 0-4 = direct encoders
-        }
+void InputManager::setButton(int buttonID, bool pressed, unsigned long now) {
+    if (pressed != buttonStates[buttonID] && (now - buttonDebounce[buttonID]) > DEBOUNCE_MS) {
+        buttonStates[buttonID] = pressed;
+        buttonDebounce[buttonID] = now;
+        if (buttonCB) buttonCB(buttonID, pressed);
     }
 }
 
-void InputManager::pollMCPEncoders() {
-    // Read all 16 pins in one I2C transaction
-    uint16_t pins;
-    if (!mcpRead16(ADDR_MCP23017A, MCP_GPIOA, pins)) {
-        pins = mcpALastGood;  // same state → quadrature decode yields 0 = safe
-    } else {
-        mcpALastGood = pins;
-    }
+void InputManager::pollQuads() {
+    unsigned long now = millis();
+    for (int q = 0; q < NUM_QUAD_BOARDS; q++) {
+        if (!quadReady[q]) continue;
+        int count = (q == 0) ? QUAD_ENCODERS_PER : ENC_COUNT - QUAD_ENCODERS_PER;
 
-    for (int i = 0; i < NUM_MCP_ENCODERS; i++) {
-        int bitPos = i * 2;
-        uint8_t newState = (pins >> bitPos) & 0x03;
-
-        if (newState != mcpEncLastState[i]) {
-            int8_t dir = decodeQuadrature(mcpEncLastState[i], newState);
-            mcpEncLastState[i] = newState;
-
-            if (dir != 0) {
-                mcpEncAccum[i] += dir;
-                // Report every 4 transitions (one detent)
-                if (mcpEncAccum[i] >= 4 || mcpEncAccum[i] <= -4) {
-                    int delta = (mcpEncAccum[i] > 0) ? 1 : -1;
-                    mcpEncAccum[i] = 0;
-                    // MCP encoder IDs start at NUM_DIRECT_ENCODERS
-                    if (encoderCB) encoderCB(NUM_DIRECT_ENCODERS + i, delta);
-                }
+        for (int e = 0; e < count; e++) {
+            int32_t delta;
+            if (!checkedDelta(quads[q], e, delta)) continue;
+            if (delta != 0) {
+                if (QUAD_INVERT) delta = -delta;
+                if (encoderCB) encoderCB(q * QUAD_ENCODERS_PER + e, (int)delta);
             }
         }
-    }
-}
 
-void InputManager::pollDirectButtons() {
-    unsigned long now = millis();
-    // Map: BTN_MODE=0 → pin 26, BTN_SHIFT=1 → pin 27, BTN_REC=2 → pin 28, BTN_PLAY=3 → pin 29
-    const uint8_t directPins[NUM_DIRECT_BUTTONS] = {
-        BTN_PIN_MODE, BTN_PIN_SHIFT, BTN_PIN_REC, BTN_PIN_PLAY
-    };
-
-    for (int i = 0; i < NUM_DIRECT_BUTTONS; i++) {
-        bool pressed = (digitalRead(directPins[i]) == LOW);
-
-        if (pressed != buttonStates[i] && (now - buttonDebounce[i]) > DEBOUNCE_MS) {
-            buttonStates[i] = pressed;
-            buttonDebounce[i] = now;
-            if (buttonCB) buttonCB(i, pressed);
+        // One bulk read for the 4 push switches (pull-ups: pressed = LOW)
+        uint32_t switches;
+        if (!quads[q]->readBulk(quadSwitchMask, switches)) { i2cErrorCount++; continue; }
+#if QUAD_USE_INT
+        quads[q]->clearGpioInterrupts();  // releases INT; encoder INT clears on the delta read
+#endif
+        for (int e = 0; e < count; e++) {
+            bool pressed = !(switches & (1UL << QUAD_SWITCH[e]));
+            setButton(ENC_PUSH[q * QUAD_ENCODERS_PER + e], pressed, now);
         }
     }
 }
 
-void InputManager::pollMCPButtons() {
+void InputManager::pollANO() {
+    // Wheel: hardware counted on the seesaw, read as a delta
+    int32_t delta = 0;
+    checkedDelta(ano, ANO_ENCODER, delta);
+    if (delta != 0) {
+        if (ANO_INVERT) delta = -delta;
+        wheelPosition += delta;
+        if (encoderCB) encoderCB(ENC_NAV_WHEEL, (int)delta);
+    }
+
+    // 5 buttons in one bulk read (pull-ups: pressed = LOW) -> JoystickDir bits
+    uint32_t pins;
+    if (!ano->readBulk(anoSwitchMask, pins)) { i2cErrorCount++; return; }   // keep the last nav state
+#if QUAD_USE_INT
+    ano->clearGpioInterrupts();
+#endif
+    uint8_t dirs = 0;
+    for (int i = 0; i < 5; i++) {
+        if (!(pins & (1UL << ANO_PINS[i]))) dirs |= (1 << i);
+    }
+    anoDirs = dirs;
+    updateNav();
+}
+
+// ANO buttons OR MCP GPA buttons -> one JoystickDir state
+void InputManager::updateNav() {
+    uint8_t dirs = anoDirs | mcpDirs;
+    if (dirs != joystickLastState) {
+        joystickState = dirs;
+        joystickLastState = dirs;
+        if (joystickCB) joystickCB(dirs);
+    }
+}
+
+void InputManager::pollMCP() {
     unsigned long now = millis();
     uint16_t pins;
-    if (!mcpRead16(ADDR_MCP23017B, MCP_GPIOA, pins)) {
-        pins = mcpBLastGood;  // no state change → no spurious button events
+    if (!mcpRead16(ADDR_MCP23017, MCP_GPIOA, pins)) {
+        pins = mcpLastGood;  // no state change → no spurious events
     } else {
-        mcpBLastGood = pins;
+        mcpLastGood = pins;
     }
 
-    // MCP#2 Port A (bits 0-7): STOP, PIC, SND, INT, JRN, MENU, BACK, PAGE
-    // MCP#2 Port B (bits 8-13): DUB, FILL, CLR, SCN, BANK, JOY_CENTER
-    // MCP#2 Port B (bits 14-15): PREV, NEXT
+    // GPB0-3: MODE, SHIFT, REC, PLAY (active low)
     for (int i = 0; i < NUM_MCP_BUTTONS; i++) {
-        int btnID = NUM_DIRECT_BUTTONS + i;  // offset by direct buttons
-        bool pressed = !((pins >> i) & 1);    // active low with pull-ups
-
-        if (pressed != buttonStates[btnID] && (now - buttonDebounce[btnID]) > DEBOUNCE_MS) {
-            buttonStates[btnID] = pressed;
-            buttonDebounce[btnID] = now;
-
-            // Special case: bit 5 of Port B (index 13) is JOY_CENTER
-            // It's mapped to a button in the ButtonID enum, handled normally
-
-            if (buttonCB) buttonCB(btnID, pressed);
-        }
+        setButton(BTN_MODE + i, !((pins >> (MCP_BUTTON_SHIFT + i)) & 1), now);
     }
 
-    // PREV/NEXT are the last two MCP buttons (index 14,15 in Port B = bits 14,15)
-    for (int i = 0; i < 2; i++) {
-        int btnID = BTN_PREV + i;
-        int bit = 14 + i;
-        bool pressed = !((pins >> bit) & 1);
-
-        if (pressed != buttonStates[btnID] && (now - buttonDebounce[btnID]) > DEBOUNCE_MS) {
-            buttonStates[btnID] = pressed;
-            buttonDebounce[btnID] = now;
-            if (buttonCB) buttonCB(btnID, pressed);
-        }
+    // GPA0-4: nav buttons (up, down, left, right, centre), taken when two
+    // polls 10 ms apart agree (debounce)
+    uint8_t raw = (~pins >> MCP_NAV_SHIFT) & 0x1F;
+    if (raw == mcpDirsRaw && raw != mcpDirs) {
+        mcpDirs = raw;
+        updateNav();
     }
+    mcpDirsRaw = raw;
 }
 
 void InputManager::pollFaders() {
-    // ADS1115: 4 mixer faders (channels 0-3)
+    // ADS1115: faders 1-4 (channels 0-3), one channel per call. A conversion
+    // takes 1.2 ms at 860 SPS; it was started on the previous call
+    // (FADER_POLL_MS ago), so the result is ready and nothing waits.
     if (adsReady) {
-        for (int ch = 0; ch < NUM_FADERS; ch++) {
+        int ch = adsCurrentChannel;
+        if (adsPending) {
             int16_t raw;
-            if (!adsReadChannel(ch, raw)) {
-                raw = adsLastGood[ch];  // hold last position on error
-            } else {
-                adsLastGood[ch] = raw;
-            }
-            float value = constrain((float)raw / 32767.0f, 0.0f, 1.0f);
-
+            if (!adsReadResult(raw)) raw = adsLastGood[ch];  // hold last position on error
+            else adsLastGood[ch] = raw;
+            float value = constrain((float)raw / FADER_ADS_FULL_SCALE, 0.0f, 1.0f);
             if (fabsf(value - faderLastValues[ch]) > FADER_THRESHOLD) {
                 faderValues[ch] = value;
                 faderLastValues[ch] = value;
                 if (faderCB) faderCB(ch, value);
             }
+            adsCurrentChannel = (ch + 1) % NUM_FADERS;
         }
+        adsPending = adsStart(adsCurrentChannel);
     }
 
-    // Teensy ADC: crossfader (pin 39/A15)
-    int raw = analogRead(CROSSFADER_PIN);
-    float value = (float)raw / 4095.0f;  // 12-bit ADC
+    // Teensy ADC: fader 5 (pin 40)
+    int raw = analogRead(FADER5_PIN);
+    float value = constrain((float)raw / FADER_ADC_FULL_SCALE, 0.0f, 1.0f);
 
-    if (fabsf(value - faderLastValues[FADER_XFADE]) > FADER_THRESHOLD) {
-        faderValues[FADER_XFADE] = value;
-        faderLastValues[FADER_XFADE] = value;
-        if (faderCB) faderCB(FADER_XFADE, value);
-    }
-}
-
-void InputManager::pollJoystick() {
-    uint8_t state = JOY_NONE;
-
-    if (digitalRead(JOY_UP_PIN) == LOW)    state |= JOY_UP;
-    if (digitalRead(JOY_DOWN_PIN) == LOW)  state |= JOY_DOWN;
-    if (digitalRead(JOY_LEFT_PIN) == LOW)  state |= JOY_LEFT;
-    if (digitalRead(JOY_RIGHT_PIN) == LOW) state |= JOY_RIGHT;
-
-    // JOY_CENTER comes from MCP#2 button — it's already handled as BTN_COUNT-related
-    // but also expose it in joystick state for convenience
-    if (buttonStates[BTN_STOP + 13]) state |= JOY_CENTER;  // MCP Port B bit 5
-
-    if (state != joystickLastState) {
-        joystickState = state;
-        joystickLastState = state;
-        if (joystickCB) joystickCB(state);
+    if (fabsf(value - faderLastValues[FADER_OUT]) > FADER_THRESHOLD) {
+        faderValues[FADER_OUT] = value;
+        faderLastValues[FADER_OUT] = value;
+        if (faderCB) faderCB(FADER_OUT, value);
     }
 }
 
@@ -412,72 +399,72 @@ uint8_t InputManager::getJoystickState() {
 // ============================================
 
 bool InputManager::mcpRead16(uint8_t addr, uint8_t reg, uint16_t& outVal) {
-    Wire.beginTransmission(addr);
-    Wire.write(reg);
-    if (Wire.endTransmission(false) != 0) {
+    UI_WIRE.beginTransmission(addr);
+    UI_WIRE.write(reg);
+    if (UI_WIRE.endTransmission(false) != 0) {
         i2cErrorCount++;
         return false;
     }
-    if (Wire.requestFrom(addr, (uint8_t)2) < 2) {
+    if (UI_WIRE.requestFrom(addr, (uint8_t)2) < 2) {
         i2cErrorCount++;
         return false;
     }
-    outVal = Wire.read();
-    outVal |= (uint16_t)Wire.read() << 8;
+    outVal = UI_WIRE.read();
+    outVal |= (uint16_t)UI_WIRE.read() << 8;
     return true;
 }
 
 bool InputManager::mcpWrite8(uint8_t addr, uint8_t reg, uint8_t value) {
-    Wire.beginTransmission(addr);
-    Wire.write(reg);
-    Wire.write(value);
-    if (Wire.endTransmission() != 0) {
+    UI_WIRE.beginTransmission(addr);
+    UI_WIRE.write(reg);
+    UI_WIRE.write(value);
+    if (UI_WIRE.endTransmission() != 0) {
         i2cErrorCount++;
         return false;
     }
     return true;
 }
 
-bool InputManager::adsReadChannel(uint8_t channel, int16_t& outVal) {
-    if (channel > 3) return false;
+bool InputManager::checkedDelta(QuadBoard* b, uint8_t enc, int32_t& delta) {
+    delta = 0;
+    if (!b->readDelta(enc, delta)) { i2cErrorCount++; delta = 0; return false; }
+    if (abs(delta) > SEESAW_MAX_DELTA) { i2cErrorCount++; delta = 0; return false; }
+    return true;
+}
 
-    // Configure ADS1115 for single-ended read on specified channel
+// Start a single-shot single-ended conversion on one channel
+bool InputManager::adsStart(uint8_t channel) {
+    if (channel > 3) return false;
     uint16_t config = ADS_CONFIG_OS
                     | ADS_CONFIG_MUX(channel)
                     | ADS_CONFIG_PGA_4V
                     | ADS_CONFIG_MODE
                     | ADS_CONFIG_DR_860
                     | ADS_CONFIG_COMP;
-
-    // Write config
-    Wire.beginTransmission(ADDR_ADS1115);
-    Wire.write(ADS_REG_CONFIG);
-    Wire.write((uint8_t)(config >> 8));
-    Wire.write((uint8_t)(config & 0xFF));
-    if (Wire.endTransmission() != 0) {
+    UI_WIRE.beginTransmission(ADDR_ADS1115);
+    UI_WIRE.write(ADS_REG_CONFIG);
+    UI_WIRE.write((uint8_t)(config >> 8));
+    UI_WIRE.write((uint8_t)(config & 0xFF));
+    if (UI_WIRE.endTransmission() != 0) {
         i2cErrorCount++;
         return false;
     }
-
-    // Wait for conversion (860 SPS ≈ 1.2ms)
-    delayMicroseconds(1200);
-
-    // Read result
-    Wire.beginTransmission(ADDR_ADS1115);
-    Wire.write(ADS_REG_CONVERT);
-    if (Wire.endTransmission(false) != 0) {
-        i2cErrorCount++;
-        return false;
-    }
-    if (Wire.requestFrom((uint8_t)ADDR_ADS1115, (uint8_t)2) < 2) {
-        i2cErrorCount++;
-        return false;
-    }
-    outVal = (int16_t)Wire.read() << 8;
-    outVal |= Wire.read();
     return true;
 }
 
-int8_t InputManager::decodeQuadrature(uint8_t oldState, uint8_t newState) {
-    return QUAD_TABLE[oldState & 0x03][newState & 0x03];
+// Read the conversion started by adsStart
+bool InputManager::adsReadResult(int16_t& outVal) {
+    UI_WIRE.beginTransmission(ADDR_ADS1115);
+    UI_WIRE.write(ADS_REG_CONVERT);
+    if (UI_WIRE.endTransmission(false) != 0) {
+        i2cErrorCount++;
+        return false;
+    }
+    if (UI_WIRE.requestFrom((uint8_t)ADDR_ADS1115, (uint8_t)2) < 2) {
+        i2cErrorCount++;
+        return false;
+    }
+    outVal = (int16_t)UI_WIRE.read() << 8;
+    outVal |= UI_WIRE.read();
+    return true;
 }

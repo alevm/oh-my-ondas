@@ -1,0 +1,29 @@
+# Proposed site block for sisyphus-infra/services/caddy/Caddyfile (NOT applied).
+# Hostname is a PROPOSAL: ondas-ws.levm.eu, via a new DOMAIN_ONDASWS in services/.env.
+# Caddy terminates TLS (Let's Encrypt) and upgrades the WebSocket transparently.
+# Device auth is app-side (Authorization: Bearer, DEVICE_TOKENS); no Authelia here, the
+# device cannot do an interactive login. Caddy redacts Authorization in access logs by default.
+
+# ── Oh My Ondas layer-2 (WebSocket for devices) ─────────────
+{$DOMAIN_ONDASWS} {
+	crowdsec
+	import security_headers
+
+	handle /healthz {
+		reverse_proxy ondas-ws:8765
+	}
+	handle {
+		reverse_proxy ondas-ws:8765 {
+			# keep device WebSockets open across Caddy config reloads
+			stream_close_delay 5m
+		}
+	}
+
+	log {
+		output file /var/log/caddy/ondas-ws.log {
+			roll_size 10MiB
+			roll_keep 2
+		}
+		format json
+	}
+}

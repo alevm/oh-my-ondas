@@ -25,7 +25,7 @@ MapDisplay::~MapDisplay() {
 }
 
 void MapDisplay::begin() {
-    oled = new Adafruit_SSD1306(OLED_WIDTH, OLED_HEIGHT, &Wire, OLED_RESET);
+    oled = new Adafruit_SSD1306(OLED_WIDTH, OLED_HEIGHT, &UI_WIRE, OLED_RESET);
     if (oled->begin(SSD1306_SWITCHCAPVCC, ADDR_SSD1306)) {
         ready = true;
         oled->clearDisplay();

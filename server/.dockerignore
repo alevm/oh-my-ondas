@@ -1,0 +1,16 @@
+.venv
+.env
+.env.*
+!.env.example
+__pycache__
+.pytest_cache
+.testdata
+data
+models
+tests
+deploy
+tools/sim_device.py
+tools/live_check.py
+tools/fetch_testdata.py
+tools/load_test.py
+tools/review_walk.py

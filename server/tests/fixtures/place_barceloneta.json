@@ -1,0 +1,56 @@
+{
+ "cell": "46062:1831",
+ "osm": {
+  "road_minor": {
+   "count": 76,
+   "nearest_m": 91
+  },
+  "road_medium": {
+   "count": 2,
+   "nearest_m": 68
+  },
+  "road_pedestrian": {
+   "count": 20,
+   "nearest_m": 31
+  },
+  "coastline": {
+   "count": 2,
+   "nearest_m": 26
+  },
+  "school": {
+   "count": 1,
+   "nearest_m": 285
+  },
+  "park": {
+   "count": 10,
+   "nearest_m": 77
+  },
+  "fountain": {
+   "count": 1,
+   "nearest_m": 153
+  },
+  "beach": {
+   "count": 2,
+   "nearest_m": 26
+  }
+ },
+ "weather": {
+  "temperature_c": 19.5,
+  "precipitation_mm": 0.0,
+  "rain_mm": 0.0,
+  "cloud_cover_pct": 46,
+  "wind_kmh": 5.6,
+  "gusts_kmh": 12.2,
+  "wind_dir_deg": 135,
+  "humidity_pct": 64,
+  "is_day": 0
+ },
+ "sun": {
+  "elevation_deg": 33.4,
+  "azimuth_deg": 151.0,
+  "phase": "day",
+  "minutes_since_sunrise": 229,
+  "minutes_to_sunset": 423
+ },
+ "_note": "built from live Overpass/Open-Meteo responses of 2026-10-21 (weather at ~23:00 local), sun at 12:00 local"
+}

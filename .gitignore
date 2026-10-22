@@ -79,3 +79,13 @@ PANEL_REVIEW*
 PENTEST*
 **/DESIGN-REVIEW.md
 **/SUPERVISOR_REVIEW.md
+
+# Layer-2 server local files
+server/.venv/
+server/.env
+server/.pytest_cache/
+server/**/__pycache__/
+server/models/
+server/.testdata/
+server/data/
+server/.env.local

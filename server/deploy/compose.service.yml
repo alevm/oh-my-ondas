@@ -1,0 +1,50 @@
+# Proposed service for sisyphus-infra/services/docker-compose.yml (NOT applied).
+# Follows the existing app pattern (jaco): build on the VPS from the project clone,
+# env_file on the VPS only, /data volume, healthcheck, 512M / 0.5 CPU limits, sisyphus network.
+# Additions beyond the jaco pattern: log rotation, read-only root fs, dropped capabilities.
+services:
+  ondas-ws:
+    build:
+      # The ohmyondas.levm.eu clone already on the VPS (Caddy serves only its web/ folder).
+      context: /opt/sisyphus/sites/ohmyondas.levm.eu/server
+      dockerfile: Dockerfile
+    image: ondas-ws:${ONDASWS_TAG:-latest}
+    container_name: sisyphus-ondas-ws
+    restart: unless-stopped
+    env_file:
+      - /opt/sisyphus/sites/ohmyondas.levm.eu/server/.env.local
+    environment:
+      PORT: "8765"
+      BIND_HOST: "0.0.0.0"
+      JOURNAL_DIR: /data/journal
+    volumes:
+      - ondas-ws-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/healthz', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - sisyphus
+
+volumes:
+  ondas-ws-data:

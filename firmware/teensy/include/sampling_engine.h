@@ -1,6 +1,8 @@
 /**
  * Oh My Ondas - Sampling Engine
- * 8-voice sample playback with touch triggers
+ * 8-voice sample playback with touch triggers (SD WAV players), plus
+ * CAPTURE_VOICES voices that play captures from memory (capture_store.h):
+ * AudioPlayCapture -> per-voice low-pass -> capture mixer -> sampleSum ch 2
  */
 
 #ifndef SAMPLING_ENGINE_H
@@ -10,6 +12,14 @@
 #include <Audio.h>
 #include <SD.h>
 #include "config.h"
+#include "play_capture.h"
+
+// Capture voices: one per layer-1 role, plus one for auditioning
+#define CAPTURE_VOICES     4
+#define CAPVOICE_RHYTHM    0
+#define CAPVOICE_TEXTURE   1
+#define CAPVOICE_MELODY    2
+#define CAPVOICE_PREVIEW   3
 
 struct Sample {
     char filename[64];
@@ -55,6 +65,22 @@ public:
     float getVolume(int slot);
     float getPitch(int slot);
 
+    // Capture voices (memory playback; tag = capture id playing)
+    void attachCaptureVoices(AudioPlayCapture* voices, AudioFilterStateVariable* filters,
+                             AudioMixer4* mix);
+    void playCapture(int voice, uint8_t tag, const int16_t* data, uint32_t start, uint32_t end,
+                     float rate, float gain);
+    void grainCapture(int voice, uint8_t tag, const int16_t* data, uint32_t length,
+                      float density, float rate, float gain);
+    void setCaptureDensity(int voice, float density);
+    void setCaptureGain(int voice, float gain);
+    void setCaptureFilter(int voice, float hz);
+    void setCaptureLevel(float level);          // whole capture layer
+    void stopCaptureVoice(int voice);
+    void stopCaptureTag(uint8_t tag);           // every voice playing this capture
+    bool isCaptureVoicePlaying(int voice);
+    uint8_t getCaptureVoiceTag(int voice);
+
     // Bank management
     void loadBank(int bankNumber);
     void saveBank(int bankNumber);
@@ -66,6 +92,10 @@ private:
 
     AudioPlaySdWav* players;
     AudioAmplifier* amps;
+
+    AudioPlayCapture*         capVoices;
+    AudioFilterStateVariable* capFilters;
+    AudioMixer4*              capMix;
 
     void initializeSample(int slot);
     bool validateSlot(int slot);

@@ -1,12 +1,12 @@
 /**
  * Oh My Ondas - LCD Display Driver
- * ILI9488 5" 480×320 SPI LCD — main UI display
+ * Adafruit 2.8" ILI9341 320x240 on SPI1 — main UI display
  *
- * Uses ILI9341_t3 library (Teensy-optimized, works with ILI9488 in 16-bit mode)
- * Screens: MAIN, PATTERN, FX, SYNTH, SCENE, MIXER, SETTINGS, MESSAGE
- *
- * NOTE: ILI9341_t3.h is only included in lcd_display.cpp to avoid
- * Adafruit_GFX_Button class redefinition conflict with Adafruit_SSD1306.
+ * Uses Adafruit_ILI9341 (the driver proven on the bench with SPI1 pins).
+ * Screens: MAIN, PATTERN, FX, SYNTH, SCENE, MIXER, SETTINGS, RADIO, SENSE, MESSAGE
+ * SENSE: live layer-1 stats (bands, features, radio, link, CPU/memory, plan);
+ * its text is redrawn character by character, only where it changed.
+ * Header: link indicator "W S" (WiFi, server) from MSG_LINK_STATE.
  */
 
 #ifndef LCD_DISPLAY_H
@@ -17,13 +17,21 @@
 #include "system_state.h"
 
 // Forward declarations — avoids header conflict
-class ILI9341_t3;
+class Adafruit_ILI9341;
 class Sequencer;
 class FXEngine;
 class SamplingEngine;
 class SynthVoice;
 class SceneManager;
 class InputManager;
+class Radio;
+class FeatureExtractor;
+class CaptureStore;
+class EspLink;
+class PlanRenderer;
+class ContinuousMapper;
+class MidiIO;
+class MotionSensors;
 
 // Color palette (RGB565)
 #define COL_BG        0x0000  // Black
@@ -48,6 +56,8 @@ enum LCDScreen {
     LCD_SCENE,
     LCD_MIXER,
     LCD_SETTINGS,
+    LCD_RADIO,
+    LCD_SENSE,
     LCD_COUNT
 };
 
@@ -61,6 +71,13 @@ public:
                 SamplingEngine& sampler, SynthVoice& synth,
                 SceneManager& scenes, InputManager& input);
 
+    void setRadio(Radio* r) { radio = r; }
+    void setSense(FeatureExtractor* fe, CaptureStore* cs, EspLink* link,
+                  PlanRenderer* pr, ContinuousMapper* mp, MidiIO* midi) {
+        features = fe; captures = cs; espLink = link; renderer = pr; mapper = mp; midiIO = midi;
+    }
+    void setMotion(MotionSensors* m, const bool* gestures) { motion = m; gesturesOn = gestures; }
+    void setI2CScan(const char* s) { i2cScan = s; }
     void setScreen(LCDScreen screen);
     LCDScreen getScreen();
 
@@ -69,7 +86,26 @@ public:
     void invalidate();
 
 private:
-    ILI9341_t3* tft;
+    Adafruit_ILI9341* tft;
+    Radio*   radio;
+    char     lastRadioSig[48];   // redraw the RAD screen only when this changes
+    FeatureExtractor* features;
+    CaptureStore*     captures;
+    EspLink*          espLink;
+    PlanRenderer*     renderer;
+    ContinuousMapper* mapper;
+    MidiIO*           midiIO;
+    MotionSensors*    motion;
+    const bool*       gesturesOn;
+    const char*       i2cScan;      // boot scan of Wire2, shown on SENSE
+    int      lastLinkSig;        // header link indicator
+    uint32_t lastSenseFrame;
+    static const int SENSE_LINES = 16;
+    static const int SENSE_COLS  = 53;
+    char     senseText[SENSE_LINES][SENSE_COLS + 1];
+    uint16_t senseColor[SENSE_LINES];
+    int8_t   senseBars[32 + 12];  // drawn heights of band + chroma bars
+    unsigned long lastHealthCheck;
     LCDScreen currentScreen;
     LCDScreen lastScreen;
     bool needsFullRedraw;
@@ -96,7 +132,12 @@ private:
     void drawMixerScreen(SystemState& state, SamplingEngine& sampler,
                          InputManager& input);
     void drawSettingsScreen(SystemState& state);
+    void drawRadioScreen();
+    void drawSenseScreen();
+    void senseLine(int line, uint16_t color, const char* fmt, ...);
+    void drawLinkIndicator();
     void drawMessageOverlay();
+    void checkHealth();
 
     void drawBar(int x, int y, int w, int h, float value, uint16_t fg, uint16_t bg);
     void drawStepGrid(int x, int y, Sequencer& seq, int track);

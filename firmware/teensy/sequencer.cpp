@@ -18,6 +18,9 @@ Sequencer::Sequencer()
     , stepInterval(125)
     , swingOffset(0)
     , triggerCallback(nullptr)
+    , stepCallback(nullptr)
+    , barCount(0)
+    , globalProb(1.0f)
 {
     clearPattern();
     memset(triggerCounts, 0, sizeof(triggerCounts));
@@ -51,7 +54,12 @@ void Sequencer::update() {
     }
 
     if (now - lastStepTime >= effectiveInterval) {
-        lastStepTime = now;
+        // Advance by the interval, not to now: no drift from loop latency.
+        // More than 2 steps behind (loop blocked, tempo change): resync.
+        lastStepTime += effectiveInterval;
+        if (now - lastStepTime > 2 * stepInterval) lastStepTime = now;
+
+        if (stepCallback) stepCallback(currentStep);
 
         // Check if any track is soloed
         bool anySoloed = false;
@@ -68,7 +76,9 @@ void Sequencer::update() {
             if (anySoloed && !pattern.tracks[track].soloed) continue;
 
             if (evaluateTrigCondition(track, currentStep)) {
-                triggerStep(track, currentStep);
+                if (globalProb >= 1.0f || (long)random(1000) < (long)(globalProb * 1000.0f)) {
+                    triggerStep(track, currentStep);
+                }
             }
         }
 
@@ -77,6 +87,7 @@ void Sequencer::update() {
 
         if (currentStep == 0) {
             memset(triggerCounts, 0, sizeof(triggerCounts));
+            barCount++;
         }
     }
 }
@@ -150,6 +161,7 @@ void Sequencer::applyParamLocks(int track, int step) {
 // Transport controls
 void Sequencer::start() {
     running = true;
+    barCount = 0;
     lastStepTime = millis();
     DEBUG_PRINTLN("Sequencer: Started");
 }
@@ -159,6 +171,11 @@ void Sequencer::stop() {
     currentStep = 0;
     memset(triggerCounts, 0, sizeof(triggerCounts));
     DEBUG_PRINTLN("Sequencer: Stopped");
+}
+
+void Sequencer::resume() {
+    running = true;
+    lastStepTime = millis();
 }
 
 void Sequencer::pause() {

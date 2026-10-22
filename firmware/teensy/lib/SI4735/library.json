@@ -1,0 +1,10 @@
+{
+  "name": "SI4735",
+  "version": "2.1.8+ohmyondas",
+  "description": "PU2CLR SI4735 2.1.8, patched to take a TwoWire bus (see README-OHMYONDAS.md)",
+  "license": "MIT",
+  "frameworks": "arduino",
+  "build": {
+    "flags": "-Wno-misleading-indentation -Wno-maybe-uninitialized"
+  }
+}

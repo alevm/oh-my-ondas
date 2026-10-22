@@ -1,24 +1,31 @@
 /**
- * Oh My Ondas - ESP32 Configuration Template
+ * Oh My Ondas - ESP32-S2 bridge configuration TEMPLATE (tracked, placeholders only)
  *
- * Copy this file to config.h and fill in your values.
- * config.h is gitignored — never commit real credentials.
+ *   cp config.example.h config.h      # then edit config.h
+ *
+ * config.h is gitignored (firmware/esp32/config.h in .gitignore).
+ * Never put real credentials in this file.
  */
+#pragma once
 
-#ifndef OHMYONDAS_CONFIG_H
-#define OHMYONDAS_CONFIG_H
+// WiFi networks, tried in order of signal strength (WiFiMulti).
+// First entry: the phone hotspot.
+#define WIFI_NETWORKS { \
+    { "PHONE_HOTSPOT_SSID", "PHONE_HOTSPOT_PASSWORD" }, \
+    { "HOME_SSID",          "HOME_PASSWORD" },          \
+}
 
-// WiFi credentials
-#define WIFI_SSID "your_wifi"
-#define WIFI_PASS "your_pass"
+// Server: secure WebSocket URL (wss only). Port defaults to 443.
+// The server certificate must chain to a root in src/server_ca.h.
+#define SERVER_URL   "wss://SERVER.EXAMPLE/device"
 
-// API key — leave empty if not using cloud AI features
-#define CLAUDE_API_KEY ""
+// Per-device token, sent as "Authorization: Bearer <token>".
+#define DEVICE_TOKEN "REPLACE_WITH_DEVICE_TOKEN"
 
-// WiFi connection timeout (milliseconds)
-#define WIFI_CONNECT_TIMEOUT_MS 15000
+// WiFi density scan (MSG_RF: AP count, RSSI median/max, APs per channel;
+// never SSIDs or MACs). Seconds between passive scans.
+#define RF_SCAN_INTERVAL_S           10   // WiFi down / joining
+#define RF_SCAN_INTERVAL_CONNECTED_S 10   // connected; raise to 30 if the link suffers
 
-// GPS validity timeout (milliseconds) — mark fix stale after this
-#define GPS_VALIDITY_TIMEOUT_MS 10000
-
-#endif // OHMYONDAS_CONFIG_H
+// UART baud: set LINK_USE_FALLBACK_BAUD in firmware/common/link_protocol.h
+// (shared by the Teensy and the ESP32, so both sides always match).

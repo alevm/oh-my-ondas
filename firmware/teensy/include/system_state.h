@@ -14,6 +14,13 @@ struct GPSState {
     float lon = 0.0f;
     bool valid = false;
     unsigned long lastUpdate = 0;
+    // Filled from the PA1010D (for MSG_GPS)
+    float altM = 0.0f;
+    float speedKnots = 0.0f;
+    float headingDeg = 0.0f;
+    uint8_t fixQuality = 0;      // 0 none, 1 GPS, 2 DGPS
+    uint8_t sats = 0;
+    uint32_t utc = 0;            // unix seconds, 0 if unknown
 };
 
 struct SystemState {

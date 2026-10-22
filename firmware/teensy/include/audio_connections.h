@@ -3,8 +3,9 @@
  * All AudioConnection patch cords wiring the signal chain:
  *
  * Sample Players [0-7] → filters → amps → playerMixers → sampleSum
+ * Capture voices [0-3] → capFilters → capMix → sampleSum ch 2
  * Synth (osc1+osc2+noise) → synthMixer → synthFilter → synthEnv → synthAmp
- * Audio Input → inputMixer
+ * Audio Input → inputMixer, and → fftIn + senseL/senseR (layer 1 features)
  * sampleSum + synthAmp + inputMixer → masterMix
  * masterMix → fxSend → delay/reverb/bitcrusher/granular/chorus → fxReturn
  * masterMix (dry) + fxReturn (wet) → outputMixer → audioOutput + recorder + peak/fft
@@ -51,6 +52,17 @@ AudioConnection pc_a7m(amp[7], 0, playerMixR, 3);
 AudioConnection pc_plS(playerMixL, 0, sampleSum, 0);
 AudioConnection pc_prS(playerMixR, 0, sampleSum, 1);
 
+// Capture voices (memory) → low-pass → capture mixer → sample sum ch 2
+AudioConnection pc_cv0(capVoice[0], 0, capFilter[0], 0);
+AudioConnection pc_cv1(capVoice[1], 0, capFilter[1], 0);
+AudioConnection pc_cv2(capVoice[2], 0, capFilter[2], 0);
+AudioConnection pc_cv3(capVoice[3], 0, capFilter[3], 0);
+AudioConnection pc_cf0(capFilter[0], 0, capMix, 0);
+AudioConnection pc_cf1(capFilter[1], 0, capMix, 1);
+AudioConnection pc_cf2(capFilter[2], 0, capMix, 2);
+AudioConnection pc_cf3(capFilter[3], 0, capMix, 3);
+AudioConnection pc_cmS(capMix, 0, sampleSum, 2);
+
 // ============================================
 // Synth voice chain
 // ============================================
@@ -71,6 +83,11 @@ AudioConnection pc_sfe(synthFilter, 0, synthEnv, 0);
 // Audio input L+R → input mixer
 AudioConnection pc_inL(audioInput, 0, inputMixer, 0);
 AudioConnection pc_inR(audioInput, 1, inputMixer, 1);
+
+// Audio input → layer 1 sensing (FFT + taps on the raw inputs)
+AudioConnection pc_inFft(audioInput, 0, fftIn, 0);
+AudioConnection pc_inSL(audioInput, 0, senseL, 0);
+AudioConnection pc_inSR(audioInput, 1, senseR, 0);
 
 // ============================================
 // Master mix (dry path)

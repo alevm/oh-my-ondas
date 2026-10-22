@@ -9,6 +9,9 @@ SamplingEngine::SamplingEngine()
     : currentBank(0)
     , players(nullptr)
     , amps(nullptr)
+    , capVoices(nullptr)
+    , capFilters(nullptr)
+    , capMix(nullptr)
 {
     for (int i = 0; i < MAX_TRACKS; i++) {
         initializeSample(i);
@@ -142,6 +145,7 @@ void SamplingEngine::stopAll() {
     for (int i = 0; i < MAX_TRACKS; i++) {
         stop(i);
     }
+    for (int v = 0; v < CAPTURE_VOICES; v++) stopCaptureVoice(v);
     DEBUG_PRINTLN("SamplingEngine: Stopped all");
 }
 
@@ -202,6 +206,70 @@ float SamplingEngine::getVolume(int slot) {
 float SamplingEngine::getPitch(int slot) {
     if (!validateSlot(slot)) return 1.0f;
     return samples[slot].pitch;
+}
+
+// ============================================
+// CAPTURE VOICES
+// ============================================
+
+void SamplingEngine::attachCaptureVoices(AudioPlayCapture* voices, AudioFilterStateVariable* filters,
+                                         AudioMixer4* mix) {
+    capVoices = voices;
+    capFilters = filters;
+    capMix = mix;
+    for (int v = 0; v < CAPTURE_VOICES; v++) {
+        if (capFilters) { capFilters[v].frequency(12000); capFilters[v].resonance(0.7); }
+        if (capMix) capMix->gain(v, 0.6f);
+    }
+}
+
+void SamplingEngine::playCapture(int voice, uint8_t tag, const int16_t* data, uint32_t start,
+                                 uint32_t end, float rate, float gain) {
+    if (!capVoices || voice < 0 || voice >= CAPTURE_VOICES) return;
+    capVoices[voice].playSlice(data, start, end, rate, gain);
+    capVoices[voice].tag = tag;
+}
+
+void SamplingEngine::grainCapture(int voice, uint8_t tag, const int16_t* data, uint32_t length,
+                                  float density, float rate, float gain) {
+    if (!capVoices || voice < 0 || voice >= CAPTURE_VOICES) return;
+    capVoices[voice].startGrains(data, length, density, 90.0f, rate, gain);
+    capVoices[voice].tag = tag;
+}
+
+void SamplingEngine::setCaptureDensity(int voice, float density) {
+    if (capVoices && voice >= 0 && voice < CAPTURE_VOICES) capVoices[voice].setDensity(density);
+}
+
+void SamplingEngine::setCaptureGain(int voice, float gain) {
+    if (capVoices && voice >= 0 && voice < CAPTURE_VOICES) capVoices[voice].setGain(gain);
+}
+
+void SamplingEngine::setCaptureFilter(int voice, float hz) {
+    if (capFilters && voice >= 0 && voice < CAPTURE_VOICES) capFilters[voice].frequency(constrain(hz, 40.0f, 18000.0f));
+}
+
+void SamplingEngine::setCaptureLevel(float level) {
+    if (!capMix) return;
+    for (int v = 0; v < CAPTURE_VOICES; v++) capMix->gain(v, constrain(level, 0.0f, 1.0f));
+}
+
+void SamplingEngine::stopCaptureVoice(int voice) {
+    if (capVoices && voice >= 0 && voice < CAPTURE_VOICES) capVoices[voice].stop();
+}
+
+void SamplingEngine::stopCaptureTag(uint8_t tag) {
+    if (!capVoices || tag == 0) return;
+    // Memory about to be reused: cut at once, no fade reading it
+    for (int v = 0; v < CAPTURE_VOICES; v++) if (capVoices[v].tag == tag) capVoices[v].stopNow();
+}
+
+bool SamplingEngine::isCaptureVoicePlaying(int voice) {
+    return capVoices && voice >= 0 && voice < CAPTURE_VOICES && capVoices[voice].isPlaying();
+}
+
+uint8_t SamplingEngine::getCaptureVoiceTag(int voice) {
+    return (capVoices && voice >= 0 && voice < CAPTURE_VOICES) ? capVoices[voice].tag : 0;
 }
 
 void SamplingEngine::loadBank(int bankNumber) {
