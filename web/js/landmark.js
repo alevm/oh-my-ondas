@@ -58,7 +58,7 @@ class Landmark {
             if (typeof data === 'object') {
                 try {
                     text += ' ' + JSON.stringify(data);
-                } catch (e) {
+                } catch {
                     text += ' [Object]';
                 }
             } else {

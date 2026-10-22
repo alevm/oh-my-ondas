@@ -189,7 +189,7 @@ class ChannelFX {
             this.delayFeedback.disconnect();
             this.wetGain.disconnect();
             this.outputNode.disconnect();
-        } catch (e) {}
+        } catch {}
     }
 }
 

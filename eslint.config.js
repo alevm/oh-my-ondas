@@ -10,6 +10,12 @@ export default [
                 ...globals.browser,
                 AudioContext: "readonly",
                 webkitAudioContext: "readonly",
+                // Leaflet, loaded via vendor/leaflet/leaflet.js in app.html
+                L: "readonly",
+                // Cross-file globals from classic <script> tags (see app.html load order)
+                escapeHtml: "readonly",   // js/utils.js
+                GPSTracker: "readonly",   // js/gps.js
+                ChannelFX: "readonly",    // js/channel-fx.js
             },
         },
         rules: {

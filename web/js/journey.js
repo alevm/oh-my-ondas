@@ -280,7 +280,7 @@ class Journey {
                         distance: data.stats?.distance || 0,
                         waypoints: data.stats?.waypointCount || 0
                     });
-                } catch (e) {}
+                } catch {}
             }
         }
         return journeys.sort((a, b) => b.key.localeCompare(a.key));
@@ -422,7 +422,7 @@ class Journey {
                               data.address.village || '';
                 wp.locationName = place || `${pos.lat.toFixed(4)}, ${pos.lon.toFixed(4)}`;
             }
-        } catch (e) {
+        } catch {
             wp.locationName = `${pos.lat.toFixed(4)}, ${pos.lon.toFixed(4)}`;
         }
 

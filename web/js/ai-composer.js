@@ -665,7 +665,6 @@ class AIComposer {
 
     // Generate a complete arrangement with multiple scenes
     generateArrangement(numScenes = 4, barsPerScene = 4) {
-        const vibes = ['calm', 'urban', 'nature', 'chaos'];
         const vibeProgression = this.createVibeProgression(numScenes);
 
         console.log('Generating arrangement with vibes:', vibeProgression);

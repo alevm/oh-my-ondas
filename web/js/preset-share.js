@@ -323,7 +323,7 @@ class PresetShare {
                         }
                         this.applyPreset(preset);
                         resolve(preset);
-                    } catch (err) {
+                    } catch {
                         reject(new Error('Invalid preset file'));
                     }
                 };

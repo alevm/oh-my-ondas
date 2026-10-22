@@ -193,7 +193,7 @@ class MidiIO {
         }
     }
 
-    handleNoteOff(channel, note) {
+    handleNoteOff(_channel, _note) {
         // Currently triggerNote is fire-and-forget with ADSR,
         // so note off is a no-op for now
     }
@@ -259,7 +259,7 @@ class MidiIO {
         }
     }
 
-    applySamplerCC(param, value) {
+    applySamplerCC(_param, _value) {
         // Future: sample pitch, filter per pad, etc.
     }
 
@@ -337,7 +337,7 @@ class MidiIO {
         try {
             const stored = localStorage.getItem('ohmyondas_midi_cc_mappings');
             return stored ? JSON.parse(stored) : {};
-        } catch (e) {
+        } catch {
             return {};
         }
     }

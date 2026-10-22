@@ -31,7 +31,7 @@ class AnalysisPage {
             document.getElementById('noData').style.display = 'none';
             document.getElementById('analysisContent').style.display = '';
             this.renderAll();
-        } catch(e) {
+        } catch {
             // Ignore parse errors
         }
     }
@@ -261,8 +261,6 @@ class AnalysisPage {
         // Mixer card
         const mixer = this.state.mixer || {};
         const eq = this.state.eq || {};
-        const mutes = this.state.trackMutes || [];
-        const solos = this.state.trackSolos || [];
         const chNames = ['mic', 'samples', 'synth', 'radio'];
         let mixHtml = '';
 

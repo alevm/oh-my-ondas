@@ -303,7 +303,7 @@ class RadioPlayer {
                 recorder.onstop = async () => {
                     try {
                         this.radioGain.disconnect(dest);
-                    } catch (e) {}
+                    } catch {}
                     const blob = new Blob(chunks, { type: recorder.mimeType });
                     const arrayBuffer = await blob.arrayBuffer();
                     const audioBuffer = await ctx.decodeAudioData(arrayBuffer);

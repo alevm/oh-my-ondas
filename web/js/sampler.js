@@ -261,7 +261,7 @@ class Sampler {
         if (source) {
             try {
                 source.stop();
-            } catch (e) {
+            } catch {
                 // Already stopped
             }
             this.activeSources.delete(padIndex);
@@ -269,10 +269,10 @@ class Sampler {
     }
 
     stopAll() {
-        for (const [index, source] of this.activeSources) {
+        for (const [, source] of this.activeSources) {
             try {
                 source.stop();
-            } catch (e) {}
+            } catch {}
         }
         this.activeSources.clear();
     }

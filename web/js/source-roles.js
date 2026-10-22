@@ -121,7 +121,7 @@ class SourceRoleManager {
 
     // --- Role strategies ---
 
-    _rhythmFromSampler(trackIndex) {
+    _rhythmFromSampler(_trackIndex) {
         // Default behavior - sampler drums are already rhythmic
     }
 
@@ -138,11 +138,11 @@ class SourceRoleManager {
         }
     }
 
-    _rhythmFromRadio(trackIndex) {
+    _rhythmFromRadio(_trackIndex) {
         // Radio pulsed rhythmically via channel gating (default sequencer behavior)
     }
 
-    _rhythmFromMic(trackIndex) {
+    _rhythmFromMic(_trackIndex) {
         // Mic pulsed rhythmically via channel gating
     }
 
@@ -198,7 +198,7 @@ class SourceRoleManager {
         }
     }
 
-    _melodyFromSynth(trackIndex) {
+    _melodyFromSynth(_trackIndex) {
         // Synth is the natural melody source - pitch P-Locks handled by AI composer
     }
 
@@ -216,15 +216,15 @@ class SourceRoleManager {
         }
     }
 
-    _melodyFromRadio(trackIndex) {
+    _melodyFromRadio(_trackIndex) {
         // Radio melody: gate with pitch-suggestive timing
     }
 
-    _melodyFromMic(trackIndex) {
+    _melodyFromMic(_trackIndex) {
         // Mic melody: gate with pitch-suggestive timing
     }
 
-    _modulationFromMic(trackIndex) {
+    _modulationFromMic(_trackIndex) {
         // Set up amplitude-to-parameter modulation route
         this.modulationRoutes.push({
             sourceChannel: 'mic',
@@ -234,7 +234,7 @@ class SourceRoleManager {
         });
     }
 
-    _modulationFromRadio(trackIndex) {
+    _modulationFromRadio(_trackIndex) {
         this.modulationRoutes.push({
             sourceChannel: 'radio',
             targetChannel: 'synth',
@@ -243,7 +243,7 @@ class SourceRoleManager {
         });
     }
 
-    _modulationFromSynth(trackIndex) {
+    _modulationFromSynth(_trackIndex) {
         this.modulationRoutes.push({
             sourceChannel: 'synth',
             targetChannel: 'samples',
@@ -252,7 +252,7 @@ class SourceRoleManager {
         });
     }
 
-    _modulationFromSampler(trackIndex) {
+    _modulationFromSampler(_trackIndex) {
         this.modulationRoutes.push({
             sourceChannel: 'samples',
             targetChannel: 'radio',

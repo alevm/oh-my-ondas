@@ -1,4 +1,5 @@
 // Oh My Ondas - Shared Utilities
+/* exported escapeHtml */
 
 /**
  * Escape HTML special characters to prevent XSS.

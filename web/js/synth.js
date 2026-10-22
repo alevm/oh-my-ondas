@@ -206,7 +206,7 @@ class Synth {
         if (!this.lfoGain) return;
 
         // Disconnect existing connections
-        try { this.lfoGain.disconnect(); } catch(e) {}
+        try { this.lfoGain.disconnect(); } catch {}
 
         const ctx = window.audioEngine?.getContext();
         if (!ctx) return;
@@ -263,7 +263,7 @@ class Synth {
                 this.analyser.disconnect();
                 this.analyser = null;
             }
-        } catch (e) {}
+        } catch {}
 
         this.playing = false;
     }

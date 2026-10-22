@@ -129,7 +129,7 @@ class SoundscapeAnalyzer {
         if (this.persistentAnalyser) {
             try {
                 window.audioEngine?.channels?.mic?.gain?.disconnect(this.persistentAnalyser);
-            } catch (e) {}
+            } catch {}
             this.persistentAnalyser = null;
         }
 
@@ -218,7 +218,7 @@ class SoundscapeAnalyzer {
         });
 
         // Disconnect analyser (non-destructive tap)
-        try { ae.channels.mic.gain.disconnect(analyser); } catch (e) {}
+        try { ae.channels.mic.gain.disconnect(analyser); } catch {}
         this.analyzing = false;
 
         // Process collected data

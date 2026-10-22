@@ -73,7 +73,7 @@ class MicInput {
                 recorder.onstop = async () => {
                     try {
                         this.micGain.disconnect(dest);
-                    } catch (e) {}
+                    } catch {}
                     // Re-connect mic to its channel (disconnect may have severed it)
                     window.audioEngine.connectToChannel(this.micGain, 'mic');
                     const blob = new Blob(chunks, { type: recorder.mimeType });

@@ -45,7 +45,7 @@ class App {
         try {
             const saved = localStorage.getItem('ohmyondas_settings');
             return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
-        } catch (e) {
+        } catch {
             return defaults;
         }
     }
@@ -113,7 +113,7 @@ class App {
         this.updateGPS();
 
         // Recording handler
-        window.sessionRecorder.onRecordingComplete = (recording) => {
+        window.sessionRecorder.onRecordingComplete = (_recording) => {
             console.log('Recording saved');
             this.updateRecordingsList();
             this.updateRecCount();
@@ -606,8 +606,6 @@ class App {
 
     // Octatrack-style sequencer
     setupOctaTrackSequencer() {
-        const octTracks = document.getElementById('octTracks');
-        const numTracks = this.settings.seqTracks;
 
         // Register callback for pattern changes
         window.sequencer.onPatternChange = () => {
@@ -750,7 +748,7 @@ class App {
 
                 // Long press for P-Lock editor (mobile)
                 let longPressTimer;
-                step.addEventListener('touchstart', (e) => {
+                step.addEventListener('touchstart', (_e) => {
                     longPressTimer = setTimeout(() => {
                         this.openPLockEditor(t, s);
                     }, 500);
@@ -974,7 +972,6 @@ class App {
 
     // P-Lock Editor
     setupPLockEditor() {
-        const editor = document.getElementById('plockEditor');
         const closeBtn = document.getElementById('plockClose');
 
         // Close button
@@ -1314,7 +1311,7 @@ class App {
         const tapBtn2 = document.getElementById('btnTap2');
         const tapBtnE = document.getElementById('btnTapE');
 
-        const handleTap = (btn) => {
+        const handleTap = (_btn) => {
             const now = performance.now();
 
             // Reset if more than 2 seconds since last tap
@@ -2012,7 +2009,6 @@ class App {
 
     // Resizable columns
     setupResizableColumns() {
-        const device = document.querySelector('.device');
         const cols = document.querySelectorAll('.col-mixer, .col-seq, .col-mid');
 
         // Add resize handles to columns (except last)
@@ -2575,7 +2571,6 @@ class App {
         const sceneBtns = document.querySelectorAll('.scenes-panel .scene-btn');
         const saveBtn = document.getElementById('saveScene');
         const crossfader = document.getElementById('sceneCrossfader');
-        const scopeSelect = document.getElementById('sceneScope');
         const xfadeLeft = document.getElementById('xfadeLeft');
         const xfadeRight = document.getElementById('xfadeRight');
 
@@ -3793,7 +3788,7 @@ class App {
         if (!list || !ps) return;
 
         list.innerHTML = '';
-        ps.getGallery().forEach((preset, i) => {
+        ps.getGallery().forEach((preset) => {
             const item = document.createElement('div');
             item.className = 'preset-gallery-item';
             item.title = preset.description;
@@ -3946,7 +3941,7 @@ class App {
             scenes: window.sceneManager?.scenes,
             arrangement: window.arrangement?.blocks
         };
-        try { localStorage.setItem('ohmyondas_analysis', JSON.stringify(state)); } catch(e) {}
+        try { localStorage.setItem('ohmyondas_analysis', JSON.stringify(state)); } catch {}
     }
 }
 

@@ -34,7 +34,7 @@ class SessionRecorder {
                 mimeType: mimeType,
                 audioBitsPerSecond: 128000
             });
-        } catch (e) {
+        } catch {
             // Fallback without options
             this.mediaRecorder = new MediaRecorder(stream);
         }
@@ -227,7 +227,7 @@ class SessionRecorder {
 
         try {
             localStorage.setItem('ohmyondas_recordings', JSON.stringify(metadata));
-        } catch (e) {
+        } catch {
             console.warn('Could not save recordings to localStorage');
         }
     }
@@ -244,7 +244,7 @@ class SessionRecorder {
                     expired: true
                 }));
             }
-        } catch (e) {
+        } catch {
             this.recordings = [];
         }
     }

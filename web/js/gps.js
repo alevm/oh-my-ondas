@@ -146,7 +146,7 @@ class GPSTracker {
     }
 
     // Get static map image URL
-    getMapImageUrl(width = 400, height = 300) {
+    getMapImageUrl(_width = 400, _height = 300) {
         if (!this.currentPosition) return null;
 
         const lat = this.currentPosition.latitude;

@@ -56,8 +56,7 @@ class MidiExport {
     }
 
     // Build a single MIDI track from sequencer track data
-    buildTrack(trackData, trackIndex, patternLength, source, tempo) {
-        const events = [];
+    buildTrack(trackData, trackIndex, patternLength, source, _tempo) {
         const ticksPerStep = this.TICKS_PER_BEAT / 4; // 16th notes
 
         // Source-based MIDI mapping
