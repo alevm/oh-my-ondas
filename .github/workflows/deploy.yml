@@ -3,7 +3,7 @@ name: Deploy to Sisyphus
 # Push to main -> signed call to the Sisyphus deploy-static webhook -> the VPS
 # pulls main into /opt/sisyphus/sites/ohmyondas.levm.eu and Caddy serves web/.
 # Secret DEPLOY_SECRET (= DEPLOY_SECRET_OHMYONDAS on the VPS) lives only in the
-# "production" environment: each run waits for Andrea's approval, main only.
+# "production" environment (main only, no reviewer: push deploys on its own).
 
 on:
   push:
