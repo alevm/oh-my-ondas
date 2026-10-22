@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Breadboard prototype for Oh My Ondas v1: Teensy 4.1 pin map past the Audio Shield, Wire2 I2C address map, breadboard zones, wiring tables and build order.">
-    <meta property="og:title" content="Breadboard Prototype - Oh My Ondas">
-    <meta property="og:description" content="Full v1 breadboard layout: pins 24-41, Wire2 bus, SPI1 LCD, radio, mic, faders, encoders, pads.">
-    <title>Breadboard Prototype - Oh My Ondas</title>
+    <meta name="description" content="Perma-Proto prototype for Oh My Ondas v1: Teensy 4.1 pin map past the Audio Shield, Wire2 I2C address map, board row plan, wiring tables and build order.">
+    <meta property="og:title" content="Prototype v1 - Oh My Ondas">
+    <meta property="og:description" content="Full v1 Perma-Proto layout: pins 24-41, Wire2 bus, SPI1 LCD, radio, mic, faders, encoders, pads.">
+    <title>Prototype v1 - Oh My Ondas</title>
     <link rel="stylesheet" href="css/style.css?v=257">
     <style>
         body { overflow: auto; }
@@ -117,6 +117,12 @@
         h2.bb-h { margin: 30px 0 8px; font-size: 20px; }
         .page-content ol li, .page-content ul li { margin: 4px 0; line-height: 1.5; }
         .tag-opt { color: #777; font-size: 12px; }
+        .st { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 4px; margin: 0 4px 2px 0; vertical-align: 1px; white-space: nowrap; }
+        .st-own { background: #e8f5e9; color: #1b5e20; }
+        .st-ord { background: #e3f2fd; color: #0d47a1; }
+        .st-buy { background: #fff3e0; color: #e65100; }
+        .st-later { background: #eceff1; color: #455a64; }
+        .st-opt { background: #f5f5f5; color: #666; }
     </style>
     <script defer src="https://analytics.levm.eu/script.js" data-website-id="efecfc31-cd39-46d0-88c4-3a063ee7ec78"></script>
 </head>
@@ -143,8 +149,8 @@
         </nav>
 
         <main class="page-content">
-            <h1 class="page-title">Breadboard Prototype v1</h1>
-            <p class="page-subtitle">Full prototype #1 on two 830-point breadboards &middot; October 2026 &middot; draft for review</p>
+            <h1 class="page-title">Prototype v1 (Perma-Proto)</h1>
+            <p class="page-subtitle">Full prototype #1 on one Perma-Proto + a front panel board (bench copy on the EIC-104 breadboard) &middot; October 2026 &middot; draft for review</p>
 
             <div class="bb-note">
                 <strong>Why this layout:</strong> with the Audio Shield under the Teensy, pins 0&ndash;23 sit inside the shield sockets.
@@ -153,12 +159,12 @@
                 The LCD board stays <em>off</em> the breadboard (lesson from the white-screen debugging).
             </div>
             <div class="bb-note">
-                <strong>Replaces the earlier layout</strong> (v0.3: pins 0&ndash;23, ESP32, NeoPixels, Diotronic BOM), which assumed every Teensy pin was reachable.
+                <strong>Replaces the earlier layout</strong> (v0.3: pins 0&ndash;23, 5&Prime; ILI9488 on SPI0, 13 encoders, 19 buttons, joystick, NeoPixel ring), which assumed every Teensy pin was reachable.
                 Purchases now live on the <a href="bom.html">BOM page</a>; the old diagram is in the git history.
             </div>
             <div class="bb-note">
-                <strong>Draft:</strong> the firmware pin map in <code>config.h</code> and the assembly guide still describe the old plan.
-                They get updated once this layout is approved. The Si4732 pinout is to be confirmed from the Skyworks datasheet before soldering.
+                <strong>Firmware:</strong> <code>config.h</code> (firmware v0.4.0) follows this layout: all UI I2C on Wire2, LCD on SPI1, 7 encoders on the two Quad boards, fader 5 on pin 40, ESP32-S2 on Serial7 (link protocol v4). Nav: the ANO I2C board (0x4B) <em>or</em> 5 buttons on MCP GPA0&ndash;4, read together; 4 buttons on GPB0&ndash;3. MPU9250 / AK8963 / BMP280 drivers on Wire2 are ready for when those parts are fitted. It builds; it has not run on the hardware yet.
+                The <a href="assembly.html">assembly guide</a> still describes the old v0.3 plan. Si4732 pins below are from the Skyworks datasheet (SOIC-16, Sept 2021); crystal pins from the PU2CLR Si4732-A10 reference schematic.
             </div>
 
             <h2 class="bb-h">Overview</h2>
@@ -189,9 +195,9 @@
       <text x="10" y="186" text-anchor="end" fill="#c62828">3V3</text>
       <text x="10" y="198" text-anchor="end">24</text><text x="10" y="210" text-anchor="end">25</text>
       <text x="10" y="222" text-anchor="end">26</text><text x="10" y="234" text-anchor="end">27</text>
-      <text x="10" y="246" text-anchor="end" fill="#999">28</text><text x="10" y="258" text-anchor="end" fill="#999">29</text>
+      <text x="10" y="246" text-anchor="end">28</text><text x="10" y="258" text-anchor="end">29</text>
       <text x="10" y="270" text-anchor="end" fill="#999">30</text><text x="10" y="282" text-anchor="end" fill="#999">31</text>
-      <text x="10" y="294" text-anchor="end" fill="#999">32</text>
+      <text x="10" y="294" text-anchor="end">32</text>
       <text x="160" y="186" fill="#333">G</text>
       <text x="160" y="198">41</text><text x="160" y="210">40</text><text x="160" y="222">39</text>
       <text x="160" y="234">38</text><text x="160" y="246">37</text><text x="160" y="258">36</text>
@@ -202,92 +208,74 @@
   <!-- ===== Breadboard helper: draw boards ===== -->
   <!-- Board A -->
   <g transform="translate(330,40)">
-    <text x="95" y="-14" text-anchor="middle" font-weight="700" font-size="13">Breadboard A: power, bus, chips</text>
+    <text x="95" y="-14" text-anchor="middle" font-weight="700" font-size="13">Perma-Proto: the whole circuit</text>
     <rect x="0" y="0" width="190" height="690" rx="8" fill="#f3f1ea" stroke="#d6d2c4"/>
     <!-- rails -->
-    <rect x="6" y="12" width="7" height="666" fill="#ffcdd2"/><rect x="16" y="12" width="7" height="666" fill="#bbdefb"/>
-    <rect x="167" y="12" width="7" height="666" fill="#bbdefb"/><rect x="177" y="12" width="7" height="666" fill="#fff59d"/>
+    <rect x="6" y="12" width="7" height="630" fill="#ffcdd2"/><rect x="16" y="12" width="7" height="630" fill="#bbdefb"/>
+    <rect x="167" y="12" width="7" height="630" fill="#64b5f6"/><rect x="177" y="12" width="7" height="630" fill="#fff59d"/>
     <text x="9" y="8" font-size="8" text-anchor="middle" fill="#c62828">+</text><text x="19" y="8" font-size="8" text-anchor="middle" fill="#1565c0">&#8722;</text>
     <text x="170" y="8" font-size="7" text-anchor="middle" fill="#1565c0">SDA</text><text x="181" y="8" font-size="7" text-anchor="middle" fill="#9a7d00">SCL</text>
-    <rect x="30" y="12" width="130" height="666" fill="url(#holes)"/>
-    <rect x="92" y="12" width="6" height="666" fill="#e4e0d3"/>
-    <!-- zones: y = 12 + (row-1)*10.5 -->
+    <rect x="30" y="12" width="130" height="630" fill="url(#holes)"/>
+    <rect x="92" y="12" width="6" height="630" fill="#e4e0d3"/>
+    <!-- zones: y = 12 + (row-1)*10.5, 60 rows -->
     <g font-size="10">
-      <rect x="30" y="12" width="130" height="63" rx="3" fill="#ffccbc" opacity=".8"/>
-      <text x="95" y="36" text-anchor="middle" font-weight="600">rows 1&#8211;6 &#183; ENTRY</text>
-      <text x="95" y="50" text-anchor="middle" font-size="9">Teensy 3V3/G/24/25 &#8594; rails</text>
-      <text x="95" y="62" text-anchor="middle" font-size="9">STEMMA lead &#8594; Quad#1</text>
+      <rect x="30" y="12" width="130" height="10.5" rx="2" fill="#ffccbc" opacity=".8"/>
+      <text x="95" y="20.5" text-anchor="middle" font-size="8" font-weight="600">row 1 &#183; ENTRY (Teensy, STEMMA)</text>
 
-      <rect x="30" y="85.5" width="130" height="105" rx="3" fill="#c8e6c9" opacity=".85"/>
-      <text x="95" y="128" text-anchor="middle" font-weight="600">rows 8&#8211;17 &#183; CAP1188</text>
-      <text x="95" y="142" text-anchor="middle" font-size="9">0x29 &#183; C1&#8211;C8 &#8594; pad cable</text>
+      <rect x="30" y="22.5" width="130" height="105" rx="3" fill="#c8e6c9" opacity=".85"/>
+      <text x="95" y="68" text-anchor="middle" font-weight="600">rows 2&#8211;11 &#183; CAP1188</text>
+      <text x="95" y="82" text-anchor="middle" font-size="9">0x29 &#183; C1&#8211;C8 &#8594; pad cable</text>
 
-      <rect x="30" y="211.5" width="130" height="147" rx="3" fill="#d1c4e9" opacity=".85"/>
-      <text x="95" y="275" text-anchor="middle" font-weight="600">rows 20&#8211;33 &#183; MCP23017</text>
-      <text x="95" y="289" text-anchor="middle" font-size="9">0x20 &#183; DIP-28 in socket</text>
-      <text x="95" y="301" text-anchor="middle" font-size="9">nav + 4 buttons</text>
+      <rect x="30" y="138" width="130" height="147" rx="3" fill="#d1c4e9" opacity=".85"/>
+      <text x="95" y="202" text-anchor="middle" font-weight="600">rows 13&#8211;26 &#183; MCP23017</text>
+      <text x="95" y="216" text-anchor="middle" font-size="9">0x20 &#183; DIP-28 in socket</text>
+      <text x="95" y="228" text-anchor="middle" font-size="9">5 nav + 4 buttons (front board)</text>
 
-      <rect x="30" y="379.5" width="62" height="105" rx="3" fill="#b3e5fc" opacity=".9"/>
-      <text x="61" y="420" text-anchor="middle" font-weight="600">rows 36&#8211;45</text>
-      <text x="61" y="434" text-anchor="middle" font-weight="600">ADS1115</text>
-      <text x="61" y="448" text-anchor="middle" font-size="9">0x48</text>
-      <text x="61" y="460" text-anchor="middle" font-size="9">faders 1&#8211;4</text>
-      <rect x="98" y="379.5" width="62" height="105" rx="3" fill="#e1f5fe" opacity=".9"/>
-      <text x="129" y="428" text-anchor="middle" font-size="9">100 nF per</text>
-      <text x="129" y="440" text-anchor="middle" font-size="9">fader wiper</text>
+      <rect x="30" y="295.5" width="62" height="105" rx="3" fill="#b3e5fc" opacity=".9"/>
+      <text x="61" y="336" text-anchor="middle" font-weight="600">rows 28&#8211;37</text>
+      <text x="61" y="350" text-anchor="middle" font-weight="600">ADS1115</text>
+      <text x="61" y="364" text-anchor="middle" font-size="9">0x48</text>
+      <text x="61" y="376" text-anchor="middle" font-size="9">faders 1&#8211;4</text>
+      <rect x="98" y="295.5" width="62" height="52.5" rx="3" fill="#f8bbd0" opacity=".9"/>
+      <text x="129" y="318" text-anchor="middle" font-size="9" font-weight="600">28&#8211;32</text>
+      <text x="129" y="330" text-anchor="middle" font-size="9">MAX9814</text>
+      <rect x="98" y="348" width="62" height="42" rx="3" fill="#fff9c4" opacity=".95"/>
+      <text x="129" y="366" text-anchor="middle" font-size="9" font-weight="600">33&#8211;36</text>
+      <text x="129" y="378" text-anchor="middle" font-size="9">OLED connector</text>
 
-      <rect x="30" y="516.5" width="130" height="126" rx="3" fill="#ffe0b2" opacity=".9"/>
-      <text x="95" y="562" text-anchor="middle" font-weight="600">rows 49&#8211;60 &#183; RADIO</text>
-      <text x="95" y="576" text-anchor="middle" font-size="9">Si4732 on SOIC&#8594;DIP (0x11)</text>
-      <text x="95" y="588" text-anchor="middle" font-size="9">crystal 32.768 kHz + caps</text>
-      <text x="95" y="600" text-anchor="middle" font-size="9">audio &#8594; LINE-IN R</text>
-      <text x="95" y="668" text-anchor="middle" fill="#999">rows 61&#8211;63 spare</text>
+      <rect x="30" y="411" width="130" height="73.5" rx="3" fill="#f8bbd0" opacity=".6"/>
+      <text x="95" y="440" text-anchor="middle" font-weight="600">rows 39&#8211;45 &#183; PIEZO BUFFER</text>
+      <text x="95" y="454" text-anchor="middle" font-size="9">MCP6002 straddling the gap</text>
+      <text x="95" y="466" text-anchor="middle" font-size="9">&#8594; MIC/PIEZO switch &#8594; LINE-IN L</text>
+      <text x="95" y="478" text-anchor="middle" font-size="8" fill="#666">2nd half: coil preamp (later)</text>
+
+      <rect x="30" y="505.5" width="130" height="126" rx="3" fill="#ffe0b2" opacity=".9"/>
+      <text x="95" y="552" text-anchor="middle" font-weight="600">rows 48&#8211;59 &#183; RADIO</text>
+      <text x="95" y="566" text-anchor="middle" font-size="9">Si4732 on SOIC&#8594;DIP (0x11)</text>
+      <text x="95" y="578" text-anchor="middle" font-size="9">crystal 32.768 kHz + caps</text>
+      <text x="95" y="590" text-anchor="middle" font-size="9">audio &#8594; LINE-IN R</text>
+      <text x="95" y="664" text-anchor="middle" fill="#999" font-size="9">free: rows 12, 27, 38, 46&#8211;47, 60</text>
+      <text x="95" y="676" text-anchor="middle" fill="#999" font-size="8">(+ 61&#8211;63 if the board has 63 rows)</text>
     </g>
   </g>
 
-  <!-- Board B -->
+  <!-- Front panel board -->
   <g transform="translate(600,40)">
-    <text x="95" y="-14" text-anchor="middle" font-weight="700" font-size="13">Breadboard B: front / user side</text>
-    <rect x="0" y="0" width="190" height="690" rx="8" fill="#f3f1ea" stroke="#d6d2c4"/>
-    <rect x="6" y="12" width="7" height="666" fill="#ffcdd2"/><rect x="16" y="12" width="7" height="666" fill="#bbdefb"/>
-    <rect x="167" y="12" width="7" height="666" fill="#bbdefb"/><rect x="177" y="12" width="7" height="666" fill="#fff59d"/>
-    <text x="9" y="8" font-size="8" text-anchor="middle" fill="#c62828">+</text><text x="19" y="8" font-size="8" text-anchor="middle" fill="#1565c0">&#8722;</text>
-    <text x="170" y="8" font-size="7" text-anchor="middle" fill="#1565c0">SDA</text><text x="181" y="8" font-size="7" text-anchor="middle" fill="#9a7d00">SCL</text>
-    <rect x="30" y="12" width="130" height="666" fill="url(#holes)"/>
-    <rect x="92" y="12" width="6" height="666" fill="#e4e0d3"/>
+    <text x="95" y="-14" text-anchor="middle" font-weight="700" font-size="13">Front panel board</text>
+    <rect x="0" y="0" width="190" height="150" rx="8" fill="#f3f1ea" stroke="#d6d2c4"/>
+    <rect x="12" y="12" width="166" height="126" fill="url(#holes)"/>
     <g font-size="10">
-      <rect x="30" y="12" width="130" height="42" rx="3" fill="#ffccbc" opacity=".8"/>
-      <text x="95" y="30" text-anchor="middle" font-weight="600">rows 1&#8211;4 &#183; LINK</text>
-      <text x="95" y="44" text-anchor="middle" font-size="9">4 wires from board A rails</text>
-
-      <rect x="30" y="64.5" width="62" height="52" rx="3" fill="#f8bbd0" opacity=".9"/>
-      <text x="61" y="86" text-anchor="middle" font-weight="600">rows 6&#8211;10</text>
-      <text x="61" y="100" text-anchor="middle" font-size="9">MAX9814 mic</text>
-      <rect x="98" y="64.5" width="62" height="52" rx="3" fill="#fce4ec" opacity=".9"/>
-      <text x="129" y="86" text-anchor="middle" font-size="9">OUT &#8594; shielded</text>
-      <text x="129" y="98" text-anchor="middle" font-size="9">&#8594; LINE-IN L</text>
-
-      <rect x="30" y="138.5" width="130" height="42" rx="3" fill="#fff9c4" opacity=".95"/>
-      <text x="95" y="156" text-anchor="middle" font-weight="600">rows 13&#8211;16 &#183; OLED</text>
-      <text x="95" y="170" text-anchor="middle" font-size="9">0x3C &#183; 2-colour status</text>
-
-      <rect x="30" y="211.5" width="130" height="84" rx="3" fill="#d1c4e9" opacity=".6"/>
-      <text x="95" y="246" text-anchor="middle" font-weight="600">rows 20&#8211;27 &#183; NAV SWITCH</text>
-      <text x="95" y="260" text-anchor="middle" font-size="9">5-way &#8594; MCP GPA0&#8211;4</text>
-
-      <rect x="30" y="316.5" width="130" height="168" rx="3" fill="#d1c4e9" opacity=".45"/>
-      <text x="95" y="390" text-anchor="middle" font-weight="600">rows 30&#8211;45 &#183; BUTTONS</text>
-      <text x="95" y="404" text-anchor="middle" font-size="9">MODE SHIFT REC PLAY</text>
-      <text x="95" y="416" text-anchor="middle" font-size="9">&#8594; MCP GPB0&#8211;3, other leg GND</text>
-
-      <rect x="30" y="505.5" width="130" height="84" rx="3" fill="#f8bbd0" opacity=".6"/>
-      <text x="95" y="530" text-anchor="middle" font-weight="600">rows 48&#8211;55 &#183; PIEZO BUFFER</text>
-      <text x="95" y="544" text-anchor="middle" font-size="9">MCP6002 straddling the gap</text>
-      <text x="95" y="556" text-anchor="middle" font-size="9">contact mic &#8594; MIC/PIEZO switch</text>
-      <text x="95" y="568" text-anchor="middle" font-size="9">&#8594; LINE-IN L</text>
-
-      <text x="95" y="630" text-anchor="middle" fill="#999">rows 57&#8211;63 free</text>
-      <text x="95" y="644" text-anchor="middle" fill="#999" font-size="9">(future: speaker amp, jacks)</text>
+      <rect x="20" y="22" width="60" height="60" rx="3" fill="#d1c4e9" opacity=".7"/>
+      <text x="50" y="50" text-anchor="middle" font-weight="600">NAV</text>
+      <text x="50" y="64" text-anchor="middle" font-size="9">5 buttons</text>
+      <text x="50" y="76" text-anchor="middle" font-size="8">(ANO later)</text>
+      <rect x="92" y="22" width="80" height="60" rx="3" fill="#d1c4e9" opacity=".45"/>
+      <text x="132" y="44" text-anchor="middle" font-weight="600">4 buttons</text>
+      <text x="132" y="58" text-anchor="middle" font-size="9">MODE SHIFT</text>
+      <text x="132" y="70" text-anchor="middle" font-size="9">REC PLAY</text>
+      <text x="95" y="104" text-anchor="middle" font-size="9">perfboard 72 &#215; 47 mm (Diotronic PC-3)</text>
+      <text x="95" y="118" text-anchor="middle" font-size="9">behind the front panel</text>
+      <text x="95" y="130" text-anchor="middle" font-size="9">9 signals + GND &#8594; MCP23017</text>
     </g>
   </g>
 
@@ -297,14 +285,17 @@
     <rect x="0" y="0" width="150" height="60" rx="6" fill="#fff" stroke="#999"/>
     <text x="75" y="18" text-anchor="middle" font-weight="600">Quad encoder #1</text>
     <text x="75" y="32" text-anchor="middle">0x49 &#183; 4 &#215; EC11</text>
-    <text x="75" y="46" text-anchor="middle" font-size="9">STEMMA in from board A</text>
+    <text x="75" y="46" text-anchor="middle" font-size="9">STEMMA in from the Perma-Proto</text>
     <rect x="0" y="80" width="150" height="60" rx="6" fill="#fff" stroke="#999"/>
     <text x="75" y="98" text-anchor="middle" font-weight="600">Quad encoder #2</text>
     <text x="75" y="112" text-anchor="middle">0x4A &#183; 3 &#215; EC11</text>
     <text x="75" y="126" text-anchor="middle" font-size="9">A0 jumper cut</text>
-    <rect x="0" y="160" width="150" height="50" rx="6" fill="#fff" stroke="#999"/>
-    <text x="75" y="180" text-anchor="middle" font-weight="600">GPS PA1010D</text>
-    <text x="75" y="194" text-anchor="middle">0x10 &#183; end of chain</text>
+    <rect x="0" y="160" width="150" height="36" rx="6" fill="#fff" stroke="#999" stroke-dasharray="4 3"/>
+    <text x="75" y="175" text-anchor="middle" font-weight="600">ANO nav + wheel &#183; 0x4B</text>
+    <text x="75" y="189" text-anchor="middle" font-size="9">later (Miami, Nov) &#183; optional</text>
+    <rect x="0" y="203" width="150" height="32" rx="6" fill="#fff" stroke="#999"/>
+    <text x="75" y="216" text-anchor="middle" font-weight="600">GPS PA1010D</text>
+    <text x="75" y="229" text-anchor="middle" font-size="9">0x10 &#183; end of chain</text>
     <rect x="0" y="240" width="150" height="70" rx="6" fill="#fff" stroke="#999"/>
     <text x="75" y="258" text-anchor="middle" font-weight="600">8 copper pads</text>
     <text x="75" y="272" text-anchor="middle" font-size="9">cardboard panel, not black</text>
@@ -317,8 +308,16 @@
     <text x="75" y="388" text-anchor="middle" font-size="9">ends: 3V3 / GND</text>
     <rect x="0" y="420" width="150" height="56" rx="6" fill="#fff" stroke="#999"/>
     <text x="75" y="438" text-anchor="middle" font-weight="600">Antennas</text>
-    <text x="75" y="452" text-anchor="middle" font-size="9">FM/SW: wire &#8776; 75 cm</text>
-    <text x="75" y="464" text-anchor="middle" font-size="9">AM: ferrite rod</text>
+    <text x="75" y="452" text-anchor="middle" font-size="9">FM: wire &#8776; 75 cm &#8594; FMI</text>
+    <text x="75" y="464" text-anchor="middle" font-size="9">SW/MW/LW: AMI (ferrite or wire)</text>
+    <rect x="0" y="496" width="150" height="58" rx="6" fill="#fff" stroke="#999"/>
+    <text x="75" y="514" text-anchor="middle" font-weight="600">ESP32-S2 Thing Plus</text>
+    <text x="75" y="528" text-anchor="middle" font-size="9">Serial7: TX&#8594;28, RX&#8592;29, GND</text>
+    <text x="75" y="542" text-anchor="middle" font-size="9">USB-C &#8592; power bank out 2</text>
+    <rect x="0" y="572" width="150" height="58" rx="6" fill="#fff" stroke="#999" stroke-dasharray="4 3"/>
+    <text x="75" y="590" text-anchor="middle" font-weight="600">Power bank (outside)</text>
+    <text x="75" y="604" text-anchor="middle" font-size="9">out 1 &#8594; Teensy micro-USB</text>
+    <text x="75" y="618" text-anchor="middle" font-size="9">out 2 &#8594; ESP32 USB-C</text>
   </g>
 
   <!-- LCD -->
@@ -353,22 +352,24 @@
     <path d="M222 318 C 300 400, 300 600, 360 610" stroke="#8e24aa"/>
     <!-- 40 -> fader 5 -->
     <path d="M222 246 C 420 240, 600 780, 830 400" stroke="#43a047" stroke-dasharray="5 4"/>
-    <!-- A rails -> B link -->
-    <path d="M520 60 C 560 60, 560 60, 606 58" stroke="#e53935"/>
-    <path d="M520 70 C 560 72, 560 72, 616 68" stroke="#212121"/>
+    <!-- GND to the front board -->
+    <path d="M520 70 C 560 72, 560 72, 606 120" stroke="#212121"/>
     <!-- STEMMA chain -->
     <path d="M500 75 C 700 30, 760 50, 830 60" stroke="#1e88e5" stroke-dasharray="2 4"/>
     <path d="M905 100 L 905 120" stroke="#1e88e5" stroke-dasharray="2 4"/>
     <path d="M905 180 L 905 200" stroke="#1e88e5" stroke-dasharray="2 4"/>
+    <path d="M905 236 L 905 243" stroke="#1e88e5" stroke-dasharray="2 4"/>
+    <!-- 28/29 -> ESP32 (Serial7) -->
+    <path d="M38 286 C 4 300, 4 760, 400 760 C 700 760, 800 640, 830 566" stroke="#00897b" stroke-dasharray="6 3"/>
     <!-- pads -> CAP1188 -->
-    <path d="M830 310 C 600 300, 560 180, 490 180" stroke="#6d4c41"/>
+    <path d="M830 310 C 600 300, 560 110, 490 100" stroke="#6d4c41"/>
     <!-- faders -> ADS -->
-    <path d="M830 400 C 650 420, 520 450, 422 470" stroke="#43a047"/>
-    <!-- B buttons/nav -> MCP -->
-    <path d="M630 290 C 560 290, 560 300, 490 300" stroke="#7e57c2"/>
-    <path d="M630 440 C 560 430, 550 340, 490 330" stroke="#7e57c2"/>
+    <path d="M830 400 C 650 420, 520 390, 392 380" stroke="#43a047"/>
+    <!-- front board nav/buttons -> MCP -->
+    <path d="M640 150 C 600 200, 560 230, 490 230" stroke="#7e57c2"/>
+    <path d="M740 150 C 700 260, 560 280, 490 280" stroke="#7e57c2"/>
     <!-- mic out and radio out to shield -->
-    <path d="M700 135 C 640 200, 250 120, 196 110" stroke="#9e9e9e" stroke-dasharray="7 3"/>
+    <path d="M459 362 C 400 300, 250 140, 196 110" stroke="#9e9e9e" stroke-dasharray="7 3"/>
     <path d="M440 660 C 300 700, 250 300, 196 130" stroke="#9e9e9e" stroke-dasharray="7 3"/>
   </g>
 
@@ -384,6 +385,7 @@
     <rect x="200" y="28" width="14" height="6" fill="#7e57c2"/><text x="220" y="35">buttons/nav</text>
     <rect x="0" y="46" width="14" height="6" fill="#9e9e9e"/><text x="20" y="53">audio, shielded</text>
     <rect x="110" y="46" width="14" height="6" fill="#8e24aa"/><text x="130" y="53">control (RST)</text>
+    <rect x="230" y="46" width="14" height="6" fill="#00897b"/><text x="250" y="53">serial (ESP32)</text>
     <text x="0" y="74" fill="#777">Schematic, not to scale. Row numbers are the plan; exact holes depend on each breakout's header.</text>
   </g>
 </svg>
@@ -394,15 +396,15 @@
             <table class="bb-table">
                 <thead><tr><th>Pin</th><th>Function</th><th>Goes to</th><th>Notes</th></tr></thead>
                 <tbody>
-                    <tr><td class="mono">3V3</td><td>3.3 V supply</td><td>Board A + rail</td><td>Only reachable 3.3 V pin. Measure the total current once all modules are on.</td></tr>
-                    <tr><td class="mono">G</td><td>Ground</td><td>Board A &#8722; rail</td><td>Next to pin 41</td></tr>
-                    <tr><td class="mono">24</td><td>SCL2 (Wire2)</td><td>Board A SCL rail</td><td>Shared by all UI parts</td></tr>
-                    <tr><td class="mono">25</td><td>SDA2 (Wire2)</td><td>Board A SDA rail</td><td></td></tr>
+                    <tr><td class="mono">3V3</td><td>3.3 V supply</td><td>Perma-Proto + rail</td><td>Only reachable 3.3 V pin, about 250 mA for everything on this page. Estimate: 180&ndash;260 mA (LCD backlight ~80&ndash;100, Audio Shield + headphones 20&ndash;60, GPS ~30, Si4732 ~20, OLED 10&ndash;25, Quads + ANO ~15, MAX9814 + MPU9250 ~7; Quad NeoPixels off). Measure the total once all modules are on. Option if it is too much: LCD 3-5V pin to 5 V instead of the + rail (saves ~100 mA). 5 V is on Teensy VIN, which sits in the shield-socket row: reachable only as a wire soldered to the VIN joint on top of the Teensy.</td></tr>
+                    <tr><td class="mono">G</td><td>Ground</td><td>Perma-Proto &#8722; rail</td><td>Next to pin 41</td></tr>
+                    <tr><td class="mono">24</td><td>SCL2 (Wire2)</td><td>Perma-Proto SCL rail</td><td>Shared by all UI parts</td></tr>
+                    <tr><td class="mono">25</td><td>SDA2 (Wire2)</td><td>Perma-Proto SDA rail</td><td></td></tr>
                     <tr><td class="mono">26</td><td>MOSI1</td><td>LCD MOSI</td><td>Direct jumper, no breadboard</td></tr>
                     <tr><td class="mono">27</td><td>SCK1</td><td>LCD CLK</td><td></td></tr>
-                    <tr><td class="mono">28 / 29</td><td>RX7 / TX7</td><td>free</td><td>Spare UART (GPS fallback if I2C gets crowded)</td></tr>
+                    <tr><td class="mono">28 / 29</td><td>RX7 / TX7</td><td>ESP32-S2 TX / RX</td><td>Phase 7 WiFi link, 2 Mbaud (1 Mbaud fallback): keep the wires short, GND next to them. Crossed: Teensy RX7 &#8592; ESP TX, Teensy TX7 &#8594; ESP RX (Thing Plus ESP32-S2: TX = GPIO43, RX = GPIO44). 3.3 V logic both sides; common GND</td></tr>
                     <tr><td class="mono">30 / 31</td><td>&#8212;</td><td>free</td><td></td></tr>
-                    <tr><td class="mono">32</td><td>Quad encoder INT</td><td>Quad #1/#2 INT <span class="tag-opt">optional</span></td><td>Polling works; the interrupt lowers I2C traffic</td></tr>
+                    <tr><td class="mono">32</td><td>Quad encoder INT</td><td>Quad #1 INT + Quad #2 INT (one wire to both)</td><td><strong>Recommended.</strong> Open drain, wired-OR, INPUT_PULLUP on the Teensy. The firmware reads the boards only when INT is low (plus a 50 ms fallback poll if the wire is missing): about 4 ms of every 10 ms of I2C blocking drops to near zero when idle. The ANO INT may join the same wire (optional; it is polled every 20 ms anyway)</td></tr>
                     <tr><td class="mono">33</td><td>MCP23017 INTA</td><td>MCP pin 20 <span class="tag-opt">optional</span></td><td></td></tr>
                     <tr><td class="mono">34</td><td>Si4732 RESET</td><td>Radio RST</td><td>Active low</td></tr>
                     <tr><td class="mono">35</td><td>CAP1188 IRQ</td><td>CAP1188 IRQ <span class="tag-opt">optional</span></td><td>Freed when the NeoPixels were dropped</td></tr>
@@ -412,9 +414,10 @@
                     <tr><td class="mono">39</td><td>MISO1</td><td>LCD MISO</td><td>Needs <code>SPI1.setMISO(39)</code>: the default MISO1 is pin 1, under the shield</td></tr>
                     <tr><td class="mono">40</td><td>A16 (analog)</td><td>Fader 5 (OUT) wiper</td><td>The ADS1115 only has 4 inputs</td></tr>
                     <tr><td class="mono">41</td><td>A17 (analog)</td><td>free</td><td>Only spare analog pin</td></tr>
-                    <tr><td class="mono">USB Host</td><td>5-pin pads</td><td>USB-A cable (CAB-28389)</td><td>Solder a 5-pin header. External USB MIDI keyboard</td></tr>
-                    <tr><td class="mono">micro-USB</td><td>Device port</td><td>Computer / power bank</td><td>Power + USB MIDI + USB Audio</td></tr>
-                    <tr><td class="mono">underside</td><td>PSRAM 2 &#215; 8 MB</td><td>&#8212;</td><td>SMD, small pads under the SD slot first</td></tr>
+                    <tr><td class="mono">USB Host</td><td>5-pin pads</td><td>USB-A cable (CAB-28389)</td><td><span class="st st-ord">ORDERED DigiKey</span> cable. Solder a 5-pin header. External USB MIDI keyboard (firmware: no USB host MIDI code yet)</td></tr>
+                    <tr><td class="mono">micro-USB</td><td>Device port</td><td>Computer / power bank output 1</td><td>Power + USB MIDI + USB Audio</td></tr>
+                    <tr><td class="mono">underside</td><td>PSRAM 2 &#215; 8 MB</td><td>&#8212;</td><td><span class="st st-ord">ORDERED DigiKey</span> SMD; solder before the Teensy goes onto the shield socket, small pads under the SD slot first. Needed for layer 1 captures (Phase 9): ~3 min of mono audio in 16 MB</td></tr>
+                    <tr><td class="mono">SD slot</td><td>microSD</td><td>&#8212;</td><td><span class="st st-own">OWNED</span> In the Teensy 4.1 slot (<code>BUILTIN_SDCARD</code>). The Audio Shield&rsquo;s SD slot is unused</td></tr>
                 </tbody>
             </table>
 
@@ -423,6 +426,7 @@
                 <thead><tr><th>Bus</th><th>Address</th><th>Device</th><th>How it is set</th></tr></thead>
                 <tbody>
                     <tr><td>Wire (18/19)</td><td class="mono">0x0A</td><td>SGTL5000 (Audio Shield)</td><td>Fixed. Answers only while MCLK runs</td></tr>
+                    <tr><td>Wire2</td><td class="mono">0x0C</td><td>AK8963 compass (inside the MPU9250, later)</td><td>Fixed; reached through the MPU9250 bypass mode</td></tr>
                     <tr><td>Wire2</td><td class="mono">0x10</td><td>GPS PA1010D</td><td>Fixed</td></tr>
                     <tr><td>Wire2</td><td class="mono">0x11</td><td>Si4732 radio</td><td>SEN to 3.3 V (on the Si4732 this gives 0x11)</td></tr>
                     <tr><td>Wire2</td><td class="mono">0x20</td><td>MCP23017</td><td>A0, A1, A2 to GND</td></tr>
@@ -431,34 +435,42 @@
                     <tr><td>Wire2</td><td class="mono">0x48</td><td>ADS1115</td><td>ADDR to GND</td></tr>
                     <tr><td>Wire2</td><td class="mono">0x49</td><td>Quad encoder #1</td><td>Default</td></tr>
                     <tr><td>Wire2</td><td class="mono">0x4A</td><td>Quad encoder #2</td><td>Cut the A0 address jumper</td></tr>
+                    <tr><td>Wire2</td><td class="mono">0x4B</td><td>ANO nav + wheel (Adafruit 6310, later, Miami Nov)</td><td>Cut the A1 address jumper (default 0x49 clashes with Quad #1)</td></tr>
+                    <tr><td>Wire2</td><td class="mono">0x68</td><td>MPU9250 IMU (later, Diotronic)</td><td>AD0 to GND</td></tr>
+                    <tr><td>Wire2</td><td class="mono">0x76</td><td>BMP280 barometer (later, Diotronic)</td><td>SDO to GND</td></tr>
                 </tbody>
             </table>
-            <p>Pull-ups: every Adafruit breakout carries its own 10 k&#937;. Around seven of them in parallel give about 1.5 k&#937; on the bus, which is fine. Add none.</p>
+            <p>Pull-ups: each module brings its own (Adafruit boards 10 k&#937;; the generic OLED, MPU9250 and BMP280 modules 4.7&ndash;10 k&#937;). With everything fitted the bus sees about 1 k&#937;: slightly strong, usually fine. Add none. If I2C errors appear, remove the OLED module&rsquo;s pull-ups first.</p>
 
-            <h2 class="bb-h">Board A: power, bus and chips</h2>
+            <h2 class="bb-h">Perma-Proto: the whole circuit on one board</h2>
+            <p><span class="st st-ord">ORDERED DigiKey</span> One full-size Perma-Proto holds every chip and breakout. Check its row count on arrival (60 or 63): the plan below uses rows 1&ndash;60 either way. Only the front controls (5 nav buttons, 4 buttons, later the ANO) go on a small perfboard behind the panel. The OLED goes on the panel by 4 wires (its rows hold a connector); the MAX9814 can also move to the panel on 5 wires if the case needs it.</p>
+            <div class="bb-note"><strong>Bench copy first:</strong> build on the EIC-104 breadboard (2 full-size strips, numbered to row 63, same numbering as the Perma-Proto): same rows as below, rows 61&ndash;63 unused. One of the breadboards has a bad power rail: mark it and do not use its rails. When everything works, copy row for row onto the Perma-Proto.</div>
+            <p class="tag-opt">States: <span class="st st-own">OWNED</span> in hand &middot; <span class="st st-ord">ORDERED DigiKey</span> order 102318278, delivery not confirmed &middot; <span class="st st-buy">TO BUY</span> Diotronic now, Miami (Adafruit) Nov, Spain &middot; <span class="st st-later">LATER</span> later stage, not bought &middot; <span class="st st-opt">OPTIONAL</span></p>
             <table class="bb-table">
                 <thead><tr><th>Rows</th><th>What</th><th>Connections</th></tr></thead>
                 <tbody>
-                    <tr><td class="mono">rails</td><td>Left pair: <span class="swatch" style="background:#ffcdd2"></span>+3.3 V / <span class="swatch" style="background:#bbdefb"></span>GND. Right pair: <span class="swatch" style="background:#bbdefb"></span>SDA2 / <span class="swatch" style="background:#fff59d"></span>SCL2</td><td>Label them with tape. If the rails are split halfway down the board, bridge each half.</td></tr>
-                    <tr><td class="mono">1&#8211;6</td><td>Entry</td><td>Teensy 3V3 &#8594; +, G &#8594; &#8722;, 25 &#8594; SDA rail, 24 &#8594; SCL rail. One STEMMA-to-pins cable (4209) from the four rails starts the chain: Quad #1 &#8594; Quad #2 &#8594; GPS (4397 cables).</td></tr>
-                    <tr><td class="mono">8&#8211;17</td><td>CAP1188</td><td>VIN &#8594; +, GND &#8594; &#8722;, SDA/SCK &#8594; bus rails. C1&#8211;C8 rows: one wire per pad, fanned out. 3Vo, MISO, CS, RST, AD unconnected. IRQ &#8594; 35 (optional).</td></tr>
-                    <tr><td class="mono">20&#8211;33</td><td>MCP23017 (DIP-28 socket, straddling the gap)</td><td>9 VDD &#8594; +, 10 VSS &#8594; &#8722;, 12 SCK &#8594; SCL, 13 SDA &#8594; SDA, 15/16/17 A0&#8211;A2 &#8594; &#8722;, 18 RESET &#8594; +. 21&#8211;25 GPA0&#8211;4 &#8592; nav (up, down, left, right, centre). 1&#8211;4 GPB0&#8211;3 &#8592; MODE, SHIFT, REC, PLAY. 20 INTA &#8594; 33 (optional). Internal pull-ups on in firmware.</td></tr>
-                    <tr><td class="mono">36&#8211;45</td><td>ADS1115 (one 10-pin row)</td><td>VDD &#8594; +, GND &#8594; &#8722;, SCL/SDA &#8594; bus, ADDR &#8594; &#8722;, ALRT unconnected, A0&#8211;A3 &#8592; fader wipers (MIC, SMP, SYN, RAD), each with 100 nF to &#8722; on the free half of the rows.</td></tr>
-                    <tr><td class="mono">49&#8211;60</td><td>Radio: Si4732 on a SOIC-16 &#8594; DIP adapter (straddling), crystal and capacitors beside it</td><td>VA/VD &#8594; + via 22 nF / 100 nF to &#8722; at the pins. SDIO/SCLK &#8594; bus. SEN &#8594; +. RST &#8594; Teensy 34. 32.768 kHz crystal with 2 &#215; 22 pF. FM input &#8592; wire antenna, AM input &#8592; ferrite. Audio out &#8594; 4.7 &#181;F &#8594; LINE-IN R. <strong>Exact pins from the datasheet before soldering.</strong></td></tr>
+                    <tr><td class="mono">rails</td><td>Left pair: <span class="swatch" style="background:#ffcdd2"></span>+3.3 V / <span class="swatch" style="background:#bbdefb"></span>GND. Right pair: <span class="swatch" style="background:#64b5f6"></span>SDA2 / <span class="swatch" style="background:#fff59d"></span>SCL2</td><td>Label them with tape. If the rails are split halfway down the board, bridge each half.</td></tr>
+                    <tr><td class="mono">1</td><td>Entry</td><td>Teensy 3V3 &#8594; +, G &#8594; &#8722;, 25 &#8594; SDA rail, 24 &#8594; SCL rail. <span class="st st-ord">ORDERED DigiKey</span> STEMMA QT cables. One STEMMA-to-pins cable (4209) from the four rails starts the chain: Quad #1 &#8594; 4397 &#8594; Quad #2 &#8594; 4397 &#8594; ANO (later) &#8594; 4397 &#8594; GPS. Needs 1&#215; 4209 + 3&#215; 4397: all three ordered 4397 are used, none spare. Until the ANO is fitted, Quad #2 goes straight to the GPS.</td></tr>
+                    <tr><td class="mono">2&#8211;11</td><td><span class="st st-own">OWNED</span> CAP1188</td><td>VIN &#8594; +, GND &#8594; &#8722;, SDA/SCK &#8594; bus rails. C1&#8211;C8 rows: one wire per pad, fanned out. 3Vo, MISO, CS, RST, AD unconnected. IRQ &#8594; 35 (optional).</td></tr>
+                    <tr><td class="mono">13&#8211;26</td><td><span class="st st-own">OWNED</span> MCP23017 (DIP-28 socket, straddling the gap)</td><td>9 VDD &#8594; + with 100 nF to &#8722; at the pin, 10 VSS &#8594; &#8722;, 12 SCK &#8594; SCL, 13 SDA &#8594; SDA, 15/16/17 A0&#8211;A2 &#8594; &#8722;, 18 RESET &#8594; +. 21&#8211;25 GPA0&#8211;4 &#8592; nav up, down, left, right, centre (5 tactile buttons on the front panel board; still read together with the ANO once it is fitted). 1&#8211;4 GPB0&#8211;3 &#8592; MODE, SHIFT, REC, PLAY, by wire from the front panel board. 20 INTA &#8594; 33 (optional). Internal pull-ups on in firmware. 100 nF: <span class="st st-buy">TO BUY Diotronic</span> (backorder).</td></tr>
+                    <tr><td class="mono">28&#8211;37</td><td><span class="st st-own">OWNED</span> ADS1115 (one 10-pin row, left half)</td><td>Header in column e (next to the gap), board body pointing outward over the left rails, so it stays clear of the MAX9814. VDD &#8594; + (measure 3.3 V there first), GND &#8594; &#8722;, SCL/SDA &#8594; bus, ADDR &#8594; &#8722;, ALRT unconnected, A0&#8211;A3 &#8592; fader wipers (MIC, SMP, SYN, RAD). The 100 nF per wiper goes at the fader, between lug 2 (wiper) and the lug wired to GND.</td></tr>
+                    <tr><td class="mono">28&#8211;32 (right half)</td><td><span class="st st-ord">ORDERED DigiKey</span> MAX9814 mic preamp</td><td>Header in column f, body pointing outward. VDD &#8594; +, GND &#8594; &#8722;, GAIN/AR unconnected for now (defaults), OUT &#8594; 1 &#181;F (+ to the MAX9814) &#8594; shielded or twisted wire &#8594; MIC side of the source switch. Always fit the 1 &#181;F: the output sits at 1.25 V DC and the other sources are AC-coupled, so without it the switch clicks.</td></tr>
+                    <tr><td class="mono">33&#8211;36 (right half)</td><td><span class="st st-own">OWNED</span> OLED connector (4 pins)</td><td>A 4-pin female header here; the OLED itself sits on the panel on 4 wires. Flat on the board its ~27 &#215; 27 mm body would cover rows ~29&ndash;40 and collide with the MAX9814 and the MCP6002. VCC &#8594; +, GND &#8594; &#8722;, SDA/SCL &#8594; bus rails. Read the labels: the pin order varies by module.</td></tr>
+                    <tr><td class="mono">39&#8211;45</td><td>Piezo contact-mic buffer: MCP6002 (DIP-8) straddling the gap, parts on the rows around it</td><td><span class="st st-buy">TO BUY Diotronic</span> MCP6002, DIP-8 socket, 1M, 100k, 10k, 10 &#181;F. <span class="st st-own">OWNED</span> piezo disc, 1 &#181;F. Pin 8 &#8594; + with 100 nF to &#8722; at the pin, pin 4 &#8594; &#8722;. Mid-supply bias: 2 &#215; 100k from + and &#8722; to a bias node, 10 &#181;F from the node to &#8722; (+ to the node). Piezo red &#8594; 10k &#8594; pin 3 (IN+), black &#8594; &#8722;. 1&#8211;10 M&#937; from pin 3 to the bias node (high input impedance keeps the low end). Pin 1 (OUT) &#8594; pin 2 (IN&#8722;) for unity gain. Pin 1 &#8594; 1 &#181;F (+ to pin 1) &#8594; PIEZO side of the switch. <span class="st st-later">LATER</span> second op-amp (pins 5&#8211;7) = coil preamp, gain &#215;101: coil one end &#8594; pin 5, other end &#8594; bias node; 100k from pin 7 to pin 6; 1k from pin 6 &#8594; 10 &#181;F (+ to the 1k side) &#8594; &#8722; (AC gain 101, DC gain 1, corner ~16 Hz). Pin 7 &#8594; 1 &#181;F (+ to pin 7) &#8594; COIL position of the source switch. The 1k is Diotronic line 15: buy it for the coil even if the faders do not jitter. <strong>Until the coil is fitted:</strong> pin 5 &#8594; bias node and pin 7 &#8594; pin 6 (an unused half with gain 101 and a floating input oscillates and adds noise).</td></tr>
+                    <tr><td class="mono">48&#8211;59</td><td>Radio: Si4732 on a SOIC-16 &#8594; DIP adapter (straddling), crystal and capacitors beside it</td><td><span class="st st-ord">ORDERED DigiKey</span> Si4732. <span class="st st-buy">TO BUY Miami Nov</span> SOIC-16 adapter (Adafruit 1207). <span class="st st-buy">TO BUY Diotronic</span> crystal, 22 pF, 1 nF, 470 nF, 22 nF, 100 nF (backorder), 4.7 &#181;F. <span class="st st-opt">OPTIONAL</span> ferrite (not sourced). Before soldering, check the 1207&rsquo;s header spacing: it must land on columns e/f (0.3&Prime;) or e/i (0.6&Prime;) to straddle the gap. SOIC-16 pins (Skyworks datasheet): 14 VDD &#8594; + with 22 nF and 100 nF to &#8722; right at the pin (one supply pin, no separate VA/VD). 15 GND and 7 RFGND &#8594; &#8722;. 12 SDIO &#8594; SDA rail, 11 SCLK &#8594; SCL rail. 10 SENB &#8594; + (0x11). 9 RST &#8594; Teensy 34. 6 FMI &#8592; 1&nbsp;nF &#8592; FM wire antenna. 8 AMI &#8592; 470&nbsp;nF &#8592; ferrite (other end of the ferrite to &#8722;); AMI is also the SW/MW/LW input: until a ferrite is fitted, a wire antenna &#8594; 470&nbsp;nF &#8594; AMI. 16 ROUT &#8594; 4.7 &#181;F (+ to the chip) &#8594; LINE-IN R; 1 LOUT unconnected. Optional mono sum: each output &#8594; its own 4.7 &#181;F &#8594; 10k &#8594; LINE-IN R. 3, 4 unconnected, 5 NC. Clock: 13 RCLK needs 32.768 kHz. Crystal between 13 RCLK and 2 GPO3/DCLK, 22 pF from each end to &#8722; (PU2CLR Si4732-A10 reference schematic). Pins 2 and 13 are on opposite halves of the adapter: crystal on short leads across the gap at that end of the adapter, crystal and both 22 pF within 1 cm of pins 2 and 13.</td></tr>
+                    <tr><td class="mono">12, 27, 38, 46&#8211;47, 60</td><td>free</td><td>Gaps between blocks; room for a speaker amp or jack breakout later. Plus rows 61&ndash;63 if the board has 63.</td></tr>
                 </tbody>
             </table>
 
-            <h2 class="bb-h">Board B: front side</h2>
+            <h2 class="bb-h">Front panel board</h2>
+            <p>A small perfboard (Diotronic PC-3, 72 &#215; 47 mm, about &euro;1.40, <span class="st st-buy">TO BUY Diotronic</span>) mounted behind the front panel, so the controls sit where fingers reach them.</p>
             <table class="bb-table">
-                <thead><tr><th>Rows</th><th>What</th><th>Connections</th></tr></thead>
+                <thead><tr><th>Part</th><th>Connections</th></tr></thead>
                 <tbody>
-                    <tr><td class="mono">rails</td><td>Same plan as board A</td><td>Four short wires from board A: +, &#8722;, SDA, SCL.</td></tr>
-                    <tr><td class="mono">6&#8211;10</td><td>MAX9814 mic preamp</td><td>VDD &#8594; +, GND &#8594; &#8722;, GAIN/AR unconnected for now (defaults), OUT &#8594; shielded wire &#8594; MIC side of the MIC/PIEZO switch (1 &#181;F in series if LINE-IN has no coupling capacitor).</td></tr>
-                    <tr><td class="mono">13&#8211;16</td><td>OLED (4 pins)</td><td>VCC &#8594; +, GND &#8594; &#8722;, SDA/SCL &#8594; bus rails. Read the labels: the pin order varies by module.</td></tr>
-                    <tr><td class="mono">20&#8211;27</td><td>5-way nav switch</td><td>Common &#8594; &#8722;. Up/down/left/right/centre &#8594; MCP GPA0&#8211;4 on board A.</td></tr>
-                    <tr><td class="mono">30&#8211;45</td><td>4 tactile buttons, straddling the gap</td><td>One leg &#8594; &#8722;, the other &#8594; MCP GPB0&#8211;3 (MODE, SHIFT, REC, PLAY).</td></tr>
-                    <tr><td class="mono">48&#8211;55</td><td>Piezo contact-mic buffer: MCP6002 (DIP-8) straddling the gap</td><td>Pin 8 &#8594; +, pin 4 &#8594; &#8722;. Mid-supply bias: 2 &#215; 100k from + and &#8722; to a bias node, 10 &#181;F from the node to &#8722;. Piezo red &#8594; 10k &#8594; pin 3 (IN+), black &#8594; &#8722;. 1&#8211;10 M&#937; from pin 3 to the bias node (high input impedance keeps the low end). Pin 1 (OUT) &#8594; pin 2 (IN&#8722;) for unity gain. Pin 1 &#8594; 1 &#181;F &#8594; PIEZO side of the switch. Second op-amp (pins 5&#8211;7) spare: pin 5 to the bias node, pin 6 to pin 7.</td></tr>
-                    <tr><td class="mono">57&#8211;63</td><td>free</td><td>Room for later: speaker amp, jack breakouts.</td></tr>
+                    <tr><td><span class="st st-own">OWNED</span> 5 tactile buttons (nav, DTS61N)</td><td>Up, down, left, right, centre: one leg &#8594; GND wire, the other &#8594; MCP GPA0&#8211;4 (pins 21&#8211;25). This is the nav until the ANO arrives; afterwards they can stay (the firmware reads both together).</td></tr>
+                    <tr><td><span class="st st-own">OWNED</span> 4 tactile buttons</td><td>One leg &#8594; GND wire, the other &#8594; MCP GPB0&#8211;3 (MODE, SHIFT, REC, PLAY).</td></tr>
+                    <tr><td><span class="st st-buy">TO BUY Miami Nov</span> ANO nav + wheel (6310), later, optional</td><td>Own board on M2.5 standoffs next to the PC-3. STEMMA QT cable into the I2C chain (between Quad #2 and the GPS), address 0x4B (cut the A1 jumper). No wires to the MCP. Without it the wheel functions are SHIFT + nav left/right.</td></tr>
+                    <tr><td>Cable to the Perma-Proto</td><td>10 wires: 5 nav + 4 button signals + GND. No 3.3 V needed (MCP internal pull-ups).</td></tr>
                 </tbody>
             </table>
 
@@ -466,28 +478,38 @@
             <table class="bb-table">
                 <thead><tr><th>Part</th><th>Connection</th><th>Notes</th></tr></thead>
                 <tbody>
-                    <tr><td>LCD 2.8&#8243; (P1770)</td><td>8 jumpers straight to the Teensy: CLK 27, MOSI 26, MISO 39, CS 38, D/C 37, RST 36, 3-5V &#8594; + rail, GND &#8594; &#8722; rail</td><td>SPI-row pins only. Keep the board out of the breadboard. Library default SPI speed (40 MHz gave a white screen).</td></tr>
-                    <tr><td>Quad encoder #1, #2</td><td>STEMMA QT chain from board A</td><td>7 EC11 encoders soldered on (4 + 3)</td></tr>
-                    <tr><td>GPS PA1010D</td><td>STEMMA QT, end of the chain</td><td></td></tr>
-                    <tr><td>8 copper pads</td><td>One wire each to CAP1188 C1&#8211;C8</td><td>Plain cardboard, wires fanned out. Recalibrate after any wiring change.</td></tr>
-                    <tr><td>5 faders</td><td>Ends to + / &#8722;; wipers 1&#8211;4 &#8594; ADS1115 A0&#8211;A3, wiper 5 &#8594; Teensy 40</td><td>3.3 V only, never 5 V</td></tr>
-                    <tr><td>Antennas</td><td>Wire (&#8776; 75 cm) for FM/SW; ferrite rod for AM</td><td>Keep away from the LCD and the Teensy</td></tr>
-                    <tr><td>Audio</td><td>Headphones on the shield jack; LINE-IN L = mic <em>or</em> piezo (switch), LINE-IN R = radio</td><td>LINE-IN pads are on the shield, solder from underneath</td></tr>
-                    <tr><td>MIC/PIEZO switch</td><td>SPDT toggle: common &#8594; LINE-IN L, one side &#8592; MAX9814, other side &#8592; piezo buffer</td><td>On the case. One input at a time; the radio keeps LINE-IN R</td></tr>
-                    <tr><td>Piezo disc</td><td>Shielded or twisted wire to board B row 48 area</td><td>Contact mic: tape or clip it to a surface. Passive disc only: an active buzzer (buzzes by itself on DC) does not work as a pickup</td></tr>
-                    <tr><td>USB-A host</td><td>CAB-28389 on the 5 host pads</td><td>USB MIDI keyboard</td></tr>
+                    <tr><td><span class="st st-own">OWNED</span> LCD 2.8&#8243; (P1770)</td><td>8 jumpers straight to the Teensy: CLK 27, MOSI 26, MISO 39, CS 38, D/C 37, RST 36, 3-5V &#8594; + rail (option: 5 V from VIN, see the 3V3 row), GND &#8594; &#8722; rail</td><td>SPI-row pins only. Keep the board out of the breadboard. Library default SPI speed (40 MHz gave a white screen).</td></tr>
+                    <tr><td><span class="st st-ord">ORDERED DigiKey</span> Quad encoder #1, #2</td><td>STEMMA QT chain from the Perma-Proto rails (see row 1)</td><td>7 EC11 encoders (owned) soldered on (4 + 3). Recommended: both INT pins &#8594; Teensy 32</td></tr>
+                    <tr><td><span class="st st-own">OWNED</span> GPS PA1010D</td><td>STEMMA QT, end of the chain (after the ANO once it is fitted)</td><td>Near the top of the case, sky view</td></tr>
+                    <tr><td><span class="st st-own">OWNED</span> 8 copper pads</td><td>One wire each to CAP1188 C1&#8211;C8</td><td>Plain cardboard, wires fanned out. Recalibrate after any wiring change.</td></tr>
+                    <tr><td><span class="st st-own">OWNED</span> 5 faders (5 bought, 3 seen 2026-10-21: count them)</td><td>Ends to + / &#8722;; wipers 1&#8211;4 &#8594; ADS1115 A0&#8211;A3, wiper 5 &#8594; Teensy 40</td><td>3.3 V only, never 5 V. 100 nF per wiper at the fader (<span class="st st-buy">TO BUY Diotronic</span>)</td></tr>
+                    <tr><td><span class="st st-own">OWNED</span> wire, <span class="st st-opt">OPTIONAL</span> ferrite: antennas</td><td>FM: wire (&#8776; 75 cm) &#8594; 1 nF &#8594; FMI. SW/MW/LW: AMI &#8592; 470 nF &#8592; ferrite rod, or, until a ferrite is fitted, a wire antenna (a second wire or the same one)</td><td>Keep away from the LCD and the Teensy. Ferrite not sourced (salvage one from an old AM radio)</td></tr>
+                    <tr><td><span class="st st-own">OWNED</span> Audio (headphones)</td><td>Headphones on the shield jack; LINE-IN L = mic <em>or</em> piezo now (switch; coil and solar later), LINE-IN R = radio</td><td>LINE-IN pads are on the shield, solder from underneath. Levels: firmware sets <code>lineInLevel(0, 11)</code> (<code>LINEIN_LEVEL_LEFT/RIGHT</code> in <code>config.h</code>): left 3.12 Vpp full scale for mic and piezo, right raised for the ~0.2 Vpp radio. Shown on the SENSE screen</td></tr>
+                    <tr><td><span class="st st-own">OWNED</span> Source switch now: SPDT toggle (mic / piezo)</td><td>Common &#8594; LINE-IN L. Throw 1 &#8592; MAX9814 OUT via 1 &#181;F, throw 2 &#8592; piezo buffer pin 1 via 1 &#181;F</td><td>On the case. Tell the firmware the position with SHIFT + nav up; with the toggle use only MIC and PIEZO. The radio keeps LINE-IN R</td></tr>
+                    <tr><td><span class="st st-later">LATER</span> Source switch later: rotary 3C 4P (Diotronic CR3C4PS)</td><td>One circuit: common &#8594; LINE-IN L. 1 &#8592; MAX9814 via 1 &#181;F, 2 &#8592; piezo buffer pin 1 via 1 &#181;F, 3 &#8592; coil preamp pin 7 via 1 &#181;F, 4 &#8592; solar cell via 1 &#181;F</td><td>Replaces the toggle. SHIFT + nav up cycles MIC, PIEZO, COIL, LIGHT</td></tr>
+                    <tr><td><span class="st st-later">LATER</span> EM pickup coil (100 mH choke, Diotronic 100MH)</td><td>Twisted pair to the coil preamp (MCP6002 pins 5 and the bias node)</td><td>Mount at the case edge, as far as possible from the Teensy, LCD and ESP32 (they are loud to a coil)</td></tr>
+                    <tr><td><span class="st st-later">LATER</span> Solar cell (SOL1N, Diotronic)</td><td>+ &#8594; 1 &#181;F (+ to the cell) &#8594; switch position 4, &#8722; &#8594; GND; 10k across the cell as load</td><td>On the case top, facing out. Hears lamp flicker (100 Hz), screens, sunlight</td></tr>
+                    <tr><td><span class="st st-later">LATER</span> IMU MPU9250 (Diotronic)</td><td>4 wires: VCC &#8594; +, GND &#8594; &#8722;, SDA/SCL &#8594; bus rails. AD0 &#8594; &#8722;</td><td>Screw it flat to the case (rigid). Check WHO_AM_I = 0x71 on arrival: clones answer 0x70 and have no compass</td></tr>
+                    <tr><td><span class="st st-later">LATER</span> Barometer BMP280 (Diotronic)</td><td>4 wires: VCC &#8594; +, GND &#8594; &#8722;, SDA/SCL &#8594; bus rails. SDO &#8594; &#8722; (0x76), CSB &#8594; +</td><td>Near a small vent hole, away from the Teensy and LCD (heat), out of direct wind</td></tr>
+                    <tr><td><span class="st st-own">OWNED</span> Piezo disc</td><td>Shielded or twisted wire to the piezo buffer (rows 39&#8211;45)</td><td>Contact mic: tape or clip it to a surface. Passive disc only: an active buzzer (buzzes by itself on DC) does not work as a pickup</td></tr>
+                    <tr><td><span class="st st-ord">ORDERED DigiKey</span> USB-A host</td><td>CAB-28389 on the 5 host pads</td><td>USB MIDI keyboard (firmware: no USB host MIDI code yet)</td></tr>
+                    <tr><td><span class="st st-buy">TO BUY Spain</span> Power bank</td><td>Outside the case, held on the back (printed cradle or strap). Output 1 &#8594; Teensy micro-USB, output 2 &#8594; ESP32-S2 USB-C</td><td>About 5,000 mAh, 2 outputs, no auto-off at low current. Short cables through a slot in the case. Cable to the Teensy: USB-C to micro-B (Adafruit 3878, Miami) only if the bank is USB-C only and no such cable is owned</td></tr>
+                    <tr><td><span class="st st-own">OWNED</span> ESP32-S2 Thing Plus (WiFi, layer 2 AI)</td><td>Off the Perma-Proto, on standoffs in the case, USB-C at the slot toward the power bank. 3 wires: TX (GPIO43) &#8594; Teensy 28, RX (GPIO44) &#8592; Teensy 29, GND &#8594; &#8722; rail</td><td>Powered by its USB-C from power bank output 2 (its own regulator makes 3.3 V). <strong>Never</strong> from the Teensy 3.3 V: WiFi peaks (~300 mA) exceed what that pin can give. Confirm the board is the ESP32-S2 Thing Plus (WRL-17743): GPIO43/44 and the firmware are S2-only, and the photo is unreadable. Connect the TX7 wire only when the ESP32 is powered (or put 1k in series), so the ESP32 is not powered back through its RX pin. Phase 7 of the staged bring-up</td></tr>
                 </tbody>
             </table>
 
             <h2 class="bb-h">Build order</h2>
             <ol>
-                <li>Rails and entry (board A rows 1&#8211;6). Measure 3.3 V on the rail.</li>
+                <li>Before anything: PSRAM (ordered) soldered under the Teensy; Teensy onto the shield with the female 2&#215;14 socket (headers: to buy, Diotronic).</li>
+                <li>Rails and entry (row 1) on the EIC-104 bench copy. Measure 3.3 V on the rail.</li>
                 <li>CAP1188 + OLED + LCD: the stack already verified, now in its final place. Run <code>layer3_integration</code>.</li>
-                <li>ADS1115 + faders (Phase 4, <code>layer4_faders</code>).</li>
-                <li>MCP23017 + nav + buttons, then Quad encoders with the EC11s (Phase 5).</li>
-                <li>GPS on the STEMMA chain (Phase 6).</li>
-                <li>MAX9814 mic &#8594; LINE-IN L, then the piezo buffer + MIC/PIEZO switch, then the Si4732 radio &#8594; LINE-IN R.</li>
-                <li>Everything together: no I2C errors, clean audio. Then copy the layout 1:1 onto the Perma-Proto.</li>
+                <li>ADS1115 + faders (Phase 4, <code>layer4_faders_visual</code>). Measure ADS1115 VDD = 3.3 V first.</li>
+                <li>MCP23017 + 5 nav buttons + 4 buttons (<code>layer5_controls_visual</code>), then the Quad encoders with the EC11s (Phase 5).</li>
+                <li>GPS on the STEMMA chain (Phase 6, <code>layer5_encoders_gps_visual</code>).</li>
+                <li>ESP32-S2 link on Serial7 (Phase 7).</li>
+                <li>Layer 1: MAX9814 mic &#8594; LINE-IN L (<code>layer6_mic_visual</code>), then the piezo buffer + MIC/PIEZO toggle, then the Si4732 radio &#8594; LINE-IN R once the 1207 adapter is here (Nov).</li>
+                <li>Everything together: no I2C errors, clean audio. Then copy the layout 1:1 onto the Perma-Proto, and the buttons onto the front panel board.</li>
+                <li>Later: ANO (Miami); IMU MPU9250; coil preamp + solar cell with the rotary switch; BMP280.</li>
             </ol>
             <p>See also: <a href="prototype-v1.html">Field Unit v1 concept</a> &middot; <a href="gallery.html">Gallery</a> &middot; <a href="bom.html">BOM</a> &middot; <a href="assembly.html">Assembly</a></p>
 

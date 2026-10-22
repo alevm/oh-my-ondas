@@ -178,8 +178,9 @@
                         <tr><td>Breadboards 830 pts</td><td class="qty">2</td><td>Diotronic</td><td class="price">&euro;12.00</td><td>est.</td></tr>
                         <tr><td>Jumpers, headers, DIP socket, R/C</td><td class="qty">&mdash;</td><td>Diotronic</td><td class="price">&euro;6.00</td><td>est.</td></tr>
                         <tr><td>Wired piezo</td><td class="qty">1</td><td>owned</td><td class="price">&euro;0.00</td><td>already owned</td></tr>
-                        <tr><td>Radio + piezo parts (Still Needed)</td><td class="qty">&mdash;</td><td>Diotronic</td><td class="price">&euro;15.00</td><td>est.</td></tr>
-                    <tr><td><strong>Total</strong></td><td></td><td></td><td class="price"><strong>&euro;265.18</strong></td><td>of which ~&euro;51 estimated</td></tr>
+                        <tr><td>Diotronic list (Still Needed)</td><td class="qty">&mdash;</td><td>Diotronic</td><td class="price">&euro;29.78</td><td>quote 2026-10-21, core</td></tr>
+                        <tr><td>Miami order (Still Needed)</td><td class="qty">&mdash;</td><td>Adafruit</td><td class="price">&euro;16.65</td><td>$17.90, no tax/shipping</td></tr>
+                    <tr><td><strong>Total</strong></td><td></td><td></td><td class="price"><strong>&euro;296.61</strong></td><td>of which ~&euro;36 estimated</td></tr>
                 </tbody>
             </table>
             <p class="page-subtitle">Dollar prices at &euro;0.93/$, without US tax or shipping. DigiKey prices include 21% VAT. Diotronic was a single walk-in receipt (~&euro;80, tools included), so those lines are estimates. <strong>Not counted:</strong> the backup Teensy and Audio Shield, ESP32-S2, NeoPixel strip, LoRa, KB2040, USB-C enclosure ports, the second MCP23017, Si4732 and host cable, the extra buttons and knobs, and all tools (soldering station, third hand, logic analyzer, wire kit, solder, flux).</p>
@@ -429,7 +430,7 @@
                         <td class="part-num">P504</td>
                         <td class="qty">1</td>
                         <td class="price">$2.50</td>
-                        <td class="role">Menu navigation</td>
+                        <td class="role">Menu navigation. Not found 2026-10-21: replaced by ANO 6310 (Still Needed)</td>
                     </tr>
                     <tr>
                         <td>Slide Pot 45mm B10K</td>
@@ -584,7 +585,95 @@
             <!-- Still Needed -->
             <div class="still-needed">
                 <h3>Still Needed</h3>
-                <p>Open items, to pick up on the next Diotronic visit (Si4732 radio circuit and fader filters):</p>
+                <p><strong>Diotronic (Barcelona)</strong>, refs and prices from diotronic.com, 2026-10-21: &euro;29.78 total, core only (Si4732 radio circuit, piezo buffer, decoupling, fader filters, mounting, wiring). Full list with refs: <code>docs/hardware/diotronic-order-2026-10-21.md</code>.</p>
+                <table class="bom-table">
+                    <thead>
+                        <tr>
+                            <th>Component</th>
+                            <th class="qty">Buy</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>32.768&nbsp;kHz crystal (~12.5&nbsp;pF), ref 0.032768</td>
+                            <td class="qty">2</td>
+                            <td>Si4732 clock, between pin 13 RCLK and pin 2 GPO3. Required for the radio</td>
+                        </tr>
+                        <tr>
+                            <td>Ceramic capacitors 22&nbsp;pF, ref CER22063</td>
+                            <td class="qty">10</td>
+                            <td>Crystal load capacitors (2 per radio)</td>
+                        </tr>
+                        <tr>
+                            <td>Ceramic capacitors 1&nbsp;nF / 470&nbsp;nF, refs CER10263 / CER47463</td>
+                            <td class="qty">10 + 10</td>
+                            <td>Si4732 antenna inputs: 1&nbsp;nF in series with the FM/SW wire (FMI), 470&nbsp;nF in series with the AM ferrite (AMI). Required for the radio</td>
+                        </tr>
+                        <tr>
+                            <td>Ceramic capacitors 100&nbsp;nF (+ 22&nbsp;nF optional), refs CER10463 (backorder) / CER22363</td>
+                            <td class="qty">10 + 10</td>
+                            <td>100&nbsp;nF &times; 8 used: Si4732 VDD pin 14, one per fader wiper (5), MCP23017 pin 9, MCP6002 pin 8. 22&nbsp;nF: extra VDD bypass, optional</td>
+                        </tr>
+                        <tr>
+                            <td>Electrolytic 4.7&nbsp;&micro;F, ref ELR047100</td>
+                            <td class="qty">5</td>
+                            <td>Si4732 audio outputs LOUT/ROUT to LINE-IN (DC blocking). Required for the radio</td>
+                        </tr>
+                        <tr>
+                            <td>MCP6002 dual op-amp DIP-8, ref MCP6002IP</td>
+                            <td class="qty">1</td>
+                            <td>Piezo contact-mic buffer; second half for the coil preamp later (rail-to-rail, runs at 3.3&nbsp;V)</td>
+                        </tr>
+                        <tr>
+                            <td>DIP-8 socket, turned-pin, ref 308</td>
+                            <td class="qty">1</td>
+                            <td>For the MCP6002 (ref 008 is on backorder)</td>
+                        </tr>
+                        <tr>
+                            <td>Resistors 1&nbsp;M&Omega;, 100k (backorder), 10k (backorder): refs 1055025, 1045025, 1035025</td>
+                            <td class="qty">10 + 10 + 10</td>
+                            <td>Piezo buffer bias and input protection</td>
+                        </tr>
+                        <tr>
+                            <td>Electrolytic 10&nbsp;&micro;F, ref ELR10063</td>
+                            <td class="qty">5</td>
+                            <td>Piezo buffer bias decoupling. The 1&nbsp;&micro;F output capacitors are owned</td>
+                        </tr>
+                        <tr>
+                            <td>Perfboard 72&times;47&nbsp;mm, ref PC-3</td>
+                            <td class="qty">1</td>
+                            <td>Front panel board for the 4 buttons. Everything else fits on the one Perma-Proto</td>
+                        </tr>
+                        <tr>
+                            <td>Resistors 1k&Omega;, ref 1025025</td>
+                            <td class="qty">10</td>
+                            <td>Fader RC filters, only if readings jitter</td>
+                        </tr>
+                        <tr>
+                            <td>M2.5 standoffs 10&nbsp;mm F-F, ref SEPM2.5X10HH (bag of 10), &euro;4.11</td>
+                            <td class="qty">2</td>
+                            <td>Mount the boards in the printed case (metal: keep clear of traces)</td>
+                        </tr>
+                        <tr>
+                            <td>M2.5&times;5 screws, ref TM2.5X5-20 (bag of 20), &euro;1.75</td>
+                            <td class="qty">1</td>
+                            <td>For the standoffs</td>
+                        </tr>
+                        <tr>
+                            <td>Dupont jumpers M-H / H-H, refs WJW011 / WJW012, &euro;3.29 each</td>
+                            <td class="qty">1 + 1</td>
+                            <td>Teensy, ESP32 and sensors to the board</td>
+                        </tr>
+                        <tr>
+                            <td>Female header 40 pins 2.54&nbsp;mm, ref 40SYA, &euro;0.99</td>
+                            <td class="qty">3</td>
+                            <td>Shield socket and SOIC adapter socket</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p><strong>Adafruit, shipped to the Miami arrival address</strong> (prices and stock read 2026-10-21): $17.90 + Florida tax and shipping. Only what Barcelona does not sell. The ANO's STEMMA QT cable comes from the DigiKey spares.</p>
                 <table class="bom-table">
                     <thead>
                         <tr>
@@ -595,73 +684,28 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>SOIC-16 to DIP adapter</td>
-                            <td class="qty">2</td>
-                            <td>Carrier for the Si4732 chip (1.27&nbsp;mm pitch). Required for the radio</td>
-                        </tr>
-                        <tr>
-                            <td>32.768&nbsp;kHz crystal (~12.5&nbsp;pF)</td>
-                            <td class="qty">2</td>
-                            <td>Si4732 clock. Required for the radio</td>
-                        </tr>
-                        <tr>
-                            <td>Ceramic capacitors 22&nbsp;pF</td>
-                            <td class="qty">4</td>
-                            <td>Crystal load capacitors</td>
-                        </tr>
-                        <tr>
-                            <td>Ceramic capacitors 1&nbsp;nF / 22&nbsp;nF / 470&nbsp;nF</td>
-                            <td class="qty">2 + 2 + 2</td>
-                            <td>Si4732 supply filtering</td>
-                        </tr>
-                        <tr>
-                            <td>Capacitors 4.7&nbsp;&micro;F</td>
-                            <td class="qty">4</td>
-                            <td>Si4732 audio outputs (optional)</td>
-                        </tr>
-                        <tr>
-                            <td>2.2k&Omega; Resistors</td>
-                            <td class="qty">2</td>
-                            <td>Si4732 reference circuit</td>
-                        </tr>
-                        <tr>
-                            <td>1k&Omega; Resistors</td>
-                            <td class="qty">5</td>
-                            <td>Fader RC filters, only if readings jitter</td>
-                        </tr>
-                        <tr>
-                            <td>MCP6002 dual op-amp, DIP-8</td>
-                            <td class="qty">2</td>
-                            <td>Piezo contact-mic buffer (rail-to-rail, runs at 3.3&nbsp;V). One per prototype</td>
-                        </tr>
-                        <tr>
-                            <td>SPDT mini toggle switch</td>
-                            <td class="qty">2</td>
-                            <td>MIC/PIEZO selector on LINE-IN L. One per prototype</td>
-                        </tr>
-                        <tr>
-                            <td>Resistors 1&nbsp;M&Omega; (or 10&nbsp;M&Omega;), 100k, 10k</td>
-                            <td class="qty">2 + 4 + 2</td>
-                            <td>Piezo buffer bias and input protection. Check the owned assortment first</td>
-                        </tr>
-                        <tr>
-                            <td>Capacitors 1&nbsp;&micro;F + 10&nbsp;&micro;F</td>
-                            <td class="qty">2 + 2</td>
-                            <td>Piezo buffer output coupling and bias decoupling</td>
-                        </tr>
-                        <tr>
-                            <td>Piezo disc 27&nbsp;mm, bare (optional)</td>
+                            <td>SMT breakout PCB for SOIC-16, 3-pack (1207), $3.95</td>
                             <td class="qty">1</td>
-                            <td>Only if the owned wired piezo turns out to be an active buzzer, or for the second prototype</td>
+                            <td>Carrier for the Si4732 chip (SOIC-16, 1.27&nbsp;mm pitch). Required for the radio. Not sold by Diotronic or SparkFun</td>
                         </tr>
                         <tr>
-                            <td>AM ferrite antenna (~500&nbsp;&micro;H)</td>
+                            <td>ANO 5-way nav + scroll wheel, I2C, pre-soldered (6310), $13.95</td>
                             <td class="qty">1</td>
-                            <td>AM/LW reception. FM and SW work with a wire. Or salvage one from an old AM radio</td>
+                            <td>Replaces the 5-way nav switch (P504 not found, out of stock). STEMMA QT, cut jumper A1 &rarr; 0x4B</td>
+                        </tr>
+                        <tr>
+                            <td>USB-C to micro-B cable (3878), $3.50</td>
+                            <td class="qty">1</td>
+                            <td>Power bank &rarr; Teensy, only if the power bank is USB-C only and no such cable is owned</td>
                         </tr>
                     </tbody>
                 </table>
-                <p><strong>Not needed for v1:</strong> 6 more EC11 encoders (only for the full 13-encoder interface), 2.2k&Omega; Wire2 pull-ups (all breakouts have their own), 470&Omega; NeoPixel resistor (NeoPixel strip out of v1).</p>
+
+                <p><strong>Spain:</strong> USB power bank, about 5,000&nbsp;mAh (&asymp;100 &times; 65 &times; 12&nbsp;mm), <strong>2 outputs</strong>, no auto-off at low current, pass-through charging. Outside the case, held on the back. Skip if one is owned.</p>
+                <p><strong>Optional:</strong> AM ferrite antenna (~500&nbsp;&micro;H) for AM/LW, or one salvaged from an old AM radio. FM and SW work with a wire.</p>
+                <p><strong>Owned, no purchase:</strong> SPDT mini toggle (spare: the rotary switch replaces it), brass piezo disc, 1&nbsp;&micro;F capacitors, 2.2k&Omega; (optional crystal series resistor).</p>
+                <p><strong>Not needed for v1:</strong> 6 more EC11 encoders (only for the full 13-encoder interface), 2.2k&Omega; Wire2 pull-ups (all breakouts have their own), 470&Omega; NeoPixel resistor (NeoPixel strip out of v1), PowerBoost + LiPo (power bank instead), distance sensor and light-spectrum sensor (dropped 2026-10-21).</p>
+                <p><strong>Later, at Diotronic any time (&euro;27.61):</strong> MPU9250 IMU (&euro;10.60), EM pickup coil 100&nbsp;mH (&euro;1.88), solar cell SOL1N (&euro;4.24), rotary switch CR3C4PS (&euro;3.93), BMP280 barometer (&euro;6.96). Also later: second MCP6002, second Perma-Proto.</p>
             </div>
 
             <p class="blog-license">

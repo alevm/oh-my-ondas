@@ -52,10 +52,11 @@ Open — not yet chosen: Input source TBD — electret on MIC/GND pads or line-i
 ### Task 3: Add Assembly Stages Page
 
 8 phases with I2C bus map. Render as vertical timeline/checklist. Include bus map:
-- **Wire (18/19):** SGTL5000 @ 0x0A, PA1010D @ 0x10, SSD1306 @ 0x3C, ADS1115 @ 0x48
-- **Wire2 (24/25):** MCP23017 #1 @ 0x20, #2 @ 0x21, CAP1188 @ 0x29 (one set of pull-ups: on the breakout, or 2.2K added). Pins 16/17 (Wire1) are covered by the Audio Shield sockets.
-- **SPI (10-13):** ILI9341 LCD (CS=10, DC=9, RST=15)
-- **Serial1 (0/1):** ESP32-S2 UART
+v1 pin map (source of truth: `web/prototype.html`, `firmware/teensy/include/config.h`):
+- **Wire (18/19):** SGTL5000 @ 0x0A only.
+- **Wire2 (SDA 25, SCL 24):** GPS 0x10, Si4732 0x11, MCP23017 0x20, CAP1188 0x29, OLED 0x3C, ADS1115 0x48, Quad #1 0x49, Quad #2 0x4A, ANO nav 0x4B. Breakout pull-ups only.
+- **SPI1:** ILI9341 LCD: MOSI 26, SCK 27, MISO 39, CS 38, DC 37, RST 36.
+- **Serial7 (RX 28, TX 29):** ESP32-S2 link, 2 Mbaud.
 
 ### Task 4: Update Main Page
 
@@ -69,21 +70,22 @@ Dark background, monospace font (`Courier New`), gradient backgrounds. Match exi
 
 ---
 
-## Hardware Assembly Instructions (8 Phases)
+## Hardware Assembly Instructions (10 Phases)
 
-### Key Design Decisions
+### Key Design Decisions (v1, 2026-10-21)
 
-1. Use **Teensy built-in SD** (SDIO). Audio Shield's SD slot unused — avoids SPI bus conflict with LCD.
-2. LCD is **2.8" ILI9341** — ILI9341_t3 is the most optimized display library for Teensy with DMA.
-3. Split I2C: **Wire (18/19)** for audio-path devices, **Wire2 (24/25)** for UI-polling devices (Wire1 on 16/17 is covered by the Audio Shield sockets).
-4. 4 main buttons (MODE/SHIFT/REC/PLAY) wired **directly to Teensy pins** (not MCP23017) for latency.
-5. ESP32-S2 powered from **5V** through its own regulator, not from Teensy 3.3V.
+1. Use **Teensy built-in SD** (SDIO). Audio Shield's SD slot unused.
+2. LCD is **2.8" ILI9341** on SPI1 (pins 26/27/39 + 36–38), the only SPI pins past the shield.
+3. All UI devices on **Wire2 (24/25)**; Wire (18/19) is the SGTL5000 only.
+4. Buttons MODE/SHIFT/REC/PLAY on MCP23017 GPB0–3; nav is the ANO I2C board (0x4B); 7 encoders on 2 Quad boards.
+5. ESP32-S2 powered from its own USB-C (power bank output 2), never from the Teensy 3.3 V.
+6. Composition engine: layer 1 on the Teensy (continuous, no internet), layer 2 AI over WiFi. See `docs/technical/ai-layer2-design.md`.
 
 ### Phase 1: Core Audio
 Teensy 4.1 + Audio Shield + SD + headphones.
 
 - **Stack:** Audio Shield sits UNDER the Teensy 4.1. A female socket strip on the shield receives the Teensy's downward-facing male headers. Shield at the USB end, pin 0 to pin 0. The shield covers only the first 14 pins per side; pins 24+ stay free. Seat the Teensy fully (header plastic touching the socket strip) — partial insertion gives intermittent contact. Pluggable; no solder joint between the boards.
-- **Shield pins** ([PJRC](https://www.pjrc.com/store/teensy3_audio.html)): audio data 7, 8, 20, 21, 23 · I2C 18 (SDA), 19 (SCL), shared · shield SD socket 10–13 · memory chip CS 6 · volume pot 15/A1. Keep the shield SD socket empty and don't fit the pot or memory chip: the LCD uses 10 and 15, the NeoPixels use 6.
+- **Shield pins** ([PJRC](https://www.pjrc.com/store/teensy3_audio.html)): audio data 7, 8, 20, 21, 23 · I2C 18 (SDA), 19 (SCL), shared · shield SD socket 10–13 · memory chip CS 6 · volume pot 15/A1. Keep the shield SD socket empty and don't fit the pot or memory chip. Pins 0–23 are under the shield: v1 uses only 24–41.
 - **SD:** FAT32, `TEST.WAV` (44.1 kHz/16-bit) at root, Teensy built-in slot (`BUILTIN_SDCARD`).
 - **Tests:** `firmware/teensy/test/layer1_tone`, `firmware/teensy/test/layer1_sd_playback`, `firmware/teensy/test/layer1_record_roundtrip`.
 - **Status:**
@@ -94,31 +96,39 @@ Teensy 4.1 + Audio Shield + SD + headphones.
 **Done when:** hear audio in headphones.
 
 ### Phase 2: Touch Sensing
-CAP1188 on Wire2 (SDA 25, SCL 24), address 0x29. One set of pull-ups: the breakout's own, or 2.2K added if it has none. 3.3V is next to pin 24, GND next to pin 41, all past the shield edge. Copper tape pads 20x20mm. Touch triggers audio samples.
+CAP1188 on Wire2 @ 0x29. Copper pads. Touch triggers samples.
 **Done when:** touching pads triggers samples.
 
-### Phase 3: Display + LEDs
-SSD1306 OLED on Wire (18/19) @ 0x3C. ILI9341 LCD on SPI: CS=10, DC=9, RST=15 (pin 8 is I2S RX conflict). WS2812B NeoPixels on pin 6 with 470Ω series resistor.
-**Done when:** OLED + LCD + NeoPixels work, audio still clean.
+### Phase 3: Displays
+OLED SSD1306 on Wire2 @ 0x3C. LCD ILI9341 on SPI1 (MOSI 26, SCK 27, MISO 39 with `SPI1.setMISO(39)`, CS 38, DC 37, RST 36). No NeoPixel strip in v1.
+**Done when:** OLED + LCD work, audio still clean.
 
 ### Phase 4: Analog Inputs
-ADS1115 on Wire (18/19) @ 0x48. 4 slide pots to ADS1115 A0-A3, 5th pot to Teensy pin 14 (A0). 100nF caps on all wipers. 3.3V reference (NOT 5V).
-**Done when:** faders read 0-26000 smoothly, no jitter.
+ADS1115 on Wire2 @ 0x48: faders 1–4 to A0–A3, fader 5 to Teensy pin 40 (A16). 100 nF on every wiper, at the fader. 3.3 V only, never 5 V.
+**Done when:** faders read full range smoothly, no jitter.
 
 ### Phase 5: I/O Expansion
-Buttons directly: MODE=pin2, SHIFT=pin3, REC=pin4, PLAY=pin5 (INPUT_PULLUP). MCP23017 #1 @ 0x20, #2 @ 0x21 on Wire2 (24/25). 5 encoders on MCP #1, 2 encoders + 5-way nav switch on MCP #2. 100nF decoupling caps. RESET pins tied to 3.3V.
-**Done when:** all encoders, buttons, nav switch respond.
+MCP23017 @ 0x20 on Wire2: GPB0–3 = MODE, SHIFT, REC, PLAY (internal pull-ups), 100 nF at pin 9, RESET to 3.3 V. 7 EC11 on Quad #1 (0x49) and Quad #2 (0x4A, A0 cut). ANO nav + wheel (Adafruit 6310) at 0x4B (A1 cut) on the STEMMA QT chain.
+**Done when:** all encoders, buttons, nav and wheel respond.
 
 ### Phase 6: GPS
-PA1010D on Wire (18/19) @ 0x10. Test outdoors for first fix (~30s). Display coordinates on OLED.
-**Done when:** Barcelona coordinates show on OLED.
+PA1010D on Wire2 @ 0x10, end of the STEMMA QT chain. First fix outdoors (~30 s).
+**Done when:** Barcelona coordinates show on the OLED.
 
-### Phase 7: WiFi
-ESP32-S2 programmed separately first. UART: ESP32 TX → Teensy pin 0 (RX1), ESP32 RX → Teensy pin 1 (TX1). Power from 5V/VBUS, NOT Teensy 3.3V. Do NOT connect 3.3V rails.
-**Done when:** Teensy receives UART messages from ESP32, audio clean.
+### Phase 7: WiFi link (ESP32-S2 Thing Plus)
+Firmware in `firmware/esp32/` (flash it separately first). UART: ESP TX → Teensy 28 (RX7), ESP RX ← Teensy 29 (TX7), common GND; short wires, 2 Mbaud (1 Mbaud fallback). Power: USB-C from power bank output 2. Do NOT connect the 3.3 V rails. WiFi: the phone hotspot.
+**Done when:** the LCD SENSE screen shows frames sent/received with 0 errors, WiFi up, server connected; audio clean.
 
 ### Phase 8: Integration
-Everything running simultaneously. CPU <70%, no I2C errors, audio clean, GPS fix, WiFi connected.
+Everything running together, radio included. CPU <70%, no I2C errors, audio clean, GPS fix, link up.
+
+### Phase 9: Layer 1 sensing and engine
+PSRAM 2 × 8 MB soldered (captures). SENSE screen: spectrum bands, onsets, pulse, pitch, speech, piezo, radio. Captures from mic, piezo and radio analysed and assigned to roles; continuous mapping drives the sequencer and FX.
+**Done when:** walking between two places changes the music audibly without touching a control, and captures play as rhythm/texture/melody.
+
+### Phase 10: Layer 2 AI
+Server in `server/` (local first, then the VPS: deployment by the user). Device streams features and clips (no mic clips while speech is detected); server adds place context and returns plans.
+**Done when:** plans arrive and are applied at bar boundaries; with WiFi off, layer 1 keeps playing.
 
 ### Parts Not Used (set aside)
 KB2040 (P5302), RFM95W LoRa (P3072), USB-C connectors (P5978, P5993), backup Teensy + Audio Shield.
