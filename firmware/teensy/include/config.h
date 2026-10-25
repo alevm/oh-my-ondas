@@ -48,6 +48,9 @@
 
 #define UI_WIRE        Wire2     // SDA 25, SCL 24: all UI I2C devices
 #define UI_I2C_CLOCK   400000    // bench tests ran at the 100 kHz default; drop to 100000 on I2C errors
+#define UI_SDA_PIN     25        // Wire2 pins, driven as GPIO only for the bus clear (InputManager)
+#define UI_SCL_PIN     24
+#define UI_PROBE_MS    1000      // CAP1188 re-probe; bus clear when every UI part stops answering
 #define ESP32_SERIAL   Serial7   // RX7 28 <- ESP TX, TX7 29 -> ESP RX
 // Link speed: LINK_BAUD (2 Mbaud) from common/link_protocol.h, see esp_link.h
 
@@ -60,7 +63,11 @@
 // ============================================
 
 // Main UI: Adafruit 2.8" ILI9341 320x240 on SPI1.
-// Library default SPI speed: 40 MHz over jumpers gives a white screen.
+// Adafruit_ILI9341::begin() without a speed runs at 8 MHz on Teensy
+// (SPI_DEFAULT_FREQ for TEENSYDUINO), which is what the bench sketches use:
+// a full-screen fill then blocks the loop ~154 ms. 40 MHz over jumpers
+// gave a white screen. Drop to 8000000 if the screen goes white.
+#define TFT_SPI_HZ 20000000
 #define TFT_MOSI 26
 #define TFT_SCK  27
 #define TFT_MISO 39   // needs SPI1.setMISO(39): the default MISO1 is pin 1, under the shield
@@ -262,6 +269,10 @@ enum RadioBand {
 #define GESTURE_FLIP_MUTE     1    // face down: capture layers muted; face up: back
 
 #define CAP_IRQ_PIN      35   // optional, not used yet
+// CAP1188 sensitivity register 0x1F: 0x4F = 8x gain. 16x (0x3F) gave phantom
+// touches with hands near the wires (test/bench_all uses 0x4F)
+#define CAP_SENSITIVITY  0x4F
+#define CAP_FAIL_LIMIT   20   // consecutive failed reads (~100 ms) before the pads count as gone
 #define SPARE_ANALOG_PIN 41   // A17, only spare analog pin
 // No NeoPixel ring and no status LEDs in v1: status goes to LCD/OLED,
 // per-encoder colour to the Quad boards' NeoPixels.
@@ -293,6 +304,8 @@ enum RadioBand {
 //   ADS1115  one channel every 10 ms (conversion started one poll earlier, no wait)
 //   GPS      every 50 ms (at most one 32-byte I2C read)
 //   OLED     every 200 ms
+
+#define GPS_FIX_TIMEOUT_MS 3000   // state.gps.valid drops when no fix sentence arrived for this long
 
 // ============================================
 // AUDIO ROUTING

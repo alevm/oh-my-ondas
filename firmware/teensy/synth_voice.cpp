@@ -15,6 +15,9 @@ SynthVoice::SynthVoice()
     , baseFreq(440.0f)
     , osc2DetuneRatio(1.0f)
     , filterFreq(8000.0f)
+    , filterRes(0.7f)       // as set in main.ino setup()
+    , attackMs(10.0f)
+    , releaseMs(200.0f)
     , active(false)
     , lfoRate(2.0f)
     , lfoDepth(0.0f)
@@ -144,11 +147,13 @@ void SynthVoice::setFilterFreq(float freq) {
 }
 
 void SynthVoice::setFilterRes(float res) {
-    if (filter) filter->resonance(constrain(res, 0.0f, 5.0f));
+    filterRes = constrain(res, 0.0f, SYNTH_RES_MAX);
+    if (filter) filter->resonance(filterRes);
 }
 
 void SynthVoice::setAttack(float ms) {
-    if (envelope) envelope->attack(ms);
+    attackMs = constrain(ms, 1.0f, SYNTH_ATTACK_MAX_MS);
+    if (envelope) envelope->attack(attackMs);
 }
 
 void SynthVoice::setDecay(float ms) {
@@ -160,7 +165,8 @@ void SynthVoice::setSustain(float level) {
 }
 
 void SynthVoice::setRelease(float ms) {
-    if (envelope) envelope->release(ms);
+    releaseMs = constrain(ms, 1.0f, SYNTH_RELEASE_MAX_MS);
+    if (envelope) envelope->release(releaseMs);
 }
 
 void SynthVoice::setLFORate(float hz) {

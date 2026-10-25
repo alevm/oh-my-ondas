@@ -67,6 +67,8 @@ public:
     void setLFODepth(float depth);
     void setLFOTarget(int paramIndex);
     float getLFOValue();
+    float getLFORate() const  { return lfoRate; }
+    float getLFODepth() const { return lfoDepth; }
 
 private:
     FXType currentEffect;

@@ -114,6 +114,11 @@ private:
     unsigned long msgStart;
     int msgDuration;
     bool msgActive;
+    int16_t msgBoxX, msgBoxY, msgBoxW, msgBoxH;   // box on the glass, W 0 = none
+
+    static const int BODY_Y  = 25;  // below the header bar and its divider
+    static const int SWEEP_H = 27;  // body cleared in 8 strips of 27 rows, one per frame
+    int8_t sweepStrip;              // next strip to clear, -1 = none
 
     float lastBPM;
     float lastVolume;
@@ -137,6 +142,9 @@ private:
     void senseLine(int line, uint16_t color, const char* fmt, ...);
     void drawLinkIndicator();
     void drawMessageOverlay();
+    void messageBox(int16_t& x, int16_t& y, int16_t& w, int16_t& h);
+    void clearMessageBox();
+    void resetDrawCache();
     void checkHealth();
 
     void drawBar(int x, int y, int w, int h, float value, uint16_t fg, uint16_t bg);

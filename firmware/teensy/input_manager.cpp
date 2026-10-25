@@ -30,6 +30,29 @@ static const uint8_t ANO_PINS[5] = {ANO_SW_UP, ANO_SW_DOWN, ANO_SW_LEFT, ANO_SW_
 #define ADS_CONFIG_DR_860 0x00E0  // 860 SPS
 #define ADS_CONFIG_COMP   0x0003  // Disable comparator
 
+// CAP1188 registers (datasheet; same values as Adafruit_CAP1188)
+#define CAP_REG_MAIN        0x00
+#define CAP_MAIN_INT        0x01
+#define CAP_REG_STATUS      0x03  // sensor input status, bit n = pad n
+#define CAP_REG_SENSITIVITY 0x1F
+#define CAP_REG_CONFIG      0x20
+#define CAP_REG_CALIBRATE   0x26
+#define CAP_REG_MTBLK       0x2A  // multiple touch
+#define CAP_REG_STANDBYCFG  0x41
+#define CAP_REG_LEDLINK     0x72
+#define CAP_REG_PRODID      0xFD  // 0x50
+#define CAP_REG_MANUID      0xFE  // 0x5D
+
+// Every UI part on Wire2, for the presence probe. Bit n of uiSeen = entry n.
+static const uint8_t UI_PARTS[] = {ADDR_CAP1188, ADDR_MCP23017, ADDR_ADS1115, ADDR_QUAD1,
+                                   ADDR_QUAD2, ADDR_ANO, ADDR_SSD1306, ADDR_GPS};
+#define UI_PART_COUNT (int)(sizeof(UI_PARTS) / sizeof(UI_PARTS[0]))
+#define UI_BIT_CAP    (1 << 0)
+#define UI_BIT_MCP    (1 << 1)
+#define UI_BIT_ADS    (1 << 2)
+#define UI_BIT_QUADS  ((1 << 3) | (1 << 4))
+#define UI_BIT_ANO    (1 << 5)
+
 InputManager::InputManager()
     : encoderCB(nullptr), buttonCB(nullptr), faderCB(nullptr)
     , joystickCB(nullptr), touchCB(nullptr)
@@ -37,10 +60,11 @@ InputManager::InputManager()
     , ano(nullptr), anoReady(false), anoSwitchMask(0), wheelPosition(0)
     , anoDirs(0), mcpDirs(0), mcpDirsRaw(0)
     , joystickState(JOY_NONE), joystickLastState(JOY_NONE), lastAnoPoll(0)
-    , touchLast(0), touchReady(false)
+    , touchLast(0), touchReady(false), touchFails(0)
     , mcpReady(false)
     , adsReady(false), adsCurrentChannel(0), adsPending(false)
-    , i2cErrorCount(0), mcpLastGood(0xFFFF)
+    , i2cErrorCount(0), busRecoveries(0), uiSeen(0), uiGone(false), lastProbe(0)
+    , mcpLastGood(0xFFFF)
     , lastEncoderPoll(0), lastButtonPoll(0), lastFaderPoll(0), lastTouchPoll(0)
 {
     memset(buttonStates, 0, sizeof(buttonStates));
@@ -64,12 +88,20 @@ void InputManager::begin() {
     initMCP23017();
     initADS1115();
     initTouch();
+    uiSeen = probeAll();
+    lastProbe = millis();
 
     DEBUG_PRINTLN("InputManager: Ready");
 }
 
 void InputManager::update() {
     unsigned long now = millis();
+
+    // CAP1188 back after a drop-out; bus clear when every UI part is gone
+    if (now - lastProbe >= UI_PROBE_MS) {
+        serviceBus();
+        lastProbe = now;
+    }
 
     // Touch pads: every TOUCH_POLL_MS (one I2C read, ~0.3 ms)
     if (now - lastTouchPoll >= TOUCH_POLL_MS) {
@@ -203,24 +235,26 @@ void InputManager::initADS1115() {
 }
 
 void InputManager::initTouch() {
-    // touch.begin() fails if the previous transaction on the bus was NACKed;
-    // a plain register read first clears it (see test/layer2_cap1188).
-    UI_WIRE.beginTransmission(ADDR_CAP1188);
-    UI_WIRE.write(0xFD);
-    UI_WIRE.endTransmission(false);
-    UI_WIRE.requestFrom((uint8_t)ADDR_CAP1188, (uint8_t)1);
-    while (UI_WIRE.available()) UI_WIRE.read();
-
-    if (touchSensor.begin(ADDR_CAP1188, &UI_WIRE)) {
-        // 16x sensitivity and max-duration recalibration, as verified in test/layer2_pads_visual
-        touchSensor.writeRegister(0x1F, 0x3F);
-        touchSensor.writeRegister(0x20, touchSensor.readRegister(0x20) | 0x08);
-        touchSensor.writeRegister(0x26, 0xFF);
-        touchReady = true;
-        DEBUG_PRINTLN("  CAP1188 touch: OK");
-    } else {
-        DEBUG_PRINTLN("  CAP1188 touch: NOT FOUND");
-    }
+    // Raw register access: Adafruit_CAP1188::begin() allocates a new I2C
+    // device on every call (no re-init) and touched() returns the register
+    // number (0x03 = pads 1+2) when a read fails.
+    // The first transfer after a NACK on the bus can fail: one throw-away
+    // read first (see test/layer2_cap1188).
+    uint8_t pid = 0, mid = 0, cfg = 0;
+    capRead8(CAP_REG_PRODID, pid);
+    touchReady = capRead8(CAP_REG_PRODID, pid) && pid == 0x50
+              && capRead8(CAP_REG_MANUID, mid) && mid == 0x5D
+              // as Adafruit_CAP1188::begin(): multiple touches, LED n follows pad n, faster standby cycle
+              && capWrite8(CAP_REG_MTBLK, 0x00)
+              && capWrite8(CAP_REG_LEDLINK, 0xFF)
+              && capWrite8(CAP_REG_STANDBYCFG, 0x30)
+              // sensitivity (config.h) and max-duration recalibration, as on the bench
+              && capWrite8(CAP_REG_SENSITIVITY, CAP_SENSITIVITY)
+              && capRead8(CAP_REG_CONFIG, cfg)
+              && capWrite8(CAP_REG_CONFIG, cfg | 0x08)
+              && capWrite8(CAP_REG_CALIBRATE, 0xFF);
+    touchFails = 0;
+    DEBUG_PRINTF("  CAP1188 touch: %s\n", touchReady ? "OK" : "NOT FOUND");
 }
 
 // ============================================
@@ -356,7 +390,24 @@ void InputManager::pollFaders() {
 void InputManager::pollTouch() {
     if (!touchReady) return;
 
-    uint16_t current = touchSensor.touched();
+    // A failed read is not a touch: hold the last state. After
+    // CAP_FAIL_LIMIT failures in a row the pads count as gone (released);
+    // serviceBus() sets the chip up again when it answers.
+    uint8_t status;
+    if (!capRead8(CAP_REG_STATUS, status)) {
+        if (++touchFails >= CAP_FAIL_LIMIT) {
+            touchReady = false;
+            releaseTouches();
+            DEBUG_PRINTLN("CAP1188 lost");
+        }
+        return;
+    }
+    touchFails = 0;
+    if (status) {   // clear INT so the status refreshes (as touched() does)
+        uint8_t mainReg;
+        if (capRead8(CAP_REG_MAIN, mainReg)) capWrite8(CAP_REG_MAIN, mainReg & ~CAP_MAIN_INT);
+    }
+    uint16_t current = status;
 
     for (int i = 0; i < MAX_PADS; i++) {
         bool wasPressed = (touchLast >> i) & 1;
@@ -370,6 +421,86 @@ void InputManager::pollTouch() {
     }
 
     touchLast = current;
+}
+
+void InputManager::releaseTouches() {
+    for (int i = 0; i < MAX_PADS; i++) {
+        if (((touchLast >> i) & 1) && touchCB) touchCB(i, false);
+    }
+    touchLast = 0;
+}
+
+// ============================================
+// PRESENCE / BUS RECOVERY
+// ============================================
+
+bool InputManager::present(uint8_t addr) {
+    UI_WIRE.beginTransmission(addr);
+    return UI_WIRE.endTransmission() == 0;
+}
+
+uint8_t InputManager::probeAll() {
+    uint8_t here = 0;
+    for (int i = 0; i < UI_PART_COUNT; i++) {
+        if (present(UI_PARTS[i])) here |= 1 << i;
+    }
+    return here;
+}
+
+void InputManager::serviceBus() {
+    uint8_t here = probeAll();
+
+    // Every part that ever answered is gone at once: the bus, not the parts
+    if (uiSeen && !here) {
+        uiGone = true;
+        if (busClear()) here = probeAll();
+    }
+    // Back after all were gone (bus cleared, or the UI supply came back):
+    // their settings may be lost, set up every part that answers
+    if (uiGone && here) {
+        uiGone = false;
+        DEBUG_PRINTF("Wire2 back (parts 0x%02X): re-init\n", here);
+        if (here & UI_BIT_QUADS) initQuads();
+        if (here & UI_BIT_ANO)   initANO();
+        if (here & UI_BIT_MCP)   initMCP23017();
+        if (here & UI_BIT_ADS)   { adsPending = false; initADS1115(); }
+        if (touchReady) { touchReady = false; releaseTouches(); }   // initTouch below
+    }
+    uiSeen |= here;
+
+    // CAP1188 back after dropping out (a power glitch also resets its sensitivity)
+    if (!touchReady && (here & UI_BIT_CAP)) initTouch();
+}
+
+// Bus clear (I2C spec 3.1.16): a part reset mid-transfer can hold SDA low
+// and block the whole bus. Clock SCL (open drain) until SDA lets go, at most
+// 18 clocks, then a STOP. UI_WIRE.begin() puts both pins back on the I2C
+// peripheral: after pinMode() they are plain GPIO. True if SDA was held low.
+bool InputManager::busClear() {
+    pinMode(UI_SDA_PIN, INPUT_PULLUP);
+    pinMode(UI_SCL_PIN, INPUT_PULLUP);
+    delayMicroseconds(20);
+    bool stuck = !digitalReadFast(UI_SDA_PIN);
+    if (stuck) {
+        pinMode(UI_SCL_PIN, OUTPUT_OPENDRAIN);
+        for (int i = 0; i < 18 && !digitalReadFast(UI_SDA_PIN); i++) {
+            digitalWriteFast(UI_SCL_PIN, LOW);  delayMicroseconds(5);
+            digitalWriteFast(UI_SCL_PIN, HIGH); delayMicroseconds(5);
+        }
+        // STOP: SDA rises while SCL is high
+        digitalWriteFast(UI_SCL_PIN, LOW);
+        pinMode(UI_SDA_PIN, OUTPUT_OPENDRAIN);
+        digitalWriteFast(UI_SDA_PIN, LOW);  delayMicroseconds(5);
+        digitalWriteFast(UI_SCL_PIN, HIGH); delayMicroseconds(5);
+        digitalWriteFast(UI_SDA_PIN, HIGH); delayMicroseconds(5);
+        pinMode(UI_SDA_PIN, INPUT_PULLUP);
+        pinMode(UI_SCL_PIN, INPUT_PULLUP);
+        busRecoveries++;
+        DEBUG_PRINTLN("Wire2 bus clear (SDA was held low)");
+    }
+    UI_WIRE.begin();
+    UI_WIRE.setClock(UI_I2C_CLOCK);
+    return stuck;
 }
 
 // ============================================
@@ -430,6 +561,22 @@ bool InputManager::checkedDelta(QuadBoard* b, uint8_t enc, int32_t& delta) {
     if (!b->readDelta(enc, delta)) { i2cErrorCount++; delta = 0; return false; }
     if (abs(delta) > SEESAW_MAX_DELTA) { i2cErrorCount++; delta = 0; return false; }
     return true;
+}
+
+bool InputManager::capRead8(uint8_t reg, uint8_t& outVal) {
+    UI_WIRE.beginTransmission(ADDR_CAP1188);
+    UI_WIRE.write(reg);
+    if (UI_WIRE.endTransmission(false) != 0 ||
+        UI_WIRE.requestFrom((uint8_t)ADDR_CAP1188, (uint8_t)1) != 1) {
+        i2cErrorCount++;
+        return false;
+    }
+    outVal = UI_WIRE.read();
+    return true;
+}
+
+bool InputManager::capWrite8(uint8_t reg, uint8_t value) {
+    return mcpWrite8(ADDR_CAP1188, reg, value);   // plain register write, counts errors
 }
 
 // Start a single-shot single-ended conversion on one channel

@@ -4,6 +4,7 @@
  */
 
 #include "audio_recorder.h"
+#include "sd_guard.h"
 
 AudioRecorder::AudioRecorder()
     : queue(nullptr)
@@ -21,10 +22,11 @@ void AudioRecorder::begin(AudioRecordQueue* q) {
 void AudioRecorder::update() {
     if (!recording || !queue) return;
 
-    // Drain available audio buffers to SD
+    // Drain available audio buffers to SD, one guarded write per block
+    // (SD WAV players read the card in the audio interrupt)
     while (queue->available() > 0) {
         int16_t* buf = queue->readBuffer();
-        wavFile.write((byte*)buf, 256);  // 128 samples * 2 bytes
+        sdWrite(wavFile, buf, 256);  // 128 samples * 2 bytes
         queue->freeBuffer();
         totalSamples += 128;
     }
@@ -34,7 +36,7 @@ void AudioRecorder::startRecording(const char* filename) {
     if (!queue) return;
     if (recording) stopRecording();
 
-    wavFile = SD.open(filename, FILE_WRITE);
+    wavFile = sdOpen(filename, FILE_WRITE);
     if (!wavFile) {
         DEBUG_PRINTF("AudioRecorder: Cannot open %s\n", filename);
         return;
@@ -58,14 +60,14 @@ void AudioRecorder::stopRecording() {
     if (queue) {
         while (queue->available() > 0) {
             int16_t* buf = queue->readBuffer();
-            wavFile.write((byte*)buf, 256);
+            sdWrite(wavFile, buf, 256);
             queue->freeBuffer();
             totalSamples += 128;
         }
     }
 
     finalizeWavHeader();
-    wavFile.close();
+    sdClose(wavFile);
     recording = false;
 
     DEBUG_PRINTF("AudioRecorder: Stopped (%lu samples, %lu ms)\n",
@@ -82,8 +84,8 @@ unsigned long AudioRecorder::getRecordingDuration() {
 }
 
 void AudioRecorder::writeWavHeader() {
-    // Write placeholder WAV header (44 bytes)
-    // Will be finalized with actual size on stop
+    // Placeholder WAV header (44 bytes), built in RAM and written in one
+    // guarded call; finalized with the actual size on stop
     uint32_t dataSize = 0;  // placeholder
     uint32_t fileSize = 36 + dataSize;
     uint32_t sampleRate = 44100;
@@ -91,26 +93,28 @@ void AudioRecorder::writeWavHeader() {
     uint16_t bitsPerSample = 16;
     uint32_t byteRate = sampleRate * numChannels * bitsPerSample / 8;
     uint16_t blockAlign = numChannels * bitsPerSample / 8;
+    uint32_t fmtSize = 16;
+    uint16_t audioFormat = 1;  // PCM
 
-    wavFile.write("RIFF", 4);
-    wavFile.write((byte*)&fileSize, 4);
-    wavFile.write("WAVE", 4);
+    uint8_t h[44];
+    memcpy(h, "RIFF", 4);
+    memcpy(h + 4, &fileSize, 4);
+    memcpy(h + 8, "WAVE", 4);
 
     // fmt sub-chunk
-    wavFile.write("fmt ", 4);
-    uint32_t fmtSize = 16;
-    wavFile.write((byte*)&fmtSize, 4);
-    uint16_t audioFormat = 1;  // PCM
-    wavFile.write((byte*)&audioFormat, 2);
-    wavFile.write((byte*)&numChannels, 2);
-    wavFile.write((byte*)&sampleRate, 4);
-    wavFile.write((byte*)&byteRate, 4);
-    wavFile.write((byte*)&blockAlign, 2);
-    wavFile.write((byte*)&bitsPerSample, 2);
+    memcpy(h + 12, "fmt ", 4);
+    memcpy(h + 16, &fmtSize, 4);
+    memcpy(h + 20, &audioFormat, 2);
+    memcpy(h + 22, &numChannels, 2);
+    memcpy(h + 24, &sampleRate, 4);
+    memcpy(h + 28, &byteRate, 4);
+    memcpy(h + 32, &blockAlign, 2);
+    memcpy(h + 34, &bitsPerSample, 2);
 
     // data sub-chunk
-    wavFile.write("data", 4);
-    wavFile.write((byte*)&dataSize, 4);
+    memcpy(h + 36, "data", 4);
+    memcpy(h + 40, &dataSize, 4);
+    sdWrite(wavFile, h, sizeof(h));
 }
 
 void AudioRecorder::finalizeWavHeader() {
@@ -118,6 +122,7 @@ void AudioRecorder::finalizeWavHeader() {
     uint32_t fileSize = 36 + dataSize;
 
     // Seek back and write correct sizes
+    SdGuard g;
     wavFile.seek(4);
     wavFile.write((byte*)&fileSize, 4);
 

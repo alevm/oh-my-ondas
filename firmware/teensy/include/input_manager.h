@@ -9,7 +9,11 @@
  *     on MCP23017 GPA0-4 -> one set of JoystickDir bits
  *   4 buttons on one MCP23017 GPB0-3 (debounced)
  *   4 ADS1115 faders + fader 5 on the Teensy ADC
- *   8 CAP1188 touch pads
+ *   8 CAP1188 touch pads (raw register access with checked reads,
+ *     re-initialised when it answers again after dropping out)
+ * Every UI_PROBE_MS: if every UI part on Wire2 stops answering at once, the
+ * bus is cleared (SDA held low by a part reset mid-transfer) and the parts
+ * are re-initialised.
  */
 
 #ifndef INPUT_MANAGER_H
@@ -18,7 +22,6 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_seesaw.h>
-#include <Adafruit_CAP1188.h>
 #include "config.h"
 
 // Seesaw board with access to the GPIO interrupt flags. The INT line stays
@@ -85,6 +88,8 @@ public:
     int32_t getWheelPosition() const { return wheelPosition; }  // accumulated ANO wheel steps
     bool    isNavReady() const { return anoReady; }
     uint32_t getI2CErrorCount() const { return i2cErrorCount; }
+    uint32_t getBusRecoveries() const { return busRecoveries; }
+    bool     isTouchReady() const { return touchReady; }
 
 private:
     // Callbacks
@@ -120,9 +125,9 @@ private:
     unsigned long lastAnoPoll;
 
     // ── Touch ──
-    Adafruit_CAP1188 touchSensor;
     uint16_t touchLast;
     bool     touchReady;
+    uint8_t  touchFails;       // consecutive failed reads
 
     // ── MCP23017 state ──
     bool     mcpReady;
@@ -134,6 +139,10 @@ private:
 
     // ── I2C error handling ──
     uint32_t i2cErrorCount;
+    uint32_t busRecoveries;
+    uint8_t  uiSeen;           // UI parts that ever answered (bit per UI_PARTS entry)
+    bool     uiGone;           // every UI part stopped answering: re-initialise them on return
+    unsigned long lastProbe;
     uint16_t mcpLastGood;      // last good MCP read
     int16_t  adsLastGood[4];   // last good ADS1115 per-channel
 
@@ -158,6 +167,13 @@ private:
 
     void setButton(int buttonID, bool pressed, unsigned long now);
     void updateNav();
+    void releaseTouches();
+
+    // Presence / bus recovery (every UI_PROBE_MS)
+    void serviceBus();
+    bool busClear();
+    bool present(uint8_t addr);
+    uint8_t probeAll();
 
     // I2C helpers (return false on bus error, increment i2cErrorCount)
     bool mcpRead16(uint8_t addr, uint8_t reg, uint16_t& outVal);
@@ -165,6 +181,8 @@ private:
     bool adsStart(uint8_t channel);
     bool adsReadResult(int16_t& outVal);
     bool checkedDelta(QuadBoard* b, uint8_t enc, int32_t& delta);
+    bool capRead8(uint8_t reg, uint8_t& outVal);
+    bool capWrite8(uint8_t reg, uint8_t value);
 };
 
 #endif // INPUT_MANAGER_H

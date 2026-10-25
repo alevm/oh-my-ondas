@@ -36,6 +36,7 @@
 #include "plan_renderer.h"
 #include "esp_link.h"
 #include "motion_sensors.h"
+#include "sd_guard.h"
 
 // ============================================
 // AUDIO OBJECTS
@@ -185,7 +186,9 @@ void setup() {
     // Wire (18/19) stays with the Audio Shield.
     UI_WIRE.begin();
     UI_WIRE.setClock(UI_I2C_CLOCK);
-    UI_WIRE.setTimeout(1000);  // 1ms I2C timeout — prevents bus hangs
+    // No setTimeout(): that is the Stream read timeout (ms), not an I2C one.
+    // Teensy 4 Wire times out stuck transfers itself (16-50 ms); a bus held
+    // low is cleared by InputManager (see UI_PROBE_MS).
 
     // IMU + barometer on Wire2: each optional, absent parts are skipped
     motionSensors.begin();
@@ -350,8 +353,8 @@ void setup() {
 void initSDDirectories() {
     const char* dirs[] = { "/samples", "/patterns", "/recordings", "/presets" };
     for (auto dir : dirs) {
-        if (!SD.exists(dir)) {
-            SD.mkdir(dir);
+        if (!sdExists(dir)) {
+            sdMkdir(dir);
             Serial.printf("Created directory: %s\n", dir);
         }
     }
@@ -397,7 +400,7 @@ void loop() {
     // GPS breadcrumb logging (every 10s)
     static unsigned long lastGPSLog = 0;
     if (state.gps.valid && millis() - lastGPSLog >= 10000) {
-        File gpsFile = SD.open("/gps_log.csv", FILE_WRITE);
+        SdWriter gpsFile("/gps_log.csv");   // guarded: SD WAV players read the card in the audio interrupt
         if (gpsFile) {
             gpsFile.printf("%lu,%.6f,%.6f\n", millis(), state.gps.lat, state.gps.lon);
             gpsFile.close();
@@ -479,7 +482,7 @@ void onEncoderChange(int encoderID, int delta) {
 
         case ENC_FILT:
             if (state.shiftPressed) {
-                fxEngine.setLFORate(fxEngine.getLFOValue() + delta * 0.1f);
+                fxEngine.setLFORate(fxEngine.getLFORate() + delta * 0.1f);   // clamped 0.01..20 Hz
             } else {
                 fxEngine.adjustParam(0, delta * 0.01f);
             }
@@ -514,7 +517,7 @@ void onEncoderChange(int encoderID, int delta) {
 
         case ENC_CUT:
             if (state.shiftPressed) {
-                synthVoice.setFilterRes(constrain(0.7f + delta * 0.1f, 0.1f, 5.0f));
+                synthVoice.setFilterRes(synthVoice.getFilterRes() + delta * 0.05f);   // clamped 0..SYNTH_RES_MAX
             } else {
                 // Cutoff in 1/12-octave steps around the user's base; the mapper modulates around it
                 float f = constrain(mapper.getUserBase(MT_FILTER) * powf(2.0f, delta / 12.0f), 200.0f, 12000.0f);
@@ -524,9 +527,9 @@ void onEncoderChange(int encoderID, int delta) {
             break;
         case ENC_ATK:
             if (state.shiftPressed) {
-                synthVoice.setRelease(constrain(200.0f + delta * 20.0f, 1.0f, 10000.0f));
+                synthVoice.setRelease(synthVoice.getRelease() + delta * 20.0f);   // clamped 1..SYNTH_RELEASE_MAX_MS
             } else {
-                synthVoice.setAttack(constrain(10.0f + delta * 5.0f, 1.0f, 5000.0f));
+                synthVoice.setAttack(synthVoice.getAttack() + delta * 5.0f);      // clamped 1..SYNTH_ATTACK_MAX_MS
             }
             break;
 
@@ -945,14 +948,14 @@ void onRecPressed() {
         int recNum = 0;
         do {
             snprintf(filename, sizeof(filename), "/recordings/rec_%04d.wav", recNum++);
-        } while (SD.exists(filename) && recNum < 9999);
+        } while (sdExists(filename) && recNum < 9999);
 
         audioRecorder.startRecording(filename);
 
         if (state.gps.valid) {
             char metaPath[64];
             snprintf(metaPath, sizeof(metaPath), "/recordings/rec_%04d.json", recNum - 1);
-            File meta = SD.open(metaPath, FILE_WRITE);
+            SdWriter meta(metaPath);
             if (meta) {
                 meta.printf("{\"lat\":%.6f,\"lon\":%.6f,\"time\":%lu}\n",
                            state.gps.lat, state.gps.lon, millis());
@@ -1119,6 +1122,8 @@ void updateDisplay() {
 
 void updateGPS() {
     if (!gpsReady) return;
+    // A fix older than GPS_FIX_TIMEOUT_MS is no fix: sky lost or GPS silent
+    if (state.gps.valid && millis() - state.gps.lastUpdate >= GPS_FIX_TIMEOUT_MS) state.gps.valid = false;
     static unsigned long lastPoll = 0;   // NMEA is ~150 B/s: 32 B every 50 ms is plenty
     if (millis() - lastPoll < 50) return;
     lastPoll = millis();
@@ -1132,6 +1137,8 @@ void updateGPS() {
         state.gps.altM = gps.altitude;
         state.gps.speedKnots = gps.speed;
         state.gps.headingDeg = gps.angle;
+    } else {
+        state.gps.valid = false;   // the GPS itself says no fix
     }
     state.gps.fixQuality = gps.fix ? max((uint8_t)1, (uint8_t)gps.fixquality) : 0;
     state.gps.sats = gps.satellites;

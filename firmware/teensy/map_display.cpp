@@ -25,7 +25,10 @@ MapDisplay::~MapDisplay() {
 }
 
 void MapDisplay::begin() {
-    oled = new Adafruit_SSD1306(OLED_WIDTH, OLED_HEIGHT, &UI_WIRE, OLED_RESET);
+    // Clock during and after each transfer: the library default clkAfter
+    // (100 kHz) would drop the whole Wire2 bus to 100 kHz after every display()
+    oled = new Adafruit_SSD1306(OLED_WIDTH, OLED_HEIGHT, &UI_WIRE, OLED_RESET,
+                                UI_I2C_CLOCK, UI_I2C_CLOCK);
     if (oled->begin(SSD1306_SWITCHCAPVCC, ADDR_SSD1306)) {
         ready = true;
         oled->clearDisplay();

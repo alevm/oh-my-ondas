@@ -4,6 +4,7 @@
  */
 
 #include "sequencer.h"
+#include "sd_guard.h"
 
 static Step dummyStep;
 
@@ -381,13 +382,13 @@ void Sequencer::loadPattern(int patternNumber) {
     char path[64];
     snprintf(path, sizeof(path), "%spattern%02d.json", PATTERNS_DIR, patternNumber);
 
-    if (!SD.exists(path)) {
+    if (!sdExists(path)) {
         DEBUG_PRINTF("Sequencer: Pattern file not found, using empty pattern\n");
         currentPatternNumber = patternNumber;
         return;
     }
 
-    File file = SD.open(path);
+    SdReader file(path);   // guarded, chunked (SD WAV players read the card in the audio interrupt)
     if (!file) {
         currentPatternNumber = patternNumber;
         return;
@@ -452,8 +453,8 @@ void Sequencer::savePattern(int patternNumber) {
     char path[64];
     snprintf(path, sizeof(path), "%spattern%02d.json", PATTERNS_DIR, patternNumber);
 
-    // Streaming JSON write for memory efficiency
-    File file = SD.open(path, FILE_WRITE);
+    // Streaming JSON write, through a guarded 512-byte buffer
+    SdWriter file(path);
     if (!file) {
         DEBUG_PRINTF("Sequencer: Cannot open %s for writing\n", path);
         return;

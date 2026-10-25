@@ -10,6 +10,10 @@
 #include <Audio.h>
 #include "config.h"
 
+#define SYNTH_RES_MAX         1.8f      // AudioFilterLadder clamps resonance to 0..1.8 (self-oscillates near 1)
+#define SYNTH_ATTACK_MAX_MS   5000.0f
+#define SYNTH_RELEASE_MAX_MS  10000.0f  // AudioEffectEnvelope allows up to 11880 ms
+
 class SynthVoice {
 public:
     SynthVoice();
@@ -38,12 +42,15 @@ public:
     // Filter
     void setFilterFreq(float freq);
     void setFilterRes(float res);
+    float getFilterRes() const { return filterRes; }
 
     // ADSR envelope
     void setAttack(float ms);
     void setDecay(float ms);
     void setSustain(float level);
     void setRelease(float ms);
+    float getAttack() const  { return attackMs; }
+    float getRelease() const { return releaseMs; }
 
     // LFO
     void setLFORate(float hz);
@@ -64,6 +71,9 @@ private:
     float baseFreq;
     float osc2DetuneRatio;
     float filterFreq;
+    float filterRes;    // last values set: encoders step from these
+    float attackMs;
+    float releaseMs;
     bool active;
 
     // LFO

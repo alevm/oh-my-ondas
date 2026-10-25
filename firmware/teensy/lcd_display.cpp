@@ -38,6 +38,8 @@ LCDDisplay::LCDDisplay()
     , lastScreen(LCD_COUNT)  // Force initial draw
     , needsFullRedraw(true)
     , msgStart(0), msgDuration(0), msgActive(false)
+    , msgBoxX(0), msgBoxY(0), msgBoxW(0), msgBoxH(0)
+    , sweepStrip(-1)
     , lastBPM(0), lastVolume(0), lastStep(-1), lastMode(-1)
     , lastPlaying(false), lastRecording(false)
 {
@@ -55,7 +57,7 @@ LCDDisplay::~LCDDisplay() {
 void LCDDisplay::begin() {
     SPI1.setMISO(TFT_MISO);  // default MISO1 is pin 1, under the Audio Shield
     tft = new Adafruit_ILI9341(&SPI1, TFT_DC, TFT_CS, TFT_RST);
-    tft->begin();            // library default SPI speed: 40 MHz over jumpers fails
+    tft->begin(TFT_SPI_HZ);  // no argument = 8 MHz on Teensy; see config.h
     tft->setRotation(TFT_ROTATION);  // Landscape: 320x240
     tft->fillScreen(COL_BG);
 
@@ -81,30 +83,44 @@ void LCDDisplay::update(SystemState& state, Sequencer& seq, FXEngine& fx,
     if (!tft) return;
     checkHealth();
 
-    // Check message timeout
-    if (msgActive && (millis() - msgStart > (unsigned long)msgDuration)) {
-        msgActive = false;
-        needsFullRedraw = true;
-    }
-
-    // Detect screen change
-    if (currentScreen != lastScreen) {
-        needsFullRedraw = true;
-        lastScreen = currentScreen;
-    }
-
+    // Full-screen fills block the loop (320x240 px: ~61 ms at 20 MHz, ~154 ms
+    // at 8 MHz), so only an LCD re-init clears everything. A screen change
+    // clears the body, an expired or replaced message only its own box.
     if (needsFullRedraw) {
         tft->fillScreen(COL_BG);
         needsFullRedraw = false;
-        // Reset cached values to force full redraw
-        lastBPM = -1;
-        lastVolume = -1;
-        lastStep = -1;
-        lastMode = -1;
-        lastRadioSig[0] = '\0';
-        memset(senseText, 0, sizeof(senseText));
-        memset(senseBars, -1, sizeof(senseBars));
-        lastSenseFrame = 0;
+        lastScreen = currentScreen;
+        msgBoxW = 0;
+        sweepStrip = -1;
+        resetDrawCache();
+    } else if (currentScreen != lastScreen) {
+        tft->fillRect(0, BODY_Y, LCD_WIDTH, LCD_HEIGHT - BODY_Y, COL_BG);
+        lastScreen = currentScreen;
+        msgBoxW = 0;
+        sweepStrip = -1;
+        resetDrawCache();   // the header names the screen: it redraws too
+    }
+
+    // Message expired: give its box back to the screen drawn below
+    if (msgActive && (millis() - msgStart > (unsigned long)msgDuration)) {
+        msgActive = false;
+        // Screens that repaint every frame draw some elements only in some
+        // states (step grid while playing, filled vs outlined boxes); the
+        // old full redraw on expiry also wiped what those left behind. Do
+        // that over the next 8 frames, one strip each (~7 ms at 20 MHz).
+        if (currentScreen != LCD_RADIO && currentScreen != LCD_SENSE) sweepStrip = 0;
+    }
+    if (msgBoxW) {
+        int16_t x, y, w, h;
+        messageBox(x, y, w, h);
+        if (!msgActive || x != msgBoxX || w != msgBoxW) clearMessageBox();
+    }
+    if (sweepStrip >= 0) {
+        int y0 = BODY_Y + sweepStrip * SWEEP_H;
+        int h = LCD_HEIGHT - y0;
+        if (h > SWEEP_H) h = SWEEP_H;
+        tft->fillRect(0, y0, LCD_WIDTH, h, COL_BG);
+        if (++sweepStrip * SWEEP_H >= LCD_HEIGHT - BODY_Y) sweepStrip = -1;
     }
 
     drawHeader(state);
@@ -149,6 +165,18 @@ void LCDDisplay::showError(const char* msg) {
 
 void LCDDisplay::invalidate() {
     needsFullRedraw = true;
+}
+
+// Forget what is on the glass: header and the change-only screens redraw
+void LCDDisplay::resetDrawCache() {
+    lastBPM = -1;
+    lastVolume = -1;
+    lastStep = -1;
+    lastMode = -1;
+    lastRadioSig[0] = '\0';
+    memset(senseText, 0, sizeof(senseText));
+    memset(senseBars, -1, sizeof(senseBars));
+    lastSenseFrame = 0;
 }
 
 // The LCD sometimes resets when its jumpers move (power mode reads 0x00
@@ -458,7 +486,7 @@ void LCDDisplay::drawFXScreen(SystemState& state, FXEngine& fx) {
     tft->setCursor(6, 200);
     tft->setTextSize(1);
     tft->setTextColor(COL_DIM, COL_BG);
-    tft->printf("LFO: %.1f Hz  Depth: %d%%", 0.0f, 0);  // TODO: expose LFO getters
+    tft->printf("LFO: %4.1f Hz  Depth: %3d%%", fx.getLFORate(), (int)(fx.getLFODepth() * 100));
 }
 
 // ============================================
@@ -923,13 +951,34 @@ void LCDDisplay::drawSenseScreen() {
 // MESSAGE OVERLAY
 // ============================================
 
-void LCDDisplay::drawMessageOverlay() {
+void LCDDisplay::messageBox(int16_t& x, int16_t& y, int16_t& w, int16_t& h) {
     int textLen = strlen(msgBuffer);
-    int boxW = textLen * 12 + 40;
-    if (boxW > LCD_WIDTH - 40) boxW = LCD_WIDTH - 40;
-    int boxH = 50;
-    int bx = (LCD_WIDTH - boxW) / 2;
-    int by = (LCD_HEIGHT - boxH) / 2;
+    w = textLen * 12 + 40;
+    if (w > LCD_WIDTH - 40) w = LCD_WIDTH - 40;
+    h = 50;
+    x = (LCD_WIDTH - w) / 2;
+    y = (LCD_HEIGHT - h) / 2;
+}
+
+// Paint the message box area back to the background. Most screens repaint
+// all their elements every frame; RADIO and SENSE draw only on change, so
+// their cache is dropped for what the box covered.
+void LCDDisplay::clearMessageBox() {
+    if (!msgBoxW) return;
+    tft->fillRect(msgBoxX, msgBoxY, msgBoxW, msgBoxH, COL_BG);
+    lastRadioSig[0] = '\0';
+    for (int l = 0; l < SENSE_LINES; l++) {
+        int ly = 86 + l * 9;   // as in senseLine()
+        if (ly + 8 > msgBoxY && ly < msgBoxY + msgBoxH) memset(senseText[l], 0, sizeof(senseText[l]));
+    }
+    lastSenseFrame = 0;
+    msgBoxW = 0;
+}
+
+void LCDDisplay::drawMessageOverlay() {
+    int16_t bx, by, boxW, boxH;
+    messageBox(bx, by, boxW, boxH);
+    msgBoxX = bx; msgBoxY = by; msgBoxW = boxW; msgBoxH = boxH;
 
     tft->fillRect(bx, by, boxW, boxH, COL_HEADER_BG);
     tft->drawRect(bx, by, boxW, boxH, COL_ACCENT);

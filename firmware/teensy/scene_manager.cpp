@@ -4,6 +4,7 @@
  */
 
 #include "scene_manager.h"
+#include "sd_guard.h"
 
 SceneManager::SceneManager() {
     memset(saved, 0, sizeof(saved));
@@ -74,7 +75,7 @@ bool SceneManager::isSceneSaved(int slot) {
 }
 
 void SceneManager::saveAllToSD() {
-    File file = SD.open("/presets/scenes.json", FILE_WRITE);
+    SdWriter file("/presets/scenes.json");   // guarded, chunked (SD WAV players read the card in the audio interrupt)
     if (!file) {
         DEBUG_PRINTLN("SceneManager: Cannot write scenes.json");
         return;
@@ -129,12 +130,12 @@ void SceneManager::saveAllToSD() {
 }
 
 void SceneManager::loadAllFromSD() {
-    if (!SD.exists("/presets/scenes.json")) {
+    if (!sdExists("/presets/scenes.json")) {
         DEBUG_PRINTLN("SceneManager: No scenes.json found");
         return;
     }
 
-    File file = SD.open("/presets/scenes.json");
+    SdReader file("/presets/scenes.json");
     if (!file) return;
 
     DynamicJsonDocument doc(4096);

@@ -9,7 +9,9 @@
  * Pass criteria (Serial Monitor, 115200):
  *   - Wire2 scan shows 0x48
  *   - Each fader sweeps its column from ~0 to max (ADS ~26400 at the
- *     default +/-4.096V range, Teensy ~1023) and holds steady when left alone
+ *     +/-4.096V range set below with GAIN_ONE, Teensy ~1023) and holds
+ *     steady when left alone. The library default is GAIN_TWOTHIRDS
+ *     (+/-6.144V), where 3.3V reads only ~17600.
  */
 
 #include <Wire.h>
@@ -34,6 +36,7 @@ void setup() {
     Serial.println();
 
     adsOk = ads.begin(0x48, &UI_BUS);
+    if (adsOk) ads.setGain(GAIN_ONE);   // +/-4.096V: 3.3V = 26400 counts
     Serial.println(adsOk ? "ADS1115 OK" : "ADS1115 NOT FOUND at 0x48");
     Serial.println("   A0     A1     A2     A3   pin40");
 }

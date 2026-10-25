@@ -119,7 +119,10 @@ void setup() {
     analogReadResolution(12);
     UI_BUS.begin();
     adsOk = ads.begin(0x48, &UI_BUS);
-    if (adsOk) ads.setDataRate(RATE_ADS1115_860SPS);
+    if (adsOk) {
+        ads.setGain(GAIN_ONE);   // +/-4.096V: 3.3V = 26400 (FULL); the library default +/-6.144V reads ~17600
+        ads.setDataRate(RATE_ADS1115_860SPS);
+    }
 
     capOk = touch.begin(0x29, &UI_BUS);
     if (capOk) {  // same setup as layer2_pads_visual

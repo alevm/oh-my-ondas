@@ -4,6 +4,7 @@
  */
 
 #include "sampling_engine.h"
+#include "sd_guard.h"
 
 SamplingEngine::SamplingEngine()
     : currentBank(0)
@@ -71,12 +72,12 @@ bool SamplingEngine::validateSlot(int slot) {
 bool SamplingEngine::loadSample(int slot, const char* filename) {
     if (!validateSlot(slot)) return false;
 
-    if (!SD.exists(filename)) {
+    if (!sdExists(filename)) {
         DEBUG_PRINTF("SamplingEngine: File not found: %s\n", filename);
         return false;
     }
 
-    File file = SD.open(filename);
+    File file = sdOpen(filename);   // guarded: SD WAV players read the card in the audio interrupt
     if (!file) {
         DEBUG_PRINTF("SamplingEngine: Cannot open file: %s\n", filename);
         return false;
@@ -85,12 +86,12 @@ bool SamplingEngine::loadSample(int slot, const char* filename) {
     strncpy(samples[slot].filename, filename, 63);
     samples[slot].filename[63] = '\0';
 
-    samples[slot].length = file.size();
+    { SdGuard g; samples[slot].length = file.size(); }
     samples[slot].startPos = 0;
     samples[slot].endPos = samples[slot].length;
     samples[slot].loaded = true;
 
-    file.close();
+    sdClose(file);
 
     DEBUG_PRINTF("SamplingEngine: Loaded slot %d: %s (%lu bytes)\n",
                  slot, filename, samples[slot].length);
@@ -278,7 +279,7 @@ void SamplingEngine::loadBank(int bankNumber) {
     char bankPath[64];
     snprintf(bankPath, sizeof(bankPath), "%sbank%02d/", SAMPLES_DIR, bankNumber);
 
-    if (!SD.exists(bankPath)) {
+    if (!sdExists(bankPath)) {
         DEBUG_PRINTF("SamplingEngine: Bank %d not found\n", bankNumber);
         return;
     }
@@ -287,7 +288,7 @@ void SamplingEngine::loadBank(int bankNumber) {
         char samplePath[128];
         snprintf(samplePath, sizeof(samplePath), "%ssample%02d.wav", bankPath, i + 1);
 
-        if (SD.exists(samplePath)) {
+        if (sdExists(samplePath)) {
             loadSample(i, samplePath);
         } else {
             unloadSample(i);
@@ -304,14 +305,14 @@ void SamplingEngine::saveBank(int bankNumber) {
     char bankPath[64];
     snprintf(bankPath, sizeof(bankPath), "%sbank%02d", SAMPLES_DIR, bankNumber);
 
-    if (!SD.exists(bankPath)) {
-        SD.mkdir(bankPath);
+    if (!sdExists(bankPath)) {
+        sdMkdir(bankPath);
     }
 
     char metaPath[128];
     snprintf(metaPath, sizeof(metaPath), "%s/bank.json", bankPath);
 
-    File metaFile = SD.open(metaPath, FILE_WRITE);
+    SdWriter metaFile(metaPath);   // guarded, chunked
     if (metaFile) {
         metaFile.println("{");
         metaFile.printf("  \"bank\": %d,\n", bankNumber);

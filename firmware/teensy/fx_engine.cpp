@@ -5,6 +5,7 @@
 
 #include "fx_engine.h"
 #include <SD.h>
+#include "sd_guard.h"
 #include <ArduinoJson.h>
 
 FXEngine::FXEngine()
@@ -89,7 +90,19 @@ void FXEngine::muteAllReturns() {
 void FXEngine::applyEffect() {
     if (!fxReturnMix) return;
 
-    float mix = currentParams.mix;
+    // The LFO moves a copy around the user's value: the encoders and the
+    // LFO never feed into each other
+    FXParams p = currentParams;
+    if (lfoTarget >= 0 && lfoDepth > 0.0f) {
+        float modulated = constrain(getParam(lfoTarget) + getLFOValue() * 0.3f, 0.0f, 1.0f);
+        switch (lfoTarget) {
+            case 0: p.param1 = modulated; break;
+            case 1: p.param2 = modulated; break;
+            case 2: p.param3 = modulated; break;
+        }
+    }
+
+    float mix = p.mix;
 
     // First mute all return channels
     muteAllReturns();
@@ -98,8 +111,8 @@ void FXEngine::applyEffect() {
     switch (currentEffect) {
         case FX_REVERB:
             if (reverbFX) {
-                reverbFX->roomsize(currentParams.param1);
-                reverbFX->damping(currentParams.param2);
+                reverbFX->roomsize(p.param1);
+                reverbFX->damping(p.param2);
                 fxReturnMix->gain(0, mix);  // ch0 = reverb
             }
             break;
@@ -107,12 +120,12 @@ void FXEngine::applyEffect() {
         case FX_DELAY:
             if (delayFX) {
                 // param1 = delay time (50-1000ms), param2 = feedback
-                int delayMs = (int)(currentParams.param1 * DELAY_MAX_MS);
+                int delayMs = (int)(p.param1 * DELAY_MAX_MS);
                 if (delayMs < 50) delayMs = 50;
                 delayFX->delay(0, delayMs);
                 // Feedback via fxSend mixer ch1
                 if (fxSendMix) {
-                    fxSendMix->gain(1, currentParams.param2 * 0.8f);
+                    fxSendMix->gain(1, p.param2 * 0.8f);
                 }
                 fxReturnMix->gain(1, mix);  // ch1 = delay
             }
@@ -121,8 +134,8 @@ void FXEngine::applyEffect() {
         case FX_BITCRUSH:
             if (crusherFX) {
                 // param1 = bits (4-16), param2 = sample rate reduction
-                int bits = 4 + (int)(currentParams.param1 * 12);
-                int sr = 4000 + (int)(currentParams.param2 * 40000);
+                int bits = 4 + (int)(p.param1 * 12);
+                int sr = 4000 + (int)(p.param2 * 40000);
                 crusherFX->bits(bits);
                 crusherFX->sampleRate(sr);
                 fxReturnMix->gain(2, mix);  // ch2 = bitcrusher
@@ -132,8 +145,8 @@ void FXEngine::applyEffect() {
         case FX_GRAIN:
             if (granularFX) {
                 // param1 = grain size/speed, param2 = pitch shift ratio
-                float speed = 0.25f + currentParams.param1 * 1.75f;
-                granularFX->beginPitchShift(50 + (int)(currentParams.param2 * 200));
+                float speed = 0.25f + p.param1 * 1.75f;
+                granularFX->beginPitchShift(50 + (int)(p.param2 * 200));
                 granularFX->setSpeed(speed);
                 fxReturnMix->gain(3, mix);  // ch3 = granular
             }
@@ -141,7 +154,7 @@ void FXEngine::applyEffect() {
 
         case FX_CHORUS:
             if (chorusFX) {
-                int voices = 2 + (int)(currentParams.param1 * 4);
+                int voices = 2 + (int)(p.param1 * 4);
                 if (voices > 6) voices = 6;
                 chorusFX->voices(voices);
                 if (fxReturn2Mix) {
@@ -153,8 +166,8 @@ void FXEngine::applyEffect() {
         case FX_FILTER:
             // Per-track filter sweep (applies to all track filters)
             if (filters) {
-                float freq = 100.0f + currentParams.param1 * 9900.0f;
-                float res = 0.7f + currentParams.param2 * 4.3f;
+                float freq = 100.0f + p.param1 * 9900.0f;
+                float res = 0.7f + p.param2 * 4.3f;
                 for (int i = 0; i < MAX_TRACKS; i++) {
                     filters[i].frequency(freq);
                     filters[i].resonance(res);
@@ -165,7 +178,7 @@ void FXEngine::applyEffect() {
         case FX_WAVEFOLD:
             // Wavefold via drive into the filter resonance
             if (filters) {
-                float res = 0.7f + currentParams.param1 * 9.0f;
+                float res = 0.7f + p.param1 * 9.0f;
                 for (int i = 0; i < MAX_TRACKS; i++) {
                     filters[i].resonance(res);
                 }
@@ -176,8 +189,8 @@ void FXEngine::applyEffect() {
             // Extreme bitcrusher: low sample rate + low bit depth
             if (crusherFX) {
                 // param1 = sample rate (2000-8000Hz), param2 = bits (4-8)
-                int glitchSR = 2000 + (int)(currentParams.param1 * 6000);
-                int glitchBits = 4 + (int)(currentParams.param2 * 4);
+                int glitchSR = 2000 + (int)(p.param1 * 6000);
+                int glitchBits = 4 + (int)(p.param2 * 4);
                 crusherFX->sampleRate(glitchSR);
                 crusherFX->bits(glitchBits);
                 fxReturnMix->gain(2, mix);  // ch2 = bitcrusher
@@ -188,8 +201,8 @@ void FXEngine::applyEffect() {
             // Comb filter via very short delay + high feedback
             if (delayFX) {
                 // param1 = delay time (1-30ms), param2 = feedback (0.5-0.95)
-                int combMs = 1 + (int)(currentParams.param1 * 29);
-                float combFb = 0.5f + currentParams.param2 * 0.45f;
+                int combMs = 1 + (int)(p.param1 * 29);
+                float combFb = 0.5f + p.param2 * 0.45f;
                 delayFX->delay(0, combMs);
                 if (fxSendMix) {
                     fxSendMix->gain(1, combFb);
@@ -205,8 +218,8 @@ void FXEngine::applyEffect() {
                 crusherFX->sampleRate(22050);
                 // param1 = wow amount (5-30ms delay), param2 = flutter depth
                 float lfo = sinf(lfoPhase * 2.0f * PI);
-                int tapeDelay = 5 + (int)(currentParams.param1 * 25
-                                + currentParams.param2 * 10.0f * lfo);
+                int tapeDelay = 5 + (int)(p.param1 * 25
+                                + p.param2 * 10.0f * lfo);
                 if (tapeDelay < 1) tapeDelay = 1;
                 delayFX->delay(0, tapeDelay);
                 if (fxSendMix) {
@@ -364,9 +377,9 @@ void FXEngine::loadPreset(int presetNumber) {
     char path[64];
     snprintf(path, sizeof(path), "%sfx_preset%02d.json", PRESETS_DIR, presetNumber);
 
-    if (!SD.exists(path)) return;
+    if (!sdExists(path)) return;
 
-    File file = SD.open(path);
+    SdReader file(path);   // guarded (SD WAV players read the card in the audio interrupt)
     if (!file) return;
 
     StaticJsonDocument<256> doc;
@@ -386,7 +399,7 @@ void FXEngine::savePreset(int presetNumber) {
     char path[64];
     snprintf(path, sizeof(path), "%sfx_preset%02d.json", PRESETS_DIR, presetNumber);
 
-    File file = SD.open(path, FILE_WRITE);
+    SdWriter file(path);
     if (!file) return;
 
     StaticJsonDocument<256> doc;
@@ -424,18 +437,7 @@ void FXEngine::updateLFO() {
         lfoPhase += lfoRate * dt;
         if (lfoPhase >= 1.0f) lfoPhase -= 1.0f;
         lastLFOUpdate = now;
-
-        // Apply LFO modulation to target parameter
-        if (lfoTarget >= 0 && lfoDepth > 0.0f) {
-            float lfoVal = getLFOValue();
-            float base = getParam(lfoTarget);
-            float modulated = constrain(base + lfoVal * 0.3f, 0.0f, 1.0f);
-            // Temporarily override the param (will be rewritten next frame)
-            switch (lfoTarget) {
-                case 0: currentParams.param1 = modulated; break;
-                case 1: currentParams.param2 = modulated; break;
-                case 2: currentParams.param3 = modulated; break;
-            }
-        }
+        // The modulation is applied to a copy in applyEffect(); the user's
+        // params (getParam, presets, scenes) stay unmodulated
     }
 }
