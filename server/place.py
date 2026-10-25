@@ -1,12 +1,17 @@
 """Place context from a GPS position: OpenStreetMap (Overpass), weather (Open-Meteo),
 sun position (computed locally).
 
+Privacy: everything here works from the position rounded to POS_DECIMALS (~100 m), and
+nearest distances are bucketed to NEAREST_BUCKET_M, so nothing sent out (Overpass,
+Open-Meteo) or passed on (journal, Claude) pins the walker closer than that.
+
 Results are cached per ~100 m cell for ~10 min. Network access goes through an
 injected httpx.AsyncClient, so tests pass a MockTransport and never touch the network.
 
 Overpass usage policy: identify with a User-Agent, keep queries small, a server-side
 timeout, at most one request in flight, a minimum interval between requests, exponential
-cool-down after 429/502/503/504. One query covers a 500 m radius and is reused for every
+cool-down after 429/5xx, timeouts and network errors (not after other 4xx: those are about
+the request, not server load). One query covers a 500 m radius and is reused for every
 position within 200 m of its centre for OSM_TTL_S, so a walker triggers roughly one query per
 200 m walked (about 25/hour), not one per 100 m cell. Sidewalks/footways/paths are left out
 of the query: in Barcelona they are mapped individually and made ~80 % of the response.
@@ -34,6 +39,8 @@ QUERY_RADIUS_M = 500         # query radius; reuse while within QUERY_RADIUS_M -
 OVERPASS_MIN_INTERVAL_S = 10.0
 OVERPASS_COOLDOWN_S = 60.0   # doubled per consecutive failure, max 30 min
 HTTP_TIMEOUT_S = 60.0
+POS_DECIMALS = 3             # ~110 m north-south, ~85 m east-west in Barcelona
+NEAREST_BUCKET_M = 50
 
 
 def haversine_m(lat1, lon1, lat2, lon2) -> float:
@@ -42,6 +49,11 @@ def haversine_m(lat1, lon1, lat2, lon2) -> float:
     dp, dl = p2 - p1, math.radians(lon2 - lon1)
     a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
     return 2 * r * math.asin(math.sqrt(a))
+
+
+def valid_position(lat: float, lon: float) -> bool:
+    """In range and not the (0, 0) a receiver reports without a real fix."""
+    return abs(lat) <= 90.0 and abs(lon) <= 180.0 and not (lat == 0.0 and lon == 0.0)
 
 
 def cell_key(lat: float, lon: float) -> tuple[int, int]:
@@ -105,7 +117,7 @@ def sun_info(lat: float, lon: float, ts: float) -> dict:
 
 # ---------------- OSM summary ----------------
 def overpass_query(lat: float, lon: float, r: int = QUERY_RADIUS_M) -> str:
-    a = f"around:{r},{lat:.6f},{lon:.6f}"
+    a = f"around:{r},{lat:.{POS_DECIMALS}f},{lon:.{POS_DECIMALS}f}"
     hw = "motorway|trunk|primary|secondary|tertiary|motorway_link|trunk_link|primary_link|secondary_link|" \
          "tertiary_link|residential|unclassified|living_street|service|pedestrian"
     return (
@@ -242,10 +254,12 @@ def element_distance(el: dict, lat: float, lon: float, area: bool) -> float | No
     return best
 
 
-def summarise_osm(data: dict, lat: float, lon: float, radius: float = RADIUS_M) -> dict:
-    """Counts and nearest distance (m) per category within `radius` of (lat, lon)."""
+def summarise_osm(data: dict, lat: float, lon: float, radius: float = RADIUS_M,
+                  bucket: float = NEAREST_BUCKET_M) -> dict:
+    """Counts and nearest distance (m, rounded to `bucket`) per category within `radius` of (lat, lon)."""
     out: dict[str, dict] = {}
     names: dict[str, list] = {}
+    nearest: dict[str, float] = {}
     for el in data.get("elements", []):
         tags = el.get("tags") or {}
         cats = _categories(tags)
@@ -257,8 +271,9 @@ def summarise_osm(data: dict, lat: float, lon: float, radius: float = RADIUS_M) 
         for c in cats:
             e = out.setdefault(c, {"count": 0, "nearest_m": None})
             e["count"] += 1
-            if e["nearest_m"] is None or d < e["nearest_m"]:
-                e["nearest_m"] = round(d)
+            if c not in nearest or d < nearest[c]:
+                nearest[c] = d
+                e["nearest_m"] = int(round(d / bucket) * bucket)
         nm = tags.get("name")
         if nm and ("place_of_worship" in cats or "marketplace" in cats):
             for c in cats:
@@ -332,16 +347,18 @@ class PlaceService:
             self.requests["overpass"] += 1
             try:
                 r = await self.client.post(self.cfg.overpass_url, data={"data": overpass_query(lat, lon)})
-                if r.status_code in (429, 502, 503, 504):
-                    raise httpx.HTTPStatusError("busy", request=r.request, response=r)
                 r.raise_for_status()
                 data = r.json()
                 if "remark" in data and not data.get("elements"):
                     raise ValueError("overpass remark: " + str(data["remark"])[:80])
             except (httpx.HTTPError, ValueError) as e:
+                status = getattr(getattr(e, "response", None), "status_code", None)
+                if status is not None and 400 <= status < 500 and status != 429:
+                    # about this request, not server load: no cool-down shared by every device
+                    log.warning("overpass rejected request", extra={"status": status})
+                    return None
                 self._fails += 1
                 self._cooldown_until = self.clock() + min(1800.0, OVERPASS_COOLDOWN_S * 2 ** (self._fails - 1))
-                status = getattr(getattr(e, "response", None), "status_code", None)
                 log.warning("overpass failed", extra={"error": type(e).__name__, "status": status, "fails": self._fails})
                 return None
             self._fails = 0
@@ -367,6 +384,9 @@ class PlaceService:
         return val
 
     async def context(self, lat: float, lon: float, utc: float | None = None) -> dict:
+        if not valid_position(lat, lon):
+            raise ValueError("position out of range")
+        lat, lon = round(lat, POS_DECIMALS), round(lon, POS_DECIMALS)
         key = cell_key(lat, lon)
         ts = utc or datetime.now(timezone.utc).timestamp()
         osm, wx = await asyncio.gather(self._get_osm(lat, lon), self._get_weather(lat, lon, key))

@@ -61,6 +61,10 @@ ESP32 sends it, `X-Ondas-Proto: 4` (426 if different). A `HELLO` with another `p
   `REQ_CLIP` only asks for that input or the radio.
 - Speech checks: mic and piezo clips can carry a voice, so they get the speech check (and need
   YAMNet). Coil, light and radio clips do not.
+- `CLIP` chunks are only taken for the REQ_CLIP in flight (same source, after its ACK).
+  Unrequested clips (the device's own periodic ones, or one already under way when the request
+  came) are dropped unseen. Sample rate must be 8000, 16000, 22050, 32000, 44100 or 48000
+  (0 means 16000), and a clip at most 12 s; otherwise ERR 1.
 - `MOTION` (26 B, 10 Hz) feeds 60 s windows of: cadence, standing fraction, steps, movement
   (accel rms and sd), heading and turn rate (from 1 s circular means), magnetic field and its
   variation (trams, trains, motors), and gestures.
@@ -78,6 +82,8 @@ ESP32 sends it, `X-Ondas-Proto: 4` (426 if different). A `HELLO` with another `p
   estimate resets.
 - `ACK` and `ERR` from the device are accepted:
   - ACK of a PLAN is counted.
+  - ACK of a REQ_CLIP (sent when recording starts) opens that clip: only then are its chunks
+    taken.
   - ERR on a PLAN (code 3) → the plan is dropped, planning waits for a fresh `CAPS`, then
     starts again from scratch.
   - ERR on a REQ_CLIP (refused: speech, input not selected) → the server stops waiting for
@@ -95,14 +101,17 @@ ESP32 sends it, `X-Ondas-Proto: 4` (426 if different). A `HELLO` with another `p
 - `REQ_CLIP {source, seconds ≤ 6}`. At most one is in flight per device; it is dropped on a
   device ERR or after `CLIP_REQUEST_TIMEOUT_S` (30 s).
 - `ACK` for HELLO, CAPS and each completed CLIP.
-- `ERR` codes: 1 bad frame (including bad clip chunk or protocol version), 2 unknown or
+- `ERR` codes: 1 bad frame (including bad clip chunk, sample rate or length, protocol version,
+  or a message the server failed to handle), 2 unknown or
   wrong-direction type, 3 invalid plan, 4 auth, 5 rate.
 
 **Rate limit, per connection:** a token bucket of `RATE_MSGS_PER_S` (200) per second with a
 burst of `RATE_BURST` (400).
 - Right after connect there is a one-off allowance of `RATE_CONNECT_BACKLOG` (4000 messages)
   for the ESP32's buffered backlog.
-- HELLO and CAPS are never dropped.
+- HELLO and CAPS do not use that bucket, so a FEAT flood never blocks them. They have their own:
+  2 per second, burst 8. Over it they are dropped with ERR 5 (the device then announces again);
+  this never closes the connection.
 - Other messages over the limit are dropped, with ERR 5 at most once a second.
 - 400 drops within 2 s close the connection (ERR 5, then code 1008).
 - A device that reconnects replaces its old connection. The old one is closed in the
@@ -202,7 +211,8 @@ the code is shaped as it is:
 - one query covers 500 m and is reused for 200 m of walking (about 25 queries per walking hour)
 - sidewalks are excluded from the query
 - 60 s HTTP timeout; lookups never block planning
-- cool-down that doubles on each 429/502/503/504 (up to 30 min)
+- cool-down that doubles on each 429, 5xx, timeout or network error (up to 30 min); other 4xx
+  answers concern the request, so they do not hold back other devices
 - the last known context is kept, marked stale
 
 Open-Meteo answered in about 0.3 s.
@@ -211,8 +221,10 @@ Open-Meteo answered in about 0.3 s.
 
 - **No mic speech.**
   - The device withholds mic clips during speech and answers the REQ_CLIP with an ERR.
-  - The server discards a mic clip if the device flagged speech while recording it, or if
-    YAMNet's peak speech score is ≥ 0.3.
+  - The server discards a mic clip if the device flagged speech (FEAT.speech) at any time from
+    the REQ_CLIP until the last chunk arrived (recording, the device's 1.6 s detector tail and
+    sending), or if YAMNet's peak speech score is ≥ 0.3.
+  - Only requested clips are used, so every clip has that window; any other clip is dropped.
   - Without YAMNet, mic clips are not requested and are discarded unseen.
   - A discarded clip leaves nothing behind: no audio, no tags, only a `clip_discarded` journal
     line.
@@ -222,8 +234,10 @@ Open-Meteo answered in about 0.3 s.
   rounded to 3 decimals (~100 m), clip tags, captures, plans with source and `why`, and short
   feature summaries. Files older than `JOURNAL_RETENTION_DAYS` are deleted at start-up and every
   hour.
-- **Location:** raw coordinates are not sent to Claude and not logged. They go to Overpass, and
-  to Open-Meteo rounded to about 100 m.
+- **Location:** raw coordinates are not sent to Claude and not logged. The place context works
+  only from the position rounded to 3 decimals (~100 m): that is what Overpass and Open-Meteo
+  get, and the OSM summary (counts, nearest distances, names) is computed from it, with nearest
+  distances rounded to 50 m. Out-of-range positions and (0, 0) are ignored.
 - **Logs** never contain tokens, audio or coordinates.
 
 ## Claude request (checked offline against SDK 2.0.0 and the docs)

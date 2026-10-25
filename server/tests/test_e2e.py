@@ -345,3 +345,155 @@ def test_clip_source_coil_when_selected(server):
     st = DeviceState(server, Session("w", now=now))
     st.session.add(P.MSG_FEAT, P.Feat(t_ms=1000, left_source=P.SRC_COIL), now=now)
     assert {server._next_clip_source(st, now) for _ in range(3)} == {P.SRC_COIL}
+
+
+def _clip_frames(source, pcm, clip_id=11, sr=16000):
+    import adpcm
+    ch = adpcm.encode_chunks(pcm, P.LINK_MAX_PAYLOAD - P.ClipHdr.size())
+    return [P.pack_frame(P.MSG_CLIP, 100 + i, P.pack_clip(P.ClipHdr(clip_id=clip_id, source=source, sample_rate=sr, chunk=i,
+                                                                    chunks=len(ch), predictor=p, step_index=k), d))
+            for i, (p, k, d) in enumerate(ch)]
+
+
+def _recording_state(server, name, now=None):
+    from app import DeviceState
+    from session import Session
+    st = DeviceState(server, Session(name, now=now))
+    sent = []
+
+    async def send(t, payload):
+        sent.append((t, payload))
+        return len(sent)
+    st.send = send
+    return st, sent
+
+
+async def test_only_the_requested_clip_is_taken(server, monkeypatch):
+    import threading
+    import app as app_mod
+    threads = []
+    real = app_mod.decode_assembly
+    monkeypatch.setattr(app_mod, "decode_assembly", lambda a: (threads.append(threading.current_thread()), real(a))[1])
+    st, sent = _recording_state(server, "u")
+    s = st.session
+    errs = lambda: [P.Err.unpack(p).code for t, p in sent if t == P.MSG_ERR]
+    await server._dispatch(st, _clip_frames(7, waves(1.0))[0])  # no such source
+    assert errs() == [P.ERR_MALFORMED]
+    for f in _clip_frames(P.SRC_COIL, waves(1.0)):  # unrequested: dropped unseen
+        await server._dispatch(st, f)
+    st.pending_clip = {"source": P.SRC_RADIO, "seq": 5, "at": 0.0}
+    for f in _clip_frames(P.SRC_COIL, waves(1.0), clip_id=12):  # not the source asked for
+        await server._dispatch(st, f)
+    for f in _clip_frames(P.SRC_RADIO, waves(1.0), clip_id=13):  # before the device ACKed: not ours yet
+        await server._dispatch(st, f)
+    assert not s.clips and not s.tags and errs() == [P.ERR_MALFORMED] and not threads
+    server._on_device_reply(st, P.MSG_ACK, P.Ack(5, P.MSG_REQ_CLIP))
+    for f in _clip_frames(P.SRC_RADIO, waves(1.0), clip_id=14):
+        await server._dispatch(st, f)
+    assert list(s.clips) == [P.SRC_RADIO] and st.pending_clip is None
+    assert (P.MSG_ACK, P.Ack(100 + len(_clip_frames(P.SRC_RADIO, waves(1.0))) - 1, P.MSG_CLIP).pack()) in sent
+    assert threads and threads[0] is not threading.main_thread()  # ADPCM decode off the event loop
+
+
+async def test_device_speech_window_covers_a_queued_recording(server, monkeypatch):
+    """REQ_CLIP queued behind another clip: recording starts later, speech is flagged in its first
+    second, then 1.6 s detector tail and ~2.4 s of paced chunks. The old window (clip length
+    before the last chunk) missed it; the window from the request does not."""
+    import time as _t
+    server.cfg.mic_clips_require_model = False  # reach the device-flag check with either tagger
+    reasons = []
+    real = server._discard
+    monkeypatch.setattr(server, "_discard", lambda st, c, why, est: (reasons.append((why, c.device_speech)),
+                                                                      real(st, c, why, est))[1])
+    now = _t.monotonic()
+    st, _ = _recording_state(server, "v", now=now - 20)
+    s = st.session
+    st.pending_clip = {"source": P.SRC_MIC, "seq": 5, "at": now - 12.0}
+    server._on_device_reply(st, P.MSG_ACK, P.Ack(5, P.MSG_REQ_CLIP))
+    s.add(P.MSG_FEAT, P.Feat(t_ms=1000, speech=230), now=now - 9.5)
+    s.add(P.MSG_FEAT, P.Feat(t_ms=10400, speech=0), now=now - 0.1)
+    assert s.max_speech(now - 6.1 - 1.0, now + 1) == 0
+    for f in _clip_frames(P.SRC_MIC, waves(6.0)):
+        await server._dispatch(st, f)
+    assert reasons and reasons[0][0] == "speech" and reasons[0][1] > 0.5
+    assert P.SRC_MIC not in s.clips and P.SRC_MIC not in s.tags
+
+
+async def test_hello_caps_have_their_own_bucket(server):
+    from app import CTL_BURST
+    url = f"ws://127.0.0.1:{server.port}"
+    caps = P.pack_frame(P.MSG_CAPS, 9, P.pack_caps([P.CapEntry(id=1)]))
+    async with connect(url, additional_headers={"Authorization": f"Bearer {TOKEN}"}) as ws:
+        for _ in range(40):
+            await ws.send(caps)
+        got = []
+        try:
+            while True:
+                t, _, payload = P.unpack_frame(await asyncio.wait_for(ws.recv(), 0.5))
+                got.append((t, payload))
+        except TimeoutError:
+            pass
+        acks = sum(1 for t, p in got if t == P.MSG_ACK and P.Ack.unpack(p).ref_type == P.MSG_CAPS)
+        assert CTL_BURST <= acks <= CTL_BURST + 3
+        assert any(t == P.MSG_ERR and P.Err.unpack(p).code == P.ERR_RATE for t, p in got)
+        await asyncio.sleep(1.0)  # refilled, and the connection was not closed
+        await ws.send(P.pack_frame(P.MSG_HELLO, 10, P.Hello().pack()))
+        t, _, payload = P.unpack_frame(await asyncio.wait_for(ws.recv(), 2))
+        assert t == P.MSG_ACK and P.Ack.unpack(payload).ref_type == P.MSG_HELLO
+
+
+async def test_bad_gps_fix_never_reaches_place(server):
+    calls = []
+
+    class FakePlace:
+        async def context(self, lat, lon, utc=None):
+            calls.append((lat, lon))
+            return {}
+
+        async def aclose(self):
+            pass
+    await server.place.aclose()
+    server.place = FakePlace()
+    st, _ = _recording_state(server, "g")
+    for lat_e7, lon_e7 in ((0, 0), (950000000, 21925000), (413784000, 1900000000), (-910000000, 0)):
+        server._maybe_place(st, P.Gps(lat_e7=lat_e7, lon_e7=lon_e7, fix=1))
+    assert st.place_task is None
+    server._maybe_place(st, P.Gps(lat_e7=413784000, lon_e7=21925000, fix=1))
+    await st.place_task
+    assert len(calls) == 1
+
+
+async def test_failing_message_does_not_end_the_connection(server, monkeypatch):
+    def boom(st, g):
+        raise RuntimeError("boom")
+    monkeypatch.setattr(server, "_maybe_place", boom)
+    url = f"ws://127.0.0.1:{server.port}"
+    async with connect(url, additional_headers={"Authorization": f"Bearer {TOKEN}"}) as ws:
+        await ws.send(P.pack_frame(P.MSG_GPS, 1, P.Gps(lat_e7=413784000, lon_e7=21925000, fix=1).pack()))
+        await ws.send(P.pack_frame(P.MSG_HELLO, 2, P.Hello().pack()))
+        frames = [P.unpack_frame(await asyncio.wait_for(ws.recv(), 2)) for _ in range(2)]
+    assert frames[0][0] == P.MSG_ERR and P.Err.unpack(frames[0][2]).code == P.ERR_MALFORMED
+    assert frames[1][0] == P.MSG_ACK and P.Ack.unpack(frames[1][2]).ref_type == P.MSG_HELLO
+
+
+async def test_ticker_survives_a_failing_tick(server):
+    st, _ = _recording_state(server, "t8")
+    st.next_clip_at = 1e18
+    n = [0]
+
+    def due(now):
+        n[0] += 1
+        if n[0] == 1:
+            raise RuntimeError("boom")
+        return None
+    st.scheduler.due = due
+    task = asyncio.create_task(server._ticker(st))
+    await asyncio.sleep(0.8)
+    assert not task.done() and n[0] >= 2
+    task.cancel()
+
+
+def test_dockerfile_base_pinned_by_digest():
+    import re
+    with open(os.path.join(os.path.dirname(__file__), "..", "Dockerfile")) as f:
+        assert re.search(r"^FROM \S+@sha256:[0-9a-f]{64}$", f.read(), re.M)

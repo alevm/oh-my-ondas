@@ -64,3 +64,17 @@ def test_bad_chunk_rejected():
         s.add_clip_chunk(P.ClipHdr(clip_id=1, chunk=5, chunks=5), b"", now=0)
     with pytest.raises(P.ProtocolError):
         s.add_clip_chunk(P.ClipHdr(clip_id=1, chunk=0, chunks=1, step_index=99), b"", now=0)
+
+
+def test_clip_sample_rate_and_length_bounded():
+    from tagger import to_16k_int16
+    s = Session("t", now=0.0)
+    for sr in (50, 1, 7999, 96000):  # 50 Hz x 256 chunks made the resample to 16 kHz allocate ~1.3 GB
+        with pytest.raises(P.ProtocolError):
+            s.add_clip_chunk(P.ClipHdr(clip_id=2, sample_rate=sr, chunk=0, chunks=1), b"\0" * 10, now=0)
+    with pytest.raises(P.ProtocolError):  # 256 full chunks at 8 kHz would be 65 s
+        s.add_clip_chunk(P.ClipHdr(clip_id=3, sample_rate=8000, chunk=0, chunks=256), b"", now=0)
+    # the device's longest clip, 10 s at 16 kHz (80 chunks), is still taken
+    assert s.add_clip_chunk(P.ClipHdr(clip_id=4, sample_rate=16000, chunk=0, chunks=80), b"\0" * 1012, now=0) is None
+    with pytest.raises(ValueError):
+        to_16k_int16(np.zeros(100, dtype=np.int16), 50)

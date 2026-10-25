@@ -21,6 +21,9 @@ CLOCK_DRIFT = 2e-4          # allowed device-vs-server clock drift (s per s) for
 DEVICE_RESET_JUMP_S = 5.0   # t_ms going back more than this = device reboot
 CLIP_ASSEMBLY_TIMEOUT_S = 30.0
 MAX_CLIP_CHUNKS = 256
+CLIP_RATES = (8000, 16000, 22050, 32000, 44100, 48000)  # device sends 16000
+MAX_CLIP_SECONDS = 12.0    # device max 10 s (REQ_CLIP limit); bounds decode and resample memory
+SAMPLES_PER_CHUNK = 2 * (P.LINK_MAX_PAYLOAD - P.ClipHdr.size())  # ADPCM: 2 samples per byte
 DEFAULT_BPM = 100.0
 
 
@@ -41,6 +44,12 @@ class _Assembly:
     chunks: int
     started: float
     parts: dict = field(default_factory=dict)  # chunk -> (predictor, step_index, bytes)
+    clip_id: int = 0
+
+
+def decode_assembly(a: _Assembly) -> np.ndarray:
+    """ADPCM chunks -> int16 PCM. Pure (no session state), so it can run in a worker thread."""
+    return np.concatenate([adpcm.decode(d, p, i) for p, i, d in (a.parts[k] for k in range(a.chunks))])
 
 
 def _db(lin: float, full: float = 65535.0) -> float:
@@ -134,8 +143,8 @@ class Session:
         elif msg_type == P.MSG_HELLO:
             self.hello = obj
 
-    def add_clip_chunk(self, hdr: P.ClipHdr, data: bytes, now: float | None = None) -> Clip | None:
-        """Collects chunks; returns the decoded Clip when all chunks are in."""
+    def collect_clip_chunk(self, hdr: P.ClipHdr, data: bytes, now: float | None = None) -> _Assembly | None:
+        """Collects chunks; returns the complete assembly (still ADPCM) when all chunks are in."""
         now = time.monotonic() if now is None else now
         for cid in [c for c, a in self._assemblies.items() if now - a.started > CLIP_ASSEMBLY_TIMEOUT_S]:
             del self._assemblies[cid]
@@ -143,18 +152,34 @@ class Session:
             raise P.ProtocolError("bad clip chunk index")
         if not 0 <= hdr.step_index <= 88:
             raise P.ProtocolError("bad ADPCM step index")
+        sr = hdr.sample_rate or 16000
+        if sr not in CLIP_RATES:  # a tiny rate makes the resample to 16 kHz allocate gigabytes
+            raise P.ProtocolError("bad clip sample rate")
+        if hdr.chunks * SAMPLES_PER_CHUNK > sr * MAX_CLIP_SECONDS:
+            raise P.ProtocolError("clip too long")
         a = self._assemblies.get(hdr.clip_id)
-        if a is None or a.chunks != hdr.chunks or a.source != hdr.source:
-            a = _Assembly(hdr.source, hdr.sample_rate or 16000, hdr.chunks, now)
+        if a is None or a.chunks != hdr.chunks or a.source != hdr.source or a.sample_rate != sr:
+            a = _Assembly(hdr.source, sr, hdr.chunks, now, clip_id=hdr.clip_id)
             self._assemblies[hdr.clip_id] = a
         a.parts[hdr.chunk] = (hdr.predictor, hdr.step_index, data)
         if len(a.parts) < a.chunks:
             return None
         del self._assemblies[hdr.clip_id]
-        pcm = np.concatenate([adpcm.decode(d, p, i) for p, i, d in (a.parts[k] for k in range(a.chunks))])
-        dur = len(pcm) / a.sample_rate
-        speech = self.max_speech(now - dur - 1.0, now)
-        return Clip(hdr.clip_id, a.source, a.sample_rate, pcm, now, speech)
+        return a
+
+    def finish_clip(self, a: _Assembly, pcm: np.ndarray, now: float, since: float | None = None) -> Clip:
+        """Clip with the device speech flag over [since, now]: `since` = when the REQ_CLIP went out
+        (the device records after it, waits LINK_SPEECH_TAIL_MS, then sends paced chunks, so the
+        window covers recording, tail and sending). Without it: the clip's length before now."""
+        t0 = since if since is not None else now - len(pcm) / a.sample_rate - 1.0
+        return Clip(a.clip_id, a.source, a.sample_rate, pcm, now, self.max_speech(t0, now))
+
+    def add_clip_chunk(self, hdr: P.ClipHdr, data: bytes, now: float | None = None,
+                       since: float | None = None) -> Clip | None:
+        """Collects chunks; returns the decoded Clip when all chunks are in."""
+        now = time.monotonic() if now is None else now
+        a = self.collect_clip_chunk(hdr, data, now)
+        return None if a is None else self.finish_clip(a, decode_assembly(a), now, since)
 
     def accept_clip(self, clip: Clip):
         self.clips[clip.source] = clip

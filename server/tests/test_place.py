@@ -1,5 +1,6 @@
 import json
 import os
+from urllib.parse import parse_qs
 from datetime import datetime, timezone
 
 import httpx
@@ -93,9 +94,10 @@ async def test_area_reuse_and_weather_cache():
     assert c1["osm"]["coastline"]["count"] >= 1 and c1["weather"]["wind_kmh"] == 5.6
     assert c1["sun"]["phase"] == "day"
     assert svc.requests == {"overpass": 1, "open_meteo": 1}
-    # 150 m inland: another weather cell, same Overpass area (no new query), distances recomputed
+    # ~110 m inland (positions are rounded: 41.378 -> 41.379): another weather cell, same Overpass
+    # area (no new query), distances recomputed
     t[0] += 30
-    c2 = await svc.context(LAT + 0.00135, LON, utc)
+    c2 = await svc.context(LAT + 0.0009, LON, utc)
     assert svc.requests["overpass"] == 1
     assert c2["osm"]["coastline"]["nearest_m"] > c1["osm"]["coastline"]["nearest_m"] + 30
     # 400 m away: outside the reusable radius -> new query
@@ -123,6 +125,36 @@ async def test_overpass_busy_backs_off(status):
     assert svc.requests["overpass"] == 2
     t[0] += 100
     await svc.context(LAT + 0.03, LON)
+    assert svc.requests["overpass"] == 2
+
+
+async def test_place_works_from_rounded_position():
+    """Two positions ~30 m apart in the same 3-decimal cell give the same summary, nearest
+    distances are bucketed to 50 m, and Overpass never sees more than 3 decimals."""
+    log = []
+    t = [0.0]
+    svc = PlaceService(Config(), client=mock_client(log), clock=lambda: t[0])
+    c1 = await svc.context(41.37812, 2.19262)
+    c2 = await svc.context(41.37786, 2.19288)
+    assert c1["osm"] == c2["osm"] and c1["osm"]
+    assert all(v["nearest_m"] % 50 == 0 for v in c1["osm"].values())
+    body = parse_qs([r for r in log if "overpass" in r.url.host][0].content.decode())["data"][0]
+    assert "around:500,41.378,2.193)" in body and "41.3781" not in body
+    assert all(v["nearest_m"] % 50 == 0 for v in summarise_osm(load("overpass_sagrada.json"), *POINTS["sagrada"]).values())
+
+
+async def test_bad_position_and_client_error_do_not_cool_down():
+    log = []
+    t = [0.0]
+    svc = PlaceService(Config(), client=mock_client(log, overpass_status=400), clock=lambda: t[0])
+    for lat, lon in ((0.0, 0.0), (91.0, 2.0), (41.0, 181.0)):
+        with pytest.raises(ValueError):
+            await svc.context(lat, lon)
+    assert svc.requests["overpass"] == 0
+    c = await svc.context(LAT, LON)
+    assert c["osm"] is None
+    t[0] += 15  # past the minimum interval: a 400 is about the request, so no shared cool-down
+    await svc.context(LAT + 0.01, LON)
     assert svc.requests["overpass"] == 2
 
 

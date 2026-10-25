@@ -293,6 +293,7 @@ async def run(url: str, token: str, duration: float = 60.0, speed: float = 10.0,
                 say(f"[sim] {P.SOURCE_NAMES[source]} clip refused")
                 await send(P.MSG_ERR, P.Err(req_seq, P.MSG_REQ_CLIP, 3).pack())
                 return
+            await send(P.MSG_ACK, P.Ack(req_seq, P.MSG_REQ_CLIP).pack())  # like the device: ACK when recording starts
             seconds = min(seconds, 6)  # device maximum
             secs = min(seconds, clip_seconds_cap) if clip_seconds_cap else seconds
             pcm = synth_clip(source, sc, secs, rng.randrange(1 << 30))

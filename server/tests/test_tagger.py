@@ -1,10 +1,13 @@
+import os
 import struct
+import sys
 import zlib
 
 import numpy as np
+import pytest
 
 from spectro import png_gray, spectrogram_png
-from tagger import DspTagger, make_tagger, speech_estimate
+from tagger import DEFAULT_MODEL_PATH, DspTagger, make_tagger, speech_estimate
 
 SR = 16000
 
@@ -54,8 +57,21 @@ def test_dsp_tags():
     assert dict(r2["tags"]).get("impulsive", 0) > 0.5
 
 
-def test_yamnet_falls_back_without_tensorflow():
-    assert make_tagger("yamnet").name in ("yamnet", "dsp")
+def test_yamnet_falls_back_without_runtime(monkeypatch):
+    monkeypatch.setitem(sys.modules, "ai_edge_litert", None)  # import now raises ImportError
+    monkeypatch.setitem(sys.modules, "ai_edge_litert.interpreter", None)
+    assert make_tagger("yamnet").name == "dsp" and make_tagger("auto").name == "dsp"
+
+
+def test_yamnet_falls_back_without_model(tmp_path):
+    assert make_tagger("yamnet", str(tmp_path / "missing.tflite")).name == "dsp"
+
+
+def test_yamnet_loads_when_available():
+    pytest.importorskip("ai_edge_litert")
+    if not os.path.exists(DEFAULT_MODEL_PATH):
+        pytest.skip("YAMNet model not downloaded (python tools/fetch_model.py)")
+    assert make_tagger("yamnet").name == "yamnet"
 
 
 def test_png_writer_valid():

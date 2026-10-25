@@ -22,9 +22,9 @@ import logutil
 import protocol as P
 from config import Config
 from journal import Journal
-from place import PlaceService, cell_key
+from place import PlaceService, cell_key, valid_position
 from planner import ClaudePlanner, PlanScheduler
-from session import Session
+from session import Session, decode_assembly
 from spectro import spectrogram_png
 from tagger import SPEECH_DISCARD_THRESHOLD, make_tagger, speech_estimate
 from validate import pack_valid_plan
@@ -33,6 +33,8 @@ log = logging.getLogger("app")
 
 TICK_S = 0.25
 PLACE_REFRESH_S = 600.0
+CTL_RATE_PER_S = 2.0   # HELLO / CAPS: own bucket (a CAPS can make a ~28 KB journal line)
+CTL_BURST = 8.0        # a reconnect backlog may hold a few HELLO + CAPS pairs
 
 
 class RateLimiter:
@@ -97,7 +99,7 @@ class DeviceState:
         self.place_at = -1e9
         self.counts: dict[str, int] = {}
         self.walk = server.journal.open(session.device_id)
-        self.pending_clip: dict | None = None  # {"source", "seq", "at"} of the REQ_CLIP in flight
+        self.pending_clip: dict | None = None  # {"source", "seq", "at", "started"} of the REQ_CLIP in flight
         self.plan_seqs: dict[int, int] = {}    # out seq of MSG_PLAN -> plan_id
 
     async def send(self, msg_type: int, payload: bytes) -> int | None:
@@ -174,25 +176,35 @@ class LayerTwoServer:
         ticker = asyncio.create_task(self._ticker(st))
         limiter = RateLimiter(self.cfg.rate_msgs_per_s, self.cfg.rate_burst)
         limiter.tokens += self.cfg.rate_connect_backlog  # one-off allowance for the buffered backlog
+        # HELLO / CAPS do not spend the data bucket (so they get through a FEAT flood), but have
+        # their own small one. Drops there never close: ERR 5 makes the device re-announce.
+        ctl_limiter = RateLimiter(CTL_RATE_PER_S, CTL_BURST)
         try:
             closing = None
             async for msg in ws:
                 if closing is not None:
                     continue  # drain until the close handshake completes
-                exempt = isinstance(msg, bytes) and len(msg) >= 1 and msg[0] in (P.MSG_HELLO, P.MSG_CAPS)
-                if not exempt and not limiter.allow():
-                    if limiter.abusive:
+                ctl = isinstance(msg, bytes) and len(msg) >= 1 and msg[0] in (P.MSG_HELLO, P.MSG_CAPS)
+                lim = ctl_limiter if ctl else limiter
+                if not lim.allow():
+                    if not ctl and limiter.abusive:
                         log.warning("rate limit: closing", extra={"device": dev_id, "dropped": limiter.total_dropped})
                         await st.err(0, 0, P.ERR_RATE)
                         closing = asyncio.create_task(ws.close(1008, "rate limit"))
                         continue
-                    if limiter.should_report():
+                    if lim.should_report():
                         await st.err(0, 0, P.ERR_RATE)
                     continue
                 if isinstance(msg, str):
                     await st.err(0, 0, P.ERR_MALFORMED)
                     continue
-                await self._dispatch(st, msg)
+                try:
+                    await self._dispatch(st, msg)
+                except ConnectionClosed:
+                    raise
+                except Exception as e:  # one bad message must not end the connection
+                    log.warning("dispatch failed", extra={"device": dev_id, "error": type(e).__name__})
+                    await st.err(0, 0, P.ERR_MALFORMED)
         except ConnectionClosed:
             pass
         finally:
@@ -231,13 +243,27 @@ class LayerTwoServer:
             return
         if t == P.MSG_CLIP:
             hdr, adp = obj
-            try:
-                clip = s.add_clip_chunk(hdr, adp)
-            except P.ProtocolError:
+            if hdr.source not in P.SOURCE_NAMES:
                 await st.err(seq, t, P.ERR_MALFORMED)
                 return
-            if clip is not None:
-                if st.pending_clip and st.pending_clip["source"] == clip.source:
+            pc = st.pending_clip
+            if not (pc and pc["source"] == hdr.source and pc.get("started") is not None):
+                # Privacy: only the clip asked for, after the device ACKed the REQ_CLIP (it does so
+                # when recording starts). An unrequested clip, or one already under way when the
+                # request arrived, has no known speech window: dropped unseen.
+                if hdr.chunk == 0:
+                    log.info("unrequested clip dropped", extra={"device": s.device_id, "source": hdr.source})
+                return
+            try:
+                a = s.collect_clip_chunk(hdr, adp)
+            except P.ProtocolError as e:
+                log.info("bad clip chunk", extra={"device": s.device_id, "error": str(e)})
+                await st.err(seq, t, P.ERR_MALFORMED)
+                return
+            if a is not None:
+                pcm = await asyncio.to_thread(decode_assembly, a)  # ~0.3 s for 6 s: off the event loop
+                clip = s.finish_clip(a, pcm, time.monotonic(), since=pc["at"])
+                if st.pending_clip is pc:
                     st.pending_clip = None
                 await self._on_clip(st, clip)
                 await st.ack(seq, t)
@@ -300,6 +326,10 @@ class LayerTwoServer:
         if t == P.MSG_ACK:
             if obj.ref_type == P.MSG_PLAN:
                 st.scheduler.on_device_ack(obj.ref_seq)
+            elif obj.ref_type == P.MSG_REQ_CLIP:
+                pc = st.pending_clip
+                if pc and obj.ref_seq == pc["seq"]:
+                    pc["started"] = time.monotonic()  # the device ACKs when it starts recording
             log.debug("device ack", extra={"device": s.device_id, "ref": ref, "ref_seq": obj.ref_seq})
             return
         log.info("device error", extra={"device": s.device_id, "ref": ref, "ref_seq": obj.ref_seq, "code": obj.code})
@@ -323,6 +353,8 @@ class LayerTwoServer:
         if self.place is None or (st.place_task and not st.place_task.done()):
             return
         lat, lon = g.lat_e7 / 1e7, g.lon_e7 / 1e7
+        if not valid_position(lat, lon):  # a bad fix must not reach Overpass
+            return
         cell = cell_key(lat, lon)
         now = time.monotonic()
         if cell == st.place_cell and now - st.place_at < PLACE_REFRESH_S:
@@ -367,24 +399,31 @@ class LayerTwoServer:
         try:
             while True:
                 await asyncio.sleep(TICK_S)
-                now = time.monotonic()
-                reason = st.scheduler.due(now)
-                if reason:
-                    st.scheduler.start(reason, on_plan, lambda: self._latest_spectrogram(s))
-                pc = st.pending_clip
-                if pc and now - pc["at"] > self.cfg.clip_request_timeout_s:
-                    log.info("clip request timed out", extra={"device": s.device_id, "source": pc["source"]})
-                    st.walk.write("clip_timeout", source=P.SOURCE_NAMES.get(pc["source"]))
-                    st.pending_clip = None
-                if now >= st.next_clip_at and st.pending_clip is None:
-                    st.next_clip_at = now + self.cfg.clip_interval_s
-                    src = self._next_clip_source(st, now)
-                    if src is not None:
-                        out = await st.send(P.MSG_REQ_CLIP, P.ReqClip(src, self.cfg.clip_seconds).pack())
-                        if out is not None:
-                            st.pending_clip = {"source": src, "seq": out, "at": now}
+                try:
+                    await self._tick(st, on_plan)
+                except Exception as e:  # a failing tick must not stop planning for the connection
+                    log.warning("tick failed", extra={"device": s.device_id, "error": type(e).__name__})
         except asyncio.CancelledError:
             pass
+
+    async def _tick(self, st: DeviceState, on_plan):
+        s = st.session
+        now = time.monotonic()
+        reason = st.scheduler.due(now)
+        if reason:
+            st.scheduler.start(reason, on_plan, lambda: self._latest_spectrogram(s))
+        pc = st.pending_clip
+        if pc and now - pc["at"] > self.cfg.clip_request_timeout_s:
+            log.info("clip request timed out", extra={"device": s.device_id, "source": pc["source"]})
+            st.walk.write("clip_timeout", source=P.SOURCE_NAMES.get(pc["source"]))
+            st.pending_clip = None
+        if now >= st.next_clip_at and st.pending_clip is None:
+            st.next_clip_at = now + self.cfg.clip_interval_s
+            src = self._next_clip_source(st, now)
+            if src is not None:
+                out = await st.send(P.MSG_REQ_CLIP, P.ReqClip(src, self.cfg.clip_seconds).pack())
+                if out is not None:
+                    st.pending_clip = {"source": src, "seq": out, "at": now}
 
     def _next_clip_source(self, st: DeviceState, now: float) -> int | None:
         s = st.session

@@ -183,6 +183,8 @@ def read_wav(path: str) -> tuple[np.ndarray, int]:
 def to_16k_int16(pcm: np.ndarray, sr: int) -> np.ndarray:
     if sr == YAMNET_SR:
         return pcm
+    if not 8000 <= sr <= 48000:  # the resample allocates len * 16000 / sr: never for a tiny rate
+        raise ValueError("sample rate out of range")
     y = resample(pcm.astype(np.float32), sr, YAMNET_SR)
     return np.clip(y, -32768, 32767).astype(np.int16)
 
