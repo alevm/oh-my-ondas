@@ -56,7 +56,7 @@ void LCDDisplay::begin() {
     SPI1.setMISO(TFT_MISO);  // default MISO1 is pin 1, under the Audio Shield
     tft = new Adafruit_ILI9341(&SPI1, TFT_DC, TFT_CS, TFT_RST);
     tft->begin();            // library default SPI speed: 40 MHz over jumpers fails
-    tft->setRotation(1);     // Landscape: 320x240
+    tft->setRotation(TFT_ROTATION);  // Landscape: 320x240
     tft->fillScreen(COL_BG);
 
     // Splash screen
@@ -160,7 +160,7 @@ void LCDDisplay::checkHealth() {
     if (mode != 0x94) {
         DEBUG_PRINTF("LCD power mode 0x%02X - reinit\n", mode);
         tft->begin();
-        tft->setRotation(1);
+        tft->setRotation(TFT_ROTATION);
         needsFullRedraw = true;
         lastMode = -1;  // force the header to redraw too
     }

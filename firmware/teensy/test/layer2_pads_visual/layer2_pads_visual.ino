@@ -87,7 +87,7 @@ void setup() {
 
     SPI1.setMISO(39);
     lcd.begin();
-    lcd.setRotation(1);
+    lcd.setRotation(3);
     lcd.fillScreen(ILI9341_BLACK);
     if (!sdOk) {
         lcd.setTextColor(ILI9341_RED);

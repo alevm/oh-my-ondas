@@ -41,7 +41,7 @@ void setup() {
     lcd.fillScreen(ILI9341_BLACK);
     Serial.printf("Fill test: %lu ms\n", millis() - t);
 
-    lcd.setRotation(1);
+    lcd.setRotation(3);
     const uint16_t bars[] = {ILI9341_RED, ILI9341_GREEN, ILI9341_BLUE,
                              ILI9341_YELLOW, ILI9341_CYAN, ILI9341_MAGENTA,
                              ILI9341_WHITE, ILI9341_DARKGREY};

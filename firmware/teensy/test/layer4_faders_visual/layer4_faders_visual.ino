@@ -23,19 +23,31 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
 #include <Adafruit_ADS1X15.h>
+#include <Adafruit_SSD1306.h>
+#include <Adafruit_CAP1188.h>
 
 #define UI_BUS Wire2
 #define FADER5_PIN 40
 
 AudioSynthWaveformSine tone1;
 AudioOutputI2S         i2sOut;
-AudioConnection        pcL(tone1, 0, i2sOut, 0);
-AudioConnection        pcR(tone1, 0, i2sOut, 1);
+AudioSynthWaveformSine tone2;   // touch beeps
+AudioMixer4            mix;
+AudioConnection        pc1(tone1, 0, mix, 0);
+AudioConnection        pc2(tone2, 0, mix, 1);
+AudioConnection        pcL(mix, 0, i2sOut, 0);
+AudioConnection        pcR(mix, 0, i2sOut, 1);
 AudioControlSGTL5000   codec;
 
 Adafruit_ILI9341 lcd(&SPI1, 37, 38, 36);
 Adafruit_ADS1115 ads;
 bool adsOk = false;
+// earlier steps stay live: OLED shows touches + fader values, CAP1188 LEDs follow touches
+Adafruit_SSD1306 oled(128, 64, &UI_BUS, -1);
+Adafruit_CAP1188 touch;
+bool oledOk = false, capOk = false;
+uint32_t touches = 0, beepOff = 0;
+uint8_t touched = 0;
 
 const int N = 5, HIST = 16;
 const float FULL[N] = {26400, 26400, 26400, 26400, 4095};  // ADS at +/-4.096 V and 3.3 V; Teensy 12-bit
@@ -109,9 +121,20 @@ void setup() {
     adsOk = ads.begin(0x48, &UI_BUS);
     if (adsOk) ads.setDataRate(RATE_ADS1115_860SPS);
 
+    capOk = touch.begin(0x29, &UI_BUS);
+    if (capOk) {  // same setup as layer2_pads_visual
+        touch.writeRegister(0x1F, 0x3F);
+        touch.writeRegister(0x20, touch.readRegister(0x20) | 0x08);
+        touch.writeRegister(0x26, 0xFF);
+        touch.writeRegister(0x72, 0xFF);  // LED n follows input n
+    }
+    oledOk = oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+    mix.gain(0, 1); mix.gain(1, 1);
+    tone2.amplitude(0);
+
     SPI1.setMISO(39);
     lcd.begin();
-    lcd.setRotation(1);
+    lcd.setRotation(3);
     drawStatic();
 
     for (int i = 0; i < N; i++) {
@@ -147,6 +170,32 @@ void loop() {
     if (active >= 0) tone1.frequency(200 + constrain(pct[active], 0.0f, 100.0f) * 8);
     tone1.amplitude(amp);
 
+    static uint32_t nextTouch = 0, nextOled = 0;
+    if (capOk && millis() > nextTouch) {
+        nextTouch = millis() + 30;
+        uint8_t t = touch.touched(), fresh = t & ~touched;
+        for (int i = 0; i < 8; i++) if (fresh & (1 << i)) {
+            touches++;
+            tone2.frequency(523.25f * (1 + i / 8.0f)); tone2.amplitude(0.05f); beepOff = millis() + 120;
+        }
+        touched = t;
+    }
+    if (beepOff && millis() > beepOff) { tone2.amplitude(0); beepOff = 0; }
+    if (oledOk && millis() > nextOled) {
+        nextOled = millis() + 100;
+        oled.clearDisplay();
+        oled.setTextColor(SSD1306_WHITE); oled.setTextSize(1);
+        oled.setCursor(0, 0); oled.printf("CAP %s touch %lu", capOk ? "OK" : "--", touches);
+        for (int i = 0; i < 8; i++) {
+            if (touched & (1 << i)) oled.fillRect(i * 16 + 1, 20, 14, 14, SSD1306_WHITE);
+            else oled.drawRect(i * 16 + 1, 20, 14, 14, SSD1306_WHITE);
+        }
+        oled.setCursor(0, 40);
+        for (int i = 0; i < N; i++) oled.printf("%d ", (int)constrain(pct[i], 0.0f, 99.0f));
+        oled.setCursor(0, 54); oled.print("F1 F2 F3 F4 F5 %");
+        oled.display();
+    }
+
     static uint32_t nextDraw = 0;
     if (millis() > nextDraw) {  // 10 frames a second is enough
         nextDraw = millis() + 100;
@@ -158,7 +207,7 @@ void loop() {
         for (int i = 0; i < N; i++)
             Serial.printf("F%d now %5.1f lo %5.1f hi %5.1f nz %5.2f %s | ", i + 1, pct[i], lo[i], hi[i],
                           noise[i], passed(i) ? "PASS" : "-");
-        Serial.println();
+        Serial.printf("CAP %s touches %lu OLED %s\n", capOk ? "OK" : "--", touches, oledOk ? "OK" : "--");
     }
 
     // the LCD sometimes resets (power mode 0x00 instead of 0x94): re-init and redraw
@@ -168,7 +217,7 @@ void loop() {
         if (mode != 0x94) {
             Serial.printf("LCD 0x%02X - reinit\n", mode);
             lcd.begin();
-            lcd.setRotation(1);
+            lcd.setRotation(3);
             drawStatic();
         }
     }

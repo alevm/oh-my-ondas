@@ -62,7 +62,7 @@ void setup() {
     unsigned long t = millis();
     lcd.fillScreen(ILI9341_BLACK);
     unsigned long fillMs = millis() - t;
-    lcd.setRotation(1);
+    lcd.setRotation(3);
     lcd.setTextSize(2);
 
     bool lcdOk = power == 0x94 && pixfmt == 0x05;

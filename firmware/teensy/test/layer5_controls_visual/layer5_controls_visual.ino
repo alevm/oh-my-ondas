@@ -113,7 +113,7 @@ void setup() {
 
     SPI1.setMISO(39);
     lcd.begin();
-    lcd.setRotation(1);
+    lcd.setRotation(3);
     drawAll();
 }
 
@@ -157,7 +157,7 @@ void loop() {
         if (mode != 0x94) {
             Serial.printf("LCD 0x%02X - reinit\n", mode);
             lcd.begin();
-            lcd.setRotation(1);
+            lcd.setRotation(3);
             drawAll();
         }
     }

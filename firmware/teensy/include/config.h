@@ -67,6 +67,7 @@
 #define TFT_CS   38
 #define TFT_DC   37
 #define TFT_RST  36
+#define TFT_ROTATION 3   // landscape, turned 180° (1 = landscape, other way up)
 
 #define LCD_WIDTH  320   // landscape
 #define LCD_HEIGHT 240
