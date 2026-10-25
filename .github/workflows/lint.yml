@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   eslint:
     name: ESLint
@@ -16,9 +19,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
-      - name: Install ESLint
-        run: npm install eslint globals
+      - name: Install dependencies (package-lock.json)
+        run: npm ci
 
       - name: Run ESLint
         run: npx eslint web/js/
@@ -36,5 +40,12 @@ jobs:
       - name: Install flake8
         run: pip install flake8
 
+      # server/ is written in a dense style (one-line guards with ';', long log/format
+      # lines, small lambdas), so its pure-style codes are ignored there; pyflakes checks
+      # (undefined names, unused imports, ...) stay on everywhere except the two
+      # per-file entries, open findings in server/tests to fix and then drop.
+      # Same command as `npm run lint:py`.
       - name: Run flake8
-        run: flake8 firmware/tools/ --max-line-length=120
+        run: |
+          flake8 firmware/tools/ server/ --extend-exclude=server/.venv --max-line-length=120 \
+            --per-file-ignores="server/*:E501,E702,E731,E741,E127,E301,E303,W391 server/tests/test_e2e.py:E501,E702,E731,E741,E127,E301,E303,W391,F401 server/tests/test_protocol.py:E501,E702,E731,E741,E127,E301,E303,W391,F541"

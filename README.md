@@ -9,7 +9,7 @@ For people who walk through cities and want to listen differently — a portable
 
 A location-aware music instrument combining sequencing, audio mangling, and GPS-aware features. Includes a web prototype and ESP32 firmware scaffolding.
 
-**[Live Demo](https://alevm.github.io/oh-my-ondas/)**
+**[Live Demo](https://ohmyondas.levm.eu)** (push to `main` deploys it to Sisyphus: `.github/workflows/deploy.yml`)
 
 ---
 
@@ -17,7 +17,7 @@ A location-aware music instrument combining sequencing, audio mangling, and GPS-
 
 ```
 oh-my-ondas/
-├── web/        Static web app (GitHub Pages)
+├── web/        Static web app (served at https://ohmyondas.levm.eu)
 ├── firmware/   Embedded firmware (Teensy 4.1 + ESP32)
 ├── tests/      Puppeteer E2E test suite
 └── docs/       Documentation
@@ -31,10 +31,20 @@ oh-my-ondas/
 cd web && python3 -m http.server 8080
 ```
 
-**Tests** -- run the end-to-end suite:
+**Tests** -- run the end-to-end suites against the local server above (CI does the same):
 
 ```bash
-cd tests && npm install && npm test
+cd tests && npm ci
+TEST_URL=http://localhost:8080 npm test               # e2e smoke suite (web/app.html)
+TEST_URL=http://localhost:8080 npm run test:validate  # every button + AI generation
+```
+
+Server (layer 2) tests; the YAMNet model and recordings are fetched, not in git:
+
+```bash
+cd server && pip install -r requirements-dev.txt
+python tools/fetch_model.py && python tools/fetch_testdata.py
+pytest -q
 ```
 
 **Firmware** -- build for the Teensy 4.1 target:

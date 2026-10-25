@@ -26,9 +26,13 @@ jobs:
         working-directory: firmware
         run: pio run -e teensy41
 
-      - name: Build ESP32 firmware
-        working-directory: firmware
-        run: PLATFORMIO_SRC_DIR=esp32 pio run -e esp32
+      # Separate PlatformIO project; config.h is gitignored, so the release binary
+      # carries the placeholder template (flash your own build for real WiFi/token).
+      - name: Build ESP32-S2 firmware
+        working-directory: firmware/esp32
+        run: |
+          cp config.example.h config.h
+          pio run -e esp32s2
 
       - name: Package web app
         run: cd web && zip -r ../oh-my-ondas-web.zip . -x '*.gitkeep'
@@ -40,4 +44,4 @@ jobs:
           gh release create "$GITHUB_REF_NAME" --generate-notes \
             oh-my-ondas-web.zip \
             firmware/.pio/build/teensy41/firmware.hex \
-            firmware/.pio/build/esp32/firmware.bin
+            firmware/esp32/.pio/build/esp32s2/firmware.bin

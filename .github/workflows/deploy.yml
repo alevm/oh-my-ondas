@@ -23,9 +23,16 @@ jobs:
     name: Deploy
     runs-on: ubuntu-latest
     environment: production
-    permissions: {}
+    permissions:
+      contents: read   # checkout, to compare the live files with the deployed commit
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
       - name: Trigger deploy-static webhook
+        id: webhook
         env:
           DEPLOY_SECRET: ${{ secrets.DEPLOY_SECRET }}
         run: |
@@ -45,10 +52,34 @@ jobs:
           if [ "${GITHUB_SHA:0:12}" != "$TAG" ]; then
             echo "Deployed $TAG but this run is ${GITHUB_SHA:0:12} (a newer push may have deployed first)"
           fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Verify the live site
+      # Caddy falls back to index.html with 200 for unknown paths, so a status check
+      # proves nothing. Instead: the bytes served for web/ files must equal the
+      # deployed commit's. Checked: the pages that must always work plus every web/
+      # file this commit added or changed (capped at 40). Retries cover the pull.
+      - name: Verify the live site serves the deployed commit
+        env:
+          TAG: ${{ steps.webhook.outputs.tag }}
         run: |
-          sleep 5
-          CODE=$(curl -so /dev/null -w "%{http_code}" --max-time 10 "https://ohmyondas.levm.eu/")
-          [ "$CODE" = "200" ] || { echo "ohmyondas.levm.eu returned $CODE"; exit 1; }
-          curl -s --max-time 10 "https://ohmyondas.levm.eu/" | grep -o "Oh My Ondas v[^<]*" || true
+          git cat-file -e "${TAG}^{commit}" 2>/dev/null || git fetch -q origin main
+          REV=$(git rev-parse --verify "${TAG}^{commit}")
+          FILES=$( { printf '%s\n' web/index.html web/app.html web/VERSION
+                     git diff --name-only --diff-filter=AM "${REV}^" "$REV" -- web/ 2>/dev/null | head -40; } | sort -u)
+          for attempt in $(seq 1 12); do
+            BAD=""
+            for f in $FILES; do
+              git cat-file -e "$REV:$f" 2>/dev/null || continue
+              WANT=$(git show "$REV:$f" | sha256sum | cut -d' ' -f1)
+              GOT=$(curl -sf --max-time 15 "https://ohmyondas.levm.eu/${f#web/}?v=$REV" | sha256sum | cut -d' ' -f1)
+              [ "$WANT" = "$GOT" ] || BAD="$BAD ${f#web/}"
+            done
+            if [ -z "$BAD" ]; then
+              echo "Live site matches ${REV:0:12}: $(echo "$FILES" | wc -l) files"
+              exit 0
+            fi
+            echo "Attempt $attempt: differs from ${REV:0:12}:$BAD"
+            sleep 10
+          done
+          echo "Live site does not serve ${REV:0:12} after 2 minutes"
+          exit 1

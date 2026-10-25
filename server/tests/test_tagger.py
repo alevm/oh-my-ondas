@@ -95,11 +95,8 @@ def test_spectrogram_png():
 
 # ---------------- YAMNet (real model) ----------------
 import glob  # noqa: E402
-import os  # noqa: E402
 
-import pytest  # noqa: E402
-
-from tagger import DEFAULT_MODEL_PATH, YamnetTagger, read_wav, resample  # noqa: E402
+from tagger import YamnetTagger, read_wav, resample  # noqa: E402
 
 HAVE_MODEL = os.path.exists(DEFAULT_MODEL_PATH)
 TESTDATA = os.path.join(os.path.dirname(__file__), "..", ".testdata")

@@ -2,6 +2,10 @@
 
 Merged from branches: `fix/css-a11y`, `fix/runtime-bugs`, `fix/website`
 
+Pruned 2026-10-25 (checked against the code, done): postMessage wildcard origin (all senders use
+`window.location.origin`), radio.js GPS property names, transport button IDs, Nominatim throttle
+(`nominatimRateLimiter` in radio.js, used by journey.js and landmark.js), ise.html GitHub link.
+
 ---
 
 ## CSS & Accessibility (from fix/css-a11y)
@@ -10,7 +14,6 @@ Merged from branches: `fix/css-a11y`, `fix/runtime-bugs`, `fix/website`
 
 - [ ] **Device mockup is 1100x700px fixed** — No media queries in 850 lines of inline CSS. Add responsive scaling (e.g. `transform: scale()` with viewport-based breakpoints, or `clamp()`/`vw` units).
 - [ ] **Encoders and crossfader need touch events** — Add `touchstart`/`touchmove`/`touchend` handlers alongside mouse events in the inline `<script>`.
-- [ ] **PostMessage wildcard in index.html:861** — Restrict origin.
 
 ### style.css — Dead / Stale Rules
 
@@ -46,11 +49,9 @@ Merged from branches: `fix/css-a11y`, `fix/runtime-bugs`, `fix/website`
 
 ### Critical Bugs
 
-- [ ] **GPS property mismatch in radio.js** — `radio.js:139,174` reads `gps.lat`/`gps.lng` but `gps.js:76-84` stores `.latitude`/`.longitude`. Fix to use correct property names.
 - [ ] **scenes.js references nonexistent DOM IDs and App methods** — `applyState()` looks for `seqTempo`, `seqTempoDisplay`, `tempoValue`, `delayTime`, etc. None exist. Also calls `updateStepGrid()`, `updateTrackOverview()`, `updateSourceRouting()` which don't exist. Fix all references.
 - [ ] **ai-composer.js same problem** — `surprise()` and `generateArrangement()` reference stale DOM IDs and nonexistent App methods. Fix all references.
 - [ ] **landmark.js calls nonexistent RadioPlayer methods** — `tuneLocalRadio()` calls `scanLocalStations()` (should be `searchLocalStations()`) and `getStations()` (doesn't exist). Also stale DOM IDs.
-- [ ] **setupTransport binds wrong button IDs** — `app.js:170-173` looks for `btnPlay2`/`btnStop2`/`btnRecord2`. Actual IDs are `btnPlayE`/`btnStopE`/`btnRecordE`.
 - [ ] **Null-check crashes in app.js** — Add guards in `setupFX` (2353), `setupSynth` (1918), `setupAdminModal` (3078), `setupRadio` (2817).
 
 ### Functional Issues
@@ -78,8 +79,6 @@ Merged from branches: `fix/css-a11y`, `fix/runtime-bugs`, `fix/website`
 ### Security
 
 - [x] **XSS via innerHTML** — Audited: `landmark.js:880` already uses `escapeHtml()` on location data; `app.js:3242,3277` already use `escapeHtml()` on station names/URLs; `app.js:2795` is FX preset code with no external data. All other innerHTML uses in `analysis.js` inject only internal/hardcoded state. No unescaped external data flows into innerHTML sinks.
-- [ ] **No rate limiting on Nominatim** — Add throttle (1 req/sec max) in `journey.js` and `landmark.js`.
-- [ ] **PostMessage uses wildcard origin** — Restrict to same-origin in `app.js:1335` and `index.html:861`.
 
 ### Race Conditions
 
@@ -93,7 +92,6 @@ Merged from branches: `fix/css-a11y`, `fix/runtime-bugs`, `fix/website`
 
 ### High Priority
 
-- [ ] **ise.html footer links to wrong GitHub repo** — Line 334 links to `manuelvargasmontero/ohmyondas`. Change to `alevm/oh-my-ondas`.
 - [ ] **ise.html navigation is different** — 5-link nav missing "SDLC" and "Analysis". Align to the standard 6-link nav. Decide whether to add ISE to all pages or keep it unlisted.
 - [ ] **proto.html is fully orphaned** — Has custom nav with no links to rest of site. Either integrate into main nav or add a back-link.
 - [ ] **CSS cache-buster versions desynchronized** — `index.html` `?v=253`, `app.html` `?v=249`, others `?v=248`. Unify to same version across all pages.

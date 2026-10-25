@@ -13,6 +13,9 @@ on:
       - ".github/workflows/firmware.yml"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: PlatformIO Build (${{ matrix.environment }})
@@ -20,7 +23,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        environment: [teensy41, esp32]
+        include:
+          # Teensy 4.1 main firmware: firmware/platformio.ini
+          - environment: teensy41
+            project: firmware
+            artifact: firmware/.pio/build/teensy41/firmware.hex
+          # ESP32-S2 bridge: separate project, firmware/esp32/platformio.ini
+          - environment: esp32s2
+            project: firmware/esp32
+            artifact: firmware/esp32/.pio/build/esp32s2/firmware.bin
 
     steps:
       - uses: actions/checkout@v4
@@ -32,19 +43,55 @@ jobs:
       - name: Install PlatformIO
         run: pip install platformio
 
+      # main.cpp #errors without config.h (gitignored: WiFi and device token);
+      # CI builds with the tracked placeholder template.
+      - name: Use placeholder ESP32 config
+        if: matrix.environment == 'esp32s2'
+        run: cp firmware/esp32/config.example.h firmware/esp32/config.h
+
       - name: Build firmware
-        working-directory: firmware
-        run: |
-          if [ "${{ matrix.environment }}" = "esp32" ]; then
-            PLATFORMIO_SRC_DIR=esp32 pio run -e esp32
-          else
-            pio run -e ${{ matrix.environment }}
-          fi
+        working-directory: ${{ matrix.project }}
+        run: pio run -e ${{ matrix.environment }}
 
       - name: Upload firmware artifact
-        if: matrix.environment == 'teensy41'
         uses: actions/upload-artifact@v4
         with:
           name: firmware-${{ matrix.environment }}
-          path: firmware/.pio/build/${{ matrix.environment }}/
+          path: ${{ matrix.artifact }}
+          if-no-files-found: error
           retention-days: 30
+
+  esp32-host-test:
+    name: ESP32 bridge host test (ASan/UBSan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and run test_bridge
+        working-directory: firmware/esp32
+        run: |
+          g++ -std=c++17 -O1 -g -fsanitize=address,undefined -fno-sanitize-recover=undefined \
+            -Wall -Wextra -Werror -I../common -Isrc host_test/test_bridge.cpp -o "$RUNNER_TEMP/test_bridge"
+          "$RUNNER_TEMP/test_bridge"
+
+  bench-and-unit:
+    name: Teensy bench sketch + link protocol unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      # env bench compiles test/bench_all (the live hardware bench) with its libraries
+      - name: Build bench_all
+        working-directory: firmware
+        run: pio run -e bench
+
+      - name: Link protocol unit tests (native)
+        working-directory: firmware
+        run: pio test -e native

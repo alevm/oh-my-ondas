@@ -27,6 +27,7 @@ def _broadcast_text(text: str | None) -> str:
     """RDS text with control characters (newlines included) removed."""
     return "".join(c for c in (text or "") if c.isprintable()).strip()
 
+
 # Structured-output schema. The API does not enforce numeric ranges (minimum/maximum
 # are unsupported), so ranges are stated in descriptions and clamped by validate.py.
 PLAN_SCHEMA = {

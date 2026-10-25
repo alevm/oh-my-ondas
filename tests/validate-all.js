@@ -2,13 +2,14 @@
  * OH MY ONDAS — Full Button & Generation Validation
  * Validates every interactive element and AI composition output.
  * Run: node validate-all.js
+ *      TEST_URL=http://localhost:8080 node validate-all.js   # site root; app.html is appended
  */
 
 const puppeteer = require('puppeteer');
 const path = require('path');
 const fs = require('fs');
 
-const URL = 'http://localhost:8080/app.html';
+const URL = new globalThis.URL('app.html', (process.env.TEST_URL || 'http://localhost:8080').replace(/\/?$/, '/')).href;
 const SCREENSHOT_DIR = path.join(__dirname, 'screenshots', 'validation');
 const results = { passed: 0, failed: 0, warnings: 0, tests: [] };
 
@@ -66,13 +67,38 @@ async function elementExists(page, selector, label) {
     console.log('========================================\n');
 
     try {
-        await page.goto(URL, { waitUntil: 'networkidle2', timeout: 15000 });
+        const response = await page.goto(URL, { waitUntil: 'networkidle2', timeout: 15000 });
+        if (!response || !response.ok()) throw new Error(`HTTP ${response ? response.status() : 'no response'}`);
         await new Promise(r => setTimeout(r, 1000));
     } catch (e) {
         console.log('\x1b[31mFailed to load page: ' + e.message + '\x1b[0m');
         console.log('Make sure to run: cd web && python3 -m http.server 8080');
         await browser.close();
         process.exit(1);
+    }
+
+    // The app initialises (audio engine, then every control's listeners) on the first
+    // click anywhere (app.js autoInit). Until then no button responds, so give it that
+    // first gesture on a neutral spot and wait for init to finish.
+    await page.click('.sidebar-title');
+    const initOk = await page.waitForFunction(() => window.app && window.app.initialized, { timeout: 10000 })
+        .then(() => true, () => false);
+    record('App initialises on first click', initOk ? 'PASS' : 'FAIL', initOk ? '' : 'window.app.initialized still false after 10 s');
+
+    // First visit (fresh profile): the onboarding tour starts 1.5 s after init and its
+    // backdrop covers the page, so real mouse clicks below would land on it. Skip it the
+    // way a user would.
+    try {
+        await page.waitForSelector('#onboardingOverlay .onboarding-skip', { visible: true, timeout: 5000 });
+        await page.click('#onboardingOverlay .onboarding-skip');
+        await new Promise(r => setTimeout(r, 300));
+        const gone = await page.evaluate(() => {
+            const o = document.getElementById('onboardingOverlay');
+            return !o || o.offsetParent === null || getComputedStyle(o).display === 'none';
+        });
+        record('Onboarding tour can be skipped', gone ? 'PASS' : 'FAIL', gone ? '' : 'Overlay still visible after Skip Tour');
+    } catch (e) {
+        record('Onboarding tour can be skipped', 'FAIL', `Skip Tour button not shown: ${e.message}`);
     }
 
     // ===== SECTION 1: PAGE STRUCTURE =====
@@ -97,7 +123,7 @@ async function elementExists(page, selector, label) {
     // ===== SECTION 2: NAVIGATION =====
     console.log('\n--- NAVIGATION ---');
     const navLinks = await page.$$eval('.nav-link', els => els.map(e => ({ text: e.textContent.trim(), href: e.getAttribute('href') })));
-    const expectedNav = ['Home', 'App', 'Design', 'SDLC', 'About', 'Analysis'];
+    const expectedNav = ['Home', 'App', 'Gallery', 'Hardware', 'Software', 'About'];  // top menu since 9beedd1
     for (const n of expectedNav) {
         const found = navLinks.find(l => l.text === n);
         record(`Nav link: ${n}`, found ? 'PASS' : 'FAIL', found ? found.href : 'Missing');

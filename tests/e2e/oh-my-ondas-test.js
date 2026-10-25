@@ -1,6 +1,6 @@
 /**
  * OH MY ONDAS - AUTOMATED TESTING SUITE
- * Tests the interactive functionality of https://alevm.github.io/oh-my-ondas/
+ * Tests the interactive functionality of the web app (web/app.html).
  * 
  * REQUIREMENTS:
  * - Node.js 16+
@@ -8,6 +8,9 @@
  * 
  * USAGE:
  * node oh-my-ondas-test.js
+ * TEST_URL=http://localhost:8080 node oh-my-ondas-test.js   # site root; app.html is appended
+ *
+ * Exits 1 when any test FAILs or a suite crashes (CI relies on this).
  */
 
 const puppeteer = require('puppeteer');
@@ -16,7 +19,8 @@ const path = require('path');
 
 // Test configuration
 const CONFIG = {
-    url: process.env.TEST_URL || 'https://alevm.github.io/oh-my-ondas/',
+    // TEST_URL is the site root (web/ served at /); the app itself is app.html
+    url: new URL('app.html', (process.env.TEST_URL || 'https://ohmyondas.levm.eu').replace(/\/?$/, '/')).href,
     headless: process.env.HEADLESS === 'true' || process.env.CI === 'true',
     slowMo: process.env.CI ? 0 : 100,
     timeout: 30000,  // 30 second timeout per test
@@ -41,7 +45,8 @@ const colors = {
     green: '\x1b[32m',
     yellow: '\x1b[33m',
     blue: '\x1b[34m',
-    magenta: '\x1b[35m'
+    magenta: '\x1b[35m',
+    cyan: '\x1b[36m'
 };
 
 function log(message, color = 'reset') {
@@ -67,6 +72,11 @@ function logTest(num, name, status, details = '') {
     log(`${statusSymbol} ${status}`, statusColor);
     if (details) log(`   ${details}`, 'reset');
 }
+
+// Seen during the run. appErrors (uncaught exceptions, failed same-origin loads) fail
+// test #92; consoleErrors (mostly external: GPS denied in headless, radio streams) warn in #93.
+const appErrors = [];
+const consoleErrors = [];
 
 // Helper function to wait
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -140,18 +150,39 @@ async function runTests() {
     page.on('console', msg => {
         if (msg.type() === 'error') {
             log(`   🔴 Browser Console Error: ${msg.text()}`, 'red');
+            consoleErrors.push(msg.text());
         }
     });
     
     // Catch page errors
     page.on('pageerror', error => {
         log(`   🔴 Page Error: ${error.message}`, 'red');
+        appErrors.push(`pageerror: ${error.message}`);
+    });
+
+    // Same-origin load failures are app bugs (missing file, bad path). /favicon.ico is
+    // the browser's implicit request (no page links it), so it is not counted.
+    const appOrigin = new URL(CONFIG.url).origin;
+    const sameOrigin = (u) => { try { return new URL(u).origin === appOrigin; } catch { return false; } };
+    page.on('response', response => {
+        const u = response.url();
+        if (response.status() >= 400 && sameOrigin(u) && new URL(u).pathname !== '/favicon.ico') {
+            appErrors.push(`HTTP ${response.status()} ${u}`);
+        }
+    });
+    page.on('requestfailed', request => {
+        if (sameOrigin(request.url())) {
+            appErrors.push(`request failed ${request.url()}: ${request.failure()?.errorText}`);
+        }
     });
     
     try {
         // Navigate to page
         log('📡 Loading Oh My Ondas...', 'blue');
-        await page.goto(CONFIG.url, { waitUntil: 'networkidle2', timeout: CONFIG.timeout });
+        const response = await page.goto(CONFIG.url, { waitUntil: 'networkidle2', timeout: CONFIG.timeout });
+        if (!response || !response.ok()) {
+            throw new Error(`${CONFIG.url} returned HTTP ${response ? response.status() : 'no response'}`);
+        }
         await screenshot(page, '00-initial-load');
         log('✅ Page loaded successfully\n', 'green');
         
@@ -168,7 +199,7 @@ async function runTests() {
         try {
             await testPageStructure(page);
         } catch (error) {
-            log(`   ❌ Suite 1 crashed: ${error.message}`, 'red');
+            recordTest(1 * 10 - 1, 'Suite 1 ran to completion', 'FAIL', `Suite 1 crashed: ${error.message}`);
         }
         
         // ========================================
@@ -181,7 +212,7 @@ async function runTests() {
         try {
             await testTransportControls(page);
         } catch (error) {
-            log(`   ❌ Suite 2 crashed: ${error.message}`, 'red');
+            recordTest(2 * 10 - 1, 'Suite 2 ran to completion', 'FAIL', `Suite 2 crashed: ${error.message}`);
         }
         
         // ========================================
@@ -194,7 +225,7 @@ async function runTests() {
         try {
             await testSequencer(page);
         } catch (error) {
-            log(`   ❌ Suite 3 crashed: ${error.message}`, 'red');
+            recordTest(3 * 10 - 1, 'Suite 3 ran to completion', 'FAIL', `Suite 3 crashed: ${error.message}`);
         }
         
         // ========================================
@@ -207,7 +238,7 @@ async function runTests() {
         try {
             await testPads(page);
         } catch (error) {
-            log(`   ❌ Suite 4 crashed: ${error.message}`, 'red');
+            recordTest(4 * 10 - 1, 'Suite 4 ran to completion', 'FAIL', `Suite 4 crashed: ${error.message}`);
         }
         
         // ========================================
@@ -220,7 +251,7 @@ async function runTests() {
         try {
             await testMixer(page);
         } catch (error) {
-            log(`   ❌ Suite 5 crashed: ${error.message}`, 'red');
+            recordTest(5 * 10 - 1, 'Suite 5 ran to completion', 'FAIL', `Suite 5 crashed: ${error.message}`);
         }
         
         // ========================================
@@ -233,7 +264,7 @@ async function runTests() {
         try {
             await testSynth(page);
         } catch (error) {
-            log(`   ❌ Suite 6 crashed: ${error.message}`, 'red');
+            recordTest(6 * 10 - 1, 'Suite 6 ran to completion', 'FAIL', `Suite 6 crashed: ${error.message}`);
         }
         
         // ========================================
@@ -246,7 +277,7 @@ async function runTests() {
         try {
             await testFX(page);
         } catch (error) {
-            log(`   ❌ Suite 7 crashed: ${error.message}`, 'red');
+            recordTest(7 * 10 - 1, 'Suite 7 ran to completion', 'FAIL', `Suite 7 crashed: ${error.message}`);
         }
         
         // ========================================
@@ -259,7 +290,7 @@ async function runTests() {
         try {
             await testScenes(page);
         } catch (error) {
-            log(`   ❌ Suite 8 crashed: ${error.message}`, 'red');
+            recordTest(8 * 10 - 1, 'Suite 8 ran to completion', 'FAIL', `Suite 8 crashed: ${error.message}`);
         }
         
         // ========================================
@@ -272,7 +303,7 @@ async function runTests() {
         try {
             await testKeyboardShortcuts(page);
         } catch (error) {
-            log(`   ❌ Suite 9 crashed: ${error.message}`, 'red');
+            recordTest(9 * 10 - 1, 'Suite 9 ran to completion', 'FAIL', `Suite 9 crashed: ${error.message}`);
         }
         
         // ========================================
@@ -285,12 +316,13 @@ async function runTests() {
         try {
             await testStress(page);
         } catch (error) {
-            log(`   ❌ Suite 10 crashed: ${error.message}`, 'red');
+            recordTest(10 * 10 - 1, 'Suite 10 ran to completion', 'FAIL', `Suite 10 crashed: ${error.message}`);
         }
         
     } catch (error) {
         log(`\n💥 FATAL ERROR: ${error.message}`, 'red');
         console.error(error);
+        recordTest(0, 'Test run completed', 'FAIL', `Fatal: ${error.message}`);
     } finally {
         await browser.close();
         
@@ -520,7 +552,11 @@ async function testSequencer(page) {
         
         const trackSelected = await page.evaluate(() => {
             // Look for track buttons (A, B, C, etc.)
-            const tracks = document.querySelectorAll('button:has-text("A"), button:has-text("B"), [data-track]');
+            // (:has-text() is Playwright-only; querySelectorAll throws on it)
+            const tracks = [
+                ...Array.from(document.querySelectorAll('button')).filter(b => ['A', 'B'].includes(b.textContent.trim())),
+                ...document.querySelectorAll('[data-track]')
+            ];
             if (tracks.length > 0) {
                 tracks[0].click();
                 return true;
@@ -564,8 +600,10 @@ async function testPads(page) {
         const padsClicked = await page.evaluate(() => {
             // Look for numbered pads
             const pads = [];
+            const buttons = Array.from(document.querySelectorAll('button'));
             for (let i = 1; i <= 8; i++) {
-                const pad = document.querySelector(`button:has-text("${i}"), [data-pad="${i}"], .pad-${i}`);
+                const pad = buttons.find(b => b.textContent.trim() === String(i)) ||
+                    document.querySelector(`[data-pad="${i}"], .pad-${i}`);
                 if (pad) pads.push(pad);
             }
             
@@ -882,14 +920,21 @@ async function testStress(page) {
     
     // Test 92: Console errors
     {
-        const name = "No console errors during tests";
+        const name = "No page errors or failed same-origin loads";
         
-        const errors = await page.evaluate(() => {
-            return window.__testErrors || [];
-        });
+        const errors = appErrors;
         
         recordTest(testNum++, name, errors.length === 0 ? 'PASS' : 'FAIL',
-                   errors.length === 0 ? 'No errors detected' : `${errors.length} errors found`);
+                   errors.length === 0 ? 'No errors detected' : `${errors.length} errors found: ${errors.slice(0, 5).join(' | ')}`);
+    }
+    
+    // Test 93: Console errors (external dependencies: geolocation, radio streams)
+    {
+        const name = "Console errors (external dependencies)";
+        const errors = consoleErrors.filter(e => !e.startsWith('Failed to load resource'));
+        
+        recordTest(testNum++, name, errors.length === 0 ? 'PASS' : 'WARN',
+                   errors.length === 0 ? 'No console errors' : `${errors.length} console errors: ${[...new Set(errors)].slice(0, 5).join(' | ')}`);
     }
 }
 
@@ -918,7 +963,7 @@ function printSummary() {
     log(`⚠️  Warnings:    ${results.warnings}`, 'yellow');
     log(`⏭️  Skipped:     ${results.total - results.passed - results.failed - results.warnings}`, 'blue');
     
-    const passRate = ((results.passed / results.total) * 100).toFixed(1);
+    const passRate = results.total ? ((results.passed / results.total) * 100).toFixed(1) : '0.0';
     log(`\nPass Rate: ${passRate}%`, passRate > 80 ? 'green' : passRate > 50 ? 'yellow' : 'red');
     
     log('\n═══════════════════════════════════════\n', 'cyan');
@@ -934,7 +979,7 @@ function saveResults() {
             passed: results.passed,
             failed: results.failed,
             warnings: results.warnings,
-            passRate: ((results.passed / results.total) * 100).toFixed(1)
+            passRate: results.total ? ((results.passed / results.total) * 100).toFixed(1) : '0.0'
         },
         tests: results.tests
     };
@@ -985,8 +1030,10 @@ function generateMarkdownReport(report) {
     return md;
 }
 
-// Run the tests
-runTests().catch(error => {
+// Run the tests; non-zero exit on any FAIL (or if nothing ran) so CI goes red
+runTests().then(() => {
+    process.exit(results.failed || results.total === 0 ? 1 : 0);
+}).catch(error => {
     console.error('Test suite failed:', error);
     process.exit(1);
 });

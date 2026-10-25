@@ -7,7 +7,7 @@
     "start": "cd web && python3 -m http.server 8080",
     "test": "cd tests && npm test",
     "lint:js": "npx eslint web/js/",
-    "lint:py": "flake8 firmware/tools/",
+    "lint:py": "flake8 firmware/tools/ server/ --extend-exclude=server/.venv --max-line-length=120 --per-file-ignores=\"server/*:E501,E702,E731,E741,E127,E301,E303,W391 server/tests/test_e2e.py:E501,E702,E731,E741,E127,E301,E303,W391,F401 server/tests/test_protocol.py:E501,E702,E731,E741,E127,E301,E303,W391,F541\"",
     "firmware:build": "cd firmware && pio run -e teensy41"
   },
   "keywords": [

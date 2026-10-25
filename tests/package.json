@@ -7,7 +7,8 @@
     "test": "node e2e/oh-my-ondas-test.js",
     "test:headless": "HEADLESS=true node e2e/oh-my-ondas-test.js",
     "test:advanced": "node e2e/oh-my-ondas-advanced-tests.js",
-    "test:workflow": "node e2e/oh-my-ondas-workflow-tests.js"
+    "test:workflow": "node e2e/oh-my-ondas-workflow-tests.js",
+    "test:validate": "node validate-all.js"
   },
   "keywords": [
     "testing",
