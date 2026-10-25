@@ -74,7 +74,7 @@ float octave = 1;            // low / middle / high octave
 int gpsFix = -1, gpsSats = -1;
 char gpsTime[9] = "--:--:--";
 
-uint32_t busRecoveries = 0, adsTimeouts = 0, capErrors = 0;
+uint32_t busRecoveries = 0, adsTimeouts = 0, capErrors = 0, lcdDraws = 0;  // lcdDraws: element redraws, reset each second
 
 // A part reset mid-transfer can hold SDA low and block the whole bus: clock
 // SCL until it lets go (standard I2C bus clear), then restart Wire2.
@@ -215,6 +215,7 @@ void drawDynamic() {
     uint32_t up = millis() / 60000;  // minutes: a per-second redraw still ticks in the audio
     if (all || up != lastUp) {
         lastUp = up;
+        lcdDraws++;
         lcd.setTextSize(2);
         lcd.setCursor(8, 4);
         lcd.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
@@ -225,6 +226,7 @@ void drawDynamic() {
     for (int i = 0; i < NPARTS; i++) parts |= (on[i] << (i * 2 + 1)) | (seen[i] << (i * 2 + 2));
     if (all || parts != lastParts) {
         lastParts = parts;
+        lcdDraws++;
         lcd.setTextSize(1);
         lcd.setCursor(8, 26);
         lcd.setTextColor(audioOk ? ILI9341_GREEN : ILI9341_RED, ILI9341_BLACK);
@@ -242,11 +244,14 @@ void drawDynamic() {
 
     lcd.setTextSize(1);
     for (int i = 0; i < NF; i++) {  // fader bars
-        bool live = i < 4 ? on[ADS] : true;
+        // unwired inputs float and their jitter redrew bars ~10x/s (ticks in the audio): show them as "--"
+        bool used = i == OCTAVE_FADER || hi[i] - lo[i] >= 80;
+        bool live = (i < 4 ? on[ADS] : true) && used;
         int h = live ? (int)(constrain(pct[i], 0.0f, 100.0f)) : -1;
         int pass = live && lo[i] <= 2 && hi[i] >= 95;
         if (!all && abs(h - lastH[i]) < 2 && pass == lastPass[i]) continue;  // floating inputs jitter by 1
         lastH[i] = h; lastPass[i] = pass;
+        lcdDraws++;
         int x = 9 + i * 42, hh = max(h, 0);
         lcd.fillRect(x, 47, 32, 100 - hh, ILI9341_BLACK);
         lcd.fillRect(x, 147 - hh, 32, hh, pass ? ILI9341_GREEN : ILI9341_CYAN);
@@ -258,6 +263,7 @@ void drawDynamic() {
     uint8_t tkey = on[CAP] ? touched : 0xFF;
     if (all || tkey != lastTouched || (on[CAP] && lastTouched == 0xFF)) {
         lastTouched = tkey;
+        lcdDraws++;
         for (int i = 0; i < 8; i++)  // touch pads
             lcd.fillRoundRect(232 + (i % 4) * 22, 48 + (i / 4) * 24, 19, 20, 4,
                               !on[CAP] ? DARK : (touched & (1 << i)) ? ILI9341_YELLOW : 0x4208);
@@ -265,6 +271,7 @@ void drawDynamic() {
     uint16_t mkey = on[MCP] ? mcpIn : 0x1234;
     if (all || mkey != lastMcp) {
         lastMcp = mkey;
+        lcdDraws++;
         for (int i = 0; i < 9; i++) {  // nav GPA0-4, buttons GPB0-3 (pressed = low)
             bool down = on[MCP] && !(mcpIn & (1 << (i < 5 ? i : i + 3)));
             int x = i < 5 ? 234 + i * 12 : 236 + i * 12;
@@ -275,6 +282,7 @@ void drawDynamic() {
     int gkey = on[GPS] ? gpsFix * 1000 + gpsSats * 10 + (gpsTime[4] & 7) : -2;  // UTC to the minute
     if (all || gkey != lastGps) {
         lastGps = gkey;
+        lcdDraws++;
         lcd.setCursor(8, 172);
         lcd.setTextColor(on[GPS] ? ILI9341_WHITE : GREY, ILI9341_BLACK);
         if (on[GPS]) lcd.printf("GPS fix %d  sats %2d  UTC %.5s     ", gpsFix, gpsSats, gpsTime);
@@ -283,6 +291,7 @@ void drawDynamic() {
     uint32_t count = touches + presses * 7 + lcdReinits * 131 + busRecoveries * 1031;
     if (all || count != lastCount) {
         lastCount = count;
+        lcdDraws++;
         lcd.setCursor(8, 186);
         lcd.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
         lcd.printf("touch %lu press %lu LCDreinit %lu busclear %lu  ", touches, presses, lcdReinits, busRecoveries);
@@ -369,8 +378,9 @@ void loop() {
         for (int i = 0; i < NF; i++) Serial.printf(" %d(%d-%d)", (int)pct[i], (int)lo[i], (int)hi[i]);
         Serial.printf(" | touch 0x%02X n %lu | mcp 0x%04X n %lu | gps fix %d sats %d %s | lcd reinit %lu bus clear %lu",
                       touched, touches, mcpIn, presses, gpsFix, gpsSats, gpsTime, lcdReinits, busRecoveries);
-        Serial.printf(" | ads timeout %lu cap err %lu | audio mem %d/24 cpu %.1f%%\n",
-                      adsTimeouts, capErrors, AudioMemoryUsageMax(), AudioProcessorUsageMax());
+        Serial.printf(" | ads timeout %lu cap err %lu | audio mem %d/24 cpu %.1f%% | lcd draws/s %lu\n",
+                      adsTimeouts, capErrors, AudioMemoryUsageMax(), AudioProcessorUsageMax(), lcdDraws);
+        lcdDraws = 0;
     }
 
     if (now - lastFast >= 30) {  // inputs every 30 ms
