@@ -22,7 +22,7 @@ usage() {
     echo "  udev      Install Teensy udev rules (requires sudo)"
     echo "  install   Install PlatformIO CLI"
     echo "  build     Build Teensy 4.1 firmware"
-    echo "  flash     Build and upload firmware to Teensy"
+    echo "  flash     Build and upload firmware to Teensy (runs flash.sh teensy41)"
     echo "  monitor   Open serial monitor"
     echo "  esp       Build ESP32 firmware"
     echo "  espflash  Build and upload ESP32 firmware"
@@ -144,27 +144,8 @@ cmd_build() {
 }
 
 cmd_flash() {
-    check_pio || exit 1
-    check_teensy || { error "Connect Teensy and try again."; exit 1; }
-
-    info "Building and flashing Teensy 4.1..."
-    cd "$SCRIPT_DIR"
-    pio run -e teensy41 --target upload
-    info "Firmware flashed. Teensy should reboot now."
-
-    # Wait for serial port
-    echo -n "Waiting for serial port"
-    for i in $(seq 1 10); do
-        if [ -e /dev/ttyACM0 ]; then
-            echo ""
-            info "Serial port ready: /dev/ttyACM0"
-            return 0
-        fi
-        echo -n "."
-        sleep 1
-    done
-    echo ""
-    warn "Serial port not found. Teensy may need the button pressed to exit bootloader."
+    # Flashing has one path, with its CI gate and change log: flash.sh
+    exec "$SCRIPT_DIR/flash.sh" teensy41
 }
 
 cmd_monitor() {
@@ -182,7 +163,7 @@ cmd_esp() {
     check_pio || exit 1
     info "Building ESP32 firmware..."
     cd "$SCRIPT_DIR"
-    PLATFORMIO_SRC_DIR=esp32 pio run -e esp32
+    pio run -d esp32 -e esp32s2
     info "ESP32 build complete."
 }
 
@@ -190,7 +171,7 @@ cmd_espflash() {
     check_pio || exit 1
     info "Building and flashing ESP32..."
     cd "$SCRIPT_DIR"
-    PLATFORMIO_SRC_DIR=esp32 pio run -e esp32 --target upload
+    pio run -d esp32 -e esp32s2 --target upload
     info "ESP32 firmware flashed."
 }
 

@@ -10,7 +10,7 @@ Never call teensy_loader_cli or `pio run -t upload` directly. The changed path d
 
 | Changed | Command | Loop |
 |---|---|---|
-| `firmware/teensy/test/**` (bench_all, layer tests) | `firmware/flash.sh bench` | fast: build, flash now |
+| `firmware/teensy/test/**` (bench_all, layer tests) | `firmware/flash.sh bench` (`BENCH_SKETCH=demo_play` for the demo) | fast: build, flash now |
 | main firmware (`firmware/teensy/*`, `include/`, `common/`, `esp32/`, `platformio.ini`) | `firmware/flash.sh teensy41` | gated: committed, pushed, Firmware Build fully green, then flash |
 
 A change touching both is gated. Before each flash, state the expected status line values; after, compare them with what the script printed (it logs every flash in CHANGES.md).

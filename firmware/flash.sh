@@ -5,6 +5,7 @@
 # Every flash and its serial status are appended to the change log.
 #
 # usage: firmware/flash.sh bench|teensy41 [seconds of serial to read, default 8]
+#        BENCH_SKETCH=demo_play firmware/flash.sh bench   (any folder under teensy/test/, default bench_all)
 set -euo pipefail
 
 ENV="${1:-}"
@@ -18,7 +19,8 @@ MAIN_PATHS=(firmware/teensy firmware/common firmware/esp32 firmware/platformio.i
 EXCLUDE=(":(exclude)firmware/teensy/test")
 
 die() { echo "flash.sh: REFUSED: $*" >&2; exit 1; }
-log() { mkdir -p "$(dirname "$LOG")"; echo "$(date -Is) flash.sh $ENV $*" >> "$LOG"; }
+TARGET="$ENV"; [ "$ENV" = bench ] && TARGET="bench:${BENCH_SKETCH:-bench_all}"
+log() { mkdir -p "$(dirname "$LOG")"; echo "$(date -Is) flash.sh $TARGET $*" >> "$LOG"; }
 
 case "$ENV" in
 bench) ;;
