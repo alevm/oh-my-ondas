@@ -89,3 +89,7 @@ server/models/
 server/.testdata/
 server/data/
 server/.env.local
+
+# test outputs (CI uploads them as artifacts on failure)
+tests/screenshots/
+tests/recordings/

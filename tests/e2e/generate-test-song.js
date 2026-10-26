@@ -9,7 +9,9 @@
  */
 
 const puppeteer = require('puppeteer');
+const fs = require('fs');
 const path = require('path');
+fs.mkdirSync(path.join(__dirname, '..', 'screenshots'), { recursive: true });
 
 const TEST_URL = process.env.TEST_URL || 'http://localhost:8080/app.html';
 const SONG_DURATION = 30000; // 30 seconds
@@ -237,7 +239,7 @@ async function generateTestSong() {
 
         // Take initial screenshot
         await page.screenshot({
-            path: '/home/anv/Current/OhMyOndas/tests/screenshots/song-playing.png'
+            path: path.join(__dirname, '..', 'screenshots', 'song-playing.png')
         });
         console.log('\nScreenshot saved: tests/screenshots/song-playing.png');
 
@@ -265,8 +267,7 @@ async function generateTestSong() {
         console.log('\nStopping playback...');
 
         // Setup download path
-        const downloadPath = '/home/anv/Current/OhMyOndas/tests/recordings';
-        const fs = require('fs');
+        const downloadPath = path.join(__dirname, '..', 'recordings');
         if (!fs.existsSync(downloadPath)) {
             fs.mkdirSync(downloadPath, { recursive: true });
         }
@@ -329,7 +330,7 @@ async function generateTestSong() {
 
         // Take final screenshot
         await page.screenshot({
-            path: '/home/anv/Current/OhMyOndas/tests/screenshots/song-complete.png'
+            path: path.join(__dirname, '..', 'screenshots', 'song-complete.png')
         });
 
         console.log('\n' + '='.repeat(60));

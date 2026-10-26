@@ -16,6 +16,8 @@ export default [
                 escapeHtml: "readonly",   // js/utils.js
                 GPSTracker: "readonly",   // js/gps.js
                 ChannelFX: "readonly",    // js/channel-fx.js
+                App: "readonly",          // js/app.js, extended by js/app-*.js
+                mixIntoApp: "readonly",   // js/app.js
             },
         },
         rules: {

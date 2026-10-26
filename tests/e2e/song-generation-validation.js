@@ -9,6 +9,9 @@
  */
 
 const puppeteer = require('puppeteer');
+const fs = require('fs');
+const path = require('path');
+fs.mkdirSync(path.join(__dirname, '..', 'screenshots'), { recursive: true });
 
 const TEST_URL = process.env.TEST_URL || 'http://localhost:8080/app.html';
 
@@ -298,7 +301,7 @@ async function runValidation() {
 
         // Take validation screenshot
         await page.screenshot({
-            path: '/home/anv/Current/OhMyOndas/tests/screenshots/validation.png',
+            path: path.join(__dirname, '..', 'screenshots', 'validation.png'),
             fullPage: false
         });
         console.log('\nScreenshot saved: tests/screenshots/validation.png');
