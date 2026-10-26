@@ -1,0 +1,18 @@
+Oh My Ondas
+Copyright (C) 2025-2026 AnV. Licences: see LICENSE.
+
+This repository includes third-party code under its own licence:
+
+- Leaflet 1.9.4 (web/vendor/leaflet/), BSD 2-Clause,
+  (c) 2010-2023 Volodymyr Agafonkin, (c) 2010-2011 CloudMade.
+  See web/vendor/leaflet/LICENSE.
+- PU2CLR SI4735 2.1.8 (firmware/teensy/lib/SI4735/), MIT, (c) Ricardo Lima Caratti.
+  See firmware/teensy/lib/SI4735/license.txt. Patched copy: README-OHMYONDAS.md.
+
+Fetched at build time, not stored here: the Teensy core and Audio library
+(PJRC), the Adafruit and ArduinoJson libraries listed in
+firmware/platformio.ini, the Python packages in server/requirements.txt, and
+the YAMNet model (Apache 2.0, Google).
+
+Map tiles and place names come from OpenStreetMap
+(c) OpenStreetMap contributors, ODbL: https://www.openstreetmap.org/copyright

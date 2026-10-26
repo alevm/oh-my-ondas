@@ -8,6 +8,12 @@ Pruned 2026-10-25 (checked against the code, done): postMessage wildcard origin 
 
 ---
 
+## Hardware bench — open issues
+
+- [ ] **Pad hit audio artifact** (2026-10-25, bench_all 027f950): striking a CAP pad gives a short noise artifact in the headphones. Idle LCD noise is fixed (lcd draws/s 0); suspects: the pad-square LCD redraw on touch, the I2C burst clearing the CAP INT, or the drum/note envelope attack (1–5 ms). Isolate with a bench variant that skips the touch redraw.
+
+---
+
 ## CSS & Accessibility (from fix/css-a11y)
 
 ### Device Mockup Layout (index.html)
