@@ -15,6 +15,7 @@ MapDisplay::MapDisplay()
     , zoom(5.0f)
     , statusMode(true)
     , lastUpdate(0)
+    , lastFrameHash(0)
 {
     statusLine1[0] = '\0';
     statusLine2[0] = '\0';
@@ -61,6 +62,7 @@ void MapDisplay::update(float lat, float lon, bool gpsValid) {
         curLon = lon;
         hasPosition = true;
         drawMap();
+        pushFrame();
     } else if (statusMode || !hasPosition) {
         showStatus("WAITING FOR", "GPS FIX...");
         drawStatusScreen();
@@ -69,7 +71,7 @@ void MapDisplay::update(float lat, float lon, bool gpsValid) {
         oled->setCursor(0, 0);
         oled->setTextColor(SSD1306_WHITE, SSD1306_BLACK);
         oled->print("NO FIX");
-        oled->display();
+        pushFrame();
     }
 }
 
@@ -147,8 +149,7 @@ void MapDisplay::drawMap() {
 
     oled->setCursor(OLED_WIDTH - 8, 10);
     oled->print("N");
-
-    oled->display();
+    // the caller sends the frame (it may add the NO FIX label first)
 }
 
 void MapDisplay::drawStatusScreen() {
@@ -168,6 +169,16 @@ void MapDisplay::drawStatusScreen() {
     oled->setCursor(16, 50);
     for (int i = 0; i < dots; i++) oled->print(".");
 
+    pushFrame();
+}
+
+// FNV-1a over the frame buffer: an unchanged frame is not sent
+void MapDisplay::pushFrame() {
+    const uint8_t* buf = oled->getBuffer();
+    uint32_t h = 2166136261u;
+    for (int i = 0; i < OLED_WIDTH * OLED_HEIGHT / 8; i++) h = (h ^ buf[i]) * 16777619u;
+    if (h == lastFrameHash) return;
+    lastFrameHash = h;
     oled->display();
 }
 

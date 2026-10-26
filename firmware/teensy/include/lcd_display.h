@@ -109,6 +109,11 @@ private:
     LCDScreen currentScreen;
     LCDScreen lastScreen;
     bool needsFullRedraw;
+    // The screens below RADIO/SENSE repaint all their elements: do it only
+    // when what they show changed (SPI redraw current is audible on the codec)
+    uint32_t lastScreenSig;
+    bool screenDirty;
+    bool msgDrawn;
 
     char msgBuffer[64];
     unsigned long msgStart;
@@ -145,6 +150,9 @@ private:
     void messageBox(int16_t& x, int16_t& y, int16_t& w, int16_t& h);
     void clearMessageBox();
     void resetDrawCache();
+    uint32_t screenSignature(SystemState& state, Sequencer& seq, FXEngine& fx,
+                             SamplingEngine& sampler, SynthVoice& synth,
+                             SceneManager& scenes, InputManager& input);
     void checkHealth();
 
     void drawBar(int x, int y, int w, int h, float value, uint16_t fg, uint16_t bg);

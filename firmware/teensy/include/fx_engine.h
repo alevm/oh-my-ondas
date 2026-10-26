@@ -94,6 +94,12 @@ private:
     float lfoPhase;
     unsigned long lastLFOUpdate;
 
+    // What applyEffect() last wrote to the audio objects: it writes only on change
+    FXType appliedEffect;
+    FXParams appliedParams;
+    bool applied;
+    int grainMs;   // grain length the granular effect was started with, 0 = stopped
+
     void initializeDefaults();
     void updateLFO();
     void applyEffect();

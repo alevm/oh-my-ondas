@@ -24,6 +24,9 @@ FXEngine::FXEngine()
     , lfoTarget(-1)
     , lfoPhase(0.0f)
     , lastLFOUpdate(0)
+    , appliedEffect(FX_NONE)
+    , applied(false)
+    , grainMs(0)
 {
     initializeDefaults();
 }
@@ -102,10 +105,28 @@ void FXEngine::applyEffect() {
         }
     }
 
+    // Write only on change: re-writing every loop costs CPU, and the old
+    // mute-then-restore of the return gains on every pass could click
+    bool sameEffect = applied && appliedEffect == currentEffect;
+    if (sameEffect && p.param1 == appliedParams.param1 && p.param2 == appliedParams.param2
+        && p.param3 == appliedParams.param3 && p.mix == appliedParams.mix
+        && currentEffect != FX_TAPE) {   // tape wobbles its delay with the LFO
+        return;
+    }
+    appliedEffect = currentEffect;
+    appliedParams = p;
+    applied = true;
+
     float mix = p.mix;
 
-    // First mute all return channels
-    muteAllReturns();
+    if (!sameEffect) {
+        muteAllReturns();
+        if (fxSendMix) fxSendMix->gain(1, 0.0);   // feedback off until an effect sets it
+        if (granularFX && grainMs && currentEffect != FX_GRAIN) {
+            granularFX->stop();
+            grainMs = 0;
+        }
+    }
 
     // Then enable only the active effect's return channel
     switch (currentEffect) {
@@ -146,7 +167,12 @@ void FXEngine::applyEffect() {
             if (granularFX) {
                 // param1 = grain size/speed, param2 = pitch shift ratio
                 float speed = 0.25f + p.param1 * 1.75f;
-                granularFX->beginPitchShift(50 + (int)(p.param2 * 200));
+                // beginPitchShift() restarts the grain capture: call it only when the length changes
+                int ms = 50 + (int)(p.param2 * 200);
+                if (ms != grainMs) {
+                    granularFX->beginPitchShift(ms);
+                    grainMs = ms;
+                }
                 granularFX->setSpeed(speed);
                 fxReturnMix->gain(3, mix);  // ch3 = granular
             }
@@ -236,10 +262,7 @@ void FXEngine::applyEffect() {
 
         case FX_NONE:
         default:
-            // No effect — feedback path off
-            if (fxSendMix) {
-                fxSendMix->gain(1, 0.0);
-            }
+            // No effect: returns and feedback were turned off on the switch
             break;
     }
 }
@@ -332,12 +355,13 @@ void FXEngine::enable() {
 void FXEngine::disable() {
     currentParams.enabled = false;
     muteAllReturns();
+    applied = false;
     DEBUG_PRINTLN("FXEngine: Disabled");
 }
 
 void FXEngine::toggle() {
     currentParams.enabled = !currentParams.enabled;
-    if (!currentParams.enabled) muteAllReturns();
+    if (!currentParams.enabled) { muteAllReturns(); applied = false; }
     DEBUG_PRINTF("FXEngine: %s\n", currentParams.enabled ? "Enabled" : "Disabled");
 }
 

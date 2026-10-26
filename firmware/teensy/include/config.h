@@ -34,7 +34,7 @@
 
 // Audio settings
 #define SAMPLE_RATE 44100
-#define AUDIO_MEMORY_BLOCKS 240   // +40 for the input FFT (holds 8) and the capture voices
+#define AUDIO_MEMORY_BLOCKS 590   // 240 for the graph (+40 for the input FFT and capture voices) + 350 for a full DELAY_MAX_MS delay (1000 ms = 346 blocks). DMAMEM: lives in RAM2
 #define MAX_SAMPLE_LENGTH_MS 30000  // 30 seconds per sample
 
 // Audio buffer sizes

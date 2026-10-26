@@ -10,11 +10,15 @@ parts, so this copy:
 - adds a protected member `TwoWire *wire = &Wire;`;
 - adds `setI2CBus(TwoWire *bus)`, to call before `setup()`.
 
-Nothing else changed. Note that `setup()` and `getDeviceI2CAddress()` call
+Nothing else changed, except that the three SSB patch files
+(`patch_full.h`, `patch_init.h`, `patch_ssb_compressed.h`) are left out:
+they carry Silicon Labs firmware that is not under the library's MIT
+licence, and Oh My Ondas does not use SSB. Note that `setup()` and `getDeviceI2CAddress()` call
 `wire->begin()`, which resets the bus clock to 100 kHz on Teensy 4: set the
 clock again afterwards.
 
-To update: copy the new upstream `src/` here and repeat the three steps.
+To update: copy the new upstream `src/` here (without the `patch_*.h` files)
+and repeat the three steps.
 
 `library.json` silences two upstream warnings in SI4735.cpp
 (misleading indentation at the SSB patch loop, `mjd` maybe-uninitialized in

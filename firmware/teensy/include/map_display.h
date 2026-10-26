@@ -53,10 +53,12 @@ private:
     char statusLine2[32];
 
     unsigned long lastUpdate;
+    uint32_t lastFrameHash;   // a 1 KB frame is ~26 ms on Wire2: send it only when it changed
 
     void addPoint(float lat, float lon);
     void drawMap();
     void drawStatusScreen();
+    void pushFrame();
     int  lonToX(float lon);
     int  latToY(float lat);
     float haversineMeters(float lat1, float lon1, float lat2, float lon2);
