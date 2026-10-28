@@ -15,6 +15,8 @@
  *     0x48 ADS1115   faders 1-4 on A0-A3 (fader 5 on Teensy pin 40)
  *     0x10 GPS       PA1010D: fix, satellites, UTC time (no position shown)
  *     0x20 MCP23017  nav GPA0-4, buttons GPB0-3 (to GND, pull-ups on), beep per press
+ *     0x49 Quad #1   encoders E1-E4; 0x4A Quad #2 (A0 jumper cut) E5-E7: click per step, beep per press
+ *   LINE-IN L  MAX9814 (via 1 uF), R  piezo: peak meters only, never played or stored
  *
  * Serial (115200): one status line a second.
  */
@@ -27,6 +29,7 @@
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_CAP1188.h>
 #include <Adafruit_ADS1X15.h>
+#include <Adafruit_seesaw.h>
 
 #define UI_BUS     Wire2
 #define FADER5_PIN 40
@@ -48,15 +51,18 @@ AudioConnection          pe0(env[0], 0, melo, 0), pe1(env[1], 0, melo, 1), pe2(e
 AudioConnection          pm0(hatEnv, 0, mix, 0), pm1(beepTone, 0, mix, 1), pm2(drums, 0, mix, 2), pm3(melo, 0, mix, 3);
 AudioConnection        pcL(mix, 0, i2sOut, 0), pcR(mix, 0, i2sOut, 1);
 AudioControlSGTL5000   codec;
+AudioInputI2S          i2sIn;  // meters only: nothing from the inputs reaches the output
+AudioAnalyzePeak       micPeak, pzPeak;
+AudioConnection        pi0(i2sIn, 0, micPeak, 0), pi1(i2sIn, 1, pzPeak, 0);
 
 Adafruit_ILI9341 lcd(&SPI1, 37, 38, 36);
 Adafruit_SSD1306 oled(128, 64, &UI_BUS, -1);
 Adafruit_CAP1188 touch;
 Adafruit_ADS1115 ads;
 
-enum { CAP, OLED, ADS, GPS, MCP, NPARTS };
-const uint8_t ADDR[NPARTS] = {0x29, 0x3C, 0x48, 0x10, 0x20};
-const char* NAME[NPARTS] = {"CAP", "OLED", "ADS", "GPS", "MCP"};
+enum { CAP, OLED, ADS, GPS, MCP, Q1, Q2, NPARTS };
+const uint8_t ADDR[NPARTS] = {0x29, 0x3C, 0x48, 0x10, 0x20, 0x49, 0x4A};
+const char* NAME[NPARTS] = {"CAP", "OLED", "ADS", "GPS", "MCP", "Q1", "Q2"};
 bool on[NPARTS], seen[NPARTS];
 uint32_t lost[NPARTS];
 
@@ -70,6 +76,15 @@ bool audioOk = false;
 const float NOTE[4] = {261.63f, 329.63f, 392.00f, 440.00f};  // C E G A
 const int OCTAVE_FADER = 2;  // F3: the one wired fader picks the octave; floating inputs are ignored
 float octave = 1;            // low / middle / high octave
+
+Adafruit_seesaw quad[2] = {Adafruit_seesaw(&UI_BUS), Adafruit_seesaw(&UI_BUS)};
+const uint8_t QSW[4] = {12, 14, 17, 9};  // Quad switch pins, encoders 0-3
+const int NE = 7;                        // 4 on Quad #1, 3 on Quad #2
+int32_t encPos[NE];
+bool encDown[NE];
+uint32_t encSteps = 0, encPresses = 0;
+
+float micNow = 0, pzNow = 0, micMax = 0, pzMax = 0, micSec = 0, pzSec = 0;  // peak 0-1: this second, highest seen
 
 int gpsFix = -1, gpsSats = -1;
 char gpsTime[9] = "--:--:--";
@@ -159,6 +174,16 @@ bool startPart(int p) {
         mcpWrite(0x00, 0xFF); mcpWrite(0x01, 0xFF);  // all inputs
         mcpWrite(0x0C, 0xFF); mcpWrite(0x0D, 0xFF);  // pull-ups
         return true;
+    case Q1: case Q2: {
+        int q = p - Q1;
+        if (!quad[q].begin(ADDR[p])) return false;
+        for (int e = 0; e < 4; e++) quad[q].pinMode(QSW[e], INPUT_PULLUP);
+        for (int e = 0; e < 4 && q * 4 + e < NE; e++) {
+            encPos[q * 4 + e] = -quad[q].getEncoderPosition(e);  // clockwise = up
+            encDown[q * 4 + e] = false;
+        }
+        return true;
+    }
     default: return true;  // GPS streams NMEA on its own
     }
 }
@@ -288,6 +313,34 @@ void drawDynamic() {
         if (on[GPS]) lcd.printf("GPS fix %d  sats %2d  UTC %.5s     ", gpsFix, gpsSats, gpsTime);
         else lcd.print("GPS -                                ");
     }
+    static int32_t lastEnc = 0x7FFFFFFF;
+    int32_t ekey = (on[Q1] << 1) | on[Q2];
+    for (int i = 0; i < NE; i++) ekey = ekey * 31 + encPos[i] * 2 + encDown[i];
+    if (all || ekey != lastEnc) {
+        lastEnc = ekey;
+        lcdDraws++;
+        lcd.setCursor(8, 214);
+        lcd.setTextColor(on[Q1] || on[Q2] ? ILI9341_WHITE : GREY, ILI9341_BLACK);
+        lcd.print("E");
+        for (int i = 0; i < NE; i++) {
+            bool live = on[i < 4 ? Q1 : Q2];
+            lcd.setTextColor(!live ? GREY : encDown[i] ? ILI9341_ORANGE : ILI9341_WHITE, ILI9341_BLACK);
+            if (live) lcd.printf(" %4ld", (long)constrain(encPos[i], -999, 9999)); else lcd.print("    -");
+        }
+        lcd.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+        lcd.printf(" p%lu   ", encPresses);
+    }
+    static int lastIn = -1;  // input meters in 5 % steps of the last second's peak: redraw ~1/s at most
+    int ikey = (int)(micSec * 20) * 100 + (int)(pzSec * 20);
+    if (all || ikey != lastIn) {
+        lastIn = ikey;
+        lcdDraws++;
+        lcd.setCursor(8, 226);
+        lcd.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+        lcd.printf("MIC L %3d%% max %3d%%   PZ R %3d%% max %3d%%  ",
+                   (int)(micSec * 100), (int)(micMax * 100), (int)(pzSec * 100), (int)(pzMax * 100));
+    }
+
     uint32_t count = touches + presses * 7 + lcdReinits * 131 + busRecoveries * 1031;
     if (all || count != lastCount) {
         lastCount = count;
@@ -304,6 +357,10 @@ void drawOled() {
     oled.setTextSize(1);
     oled.setCursor(0, 0);
     oled.printf("touch %lu press %lu", touches, presses);
+    oled.drawRect(0, 10, 62, 6, SSD1306_WHITE);  // MIC L | PZ R live peak bars
+    oled.fillRect(1, 11, (int)(min(micNow, 1.0f) * 60), 4, SSD1306_WHITE);
+    oled.drawRect(66, 10, 62, 6, SSD1306_WHITE);
+    oled.fillRect(67, 11, (int)(min(pzNow, 1.0f) * 60), 4, SSD1306_WHITE);
     for (int i = 0; i < 8; i++) {
         if (on[CAP] && (touched & (1 << i))) oled.fillRect(i * 16 + 1, 20, 14, 14, SSD1306_WHITE);
         else oled.drawRect(i * 16 + 1, 20, 14, 14, SSD1306_WHITE);
@@ -320,6 +377,8 @@ void setup() {
     AudioMemory(24);
     codec.enable();
     codec.volume(0.3);
+    codec.inputSelect(AUDIO_INPUT_LINEIN);
+    codec.lineInLevel(0, 5);  // L 0 = 3.12 Vpp (MAX9814 ~2 Vpp), R 5 = 1.33 Vpp (piezo direct, as demo_play)
     mix.gain(0, 1); mix.gain(1, 1); mix.gain(2, 1); mix.gain(3, 1);
     kick.frequency(60); kick.length(300); kick.pitchMod(0.55f);
     snareBody.frequency(200); snareBody.length(100);
@@ -378,6 +437,11 @@ void loop() {
         for (int i = 0; i < NF; i++) Serial.printf(" %d(%d-%d)", (int)pct[i], (int)lo[i], (int)hi[i]);
         Serial.printf(" | touch 0x%02X n %lu | mcp 0x%04X n %lu | gps fix %d sats %d %s | lcd reinit %lu bus clear %lu",
                       touched, touches, mcpIn, presses, gpsFix, gpsSats, gpsTime, lcdReinits, busRecoveries);
+        Serial.printf(" | enc");
+        for (int i = 0; i < NE; i++) Serial.printf(" %ld%s", (long)encPos[i], on[i < 4 ? Q1 : Q2] ? "" : "-");
+        Serial.printf(" steps %lu press %lu | mic %.2f max %.2f pz %.2f max %.2f",
+                      encSteps, encPresses, micSec, micMax, pzSec, pzMax);
+        micSec = pzSec = 0;
         Serial.printf(" | ads timeout %lu cap err %lu | audio mem %d/24 cpu %.1f%% | lcd draws/s %lu\n",
                       adsTimeouts, capErrors, AudioMemoryUsageMax(), AudioProcessorUsageMax(), lcdDraws);
         lcdDraws = 0;
@@ -416,6 +480,26 @@ void loop() {
                 uint16_t pressed = ~v & mcpIn & 0x0F1F;  // newly low on GPA0-4 / GPB0-3
                 for (int b = 0; b < 16; b++) if (pressed & (1 << b)) { presses++; beep(392 + b * 30); }
                 mcpIn = v;
+            }
+        }
+    }
+
+    if (micPeak.available()) { micNow = micPeak.read(); micSec = max(micSec, micNow); micMax = max(micMax, micNow); }
+    if (pzPeak.available())  { pzNow = pzPeak.read();   pzSec = max(pzSec, pzNow);   pzMax = max(pzMax, pzNow); }
+
+    static uint32_t lastEncRead = 0;
+    if (now - lastEncRead >= 20) {  // encoders every 20 ms
+        lastEncRead = now;
+        for (int q = 0; q < 2; q++) {
+            if (!on[Q1 + q]) continue;
+            uint32_t sw = quad[q].digitalReadBulk((1UL << 12) | (1UL << 14) | (1UL << 17) | (1UL << 9));
+            for (int e = 0; e < 4 && q * 4 + e < NE; e++) {
+                int i = q * 4 + e;
+                int32_t p = -quad[q].getEncoderPosition(e);
+                if (p != encPos[i]) { encSteps += abs(p - encPos[i]); encPos[i] = p; beep(500 + i * 60); }
+                bool d = !(sw & (1UL << QSW[e]));
+                if (d && !encDown[i]) { encPresses++; beep(880 + i * 40); }
+                encDown[i] = d;
             }
         }
     }

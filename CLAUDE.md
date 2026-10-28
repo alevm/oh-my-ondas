@@ -4,6 +4,10 @@
 
 Before every answer, verify it yourself: flash a probe or test sketch and read the serial output, scan the pins, read the docs/config. Answer with what you measured. Hand the user a check only when no tool can see it (meter readings, what the screen shows), and say why.
 
+## Carts and orders: only through `firmware/tools/cart_check.py`
+
+Before any answer about what to buy, keep or remove, run `firmware/tools/cart_check.py <cart>` (plan: `docs/hardware/parts-plan.csv`, counts from `web/prototype.html`) and paste its output in the answer. Exit 1 (SHORT, NO SPARE, OVER, NOT IN PLAN) means the cart is not ready. ASK lines go to the user. A part missing from the plan goes into the plan, with its source, before the cart is judged.
+
 ## Flashing the Teensy: only through `firmware/flash.sh`
 
 Never call teensy_loader_cli or `pio run -t upload` directly. The changed path decides the loop:

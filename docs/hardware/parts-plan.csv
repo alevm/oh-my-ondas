@@ -1,0 +1,25 @@
+group,part,ids,need,spare,owned,ordered,condition,source
+stemma_ss,STEMMA QT cable socket-socket (any length),4210 4397 4399 4401 1528-4397-ND,3,1,0,3,,prototype.html row 1: Quad1>Quad2>ANO>GPS = 3; ordered DigiKey 102318278 4397 x3
+stemma_pins,STEMMA QT to male pins,4209 1528-4209-ND,1,1,0,3,,prototype.html row 1: rails>Quad1 = 1; ordered DigiKey 102318278 4209 x3
+quad,Quad rotary encoder (seesaw),5752 1528-5752-ND,2,0,0,2,,prototype.html: 7 EC11 on 2 Quads (4+3); ordered DigiKey 102318278 x2
+ano,ANO nav + wheel,6310,1,0,0,0,,prototype.html front panel: ANO 0x4B
+soic16,SOIC-16 breakout 3-pack,1207,1,0,0,0,,prototype.html rows 48-59: Si4732 carrier; 3 boards per pack
+si4732,Si4732-A10 radio chip,SI4732-A10-GS,1,1,0,2,,prototype.html rows 48-59; ordered DigiKey 102318278 x2
+max9814,MAX9814 mic preamp,1713 1528-1713-ND,1,0,?,1,,prototype.html rows 28-32; ordered DigiKey 102318278 x1; user said 2026-10-26 they have one (not counted)
+permaproto,Perma-Proto full size,1606 1528-1100-ND,1,0,0,1,,prototype.html: one board; ordered DigiKey 102318278 x1
+psram,PSRAM 8 MB,COM-28391 1568-COM-28391-ND,2,0,0,2,,prototype.html underside: 2 x 8 MB; ordered DigiKey 102318278 x2
+usbhost,USB Host cable,CAB-28389,1,0,0,2,,prototype.html USB Host row; ordered DigiKey 102318278 x2 (duplicate line)
+c_microb,USB-C to micro-B cable,3878,1,0,?,0,only if the power bank is USB-C only and no C to micro-B cable is owned,prototype.html power bank row; bom.html Miami table
+powerbank,USB power bank 2 outputs,,1,0,?,0,buy in Spain; skip if one is owned,prototype.html power bank row
+ec11,EC11 encoder,EC11E2020SW,7,0,7,0,,prototype.html Quads row: 7 owned
+gps,GPS PA1010D,4415,1,0,1,0,,prototype.html: OWNED
+cap1188,CAP1188,1602,1,0,1,0,,prototype.html rows 2-11: OWNED
+ads1115,ADS1115,1085,1,0,1,0,,prototype.html rows 28-37: OWNED
+mcp23017,MCP23017 DIP-28,MCP23017-E/SP,1,1,2,0,,prototype.html rows 13-26: OWNED; STATUS: user owns 2
+oled,OLED SSD1306 0.96,MDIO9092,1,0,1,0,,prototype.html rows 33-36: OWNED
+lcd,LCD 2.8 ILI9341,1770,1,0,1,0,,prototype.html LCD row: OWNED P1770
+esp32s2,ESP32-S2 Thing Plus,WRL-17743,1,0,1,0,,prototype.html ESP32 row: OWNED
+mcp6002,MCP6002 DIP-8,MCP6002IP,1,0,0,1,,prototype.html rows 39-45; Diotronic order line 8
+dip8,DIP-8 socket,308,1,0,0,1,,prototype.html rows 39-45; Diotronic order line 9
+crystal,Crystal 32.768 kHz,0.032768,1,1,0,2,,prototype.html rows 48-59; Diotronic order line 1
+pc3,Perfboard 72x47,PC-3,1,0,0,1,,prototype.html front panel board; Diotronic order line 14
