@@ -27,7 +27,11 @@ PLAN = Path(__file__).resolve().parents[2] / "docs" / "hardware" / "parts-plan.c
 
 def load_plan():
     with open(PLAN, newline="") as f:
-        return list(csv.DictReader(f))
+        rows = list(csv.DictReader(f))
+    for n, row in enumerate(rows, 2):
+        if None in row or None in row.values():  # an unquoted comma shifts the columns
+            sys.exit(f"{PLAN}:{n}: wrong column count, quote fields that contain commas")
+    return rows
 
 
 def parse_cart(text):
